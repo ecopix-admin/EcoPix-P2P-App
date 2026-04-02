@@ -1,2 +1,2 @@
-#!/usr/bin/env bash
-echo "Gradle Wrapper Script"
+#!/usr/bin/env sh
+exec java -jar .github/wrapper/gradle-wrapper.jar "$@"
