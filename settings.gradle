@@ -1,2 +1,0 @@
-include ':app'
-rootProject.name = "EcoPix-P2P"
