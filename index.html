@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoPix Messenger</title>
+    <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root { --main-color: #075e54; --light-color: #25d366; --bg-color: #ece5dd; }
+        body { font-family: Arial, sans-serif; margin: 0; background: var(--bg-color); }
+        
+        /* Ana Səhifə - Söhbətlər */
+        .header { background: var(--main-color); color: white; padding: 15px; position: sticky; top: 0; z-index: 100; }
+        .tabs { display: flex; background: var(--main-color); color: rgba(255,255,255,0.7); font-weight: bold; }
+        .tab { flex: 1; text-align: center; padding: 12px; border-bottom: 3px solid transparent; }
+        .tab.active { color: white; border-bottom-color: white; }
+
+        .list-item { display: flex; align-items: center; padding: 15px; background: white; border-bottom: 1px solid #ddd; cursor: pointer; }
+        .avatar { width: 50px; height: 50px; background: #ccc; border-radius: 50%; margin-right: 15px; overflow: hidden; }
+        .avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .details { flex: 1; }
+        .details h4 { margin: 0; color: #333; }
+        .details p { margin: 5px 0 0; color: #666; font-size: 14px; }
+
+        /* Söhbət Pəncərəsi */
+        #chat-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-color); display: none; flex-direction: column; z-index: 200; }
+        .chat-header { background: var(--main-color); color: white; padding: 10px; display: flex; align-items: center; }
+        .chat-header i { font-size: 20px; margin: 0 10px; cursor: pointer; }
+        .messages { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; }
+        .msg { padding: 8px 12px; border-radius: 10px; margin: 5px 0; max-width: 70%; }
+        .msg.sent { align-self: flex-end; background: #dcf8c6; }
+        .msg.received { align-self: flex-start; background: white; }
+
+        .input-area { background: #f0f0f0; padding: 10px; display: flex; align-items: center; }
+        .input-area input { flex: 1; padding: 10px; border-radius: 20px; border: none; outline: none; margin: 0 10px; }
+
+        /* Zəng Ekranı */
+        #call-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; color: white; display: none; flex-direction: column; align-items: center; justify-content: space-around; z-index: 300; }
+        .call-btns { display: flex; gap: 40px; }
+        .btn-call { width: 70px; height: 70px; border-radius: 50%; border: none; color: white; font-size: 30px; cursor: pointer; }
+        .accept { background: #25d366; }
+        .reject { background: #ff3b30; }
+        
+        #local-video { width: 100px; position: absolute; top: 20px; right: 20px; border-radius: 10px; }
+        #remote-video { width: 100%; height: 80%; object-fit: cover; }
+    </style>
+</head>
+<body>
+
+    <div id="main-screen">
+        <div class="header">
+            <h3>EcoPix P2P</h3>
+            <p id="my-id">Sizin ID: Yüklənir...</p>
+        </div>
+        <div class="tabs">
+            <div class="tab active">SÖHBƏTLƏR</div>
+            <div class="tab">ZƏNGLƏR</div>
+        </div>
+        <div id="chat-list">
+            <div class="list-item" onclick="openChat('AZ-994')">
+                <div class="avatar"><img src="https://via.placeholder.com/50" alt=""></div>
+                <div class="details"><h4>AZ-994 (Test)</h4><p>Salam, necəsən?</p></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="chat-screen">
+        <div class="chat-header">
+            <i class="fas fa-arrow-left" onclick="closeChat()"></i>
+            <div class="avatar" style="width: 35px; height: 35px;"><img src="https://via.placeholder.com/35" id="chat-avatar"></div>
+            <div style="flex: 1; margin-left: 10px;"><h4 id="chat-name">Ad</h4></div>
+            <i class="fas fa-phone" onclick="makeCall(false)"></i>
+            <i class="fas fa-video" onclick="makeCall(true)"></i>
+        </div>
+        <div class="messages" id="message-container"></div>
+        <div class="input-area">
+            <i class="fas fa-paperclip"></i>
+            <input type="text" id="msg-input" placeholder="Mesaj yazın...">
+            <i class="fas fa-microphone" style="color: #666;"></i>
+            <button onclick="sendMessage()" style="border:none; background:none; color:var(--main-color); font-size:20px;"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
+
+    <div id="call-screen">
+        <h2 id="call-status">Zəng gəlir...</h2>
+        <video id="remote-video" autoplay></video>
+        <video id="local-video" autoplay muted></video>
+        <div class="call-btns">
+            <button class="btn-call reject" onclick="endCall()"><i class="fas fa-phone-slash"></i></button>
+            <button class="btn-call accept" id="accept-btn" onclick="answerCall()"><i class="fas fa-phone"></i></button>
+        </div>
+        <audio id="ringtone" loop src="https://www.soundjay.com/phone/phone-calling-1.mp3"></audio>
+    </div>
+
+    <script>
+        // P2P Məntiqi (PeerJS)
+        let myId = "AZ-" + Math.floor(1000 + Math.random() * 9000);
+        const peer = new Peer(myId);
+        let activeConn, activeCall, localStream;
+
+        peer.on('open', id => document.getElementById('my-id').innerText = "Sizin ID: " + id);
+
+        // Mesaj gələndə
+        peer.on('connection', conn => {
+            activeConn = conn;
+            conn.on('data', data => addMessage(data, 'received'));
+        });
+
+        // Zəng gələndə
+        peer.on('call', call => {
+            activeCall = call;
+            document.getElementById('call-screen').style.display = 'flex';
+            document.getElementById('ringtone').play();
+            document.getElementById('call-status').innerText = "Zəng gəlir: " + call.peer;
+        });
+
+        function sendMessage() {
+            const input = document.getElementById('msg-input');
+            if(input.value && activeConn) {
+                activeConn.send(input.value);
+                addMessage(input.value, 'sent');
+                input.value = '';
+            }
+        }
+
+        function addMessage(text, type) {
+            const container = document.getElementById('message-container');
+            const div = document.createElement('div');
+            div.className = 'msg ' + type;
+            div.innerText = text;
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function makeCall(video) {
+            const destId = prompt("Zəng etmək istədiyiniz ID:");
+            navigator.mediaDevices.getUserMedia({video: video, audio: true}).then(stream => {
+                localStream = stream;
+                document.getElementById('local-video').srcObject = stream;
+                activeCall = peer.call(destId, stream);
+                setupCallUI();
+                activeCall.on('stream', remoteStream => {
+                    document.getElementById('remote-video').srcObject = remoteStream;
+                });
+            });
+        }
+
+        function answerCall() {
+            navigator.mediaDevices.getUserMedia({video: true, audio: true}).then(stream => {
+                localStream = stream;
+                document.getElementById('local-video').srcObject = stream;
+                activeCall.answer(stream);
+                document.getElementById('ringtone').pause();
+                document.getElementById('accept-btn').style.display = 'none';
+                activeCall.on('stream', remoteStream => {
+                    document.getElementById('remote-video').srcObject = remoteStream;
+                });
+            });
+        }
+
+        function endCall() {
+            if(activeCall) activeCall.close();
+            if(localStream) localStream.getTracks().forEach(t => t.stop());
+            document.getElementById('call-screen').style.display = 'none';
+            document.getElementById('ringtone').pause();
+        }
+
+        function openChat(name) {
+            document.getElementById('chat-screen').style.display = 'flex';
+            document.getElementById('chat-name').innerText = name;
+            activeConn = peer.connect(name);
+        }
+
+        function closeChat() { document.getElementById('chat-screen').style.display = 'none'; }
+    </script>
+</body>
+</html>
