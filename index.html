@@ -3,599 +3,364 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EcoPix Messenger (P2P + Firebase)</title>
+    <title>EcoPix Messenger v2 - Inqilabi P2P</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
-    <script src="https://widget.cloudinary.com/v2.0/global/all.js" type="text/javascript"></script>
+    <script src="https://widget.cloudinary.com/v2.0/global/all.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
-        :root {
-            --main-color: #3b5998; /* Mavi fon */
-            --header-color: #2e4a87;
-            --accent-color: #2ecc71;
-            --bg-color: #e9ebee;
-            --msg-sent: #dcf8c6;
-            --msg-received: #ffffff;
-        }
+        :root { --main-blue: #3b5998; --header-dark: #2e4a87; --whatsapp-green: #25d366; --bg-gray: #e9ebee; }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background: var(--bg-gray); overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
 
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background: var(--bg-color); color: #333; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
-
-        /* Ana Header */
-        .app-header { background: var(--header-color); color: white; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
-        .app-header h2 { margin: 0; font-size: 20px; }
-        .app-header .icons i { margin-left: 20px; font-size: 18px; cursor: pointer; }
-        #my-az-id { font-size: 12px; color: #ddd; margin: 0; }
-
-        /* Tabs Menyusu */
-        .tabs { background: var(--main-color); color: rgba(255,255,255,0.7); display: flex; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .tab { flex: 1; text-align: center; padding: 15px 0; font-weight: bold; font-size: 14px; cursor: pointer; position: relative; border-bottom: 3px solid transparent; transition: 0.3s; }
+        /* HEADER & TABS */
+        .app-header { background: var(--header-dark); color: white; padding: 12px 18px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+        .tabs { background: var(--main-blue); display: flex; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .tab { flex: 1; text-align: center; padding: 15px; color: rgba(255,255,255,0.7); font-weight: bold; cursor: pointer; transition: 0.3s; border-bottom: 4px solid transparent; }
         .tab.active { color: white; border-bottom-color: white; }
-        .tab i { margin-right: 8px; }
 
-        /* Siyahı Bölmələri */
-        .screen { display: none; flex: 1; overflow-y: auto; background: var(--bg-color); }
+        /* SCREENS */
+        .screen { display: none; flex: 1; overflow-y: auto; height: calc(100vh - 120px); }
         .screen.active { display: block; }
-        
-        .list-item { display: flex; align-items: center; padding: 15px; background: white; border-bottom: 1px solid #ddd; cursor: pointer; transition: 0.2s; }
-        .list-item:hover { background: #f1f1f1; }
-        .avatar { width: 50px; height: 50px; background: #ccc; border-radius: 50%; margin-right: 15px; overflow: hidden; display: flex; align-items: center; justify-content: center; }
-        .avatar img { width: 100%; height: 100%; object-fit: cover; }
-        .details { flex: 1; }
-        .details .top-row { display: flex; justify-content: space-between; align-items: center; }
-        .details h4 { margin: 0; font-size: 16px; color: #000; }
-        .details p { margin: 5px 0 0; color: #666; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .details .time { font-size: 12px; color: #999; }
+        .list-item { display: flex; align-items: center; padding: 15px; background: white; border-bottom: 1px solid #eee; cursor: pointer; }
+        .avatar { width: 55px; height: 55px; border-radius: 50%; margin-right: 15px; object-fit: cover; background: #ccc; }
 
-        /* Floating Düymə */
-        .fab { position: fixed; bottom: 80px; right: 20px; width: 60px; height: 60px; background: var(--accent-color); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); cursor: pointer; z-index: 500; }
+        /* CHAT SCREEN */
+        #chat-screen { position: fixed; inset: 0; background: #e5ddd5; z-index: 2000; display: none; flex-direction: column; }
+        .chat-header { background: var(--header-dark); color: white; padding: 10px; display: flex; align-items: center; justify-content: space-between; }
+        .messages { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; background: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-8e1d-60400d46e936.png'); }
+        .msg { padding: 8px 12px; border-radius: 10px; margin: 4px 0; max-width: 75%; position: relative; font-size: 15px; }
+        .msg.sent { align-self: flex-end; background: #dcf8c6; }
+        .msg.received { align-self: flex-start; background: white; }
+        .msg img { max-width: 100%; border-radius: 8px; margin-top: 5px; }
 
-        /* Söhbət Pəncərəsi */
-        #chat-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-color); display: none; flex-direction: column; z-index: 2000; }
-        .chat-header { background: var(--header-color); color: white; padding: 8px 10px; display: flex; align-items: center; }
-        .chat-header .back-btn { font-size: 22px; cursor: pointer; margin-right: 10px; }
-        .chat-header .user-info { flex: 1; display: flex; align-items: center; }
-        .chat-header .user-info h4 { margin: 0 0 0 10px; font-size: 16px; }
-        .chat-header .user-info p { margin: 0 0 0 10px; font-size: 12px; color: #ddd; }
-        .chat-header .icons i { font-size: 18px; margin-left: 20px; cursor: pointer; }
+        .input-bar { background: #f0f0f0; padding: 10px; display: flex; align-items: center; gap: 10px; }
+        .input-bar input { flex: 1; padding: 10px 15px; border-radius: 25px; border: none; outline: none; }
+        .input-bar i { font-size: 22px; color: #777; cursor: pointer; }
 
-        .messages-container { flex: 1; overflow-y: auto; padding: 15px; background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-8e1d-60400d46e936.png'); background-repeat: repeat; display: flex; flex-direction: column; }
-        .message-row { display: flex; margin: 5px 0; max-width: 75%; }
-        .message-row.sent { align-self: flex-end; }
-        .message-row.received { align-self: flex-start; }
-        .bubble { padding: 8px 12px; border-radius: 10px; font-size: 15px; line-height: 1.4; position: relative; }
-        .message-row.sent .bubble { background: var(--msg-sent); border-top-right-radius: 0; }
-        .message-row.received .bubble { background: var(--msg-received); border-top-left-radius: 0; }
-        .message-time { font-size: 10px; color: #888; text-align: right; margin-top: 4px; }
-        .message-status { font-size: 12px; margin-left: 5px; color: #4fc3f7; } /* Mavi can */
+        /* CALL SCREEN - WHATSAPP STYLE */
+        #call-screen { position: fixed; inset: 0; background: #075e54; z-index: 3000; display: none; flex-direction: column; align-items: center; justify-content: center; color: white; }
+        #remote-video { position: absolute; width: 100%; height: 100%; object-fit: cover; }
+        #local-video { position: absolute; top: 20px; right: 20px; width: 100px; height: 140px; border-radius: 10px; border: 2px solid white; z-index: 10; display: none; }
+        .call-ui { z-index: 20; text-align: center; width: 100%; }
+        .call-avatar { width: 120px; height: 120px; border-radius: 50%; border: 3px solid white; margin-bottom: 20px; }
+        .call-btns { display: flex; gap: 50px; margin-top: 50px; justify-content: center; width: 100%; }
+        .btn-round { width: 75px; height: 75px; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; font-size: 30px; color: white; cursor: pointer; }
+        .btn-accept { background: var(--whatsapp-green); }
+        .btn-reject { background: #ff3b30; }
 
-        .input-bar { background: #f0f0f0; padding: 10px; display: flex; align-items: center; }
-        .input-bar input { flex: 1; padding: 10px 15px; border-radius: 20px; border: none; outline: none; margin: 0 10px; font-size: 15px; }
-        .input-bar i { font-size: 20px; color: #777; cursor: pointer; margin: 0 5px; }
-        .input-bar #send-btn { color: var(--header-color); font-size: 22px; background: none; border: none; cursor: pointer; display: none; }
+        /* FAB */
+        .fab { position: fixed; bottom: 30px; right: 25px; width: 60px; height: 60px; background: var(--whatsapp-green); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); cursor: pointer; }
 
-        /* Zəng Ekranı */
-        #call-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; color: white; display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 3000; }
-        #remote-video { width: 100%; height: 100%; object-fit: cover; position: absolute; }
-        #local-video { width: 100px; height: 150px; position: absolute; top: 20px; right: 20px; border-radius: 10px; object-fit: cover; border: 2px solid white; z-index: 3100; }
-        .call-info { position: absolute; top: 50px; text-align: center; z-index: 3200; }
-        .call-info h2 { margin: 0; font-size: 24px; }
-        .call-info p { margin: 10px 0 0; color: #ddd; font-size: 14px; }
-        
-        .call-controls { position: absolute; bottom: 50px; display: flex; gap: 30px; z-index: 3300; }
-        .call-btn { width: 70px; height: 70px; border-radius: 50%; border: none; color: white; font-size: 30px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
-        .call-btn.accept { background: var(--accent-color); }
-        .call-btn.reject { background: #ff3b30; }
-        .call-btn.end { background: #ff3b30; }
-        
-        #incoming-call-controls { display: flex; gap: 30px; }
-        #ongoing-call-controls { display: none; }
-
-        /* Profil Ekranı */
-        #profile-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; display: none; flex-direction: column; z-index: 2500; }
-        .profile-header { background: var(--header-color); color: white; padding: 15px; display: flex; align-items: center; }
-        .profile-header i { font-size: 22px; cursor: pointer; margin-right: 15px; }
-        .profile-header h3 { margin: 0; }
-        
-        .profile-body { padding: 30px; display: flex; flex-direction: column; align-items: center; }
-        #profile-avatar-container { position: relative; width: 150px; height: 150px; cursor: pointer; }
-        #profile-avatar-container img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 3px solid #ddd; }
-        #profile-avatar-container .edit-icon { position: absolute; bottom: 5px; right: 5px; background: var(--accent-color); color: white; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; border: 2px solid white; }
-        
-        .profile-info { width: 100%; margin-top: 30px; }
-        .info-group { margin-bottom: 25px; border-bottom: 1px solid #eee; padding-bottom: 10px; display: flex; align-items: center; }
-        .info-group i { color: #777; font-size: 18px; margin-right: 20px; }
-        .info-text { flex: 1; }
-        .info-text label { color: #777; font-size: 12px; display: block; }
-        .info-text input { border: none; outline: none; font-size: 16px; color: #333; width: 100%; padding: 5px 0; background: none; }
-        .edit-pen { color: var(--accent-color); font-size: 16px; cursor: pointer; }
-
-        /* Audio elementləri */
-        audio { display: none; }
-
+        /* PROFILE */
+        #profile-screen { position: fixed; inset: 0; background: white; z-index: 2500; display: none; flex-direction: column; }
+        .profile-card { padding: 30px; text-align: center; }
+        .editable-avatar { position: relative; display: inline-block; }
+        .edit-pen { position: absolute; bottom: 5px; right: 5px; background: var(--main-blue); color: white; padding: 8px; border-radius: 50%; font-size: 12px; }
     </style>
 </head>
 <body>
 
-    <audio id="audio-ringtone" loop src="https://www.soundjay.com/phone/phone-calling-1.mp3"></audio>
-    <audio id="audio-msg-sent" src="https://www.soundjay.com/button/button-3.mp3"></audio>
-    <audio id="audio-msg-received" src="https://www.soundjay.com/button/button-10.mp3"></audio>
+    <audio id="ringtone" loop src="https://www.soundjay.com/phone/phone-calling-1.mp3"></audio>
+    <audio id="msg-sound" src="https://www.soundjay.com/button/button-10.mp3"></audio>
 
-    <div id="main-screen" class="screen-group active">
+    <div id="main-ui">
         <div class="app-header">
-            <div>
-                <h2>EcoPix</h2>
-                <p id="my-az-id">AZ-Yüklənir...</p>
-            </div>
-            <div class="icons">
-                <i class="fas fa-search"></i>
-                <i class="fas fa-ellipsis-v" onclick="showProfile()"></i>
-            </div>
+            <div><h2>EcoPix</h2><small id="display-id">AZ-...</small></div>
+            <div style="font-size: 20px;"><i class="fas fa-search"></i> <i class="fas fa-ellipsis-v" onclick="toggleScreen('profile-screen')"></i></div>
         </div>
-        
         <div class="tabs">
-            <div class="tab active" onclick="switchTab('chats')"><i class="fas fa-comment-alt"></i>SÖHBƏTLƏR</div>
-            <div class="tab" onclick="switchTab('contacts')"><i class="fas fa-user-friends"></i>KONTAKTLAR</div>
-            <div class="tab" onclick="switchTab('calls')"><i class="fas fa-phone-alt"></i>ZƏNGLƏR</div>
+            <div class="tab active" onclick="showTab('chats')">SÖHBƏTLƏR</div>
+            <div class="tab" onclick="showTab('contacts')">KONTAKTLAR</div>
+            <div class="tab" onclick="showTab('calls')">ZƏNGLƏR</div>
         </div>
 
-        <div id="chats-screen" class="screen active">
-            <div id="chat-list-container">
-                </div>
-            <div class="fab"><i class="fas fa-comment-medical"></i></div>
-        </div>
-
-        <div id="contacts-screen" class="screen">
-            <div id="contacts-list-container">
-                </div>
-            <div class="fab" onclick="showAddContact()"><i class="fas fa-user-plus"></i></div>
-        </div>
-
-        <div id="calls-screen" class="screen">
-            <div id="calls-list-container">
-                </div>
-            <div class="fab"><i class="fas fa-phone-medical"></i></div>
-        </div>
+        <div id="chats" class="screen active"></div>
+        <div id="contacts" class="screen"></div>
+        <div id="calls" class="screen"></div>
+        <div class="fab" onclick="addContactPrompt()"><i class="fas fa-user-plus"></i></div>
     </div>
 
     <div id="chat-screen">
         <div class="chat-header">
-            <i class="fas fa-arrow-left back-btn" onclick="closeChat()"></i>
-            <div class="user-info">
-                <div class="avatar" style="width: 35px; height: 35px;"><img src="https://via.placeholder.com/35" id="chat-avatar"></div>
-                <div>
-                    <h4 id="chat-name">Ad</h4>
-                    <p id="chat-status">onlayn</p>
-                </div>
+            <div style="display:flex; align-items:center;">
+                <i class="fas fa-arrow-left" onclick="toggleScreen('chat-screen', false)" style="margin-right:15px;"></i>
+                <img src="" id="chat-user-img" class="avatar" style="width:40px; height:40px; margin-right:10px;">
+                <h4 id="chat-user-name" style="margin:0;">Ad</h4>
             </div>
-            <div class="icons">
-                <i class="fas fa-video" onclick="startCall(true)"></i>
-                <i class="fas fa-phone-alt" onclick="startCall(false)"></i>
-                <i class="fas fa-ellipsis-v"></i>
+            <div>
+                <i class="fas fa-video" onclick="initiateCall(true)" style="margin-right:20px;"></i>
+                <i class="fas fa-phone-alt" onclick="initiateCall(false)"></i>
             </div>
         </div>
-        <div class="messages-container" id="chat-messages">
-            </div>
+        <div class="messages" id="msg-box"></div>
         <div class="input-bar">
-            <i class="fas fa-laugh"></i>
-            <input type="text" id="chat-input" placeholder="Mesaj yazın..." oninput="checkInput()">
-            <i class="fas fa-paperclip"></i>
-            <i class="fas fa-camera" onclick="openCamera()"></i>
-            <button id="send-btn" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
-            <i class="fas fa-microphone" id="mic-icon"></i>
+            <i class="fas fa-plus-circle" onclick="openGallery('chat')"></i>
+            <input type="text" id="msg-input" placeholder="Mesaj yazın...">
+            <i class="fas fa-camera" onclick="openGallery('chat')"></i>
+            <i class="fas fa-microphone" onclick="alert('Tezliklə!')"></i>
+            <i class="fas fa-paper-plane" id="send-btn" onclick="sendMsg()" style="color:var(--main-blue);"></i>
         </div>
     </div>
 
     <div id="call-screen">
         <video id="remote-video" autoplay></video>
         <video id="local-video" autoplay muted></video>
-        
-        <div class="call-info">
-            <div class="avatar" style="width: 100px; height: 100px; margin: 0 auto 15px;"><img src="https://via.placeholder.com/100" id="call-avatar"></div>
-            <h2 id="call-peer-name">Ad</h2>
-            <p id="call-timer">00:00</p>
-        </div>
-        
-        <div class="call-controls">
-            <div id="incoming-call-controls">
-                <button class="call-btn reject" onclick="rejectCall()"><i class="fas fa-phone-slash"></i></button>
-                <button class="call-btn accept" onclick="answerCall()"><i class="fas fa-phone"></i></button>
-            </div>
-            <div id="ongoing-call-controls">
-                <button class="call-btn end" onclick="endCall()"><i class="fas fa-phone-slash"></i></button>
+        <div class="call-ui">
+            <img src="" id="call-img" class="call-avatar">
+            <h1 id="call-name">AZ-User</h1>
+            <p id="call-timer">Zəng edilir...</p>
+            <div class="call-btns">
+                <button class="btn-round btn-reject" onclick="endCall()"><i class="fas fa-phone-slash"></i></button>
+                <button class="btn-round btn-accept" id="accept-btn" onclick="answerCall()"><i class="fas fa-phone"></i></button>
             </div>
         </div>
     </div>
 
     <div id="profile-screen">
-        <div class="profile-header">
-            <i class="fas fa-arrow-left" onclick="hideProfile()"></i>
+        <div class="app-header">
+            <i class="fas fa-arrow-left" onclick="toggleScreen('profile-screen', false)"></i>
             <h3>Profil</h3>
         </div>
-        <div class="profile-body">
-            <div id="profile-avatar-container" onclick="openCloudinaryWidget()">
-                <img src="https://via.placeholder.com/150" id="my-profile-avatar">
-                <div class="edit-icon"><i class="fas fa-camera"></i></div>
+        <div class="profile-card">
+            <div class="editable-avatar" onclick="openGallery('profile')">
+                <img src="https://via.placeholder.com/150" id="my-avatar" class="avatar" style="width:150px; height:150px;">
+                <div class="edit-pen"><i class="fas fa-camera"></i></div>
             </div>
-            
-            <div class="profile-info">
-                <div class="info-group">
-                    <i class="fas fa-user"></i>
-                    <div class="info-text">
-                        <label>Adınız</label>
-                        <input type="text" id="my-profile-name" placeholder="Adınızı yazın">
-                    </div>
-                    <i class="fas fa-pencil-alt edit-pen" onclick="saveProfileName()"></i>
+            <div style="margin-top:20px; text-align:left;">
+                <label style="color:gray; font-size:12px;">Adınız</label>
+                <div style="display:flex; justify-content:space-between; border-bottom:1px solid #ddd; padding:10px 0;">
+                    <input type="text" id="my-name-input" value="Adsız" style="border:none; outline:none; font-size:18px; width:90%;">
+                    <i class="fas fa-pencil-alt" onclick="updateProfile()"></i>
                 </div>
-                
-                <div class="info-group">
-                    <i class="fas fa-id-card"></i>
-                    <div class="info-text">
-                        <label>EcoPix ID (Dəyişdirilə bilməz)</label>
-                        <input type="text" id="my-profile-id" readonly>
-                    </div>
+                <br>
+                <label style="color:gray; font-size:12px;">Biyo</label>
+                <div style="display:flex; justify-content:space-between; border-bottom:1px solid #ddd; padding:10px 0;">
+                    <input type="text" id="my-bio-input" value="EcoPix istifadəçisi" style="border:none; outline:none; font-size:16px; width:90%;">
+                    <i class="fas fa-pencil-alt" onclick="updateProfile()"></i>
                 </div>
-                
-                <div class="info-group">
-                    <i class="fas fa-info-circle"></i>
-                    <div class="info-text">
-                        <label>Haqqınızda (Biyo)</label>
-                        <input type="text" id="my-profile-bio" placeholder="Bir şeylər yazın">
-                    </div>
-                    <i class="fas fa-pencil-alt edit-pen" onclick="saveProfileBio()"></i>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="add-contact-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:4000; align-items:center; justify-content:center;">
-        <div style="background:white; padding:20px; border-radius:10px; width:300px;">
-            <h3>Kontakt Əlavə Et</h3>
-            <input type="text" id="new-contact-name" placeholder="Ad" style="width:100%; padding:10px; margin-bottom:10px; border:1px solid #ddd; border-radius:5px;">
-            <input type="text" id="new-contact-id" placeholder="EcoPix AZ-XXXX" style="width:100%; padding:10px; margin-bottom:10px; border:1px solid #ddd; border-radius:5px;">
-            <div style="display:flex; justify-content:flex-end; gap:10px;">
-                <button onclick="closeAddContact()" style="padding:10px 20px; background:#ddd; border:none; border-radius:5px;">Ləğv et</button>
-                <button onclick="addContact()" style="padding:10px 20px; background:var(--accent-color); color:white; border:none; border-radius:5px;">Yadda saxla</button>
             </div>
         </div>
     </div>
 
     <script>
-        // --- 1. Konfiqurasiya (Sənin Verdiyin Məlumatlar) ---
+        // FIREBASE & CLOUDINARY KONFIQURASIYASI
         const firebaseConfig = {
             apiKey: "AIzaSyCtrVliO1bmdg7r0juWz-Yj2EaEGNsz2j8",
-            authDomain: "ecopix-118c6.firebaseapp.com",
             databaseURL: "https://ecopix-118c6-default-rtdb.europe-west1.firebasedatabase.app",
-            projectId: "ecopix-118c6",
-            storageBucket: "ecopix-118c6.firebasestorage.app",
-            messagingSenderId: "703699419893",
-            appId: "1:703699419893:web:278c140c02b29745787bbc"
+            projectId: "ecopix-118c6"
         };
-        
-        const cloudinaryConfig = {
-            cloudName: "dyrfkit3x",
-            uploadPreset: "ml_default"
-        };
-
-        // --- 2. Başlanğıc Tənzimləmələri ---
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
-        
-        let myAzId, peer, localStream, currentCall;
-        let activeChatPeer = null;
-        let callStartTime, callInterval;
 
-        // ID Sabitləmə: LocalStorage-da yoxsa yarat, varsa götür
-        if(localStorage.getItem('ecoPixMyId')) {
-            myAzId = localStorage.getItem('ecoPixMyId');
-        } else {
-            myAzId = "AZ-" + Math.floor(1000 + Math.random() * 9000);
-            localStorage.setItem('ecoPixMyId', myAzId);
-        }
-        document.getElementById('my-az-id').innerText = myAzId;
-        document.getElementById('my-profile-id').value = myAzId;
+        let myId = localStorage.getItem('eco_id') || "AZ-" + Math.floor(1000 + Math.random() * 9000);
+        localStorage.setItem('eco_id', myId);
+        document.getElementById('display-id').innerText = myId;
 
-        // PeerJS Qoşulması
-        peer = new Peer(myAzId, { debug: 2 });
-        peer.on('open', id => console.log('PeerJS qoşuldu: ' + id));
+        const peer = new Peer(myId);
+        let activePeer = null;
+        let currentCall = null;
+        let localStream = null;
 
-        // --- 3. Firebase ilə Profil Idarəetməsi ---
-        const myProfileRef = db.ref('users/' + myAzId);
-        
-        // Məlumatları Local-dan və ya Firebase-dən oxu
-        function loadMyProfile() {
-            const localName = localStorage.getItem('ecoPixMyName') || "İstifadəçi";
-            const localBio = localStorage.getItem('ecoPixMyBio') || "EcoPix istifadəçisi";
-            const localAvatar = localStorage.getItem('ecoPixMyAvatar') || "https://via.placeholder.com/150";
-            
-            document.getElementById('my-profile-name').value = localName;
-            document.getElementById('my-profile-bio').value = localBio;
-            document.getElementById('my-profile-avatar').src = localAvatar;
-            
-            // Firebase-dən yenilə
-            myProfileRef.on('value', snapshot => {
-                const data = snapshot.val();
-                if(data) {
-                    document.getElementById('my-profile-name').value = data.name || localName;
-                    document.getElementById('my-profile-bio').value = data.bio || localBio;
-                    if(data.avatarUrl) {
-                        document.getElementById('my-profile-avatar').src = data.avatarUrl;
-                        localStorage.setItem('ecoPixMyAvatar', data.avatarUrl);
+        // QALEREYA VƏ ŞƏKİL YÜKLƏMƏ (Cloudinary)
+        function openGallery(mode) {
+            cloudinary.openUploadWidget({
+                cloudName: "dyrfkit3x",
+                uploadPreset: "ml_default",
+                sources: ["local", "camera", "url"],
+                multiple: false,
+                cropping: true
+            }, (error, result) => {
+                if (!error && result.event === "success") {
+                    const url = result.info.secure_url;
+                    if(mode === 'profile') {
+                        document.getElementById('my-avatar').src = url;
+                        updateProfile(url);
+                    } else if(mode === 'chat') {
+                        sendMsg(url);
                     }
                 }
             });
         }
-        
-        function saveProfileName() {
-            const name = document.getElementById('my-profile-name').value;
-            myProfileRef.update({ name: name });
-            localStorage.setItem('ecoPixMyName', name);
-            alert("Ad yeniləndi!");
-        }
-        
-        function saveProfileBio() {
-            const bio = document.getElementById('my-profile- bio').value;
-            myProfileRef.update({ bio: bio });
-            localStorage.setItem('ecoPixMyBio', bio);
-            alert("Biyo yeniləndi!");
+
+        // PROFIL IDARƏETMƏSİ
+        function updateProfile(imgUrl = null) {
+            const name = document.getElementById('my-name-input').value;
+            const bio = document.getElementById('my-bio-input').value;
+            const data = { name, bio };
+            if(imgUrl) data.img = imgUrl;
+            db.ref('users/' + myId).update(data);
+            alert("Profil yeniləndi!");
         }
 
-        // Cloudinary ilə Şəkil Yükləmə
-        function openCloudinaryWidget() {
-            cloudinary.openUploadWidget({
-                cloudName: cloudinaryConfig.cloudName,
-                uploadPreset: cloudinaryConfig.uploadPreset,
-                sources: ['local', 'camera'],
-                showAdvancedOptions: false,
-                cropping: true,
-                multiple: false,
-                defaultSource: 'local',
-                styles: { palette: { window: "#FFF", windowBorder: "#3b5998", tabIcon: "#3b5998", menuIcons: "#2e4a87", textDark: "#000", textLight: "#FFFFFF", link: "#2ecc71", action: "#3b5998", inactiveTabIcon: "#000", error: "#F44235", inProgress: "#3b5998", complete: "#2ecc71", sourceBg: "#E4EBF1" } }
-            }, (error, result) => {
-                if (!error && result && result.event === "success") {
-                    const avatarUrl = result.info.secure_url;
-                    document.getElementById('my-profile-avatar').src = avatarUrl;
-                    myProfileRef.update({ avatarUrl: avatarUrl });
-                    localStorage.setItem('ecoPixMyAvatar', avatarUrl);
-                    console.log('Şəkil yükləndi:', avatarUrl);
-                }
-            });
+        // KONTAKT ƏLAVƏ ETMƏK
+        function addContactPrompt() {
+            const id = prompt("Əlavə etmək istədiyiniz AZ-ID yazın:");
+            const name = prompt("Bu şəxsə ad verin:");
+            if(id && name) {
+                let contacts = JSON.parse(localStorage.getItem('contacts') || "[]");
+                contacts.push({id, name, img: 'https://via.placeholder.com/55'});
+                localStorage.setItem('contacts', JSON.stringify(contacts));
+                loadContacts();
+            }
         }
 
-        // --- 4. Kontaktlar və LocalStorage (Unikal İşləsin) ---
-        let contacts = JSON.parse(localStorage.getItem('ecoPixContacts')) || [];
-
-        function showAddContact() { document.getElementById('add-contact-modal').style.display = 'flex'; }
-        function closeAddContact() { document.getElementById('add-contact-modal').style.display = 'none'; }
-        
-        function addContact() {
-            const name = document.getElementById('new-contact-name').value;
-            const id = document.getElementById('new-contact-id').value;
-            if(name && id) {
-                contacts.push({ name, id, avatar: "https://via.placeholder.com/50" });
-                localStorage.setItem('ecoPixContacts', JSON.stringify(contacts));
-                loadContactsList();
-                closeAddContact();
-            } else { alert("Ad və ID mütləqdir!"); }
-        }
-        
-        function loadContactsList() {
-            const container = document.getElementById('contacts-list-container');
-            container.innerHTML = "";
-            contacts.forEach((c, index) => {
-                container.innerHTML += `
-                    <div class="list-item" onclick="openChat('${c.id}', '${c.name}', '${c.avatar}')">
-                        <div class="avatar"><img src="${c.avatar}"></div>
-                        <div class="details">
-                            <div class="top-row"><h4>${c.name}</h4><p class="time">${c.id}</p></div>
-                            <p>${c.id} - onlayn</p>
-                        </div>
-                        <i class="fas fa-pencil-alt edit-pen" style="margin-right:15px;" onclick="editContact(${index})"></i>
-                        <i class="fas fa-trash-alt" style="color:#ff3b30;" onclick="deleteContact(${index})"></i>
-                    </div>
-                `;
-            });
-        }
-
-        function deleteContact(index) {
-            contacts.splice(index, 1);
-            localStorage.setItem('ecoPixContacts', JSON.stringify(contacts));
-            loadContactsList();
-        }
-
-        // --- 5. Söhbətlər və Mesajlaşma (Firebase + P2P) ---
-        function checkInput() {
-            const input = document.getElementById('chat-input').value;
-            document.getElementById('send-btn').style.display = input.length > 0 ? 'inline-block' : 'none';
-            document.getElementById('mic-icon').style.display = input.length > 0 ? 'none' : 'inline-block';
-        }
-
-        function openChat(peerId, peerName, peerAvatar) {
-            activeChatPeer = peerId;
-            document.getElementById('main-screen').style.display = 'none';
-            document.getElementById('chat-screen').style.display = 'flex';
-            document.getElementById('chat-name').innerText = peerName;
-            document.getElementById('chat-avatar').src = peerAvatar;
-            document.getElementById('chat-messages').innerHTML = ""; // Təmizlə
-            loadMessages(peerId);
-        }
-
-        function closeChat() {
-            activeChatPeer = null;
-            document.getElementById('chat-screen').style.display = 'none';
-            document.getElementById('main-screen').style.display = 'block';
-        }
-
-        // Firebase-dən mesajları yüklə (Real-time)
-        function loadMessages(peerId) {
-            const chatKey = [myAzId, peerId].sort().join('_');
-            const messagesRef = db.ref('messages/' + chatKey);
-            
-            messagesRef.limitToLast(50).on('child_added', snapshot => {
-                const msg = snapshot.val();
-                appendMessageToUI(msg);
-            });
-        }
-
-        function sendMessage() {
-            const input = document.getElementById('chat-input');
-            const text = input.value;
-            if(!text || !activeChatPeer) return;
-            
-            const msgData = {
-                sender: myAzId,
-                recipient: activeChatPeer,
-                text: text,
-                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                timestamp: firebase.database.ServerValue.TIMESTAMP
-            };
-            
-            const chatKey = [myAzId, activeChatPeer].sort().join('_');
-            db.ref('messages/' + chatKey).push(msgData); // Firebase-ə yaz
-            input.value = '';
-            checkInput();
-            document.getElementById('audio-msg-sent').play();
-        }
-
-        function appendMessageToUI(msg) {
-            const container = document.getElementById('chat-messages');
-            const type = msg.sender === myAzId ? 'sent' : 'received';
-            container.innerHTML += `
-                <div class="message-row ${type}">
-                    <div class="bubble">
-                        <div>${msg.text}</div>
-                        <div class="message-time">${msg.time} ${type === 'sent' ? '<i class="fas fa-check message-status"></i><i class="fas fa-check message-status" style="margin-left:-3px"></i>' : ''}</div>
-                    </div>
+        function loadContacts() {
+            const container = document.getElementById('contacts');
+            const list = JSON.parse(localStorage.getItem('contacts') || "[]");
+            container.innerHTML = list.map(c => `
+                <div class="list-item" onclick="openChat('${c.id}', '${c.name}', '${c.img}')">
+                    <img src="${c.img}" class="avatar">
+                    <div><h4>${c.name}</h4><p>${c.id}</p></div>
                 </div>
-            `;
-            container.scrollTop = container.scrollHeight;
+            `).join('');
         }
 
-        // --- 6. Səsli və Görüntülü Zənglər (PeerJS + WebRTC) ---
-        
-        // Zəng gələndə (Incoming Call)
+        // MESAJLAŞMA SİSTEMİ
+        function openChat(id, name, img) {
+            activePeer = id;
+            document.getElementById('chat-user-name').innerText = name;
+            document.getElementById('chat-user-img').src = img;
+            toggleScreen('chat-screen', true);
+            loadMessages(id);
+        }
+
+        function sendMsg(imageUrl = null) {
+            const input = document.getElementById('msg-input');
+            const text = input.value;
+            if(!text && !imageUrl) return;
+
+            const chatKey = [myId, activePeer].sort().join('_');
+            const msgData = {
+                sender: myId,
+                text: text,
+                image: imageUrl,
+                time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+            };
+            db.ref('messages/' + chatKey).push(msgData);
+            input.value = "";
+            document.getElementById('msg-sound').play();
+            
+            // Söhbəti "Söhbətlər" bölməsinə at
+            db.ref(`recent_chats/${myId}/${activePeer}`).set({ name: document.getElementById('chat-user-name').innerText, lastMsg: text || "Şəkil", time: msgData.time });
+        }
+
+        function loadMessages(id) {
+            const chatKey = [myId, id].sort().join('_');
+            const box = document.getElementById('msg-box');
+            db.ref('messages/' + chatKey).on('value', snap => {
+                box.innerHTML = "";
+                snap.forEach(m => {
+                    const data = m.val();
+                    const side = data.sender === myId ? 'sent' : 'received';
+                    box.innerHTML += `
+                        <div class="msg ${side}">
+                            ${data.image ? `<img src="${data.image}">` : ''}
+                            <div>${data.text}</div>
+                            <small style="font-size:10px; color:gray;">${data.time}</small>
+                        </div>
+                    `;
+                });
+                box.scrollTop = box.scrollHeight;
+            });
+        }
+
+        // ZƏNG SİSTEMİ (PEERJS)
         peer.on('call', call => {
             currentCall = call;
-            document.getElementById('incoming-call-controls').style.display = 'flex';
-            document.getElementById('ongoing-call-controls').style.display = 'none';
-            document.getElementById('audio-ringtone').play();
-            
-            // UI-ni yenilə
-            const peerName = getContactNameById(call.peer);
-            document.getElementById('call-peer-name').innerText = peerName;
             document.getElementById('call-screen').style.display = 'flex';
-            document.getElementById('call-timer').innerText = "Gələn zəng...";
+            document.getElementById('accept-btn').style.display = 'flex';
+            document.getElementById('ringtone').play();
+            document.getElementById('call-name').innerText = call.peer;
         });
 
-        // Zəng etmək (Start Call)
-        function startCall(withVideo) {
-            navigator.mediaDevices.getUserMedia({video: withVideo, audio: true}).then(stream => {
+        function initiateCall(video) {
+            navigator.mediaDevices.getUserMedia({video: video, audio: true}).then(stream => {
                 localStream = stream;
-                document.getElementById('local-video').srcObject = stream;
-                document.getElementById('call-peer-name').innerText = document.getElementById('chat-name').innerText;
+                if(video) {
+                    document.getElementById('local-video').srcObject = stream;
+                    document.getElementById('local-video').style.display = 'block';
+                }
+                currentCall = peer.call(activePeer, stream);
+                setupCallHandlers();
                 document.getElementById('call-screen').style.display = 'flex';
-                
-                // P2P zəngi başlat
-                currentCall = peer.call(activeChatPeer, stream);
-                setupOngoingCallUI();
-                
-                // Qarşı tərəfin axınını qəbul et
-                currentCall.on('stream', remoteStream => {
-                    document.getElementById('remote-video').srcObject = remoteStream;
-                });
-            }).catch(err => { alert("Kamera/Mikrafon icazəsi verilmədi!"); console.error(err); });
+                document.getElementById('accept-btn').style.display = 'none';
+                document.getElementById('call-timer').innerText = "Zəng edilir...";
+            });
         }
 
-        // Zəngi cavablandırmaq
         function answerCall() {
             navigator.mediaDevices.getUserMedia({video: true, audio: true}).then(stream => {
                 localStream = stream;
-                document.getElementById('local-video').srcObject = stream;
-                document.getElementById('audio-ringtone').pause();
-                setupOngoingCallUI();
-                
-                // Cavab ver
                 currentCall.answer(stream);
-                
-                // Qarşı tərəfin axınını qəbul et
-                currentCall.on('stream', remoteStream => {
-                    document.getElementById('remote-video').srcObject = remoteStream;
-                });
+                document.getElementById('ringtone').pause();
+                document.getElementById('accept-btn').style.display = 'none';
+                setupCallHandlers();
             });
         }
 
-        function rejectCall() {
-            if(currentCall) currentCall.close();
-            document.getElementById('audio-ringtone').pause();
-            hideCallScreen();
+        function setupCallHandlers() {
+            currentCall.on('stream', remoteStream => {
+                document.getElementById('remote-video').srcObject = remoteStream;
+                startTimer();
+            });
         }
 
         function endCall() {
             if(currentCall) currentCall.close();
             if(localStream) localStream.getTracks().forEach(t => t.stop());
-            hideCallScreen();
-        }
-
-        // Zəng UI tənzimləmələri
-        function setupOngoingCallUI() {
-            document.getElementById('incoming-call-controls').style.display = 'none';
-            document.getElementById('ongoing-call-controls').style.display = 'flex';
-            document.getElementById('remote-video').style.display = 'block';
-            startCallTimer();
-        }
-
-        function hideCallScreen() {
             document.getElementById('call-screen').style.display = 'none';
-            document.getElementById('remote-video').style.display = 'none';
             document.getElementById('ringtone').pause();
-            stopCallTimer();
+            clearInterval(window.timerInt);
         }
 
-        // Zəng Sayğacı (Timer)
-        function startCallTimer() {
-            callStartTime = Date.now();
-            callInterval = setInterval(() => {
-                const diff = Math.floor((Date.now() - callStartTime) / 1000);
-                const min = String(Math.floor(diff / 60)).padStart(2, '0');
-                const sec = String(diff % 60).padStart(2, '0');
-                document.getElementById('call-timer').innerText = `${min}:${sec}`;
+        // KÖMƏKÇİ FUNKSİYALAR
+        function toggleScreen(id, show = true) {
+            document.getElementById(id).style.display = show ? 'flex' : 'none';
+        }
+
+        function showTab(tab) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.getElementById(tab).classList.add('active');
+            event.target.classList.add('active');
+            if(tab === 'contacts') loadContacts();
+            if(tab === 'chats') loadRecentChats();
+        }
+
+        function startTimer() {
+            let sec = 0;
+            window.timerInt = setInterval(() => {
+                sec++;
+                let m = Math.floor(sec/60);
+                let s = sec%60;
+                document.getElementById('call-timer').innerText = `${m<10?'0'+m:m}:${s<10?'0'+s:s}`;
             }, 1000);
         }
 
-        function stopCallTimer() { clearInterval(callInterval); }
-
-        // --- 7. Köməkçi Funksiyalar (UI & UX) ---
-        function switchTab(tabName) {
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            
-            event.currentTarget.classList.add('active');
-            document.getElementById(tabName + '-screen').classList.add('active');
-            
-            if(tabName === 'contacts') loadContactsList();
-            if(tabName === 'chats') loadChatsHistoryList(); // Tətbiq edilməlidir
-            if(tabName === 'calls') loadCallsHistoryList(); // Tətbiq edilməlidir
-        }
-        
-        function showProfile() { document.getElementById('profile-screen').style.display = 'flex'; }
-        function hideProfile() { document.getElementById('profile-screen').style.display = 'none'; }
-        
-        function getContactNameById(id) {
-            const contact = contacts.find(c => c.id === id);
-            return contact ? contact.name : id;
+        function loadRecentChats() {
+            db.ref(`recent_chats/${myId}`).on('value', snap => {
+                const cont = document.getElementById('chats');
+                cont.innerHTML = "";
+                snap.forEach(c => {
+                    const data = c.val();
+                    cont.innerHTML += `
+                        <div class="list-item" onclick="openChat('${c.key}', '${data.name}', 'https://via.placeholder.com/55')">
+                            <img src="https://via.placeholder.com/55" class="avatar">
+                            <div style="flex:1;">
+                                <div style="display:flex; justify-content:space-between;"><h4>${data.name}</h4><small>${data.time}</small></div>
+                                <p>${data.lastMsg}</p>
+                            </div>
+                        </div>
+                    `;
+                });
+            });
         }
 
-        // Səs Yazma funksiyası üçün placeholder (Gələcəkdə gücləndiriləcək)
-        document.getElementById('mic-icon').addEventListener('click', () => { alert("Səsli mesaj funksiyası tezliklə əlavə ediləcək."); });
-        function openCamera() { alert("Kamera funksiyası (birbaşa şəkil çəkib göndərmək) tezliklə aktivləşdiriləcək."); }
-
-        // --- 8. Başlanğıc Yükləmələr ---
-        loadMyProfile();
-        loadContactsList(); // İlk açılışda kontaktları yüklə
-
+        loadContacts();
+        loadRecentChats();
     </script>
 </body>
 </html>
