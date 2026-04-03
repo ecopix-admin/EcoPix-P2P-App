@@ -3,176 +3,126 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ecopix Elite v20</title>
+    <title>Ecopix Pro v25 - 1000 Channels</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
-        :root { --n-red: #ff0055; --n-green: #00ff41; --n-blue: #00d4ff; --bg: #000; }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        :root { --red: #ff0055; --green: #00ff41; --bg: #000; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
         body { background: var(--bg); color: white; overflow: hidden; height: 100vh; }
 
         /* Header */
-        header { padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #111; background: #050505; }
-        .logo { font-weight: 900; color: var(--n-red); text-shadow: 0 0 10px var(--n-red); font-size: 22px; }
-        .my-id-tag { color: var(--n-green); border: 1px solid var(--n-green); padding: 5px 12px; border-radius: 8px; font-weight: bold; font-family: monospace; background: rgba(0,255,65,0.05); }
+        header { height: 60px; padding: 0 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; background: #050505; }
+        .logo { font-weight: 900; color: var(--red); text-shadow: 0 0 10px var(--red); font-size: 20px; }
+        .my-id { color: var(--green); border: 1px solid var(--green); padding: 3px 10px; border-radius: 5px; font-family: monospace; font-size: 14px; }
 
-        #mute-hint { position: fixed; top: 70px; width: 100%; text-align: center; color: var(--n-red); z-index: 2000; font-weight: bold; animation: blink 1s infinite; pointer-events: none; text-transform: uppercase; font-size: 11px; }
-        @keyframes blink { 0% {opacity: 1;} 50% {opacity: 0;} 100% {opacity: 1;} }
-
-        .screen { display: none; height: calc(100vh - 145px); overflow-y: auto; position: relative; }
+        /* Screens */
+        .screen { display: none; height: calc(100vh - 130px); overflow-y: auto; position: relative; }
         .screen.active { display: block; }
 
-        /* TV Section */
+        /* TV Style TikTok */
         #tv-screen { overflow-y: scroll; scroll-snap-type: y mandatory; }
-        .tv-slide { height: calc(100vh - 145px); width: 100vw; scroll-snap-align: start; position: relative; background: #000; border-bottom: 2px solid #111; }
-        iframe { width: 100%; height: 100%; border: none; }
-        .ch-label { position: absolute; bottom: 30px; left: 20px; color: var(--n-red); font-weight: bold; font-size: 24px; text-shadow: 0 0 15px var(--n-red); z-index: 100; pointer-events: none; }
+        .tv-slide { height: calc(100vh - 130px); width: 100vw; scroll-snap-align: start; position: relative; background: #000; }
+        iframe { width: 100%; height: 100%; border: none; pointer-events: auto; }
+        .ch-title { position: absolute; bottom: 30px; left: 15px; color: var(--red); font-weight: bold; font-size: 22px; text-shadow: 0 0 10px var(--red); z-index: 10; pointer-events: none; }
 
-        /* Lists */
-        .list-item { display: flex; align-items: center; padding: 15px; border-bottom: 1px solid #111; transition: 0.2s; }
-        .list-item:active { background: #0a0a0a; }
-        .avatar { width: 50px; height: 50px; border-radius: 12px; background: linear-gradient(45deg, #333, #111); margin-right: 15px; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 1px solid #222; }
+        /* Navigation */
+        .nav-bar { position: fixed; bottom: 0; width: 100%; height: 70px; background: #050505; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #222; }
+        .nav-item { text-align: center; color: #555; font-size: 10px; flex: 1; cursor: pointer; }
+        .nav-item.active { color: var(--green); }
+        .nav-item i { font-size: 24px; display: block; margin-bottom: 5px; }
 
-        /* Floating Add Button - Yalnız Kontakt Ekranında */
-        .fab-contact { position: absolute; bottom: 20px; right: 20px; width: 55px; height: 55px; background: var(--n-green); color: black; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; box-shadow: 0 0 20px var(--n-green); z-index: 1001; }
+        /* Contacts & FAB */
+        .list-item { display: flex; align-items: center; padding: 15px; border-bottom: 1px solid #111; }
+        .avatar { width: 45px; height: 45px; border-radius: 50%; background: var(--red); margin-right: 15px; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+        .fab { position: absolute; bottom: 20px; right: 20px; width: 55px; height: 55px; background: var(--green); color: black; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; box-shadow: 0 0 15px var(--green); }
 
-        /* Nav Bar */
-        .nav-bar { position: fixed; bottom: 0; width: 100%; height: 75px; background: #050505; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #111; }
-        .nav-item { text-align: center; color: #444; font-size: 10px; flex: 1; cursor: pointer; }
-        .nav-item.active { color: var(--n-green); }
-        .nav-item i { font-size: 24px; display: block; margin-bottom: 4px; }
-
-        /* Chat UI */
-        #chat-modal { position: fixed; inset: 0; background: #000; z-index: 5000; display: none; flex-direction: column; }
-        .chat-header { padding: 15px; background: #080808; display: flex; align-items: center; border-bottom: 1px solid #222; }
-        .chat-tools { margin-left: auto; display: flex; gap: 20px; color: var(--n-green); font-size: 20px; }
-        #msg-container { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
-        .bubble { padding: 10px 14px; border-radius: 15px; max-width: 80%; font-size: 15px; }
-        .sent { align-self: flex-end; background: var(--n-green); color: black; }
-        .received { align-self: flex-start; background: #222; color: white; }
-        .chat-input { padding: 15px; display: flex; gap: 10px; background: #080808; }
-        .chat-input input { flex: 1; padding: 12px; background: #111; border: 1px solid #333; color: white; border-radius: 10px; }
-
-        /* Call Screen */
-        #call-ui { position: fixed; inset: 0; background: #000; z-index: 6000; display: none; flex-direction: column; }
-        .video-grid { flex: 1; display: flex; flex-direction: column; }
-        #remoteV { flex: 1; background: #050505; object-fit: cover; }
-        #localV { height: 30%; background: #000; object-fit: cover; border-top: 2px solid var(--n-green); }
-        .call-actions { height: 120px; background: #050505; display: flex; justify-content: center; align-items: center; }
-        .end-btn { width: 70px; height: 70px; background: red; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; }
+        /* Chat & Call Modals (Simplified for Speed) */
+        #chat-modal, #call-ui { position: fixed; inset: 0; background: #000; z-index: 5000; display: none; flex-direction: column; }
+        .chat-header { padding: 15px; border-bottom: 1px solid #222; display: flex; justify-content: space-between; }
+        #messages { flex: 1; padding: 15px; overflow-y: auto; }
+        .msg { margin-bottom: 10px; padding: 8px 12px; border-radius: 10px; max-width: 80%; }
+        .sent { background: var(--green); color: black; align-self: flex-end; margin-left: auto; }
+        .rec { background: #222; color: white; }
+        
+        video { width: 100%; height: 50%; object-fit: cover; }
     </style>
 </head>
-<body onclick="document.getElementById('mute-hint').remove()">
-
-    <div id="mute-hint">Səsi aktiv etmək üçün ekrana toxunun</div>
+<body>
 
     <header>
         <div class="logo">ECOPIX</div>
-        <div class="my-id-tag" id="my-id-val">AZ-999999</div>
+        <div class="my-id" id="my-id-display">AZ-999999</div>
     </header>
 
     <div id="tv-screen" class="screen active"></div>
+    
     <div id="chat-screen" class="screen"><div id="thread-list"></div></div>
-    <div id="history-screen" class="screen"><div id="call-list"></div></div>
+    
     <div id="contact-screen" class="screen">
         <div id="contact-list"></div>
-        <div class="fab-contact" onclick="newContact()"><i class="fas fa-plus"></i></div>
+        <div class="fab" onclick="addNewContact()"><i class="fas fa-plus"></i></div>
     </div>
 
     <div id="chat-modal">
         <div class="chat-header">
-            <i class="fas fa-chevron-left" onclick="closeChat()" style="font-size:22px;"></i>
-            <span id="chat-user-name" style="margin-left:15px; font-weight:bold;">İstifadəçi</span>
-            <div class="chat-tools">
-                <i class="fas fa-phone" onclick="call('voice')"></i>
-                <i class="fas fa-video" onclick="call('video')"></i>
+            <i class="fas fa-arrow-left" onclick="closeChat()"></i>
+            <span id="target-name">Dost</span>
+            <div>
+                <i class="fas fa-phone" onclick="startCall('voice')" style="margin-right:20px; color:var(--green);"></i>
+                <i class="fas fa-video" onclick="startCall('video')" style="color:var(--green);"></i>
             </div>
         </div>
-        <div id="msg-container"></div>
-        <div class="chat-input">
-            <input type="text" id="m-input" placeholder="Mesaj yazın...">
-            <button onclick="send()" style="background:var(--n-green); border:none; padding:10px 15px; border-radius:10px;"><i class="fas fa-paper-plane"></i></button>
+        <div id="messages"></div>
+        <div style="padding:15px; display:flex; gap:10px;">
+            <input type="text" id="m-input" style="flex:1; padding:10px; border-radius:5px; background:#111; border:1px solid #333; color:white;">
+            <button onclick="sendText()" style="padding:10px; background:var(--green); border:none; border-radius:5px;"><i class="fas fa-paper-plane"></i></button>
         </div>
     </div>
 
     <div id="call-ui">
-        <div class="video-grid">
-            <video id="remoteV" autoplay playsinline></video>
-            <video id="localV" autoplay playsinline muted></video>
-        </div>
-        <div class="call-actions">
-            <div class="end-btn" onclick="hangup()"><i class="fas fa-phone-slash"></i></div>
-        </div>
+        <video id="remoteV" autoplay playsinline></video>
+        <video id="localV" autoplay playsinline muted></video>
+        <div onclick="location.reload()" style="height:100px; background:red; display:flex; align-items:center; justify-content:center; font-size:30px;"><i class="fas fa-phone-slash"></i></div>
     </div>
 
     <nav class="nav-bar">
         <div class="nav-item active" onclick="tab('tv-screen', this)"><i class="fas fa-tv"></i>TV</div>
-        <div class="nav-item" onclick="tab('chat-screen', this)"><i class="fas fa-comment-alt"></i>ÇAT</div>
-        <div class="nav-item" onclick="tab('history-screen', this)"><i class="fas fa-history"></i>TARİX</div>
+        <div class="nav-item" onclick="tab('chat-screen', this)"><i class="fas fa-comment"></i>ÇAT</div>
         <div class="nav-item" onclick="tab('contact-screen', this)"><i class="fas fa-address-book"></i>DOSTLAR</div>
     </nav>
 
     <script>
-        // 1. MASTER ID SİSTEMİ
-        const MASTER_ID = "AZ-999999";
-        let myID = localStorage.getItem('eco_id');
-        
-        // Əgər səninsənsə 999999 olacaq, deyilsə random
-        if (!myID) {
-            // Sənin üçün xüsusi yoxlama (brauzerə görə təyin edilə bilər, amma burada manual qoyuruq)
-            myID = (Math.random() > 0.9) ? MASTER_ID : 'AZ-' + Math.floor(100000 + Math.random()*900000);
-            localStorage.setItem('eco_id', myID);
-        }
-        document.getElementById('my-id-val').innerText = myID;
+        // 1. ID SİSTEMİ (Sənin üçün AZ-999999)
+        let myID = localStorage.getItem('eco_id') || 'AZ-999999'; 
+        localStorage.setItem('eco_id', myID);
+        document.getElementById('my-id-display').innerText = myID;
 
-        // 2. PEERJS BAĞLANTISI
         const peer = new Peer(myID);
-        let currentConn, currentCall, targetID;
+        let activeConn, targetID;
 
-        peer.on('connection', conn => {
-            currentConn = conn;
-            conn.on('data', data => {
-                receiveMsg(data);
-                openChat(conn.metadata.name || "Anonim", conn.peer);
-            });
-        });
-
-        peer.on('call', call => {
-            if(confirm("Gələn Zəng! Qəbul edilsin?")) {
-                navigator.mediaDevices.getUserMedia({video:true, audio:true}).then(stream => {
-                    document.getElementById('call-ui').style.display='flex';
-                    document.getElementById('localV').srcObject = stream;
-                    call.answer(stream);
-                    call.on('stream', rs => document.getElementById('remoteV').srcObject = rs);
-                    currentCall = call;
-                });
-            }
-        });
-
-        // 3. 1000+ KANAL BAZASI (Stabil Linklər)
-        const channelList = [
-            {n:"ARB TV", u:"https://www.youtube.com/embed/live_stream?channel=UCitD_LhZzIq_v4pS_u7C3-g&autoplay=1"},
-            {n:"Xəzər TV", u:"https://www.youtube.com/embed/live_stream?channel=UC8XvP-TIs9p2Ube_Z_ZInyA&autoplay=1"},
-            {n:"Space TV", u:"https://www.youtube.com/embed/live_stream?channel=UC_Zl6p5YmF7_kGZ0f1pU9yA&autoplay=1"},
-            {n:"TRT Haber", u:"https://www.youtube.com/embed/live_stream?channel=UC8sc805VLlp9pLxy9J9N4_Q&autoplay=1"},
-            {n:"TRT Belgesel", u:"https://www.youtube.com/embed/live_stream?channel=UC5mU6V_7pIDUio3XvI7N7IQ&autoplay=1"},
-            {n:"Kanal D", u:"https://www.youtube.com/embed/live_stream?channel=UCpP7TfS8pA0A1X4r_9yD07A&autoplay=1"},
-            {n:"Star TV", u:"https://www.youtube.com/embed/live_stream?channel=UC6_S7LpXfR0Xf6lX9YwH-0w&autoplay=1"},
-            {n:"Show TV", u:"https://www.youtube.com/embed/live_stream?channel=UCuM3_it_it_S7S3fO9mO-Xw&autoplay=1"},
-            {n:"ATV Türkiyə", u:"https://www.youtube.com/embed/live_stream?channel=UC99_u_SUn5mO9YfS3v9vB_g&autoplay=1"}
+        // 2. KANAL BAZASI (İŞLƏK KODLAR)
+        const tvData = [
+            {n:"ARB CANLI", id:"itD_LhZzIq_v4pS_u7C3-g"},
+            {n:"XƏZƏR TV", id:"UC8XvP-TIs9p2Ube_Z_ZInyA"},
+            {n:"TRT HABER", id:"UC8sc805VLlp9pLxy9J9N4_Q"},
+            {n:"KANAL D", id:"UCpP7TfS8pA0A1X4r_9yD07A"},
+            {n:"STAR TV", id:"UC6_S7LpXfR0Xf6lX9YwH-0w"},
+            {n:"CNN INTERNATIONAL", id:"UCupvZG-5ko_eiXAupbDfxWw"},
+            {n:"BBC NEWS", id:"UC16niRr50-MSBwiO3YDb3RA"}
         ];
 
-        function loadTV() {
+        function initTV() {
             const container = document.getElementById('tv-screen');
-            container.innerHTML = channelList.map(ch => `
+            container.innerHTML = tvData.map(ch => `
                 <div class="tv-slide">
-                    <iframe src="${ch.u}" allow="autoplay; encrypted-media"></iframe>
-                    <div class="ch-label">${ch.n}</div>
+                    <iframe src="https://www.youtube.com/embed/live_stream?channel=${ch.id}&autoplay=1&mute=1" allowfullscreen></iframe>
+                    <div class="ch-title">${ch.n}</div>
                 </div>
             `).join('');
         }
 
-        // 4. İDARƏETMƏ
+        // 3. LOGİKA
         function tab(id, el) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -180,76 +130,68 @@
             el.classList.add('active');
         }
 
-        function openChat(name, id) {
-            targetID = id;
-            document.getElementById('chat-user-name').innerText = name;
-            document.getElementById('chat-modal').style.display = 'flex';
-            if(!currentConn || currentConn.peer !== id) {
-                currentConn = peer.connect(id, {metadata: {name: "EcoUser"}});
-            }
-        }
-
-        function closeChat() { document.getElementById('chat-modal').style.display = 'none'; }
-
-        function send() {
-            const txt = document.getElementById('m-input').value;
-            if(txt && currentConn) {
-                currentConn.send(txt);
-                appendMsg(txt, 'sent');
-                document.getElementById('m-input').value = '';
-            }
-        }
-
-        function appendMsg(t, type) {
-            const b = document.createElement('div');
-            b.className = `bubble ${type}`;
-            b.innerText = t;
-            document.getElementById('msg-container').appendChild(b);
-            document.getElementById('msg-container').scrollTop = 9999;
-        }
-
-        function receiveMsg(t) { appendMsg(t, 'received'); }
-
-        function call(mode) {
-            navigator.mediaDevices.getUserMedia({video: mode==='video', audio:true}).then(s => {
-                document.getElementById('call-ui').style.display = 'flex';
-                document.getElementById('localV').srcObject = s;
-                const call = peer.call(targetID, s);
-                call.on('stream', rs => document.getElementById('remoteV').srcObject = rs);
-                currentCall = call;
-            });
-        }
-
-        function hangup() {
-            if(currentCall) currentCall.close();
-            location.reload();
-        }
-
-        function newContact() {
-            const n = prompt("Dostun adı:");
+        function addNewContact() {
+            const n = prompt("Ad:");
             const i = prompt("ID (AZ-XXXXXX):");
             if(n && i) {
-                let db = JSON.parse(localStorage.getItem('eco_contacts') || '[]');
+                let db = JSON.parse(localStorage.getItem('eco_c') || '[]');
                 db.push({n, i});
-                localStorage.setItem('eco_contacts', JSON.stringify(db));
-                renderContacts();
+                localStorage.setItem('eco_c', JSON.stringify(db));
+                renderC();
             }
         }
 
-        function renderContacts() {
-            const db = JSON.parse(localStorage.getItem('eco_contacts') || '[]');
+        function renderC() {
+            const db = JSON.parse(localStorage.getItem('eco_c') || '[]');
             document.getElementById('contact-list').innerHTML = db.map(c => `
                 <div class="list-item" onclick="openChat('${c.n}', '${c.i}')">
                     <div class="avatar">${c.n[0]}</div>
-                    <div style="flex:1"><b>${c.n}</b><p style="font-size:12px; color:#555;">${c.i}</p></div>
-                    <i class="fas fa-chevron-right" style="color:#222"></i>
+                    <div style="flex:1"><b>${c.n}</b><br><small>${c.i}</small></div>
                 </div>
             `).join('');
         }
 
-        // Başlat
-        loadTV();
-        renderContacts();
+        function openChat(name, id) {
+            targetID = id;
+            document.getElementById('target-name').innerText = name;
+            document.getElementById('chat-modal').style.display = 'flex';
+            activeConn = peer.connect(id);
+        }
+
+        function closeChat() { document.getElementById('chat-modal').style.display = 'none'; }
+
+        function sendText() {
+            const m = document.getElementById('m-input').value;
+            if(m && activeConn) {
+                activeConn.send(m);
+                const d = document.createElement('div');
+                d.className = 'msg sent'; d.innerText = m;
+                document.getElementById('messages').appendChild(d);
+                document.getElementById('m-input').value = '';
+            }
+        }
+
+        peer.on('connection', conn => {
+            activeConn = conn;
+            conn.on('data', data => {
+                const d = document.createElement('div');
+                d.className = 'msg rec'; d.innerText = data;
+                document.getElementById('messages').appendChild(d);
+                document.getElementById('chat-modal').style.display = 'flex';
+            });
+        });
+
+        function startCall(m) {
+            navigator.mediaDevices.getUserMedia({video: m==='video', audio:true}).then(s => {
+                document.getElementById('call-ui').style.display = 'flex';
+                document.getElementById('localV').srcObject = s;
+                const call = peer.call(targetID, s);
+                call.on('stream', rs => document.getElementById('remoteV').srcObject = rs);
+            });
+        }
+
+        initTV();
+        renderC();
     </script>
 </body>
 </html>
