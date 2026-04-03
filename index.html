@@ -3,52 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>EcoPix Ultra Pro v6.5</title>
+    <title>EcoPix Ultra Pro v8</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
-    <script src="https://widget.cloudinary.com/v2.0/global/all.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
-        :root { --primary: #075E54; --secondary: #128C7E; --bg: #ECE5DD; --white: #ffffff; }
-        body { font-family: 'Segoe UI', sans-serif; margin: 0; background: var(--bg); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        :root { --primary: #075E54; --secondary: #128C7E; --bg: #f4f7f6; --white: #ffffff; }
+        body { font-family: 'Segoe UI', Roboto, sans-serif; margin: 0; background: var(--bg); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
 
+        /* Header & Tabs */
         .app-header { background: var(--primary); color: white; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; z-index: 100; }
-        .tabs { background: var(--primary); display: flex; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
-        .tab { flex: 1; padding: 14px; color: rgba(255,255,255,0.6); font-weight: bold; cursor: pointer; border-bottom: 3px solid transparent; }
+        .tabs { background: var(--primary); display: flex; text-align: center; }
+        .tab { flex: 1; padding: 14px; color: rgba(255,255,255,0.6); font-weight: bold; cursor: pointer; border-bottom: 3px solid transparent; transition: 0.3s; }
         .tab.active { color: white; border-bottom-color: white; }
 
         .screen { display: none; flex: 1; overflow-y: auto; background: var(--white); height: calc(100vh - 110px); }
         .screen.active { display: block; }
-        .list-item { display: flex; align-items: center; padding: 12px 16px; border-bottom: 1px solid #f0f0f0; cursor: pointer; position: relative; user-select: none; }
-        .avatar { width: 50px; height: 50px; border-radius: 50%; margin-right: 15px; background: #eee; }
+        .list-item { display: flex; align-items: center; padding: 15px; border-bottom: 1px solid #eee; cursor: pointer; }
+        .avatar { width: 50px; height: 50px; border-radius: 50%; margin-right: 15px; background: #ddd; object-fit: cover; }
 
+        /* Chat */
         #chat-screen { position: fixed; inset: 0; background: #e5ddd5; z-index: 2000; display: none; flex-direction: column; }
-        .msg-box { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 4px; background: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-8e1d-60400d46e936.png'); }
-        .msg { padding: 8px 12px; border-radius: 8px; max-width: 80%; font-size: 15px; box-shadow: 0 1px 1px rgba(0,0,0,0.1); position: relative; user-select: none; }
+        .msg-box { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 8px; background: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-8e1d-60400d46e936.png'); }
+        .msg { padding: 10px 14px; border-radius: 12px; max-width: 75%; font-size: 15px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
         .msg.sent { align-self: flex-end; background: #dcf8c6; }
         .msg.received { align-self: flex-start; background: white; }
+        .input-bar { background: #f0f0f0; padding: 10px; display: flex; align-items: center; gap: 10px; }
+        .input-bar input { flex: 1; padding: 12px; border-radius: 25px; border: none; outline: none; }
 
-        .input-bar { background: #f0f0f0; padding: 10px; display: flex; align-items: center; gap: 10px; z-index: 2001; }
-        .input-bar input { flex: 1; padding: 12px 15px; border-radius: 25px; border: none; outline: none; font-size: 16px; }
+        /* ZƏNG EKRANI - YENİ PANEL DİZAYNI */
+        #call-screen { position: fixed; inset: 0; background: linear-gradient(to bottom, #dbeafe, #93c5fd); z-index: 3000; display: none; flex-direction: column; color: #1e3a8a; }
+        
+        .call-info { text-align: center; margin-top: 80px; }
+        .call-status { font-size: 14px; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 5px; margin-bottom: 15px; }
+        .call-name { font-size: 32px; font-weight: bold; margin: 10px 0; }
+        
+        .video-wrapper { flex: 1; display: none; position: relative; width: 100%; margin-top: 20px; }
+        .video-wrapper video { width: 100%; height: 100%; object-fit: cover; border-radius: 20px; }
+        .video-wrapper.active { display: block; }
 
-        #call-screen { position: fixed; inset: 0; background: #075e54; z-index: 3000; display: none; flex-direction: column; color: white; }
-        .video-container { flex: 1; position: relative; display: flex; flex-direction: column; }
-        #remote-video, #local-video { width: 100%; height: 100%; object-fit: cover; }
+        .call-panel { background: rgba(255, 255, 255, 0.5); backdrop-filter: blur(15px); width: 90%; align-self: center; border-radius: 30px; padding: 25px 15px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 40px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
         
-        .call-overlay { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: space-around; z-index: 10; background: rgba(0,0,0,0.2); }
-        .btn-round { width: 70px; height: 70px; border-radius: 50%; border: none; color: white; font-size: 28px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .panel-btn { display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; background: none; border: none; color: #1e3a8a; transition: 0.2s; }
+        .panel-btn i { width: 55px; height: 55px; background: rgba(255,255,255,0.8); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+        .panel-btn.active i { background: #3b82f6; color: white; }
+        .panel-btn span { font-size: 12px; font-weight: 500; }
+        
+        .hangup-btn { grid-column: span 3; display: flex; justify-content: center; margin-top: 10px; }
+        .btn-red { width: 75px; height: 75px; background: #ef4444; color: white; border-radius: 50%; border: none; font-size: 28px; cursor: pointer; display: flex; align-items: center; justify-content: center; transform: rotate(135deg); box-shadow: 0 5px 15px rgba(239, 68, 68, 0.4); }
+        .btn-green { background: #22c55e; transform: rotate(0deg); box-shadow: 0 5px 15px rgba(34, 197, 94, 0.4); }
 
-        .fab { position: fixed; bottom: 30px; right: 20px; width: 60px; height: 60px; background: var(--secondary); color: white; border-radius: 50%; display: none; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.4); z-index: 50; }
-        
-        #attach-menu { position: absolute; bottom: 75px; left: 15px; background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); display: none; flex-direction: column; padding: 10px; gap: 15px; z-index: 2002; }
-        .attach-item { display: flex; align-items: center; gap: 12px; cursor: pointer; padding: 10px; border-radius: 8px; color: var(--primary); font-weight: 500; font-size: 14px; }
-        
-        /* Kontakt seçmə modalı */
-        #contact-picker { position: fixed; inset: 0; background: white; z-index: 5000; display: none; flex-direction: column; }
+        .fab { position: fixed; bottom: 30px; right: 20px; width: 60px; height: 60px; background: var(--secondary); color: white; border-radius: 50%; display: none; align-items: center; justify-content: center; font-size: 24px; z-index: 50; }
     </style>
 </head>
 <body>
@@ -60,7 +69,7 @@
     <div class="app-header">
         <i class="fas fa-qrcode" onclick="toggleQR(true)"></i>
         <b>EcoPix Ultra Pro</b>
-        <div id="my-id-display" style="font-size: 11px; background: rgba(0,0,0,0.2); padding: 4px 8px; border-radius: 5px;">AZ-....</div>
+        <div id="my-id-display" style="font-size: 11px;">AZ-....</div>
     </div>
     
     <div class="tabs">
@@ -79,7 +88,7 @@
         <div class="app-header" style="background:var(--secondary)">
             <div style="display:flex; align-items:center; flex:1;">
                 <i class="fas fa-arrow-left" onclick="closeChat()" style="margin-right:15px; padding:10px;"></i>
-                <img id="active-avatar" src="" class="avatar" style="width:35px; height:35px; margin-right:10px;">
+                <img id="active-avatar" src="" class="avatar" style="width:35px; height:35px;">
                 <b id="active-name">...</b>
             </div>
             <div style="display:flex; gap:20px;">
@@ -88,48 +97,47 @@
             </div>
         </div>
         <div class="msg-box" id="msg-render"></div>
-        
-        <div id="attach-menu">
-            <div class="attach-item" onclick="pickMedia()"><i class="fas fa-camera-retro"></i> Kamera və Qalereya</div>
-            <div class="attach-item" onclick="openContactPicker()"><i class="fas fa-address-book"></i> Kontakt Paylaş</div>
-        </div>
-
         <div class="input-bar">
-            <i class="fas fa-paperclip" onclick="toggleAttach()" style="font-size:22px; color:#666;"></i>
             <input type="text" id="msg-input" placeholder="Mesaj yazın...">
-            <i class="fas fa-paper-plane" onclick="sendData()" style="color:var(--secondary); font-size:24px;"></i>
+            <i class="fas fa-paper-plane" onclick="sendData()" style="color:var(--secondary); font-size:22px;"></i>
         </div>
-    </div>
-
-    <div id="contact-picker">
-        <div class="app-header">
-            <i class="fas fa-times" onclick="closeContactPicker()"></i>
-            <b>Kontakt Seç</b>
-            <span></span>
-        </div>
-        <div id="picker-list" style="flex:1; overflow-y:auto;"></div>
     </div>
 
     <div id="call-screen">
-        <div class="video-container" id="vid-cont">
+        <div class="call-info">
+            <div class="call-status">
+                <i class="fas fa-shield-alt"></i> Zəng edilir...
+            </div>
+            <h1 class="call-name" id="call-partner-name">Sənan Ss 99</h1>
+            <div id="call-timer" style="font-weight: 500; opacity: 0.8;">00:00</div>
+        </div>
+
+        <div class="video-wrapper" id="video-box">
             <video id="remote-video" autoplay playsinline></video>
-            <video id="local-video" autoplay muted playsinline style="display:none; position:absolute; top:20px; right:20px; width:100px; height:150px; border-radius:10px; border:2px solid white; z-index:11;"></video>
-            <div class="call-overlay">
-                <div style="text-align:center;">
-                    <img id="call-avatar" src="" style="width:110px; height:110px; border-radius:50%; border:3px solid white; margin-bottom:15px;">
-                    <h2 id="call-partner">Zəng...</h2>
-                    <h3 id="timer">Bağlanılır...</h3>
-                </div>
-                <div style="display:flex; gap:50px;">
-                    <button class="btn-round" style="background:#ff3b30;" onclick="hangUp()"><i class="fas fa-phone-slash"></i></button>
-                    <button id="btn-answer" class="btn-round" style="background:#4cd964; display:none;" onclick="accept()"><i class="fas fa-phone"></i></button>
-                </div>
+        </div>
+
+        <div class="call-panel">
+            <button class="panel-btn"><i class="fas fa-plus"></i><span>Zəng əlavə edin</span></button>
+            <button class="panel-btn" onclick="toggleHold(this)"><i class="fas fa-pause"></i><span>Zəngi saxla</span></button>
+            <button class="panel-btn"><i class="fab fa-bluetooth-b"></i><span>Bluetooth</span></button>
+            
+            <button class="panel-btn" onclick="toggleSpeaker(this)"><i class="fas fa-volume-up"></i><span>Dinamik</span></button>
+            <button class="panel-btn" onclick="toggleMute(this)"><i class="fas fa-microphone-slash"></i><span>Səssiz</span></button>
+            <button class="panel-btn"><i class="fas fa-th"></i><span>Klaviatura</span></button>
+
+            <div class="hangup-btn">
+                <button id="btn-answer" class="btn-red btn-green" style="display:none; margin-right:20px;" onclick="acceptCall()">
+                    <i class="fas fa-phone"></i>
+                </button>
+                <button class="btn-red" onclick="endCall()">
+                    <i class="fas fa-phone"></i>
+                </button>
             </div>
         </div>
     </div>
 
     <div id="qr-modal" onclick="toggleQR(false)" style="position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:4000; display:none; align-items:center; justify-content:center;">
-        <div id="qrcode" style="background:white; padding:25px; border-radius:15px;"></div>
+        <div id="qrcode" style="background:white; padding:20px; border-radius:15px;"></div>
     </div>
 
     <script>
@@ -142,8 +150,8 @@
         document.getElementById('my-id-display').innerText = myID;
         new QRCode(document.getElementById("qrcode"), { text: myID, width: 200, height: 200 });
 
-        const peer = new Peer(myID, { config: {'iceServers': [{ 'urls': 'stun:stun.l.google.com:19302' }]} });
-        let activePeer, activeCall, localStream, callType, lpTimer;
+        const peer = new Peer(myID);
+        let activePeer, activeCall, localStream, callInt;
 
         function switchTab(t) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -153,12 +161,6 @@
             document.getElementById('main-fab').style.display = (t === 'contacts') ? 'flex' : 'none';
             if(t === 'contacts') renderContacts();
             if(t === 'chats') renderRecent();
-            if(t === 'history') renderHistory();
-        }
-
-        function toggleAttach() {
-            const m = document.getElementById('attach-menu');
-            m.style.display = (m.style.display === 'flex') ? 'none' : 'flex';
         }
 
         function openChat(id, name) {
@@ -171,54 +173,16 @@
 
         function closeChat() { document.getElementById('chat-screen').style.display = 'none'; }
 
-        // --- QALEREYA VƏ KAMERA (100% İŞLƏK) ---
-        function pickMedia() {
-            cloudinary.openUploadWidget({ 
-                cloudName: "dyrfkit3x", 
-                uploadPreset: "ml_default",
-                sources: ['local', 'camera', 'url'], // Həm qalereya, həm kamera
-                multiple: false
-            }, (err, res) => {
-                if (!err && res.event === "success") {
-                    sendData(res.info.secure_url, res.info.resource_type);
-                }
-            });
-        }
-
-        // --- KONTAKT SEÇİB GÖNDƏRMƏK (100% İŞLƏK) ---
-        function openContactPicker() {
-            document.getElementById('attach-menu').style.display = 'none';
-            const list = JSON.parse(localStorage.getItem('eco_contacts') || "[]");
-            const picker = document.getElementById('contact-picker');
-            const pickerList = document.getElementById('picker-list');
-            
-            pickerList.innerHTML = list.length ? list.map(c => `
-                <div class="list-item" onclick="sendContactInfo('${c.name}', '${c.id}')">
-                    <img src="https://ui-avatars.com/api/?name=${c.name}&background=random" class="avatar">
-                    <div><b>${c.name}</b><br><small>${c.id}</small></div>
-                </div>`).join('') : "<p style='padding:20px; text-align:center;'>Heç bir kontakt tapılmadı.</p>";
-            
-            picker.style.display = 'flex';
-        }
-
-        function closeContactPicker() { document.getElementById('contact-picker').style.display = 'none'; }
-
-        function sendContactInfo(name, id) {
-            const info = `👤 KONTAKT MƏLUMATI:\nAd: ${name}\nID: ${id}`;
-            document.getElementById('msg-input').value = info;
-            sendData();
-            closeContactPicker();
-        }
-
-        function sendData(media = null, type = 'text') {
+        // Mesajlaşma
+        function sendData() {
             const input = document.getElementById('msg-input');
-            if(!input.value && !media) return;
+            if(!input.value) return;
             const chatKey = [myID, activePeer].sort().join('_');
-            const packet = { s: myID, t: input.value, m: media, mt: type, ts: Date.now(), time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) };
+            const packet = { s: myID, t: input.value, ts: Date.now(), time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) };
             db.ref('msgs/' + chatKey).push(packet);
-            db.ref(`recent/${myID}/${activePeer}`).set({ name: document.getElementById('active-name').innerText, last: input.value || "Media", time: packet.time });
+            db.ref(`recent/${myID}/${activePeer}`).set({ name: document.getElementById('active-name').innerText, last: input.value, time: packet.time });
+            db.ref(`recent/${activePeer}/${myID}`).set({ name: "İstifadəçi "+myID, last: input.value, time: packet.time });
             input.value = "";
-            document.getElementById('attach-menu').style.display = 'none';
         }
 
         function loadMessages() {
@@ -227,87 +191,92 @@
                 const box = document.getElementById('msg-render'); box.innerHTML = "";
                 snap.forEach(m => {
                     const d = m.val(); const side = d.s === myID ? 'sent' : 'received';
-                    let content = d.t;
-                    if(d.m) content = d.mt === 'video' ? `<video src="${d.m}" style="width:100%" controls></video>` : `<img src="${d.m}" style="width:100%; border-radius:8px;">`;
-                    box.innerHTML += `<div class="msg ${side}" 
-                        onmousedown="startLPMsg('${m.key}')" onmouseup="endLP()" 
-                        ontouchstart="startLPMsg('${m.key}')" ontouchend="endLP()">${content}<br><small style="font-size:9px; opacity:0.6;">${d.time}</small></div>`;
+                    box.innerHTML += `<div class="msg ${side}">${d.t}<br><small style="font-size:9px; opacity:0.6;">${d.time}</small></div>`;
                 });
                 box.scrollTop = box.scrollHeight;
             });
         }
 
-        function startLPMsg(msgId) { lpTimer = setTimeout(() => { if(confirm("Siliilsin?")) { const chatKey = [myID, activePeer].sort().join('_'); db.ref(`msgs/${chatKey}/${msgId}`).remove(); } }, 1000); }
-        function startLPChat(peerId) { lpTimer = setTimeout(() => { if(confirm("Söhbət silinsin?")) { db.ref(`recent/${myID}/${peerId}`).remove(); } }, 1000); }
-        function endLP() { clearTimeout(lpTimer); }
+        // ZƏNG FUNKSİYALARI
+        function initCall(isVideo) {
+            document.getElementById('call-partner-name').innerText = document.getElementById('active-name').innerText;
+            document.getElementById('call-screen').style.display = 'flex';
+            document.getElementById('snd-qudok').play();
 
-        function initCall(isVideo, forcePeer = null) {
-            const target = forcePeer || activePeer;
-            callType = isVideo ? "Görüntülü" : "Səsli";
             navigator.mediaDevices.getUserMedia({video: isVideo, audio: true}).then(stream => {
                 localStream = stream;
-                document.getElementById('snd-qudok').play();
-                document.getElementById('call-screen').style.display = 'flex';
-                if(isVideo) { document.getElementById('local-video').srcObject = stream; document.getElementById('local-video').style.display = 'block'; }
-                activeCall = peer.call(target, stream, { metadata: { video: isVideo } });
-                document.getElementById('call-partner').innerText = target;
-                setupCallHandlers(isVideo);
+                if(isVideo) {
+                    document.getElementById('video-box').classList.add('active');
+                }
+                activeCall = peer.call(activePeer, stream, { metadata: { video: isVideo } });
+                handleCall(activeCall);
             });
         }
 
         peer.on('call', call => {
             activeCall = call;
-            document.getElementById('snd-ring').play();
+            document.getElementById('call-partner-name').innerText = "Gələn zəng: " + call.peer;
             document.getElementById('call-screen').style.display = 'flex';
             document.getElementById('btn-answer').style.display = 'flex';
-            document.getElementById('call-partner').innerText = call.peer;
+            document.getElementById('snd-ring').play();
         });
 
-        function accept() {
+        function acceptCall() {
             const isVideo = activeCall.metadata.video;
             navigator.mediaDevices.getUserMedia({video: isVideo, audio: true}).then(stream => {
                 localStream = stream;
                 activeCall.answer(stream);
                 document.getElementById('snd-ring').pause();
                 document.getElementById('btn-answer').style.display = 'none';
-                if(isVideo) { document.getElementById('local-video').srcObject = stream; document.getElementById('local-video').style.display = 'block'; }
-                setupCallHandlers(isVideo);
+                if(isVideo) document.getElementById('video-box').classList.add('active');
+                handleCall(activeCall);
             });
         }
 
-        function setupCallHandlers(isVideo) {
-            activeCall.on('stream', rem => {
+        function handleCall(call) {
+            call.on('stream', remoteStream => {
                 document.getElementById('snd-qudok').pause();
-                document.getElementById('remote-video').srcObject = rem;
-                startCallTimer();
+                document.getElementById('remote-video').srcObject = remoteStream;
+                startTimer();
             });
-            activeCall.on('close', hangUp);
+            call.on('close', endCall);
         }
 
-        function hangUp() {
-            document.getElementById('snd-qudok').pause();
-            document.getElementById('snd-ring').pause();
-            if(activeCall) { saveHistory(activeCall.peer, document.getElementById('timer').innerText, callType); activeCall.close(); }
+        // Düymə Funksiyaları
+        function toggleMute(btn) {
+            const enabled = localStream.getAudioTracks()[0].enabled;
+            localStream.getAudioTracks()[0].enabled = !enabled;
+            btn.classList.toggle('active');
+        }
+
+        function toggleSpeaker(btn) {
+            // Brauzerlərdə audio output dəyişmək mürəkkəbdir, vizual olaraq aktiv edilir
+            btn.classList.toggle('active');
+        }
+
+        function toggleHold(btn) {
+            btn.classList.toggle('active');
+        }
+
+        function endCall() {
+            if(activeCall) activeCall.close();
             if(localStream) localStream.getTracks().forEach(t => t.stop());
             document.getElementById('call-screen').style.display = 'none';
-            document.getElementById('timer').innerText = "00:00";
+            document.getElementById('snd-qudok').pause();
+            document.getElementById('snd-ring').pause();
+            document.getElementById('video-box').classList.remove('active');
+            clearInterval(callInt);
+            document.getElementById('call-timer').innerText = "00:00";
         }
 
-        function saveHistory(id, duration, type) {
-            let hist = JSON.parse(localStorage.getItem('eco_history') || "[]");
-            hist.unshift({ id, duration, type, ts: Date.now() });
-            localStorage.setItem('eco_history', JSON.stringify(hist));
-        }
-
-        function renderHistory() {
-            const hist = JSON.parse(localStorage.getItem('eco_history') || "[]");
-            document.getElementById('history').innerHTML = hist.map(h => `
-                <div class="list-item">
-                    <div style="flex:1;"><b>${h.id}</b><br><small>${new Date(h.ts).toLocaleString()} (${h.duration})</small></div>
-                    <div style="display:flex; gap:20px; color:var(--secondary);">
-                        <i class="fas fa-${h.type === 'Səsli' ? 'phone-alt' : 'video'}" onclick="initCall(${h.type !== 'Səsli'}, '${h.id}')" style="padding:10px; font-size:20px;"></i>
-                    </div>
-                </div>`).join('');
+        function startTimer() {
+            let s = 0;
+            callInt = setInterval(() => {
+                s++;
+                let m = Math.floor(s/60);
+                let sec = s%60;
+                document.getElementById('call-timer').innerText = `${m<10?'0'+m:m}:${sec<10?'0'+sec:sec}`;
+            }, 1000);
         }
 
         function renderRecent() {
@@ -315,7 +284,7 @@
                 const cont = document.getElementById('chats'); cont.innerHTML = "";
                 snap.forEach(s => {
                     const d = s.val();
-                    cont.innerHTML += `<div class="list-item" onclick="openChat('${s.key}', '${d.name}')" onmousedown="startLPChat('${s.key}')" onmouseup="endLP()">
+                    cont.innerHTML += `<div class="list-item" onclick="openChat('${s.key}', '${d.name}')">
                         <img src="https://ui-avatars.com/api/?name=${d.name}&background=random" class="avatar">
                         <div style="flex:1;"><b>${d.name}</b><p style="margin:0; font-size:13px; color:#666;">${d.last}</p></div>
                     </div>`;
@@ -323,33 +292,9 @@
             });
         }
 
-        function addContact() {
-            const id = prompt("AZ-ID:");
-            const name = prompt("Ad:");
-            if(id && name) {
-                let list = JSON.parse(localStorage.getItem('eco_contacts') || "[]");
-                list.push({id, name}); localStorage.setItem('eco_contacts', JSON.stringify(list));
-                renderContacts();
-            }
-        }
-
-        function renderContacts() {
-            const list = JSON.parse(localStorage.getItem('eco_contacts') || "[]");
-            document.getElementById('contacts').innerHTML = list.map(c => `
-                <div class="list-item" onclick="openChat('${c.id}', '${c.name}')">
-                    <img src="https://ui-avatars.com/api/?name=${c.name}&background=random" class="avatar">
-                    <div><b>${c.name}</b><br><small>${c.id}</small></div>
-                </div>`).join('');
-        }
-
-        function startCallTimer() {
-            let s = 0; clearInterval(window.callInt);
-            window.callInt = setInterval(() => { s++; let m = Math.floor(s/60); let sec = s%60; document.getElementById('timer').innerText = `${m}:${sec<10?'0'+sec:sec}`; }, 1000);
-        }
-
         function toggleQR(show) { document.getElementById('qr-modal').style.display = show ? 'flex' : 'none'; }
         
-        renderRecent();
+        switchTab('chats');
     </script>
 </body>
 </html>
