@@ -3,173 +3,217 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ecopix Messenger & TV</title>
-    
+    <title>Ecopix Revolution Pro</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
-        :root { --neon-red: #ff0055; --neon-green: #00ff41; --bg: #0a0a0a; }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
+        :root { --neon-red: #ff0055; --neon-green: #00ff41; --bg: #000; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+        body { background: var(--bg); color: white; overflow: hidden; height: 100vh; }
 
-        /* TikTok Style TV Container */
-        #tv-container {
-            height: 100vh;
-            overflow-y: scroll;
-            scroll-snap-type: y mandatory;
-            background: #000;
-        }
-        .tv-slide {
-            height: 100vh;
-            width: 100vw;
-            scroll-snap-align: start;
-            position: relative;
-            background: #000;
-        }
-        iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-            pointer-events: auto;
-        }
+        /* Header & ID Display */
+        header { padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; background: #050505; }
+        .my-id-tag { color: var(--neon-green); font-weight: bold; font-family: monospace; border: 1px solid var(--neon-green); padding: 2px 8px; border-radius: 4px; font-size: 14px; }
 
-        /* Kanal Məlumatı Overlay */
-        .channel-info {
-            position: absolute;
-            bottom: 80px;
-            left: 20px;
-            z-index: 10;
-            pointer-events: none;
-        }
-        .channel-info h2 { 
-            color: var(--neon-green); 
-            text-shadow: 0 0 10px var(--neon-green);
-            font-size: 24px;
-            margin-bottom: 5px;
-        }
-        .country-tag {
-            background: var(--neon-red);
-            padding: 4px 10px;
-            border-radius: 5px;
-            font-size: 12px;
-            font-weight: bold;
-        }
+        .screen { display: none; height: calc(100vh - 125px); overflow-y: auto; position: relative; }
+        .screen.active { display: block; }
 
-        /* Sağ Menyu */
-        .side-ctrls {
-            position: absolute;
-            right: 15px;
-            bottom: 150px;
-            display: flex;
-            flex-direction: column;
-            gap: 25px;
-            z-index: 10;
-        }
-        .icon-box {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            font-size: 28px;
-            cursor: pointer;
-        }
-        .icon-box span { font-size: 12px; margin-top: 5px; }
+        /* TV Section */
+        #tv-screen { overflow-y: scroll; scroll-snap-type: y mandatory; height: calc(100vh - 125px); }
+        .tv-slide { height: calc(100vh - 125px); width: 100vw; scroll-snap-align: start; position: relative; }
+        iframe { width: 100%; height: 100%; border: none; }
+        .ch-info { position: absolute; bottom: 20px; left: 15px; z-index: 10; pointer-events: none; }
 
-        /* Naviqasiya */
-        .nav-bar {
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-            height: 65px;
-            background: rgba(0,0,0,0.95);
-            border-top: 1px solid #333;
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            z-index: 100;
-        }
-        .nav-item { color: #555; text-align: center; font-size: 11px; cursor: pointer; }
-        .nav-item i { font-size: 22px; display: block; margin-bottom: 3px; }
-        .nav-item.active { color: var(--neon-green); text-shadow: 0 0 10px var(--neon-green); }
+        /* Lists */
+        .list-item { display: flex; align-items: center; padding: 15px; border-bottom: 1px solid #222; cursor: pointer; }
+        .avatar { width: 45px; height: 45px; border-radius: 50%; background: var(--neon-red); margin-right: 12px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 18px; }
 
-        /* Səsləndirmə bildirişi */
-        #mute-hint {
-            position: fixed;
-            top: 20px;
-            width: 100%;
-            text-align: center;
-            color: var(--neon-red);
-            font-weight: bold;
-            z-index: 200;
-            pointer-events: none;
-            animation: blink 2s infinite;
-        }
-        @keyframes blink { 0%, 100% {opacity: 1;} 50% {opacity: 0;} }
+        /* Navigation */
+        .nav-bar { position: fixed; bottom: 0; width: 100%; height: 70px; background: #050505; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #222; }
+        .nav-item { text-align: center; color: #555; font-size: 10px; flex: 1; cursor: pointer; }
+        .nav-item.active { color: var(--neon-green); }
+        .nav-item i { font-size: 22px; display: block; margin-bottom: 4px; }
+
+        /* Call UI */
+        #call-ui { position: fixed; inset: 0; background: #000; z-index: 9999; display: none; flex-direction: column; }
+        .video-container { flex: 1; display: flex; flex-direction: column; }
+        video { width: 100%; height: 50%; object-fit: cover; background: #111; border: 1px solid #333; }
+        .call-footer { height: 100px; display: flex; justify-content: center; align-items: center; background: #050505; }
+        .hangup-btn { width: 60px; height: 60px; background: red; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; }
+
+        /* Chat Modal */
+        #chat-modal { position: fixed; inset: 0; background: var(--bg); z-index: 2000; display: none; flex-direction: column; }
+        #messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+        .msg { padding: 8px 12px; border-radius: 10px; max-width: 80%; font-size: 14px; }
+        .msg.sent { align-self: flex-end; background: var(--neon-green); color: black; }
+        .msg.received { align-self: flex-start; background: #222; color: white; }
+        .chat-input-area { padding: 10px; border-top: 1px solid #333; display: flex; gap: 10px; }
+        input { flex: 1; background: #111; border: 1px solid #444; color: white; padding: 10px; border-radius: 5px; }
+
+        .fab { position: absolute; bottom: 20px; right: 20px; width: 50px; height: 50px; background: var(--neon-green); color: black; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; }
     </style>
 </head>
 <body>
 
-    <div id="mute-hint">Səsi aktiv etmək üçün ekrana toxunun!</div>
+    <header>
+        <span style="color:var(--neon-red); font-weight: 900; letter-spacing: 1px;">ECOPIX</span>
+        <div class="my-id-tag" id="display-my-id">Yüklənir...</div>
+    </header>
 
-    <div id="tv-container">
-        </div>
+    <div id="tv-screen" class="screen active"></div>
 
-    <div class="nav-bar">
-        <div class="nav-item" onclick="location.reload()"><i class="fas fa-comment"></i>SÖHBƏT</div>
-        <div class="nav-item active"><i class="fas fa-tv"></i>CANLI TV</div>
-        <div class="nav-item"><i class="fas fa-users"></i>KONTAKTLAR</div>
+    <div id="chat-screen" class="screen">
+        <div id="chat-threads"></div>
     </div>
 
-    <script>
-        // KANAL BAZASI (Burada ən məşhur kanallar yerləşdirilir)
-        const channels = [
-            // AZERBAIJAN
-            { name: "AZTV", country: "AZƏRBAYCAN", url: "https://www.youtube.com/embed/live_stream?channel=UCpHeC_pIn-A_O_tZ_I9Hh6g&autoplay=1" },
-            { name: "İCTİMAİ TV", country: "AZƏRBAYCAN", url: "https://www.youtube.com/embed/live_stream?channel=UC4pCshT55s7S3p4ZunHh7_A&autoplay=1" },
-            { name: "ARB TV", country: "AZƏRBAYCAN", url: "https://www.youtube.com/embed/live_stream?channel=UC_aB4uR5rD_nS52PZit2XpA&autoplay=1" },
-            
-            // TÜRKİYE
-            { name: "TRT HABER", country: "TÜRKİYƏ", url: "https://www.youtube.com/embed/live_stream?channel=UC8sc805VLlp9pLxy9J9N4_Q&autoplay=1" },
-            { name: "STAR TV", country: "TÜRKİYƏ", url: "https://www.youtube.com/embed/live_stream?channel=UC6_S7LpXfR0Xf6lX9YwH-0w&autoplay=1" },
-            { name: "ATV TÜRKİYE", country: "TÜRKİYƏ", url: "https://www.youtube.com/embed/live_stream?channel=UCpP7TfS8pA0A1X4r_9yD07A&autoplay=1" },
-            { name: "HALK TV", country: "TÜRKİYƏ", url: "https://www.youtube.com/embed/live_stream?channel=UCf_u6fW56lQ_RpxM7I7vP5A&autoplay=1" },
+    <div id="call-history-screen" class="screen">
+        <div id="history-list"></div>
+    </div>
 
-            // RUSSIA
-            { name: "RUSSIA 24", country: "RUSİYA", url: "https://www.youtube.com/embed/live_stream?channel=UC_jI7H0-N38pIsLp5vE5N_Q&autoplay=1" },
-            { name: "NTV RUSSIA", country: "RUSİYA", url: "https://www.youtube.com/embed/live_stream?channel=UCpP7TfS8pA0A1X4r_9yD07A&autoplay=1" }
+    <div id="contact-screen" class="screen">
+        <div id="contact-list"></div>
+        <div class="fab" onclick="addContact()"><i class="fas fa-user-plus"></i></div>
+    </div>
+
+    <div id="call-ui">
+        <div style="position: absolute; top: 20px; width: 100%; text-align: center; z-index: 10;" id="call-status">Bağlantı qurulur...</div>
+        <div class="video-container">
+            <video id="remoteVideo" autoplay playsinline></video>
+            <video id="localVideo" autoplay playsinline muted></video>
+        </div>
+        <div class="call-footer">
+            <div class="hangup-btn" onclick="endCall()"><i class="fas fa-phone-slash"></i></div>
+        </div>
+    </div>
+
+    <div id="chat-modal">
+        <header>
+            <i class="fas fa-arrow-left" onclick="closeChat()"></i>
+            <span id="chat-with-name">Ad</span>
+            <i class="fas fa-video" onclick="makeCall()"></i>
+        </header>
+        <div id="messages"></div>
+        <div class="chat-input-area">
+            <input type="text" id="msgInput" placeholder="Mesaj yaz...">
+            <button onclick="sendMessage()" style="background:var(--neon-green); border:none; padding:10px; border-radius:5px;"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
+
+    <nav class="nav-bar">
+        <div class="nav-item active" onclick="tab('tv-screen', this)"><i class="fas fa-tv"></i>TV</div>
+        <div class="nav-item" onclick="tab('chat-screen', this)"><i class="fas fa-comment"></i>ÇAT</div>
+        <div class="nav-item" onclick="tab('call-history-screen', this)"><i class="fas fa-history"></i>TARİX</div>
+        <div class="nav-item" onclick="tab('contact-screen', this)"><i class="fas fa-users"></i>DOSTLAR</div>
+    </nav>
+
+    <script>
+        // --- 1. ŞƏXSİ ID SİSTEMİ ---
+        let myID = localStorage.getItem('eco_p2p_id');
+        if (!myID) {
+            myID = 'AZ-' + Math.floor(100000 + Math.random() * 900000);
+            localStorage.setItem('eco_p2p_id', myID);
+        }
+        document.getElementById('display-my-id').innerText = myID;
+
+        // --- 2. PEERJS BAĞLANTISI ---
+        const peer = new Peer(myID);
+        let currentCall;
+        let activePeerID;
+
+        peer.on('open', (id) => console.log('Sənin Peer ID-n:', id));
+
+        // Gələn zəngi qəbul et
+        peer.on('call', call => {
+            if (confirm("Gələn görüntülü zəng... Cavab verilsin?")) {
+                navigator.mediaDevices.getUserMedia({video: true, audio: true}).then(stream => {
+                    document.getElementById('call-ui').style.display = 'flex';
+                    document.getElementById('localVideo').srcObject = stream;
+                    call.answer(stream);
+                    call.on('stream', remoteStream => {
+                        document.getElementById('remoteVideo').srcObject = remoteStream;
+                    });
+                    currentCall = call;
+                });
+            }
+        });
+
+        // --- 3. TV KANALLARI (100+ Üçün İnfrastruktur) ---
+        const channels = [
+            { name: "TRT 1", url: "https://www.youtube.com/embed/live_stream?channel=UC99_u_SUn5mO9YfS3v9vB_g&autoplay=1" },
+            { name: "Star TV", url: "https://www.youtube.com/embed/live_stream?channel=UC6_S7LpXfR0Xf6lX9YwH-0w&autoplay=1" },
+            { name: "Kanal D", url: "https://www.youtube.com/embed/live_stream?channel=UCpP7TfS8pA0A1X4r_9yD07A&autoplay=1" },
+            { name: "TRT Haber", url: "https://www.youtube.com/embed/live_stream?channel=UC8sc805VLlp9pLxy9J9N4_Q&autoplay=1" },
+            { name: "Show TV", url: "https://www.youtube.com/embed/live_stream?channel=UCuM3_it_it_S7S3fO9mO-Xw&autoplay=1" }
         ];
 
-        const container = document.getElementById('tv-container');
-
         function renderTV() {
-            container.innerHTML = channels.map(ch => `
+            document.getElementById('tv-screen').innerHTML = channels.map(ch => `
                 <div class="tv-slide">
-                    <iframe src="${ch.url}" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
-                    <div class="channel-info">
-                        <span class="country-tag">${ch.country}</span>
-                        <h2>${ch.name}</h2>
-                        <p style="font-size: 12px; color: #ccc;">Canlı Yayım - EcoPix TV</p>
-                    </div>
-                    <div class="side-ctrls">
-                        <div class="icon-box"><i class="fas fa-heart" style="color:var(--neon-red)"></i><span>Canlı</span></div>
-                        <div class="icon-box"><i class="fas fa-share"></i><span>Paylaş</span></div>
-                        <div class="icon-box"><i class="fas fa-expand"></i><span>Tam</span></div>
-                    </div>
+                    <iframe src="${ch.url}" allow="autoplay; encrypted-media"></iframe>
+                    <div class="ch-info"><h2>${ch.name}</h2></div>
                 </div>
             `).join('');
         }
 
-        // İlk yükləmə
-        renderTV();
-
-        // Səs məsələsi üçün brauzer xəbərdarlığı (Autoplay block edilməsin deyə)
-        window.onclick = function() {
-            document.getElementById('mute-hint').style.display = 'none';
+        // --- 4. FUNKSİYALAR ---
+        function tab(id, el) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            el.classList.add('active');
         }
 
-        // Sürüşdürmə zamanı səmərəlilik (Lazy loading simulyasiyası)
-        container.addEventListener('scroll', () => {
-            // Sürüşdürərkən performans üçün buraya əlavə kodlar qoymaq olar
-        });
+        function addContact() {
+            const name = prompt("Dostunun adı:");
+            const id = prompt("Dostunun ID-si (AZ-XXXXXX):");
+            if (name && id) {
+                let list = JSON.parse(localStorage.getItem('eco_contacts')) || [];
+                list.push({name, id});
+                localStorage.setItem('eco_contacts', JSON.stringify(list));
+                renderContacts();
+            }
+        }
+
+        function renderContacts() {
+            const data = JSON.parse(localStorage.getItem('eco_contacts')) || [];
+            document.getElementById('contact-list').innerHTML = data.map(c => `
+                <div class="list-item" onclick="openChat('${c.name}', '${c.id}')">
+                    <div class="avatar">${c.name[0]}</div>
+                    <div style="flex:1"><h4>${c.name}</h4><p>${c.id}</p></div>
+                    <i class="fas fa-video" style="color:var(--neon-green)"></i>
+                </div>
+            `).join('');
+        }
+
+        function openChat(name, id) {
+            activePeerID = id;
+            document.getElementById('chat-with-name').innerText = name;
+            document.getElementById('chat-modal').style.display = 'flex';
+        }
+
+        function closeChat() { document.getElementById('chat-modal').style.display = 'none'; }
+
+        function makeCall() {
+            if (!activePeerID) return;
+            navigator.mediaDevices.getUserMedia({video: true, audio: true}).then(stream => {
+                document.getElementById('call-ui').style.display = 'flex';
+                document.getElementById('localVideo').srcObject = stream;
+                const call = peer.call(activePeerID, stream);
+                call.on('stream', remoteStream => {
+                    document.getElementById('remoteVideo').srcObject = remoteStream;
+                });
+                currentCall = call;
+            });
+        }
+
+        function endCall() {
+            if (currentCall) currentCall.close();
+            document.getElementById('call-ui').style.display = 'none';
+            location.reload(); // Stream-ləri tam təmizləmək üçün
+        }
+
+        renderTV();
+        renderContacts();
     </script>
 </body>
 </html>
