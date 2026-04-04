@@ -6,198 +6,187 @@
     <title>EcoPix Connect</title>
     <script src="https://unpkg.com/peerjs@1.3.1/dist/peerjs.min.js"></script>
     <style>
-        :root { --tg-blue: #2481cc; --tg-light-blue: #50a7ea; --bg: #ffffff; --gray: #f4f4f5; --text: #222; }
-        body { margin: 0; padding: 0; font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text); }
+        :root { --wa-green: #075E54; --wa-light-green: #128C7E; --wa-tea: #dcf8c6; --bg: #e5ddd5; --white: #ffffff; }
+        body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: #333; }
         
         /* Header */
-        .header { background: var(--tg-blue); color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .qr-btn { font-size: 24px; cursor: pointer; padding: 5px; }
-        .app-id { font-size: 14px; opacity: 0.9; font-weight: bold; }
+        .header { background: var(--wa-green); color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .qr-icon { font-size: 22px; cursor: pointer; padding: 5px; border: 1px solid rgba(255,255,255,0.3); border-radius: 5px; }
+        .app-title { font-size: 20px; font-weight: bold; }
+        .my-id-badge { font-size: 12px; background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 10px; }
 
-        /* Kontaktlar Bölməsi */
-        .container { padding-bottom: 70px; }
-        .contact-item { padding: 15px; display: flex; align-items: center; border-bottom: 1px solid #eee; cursor: pointer; transition: 0.2s; }
-        .contact-item:active { background: var(--gray); }
-        .avatar { width: 55px; height: 55px; border-radius: 50%; background: linear-gradient(135deg, #50a7ea, #2481cc); color: white; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: bold; margin-right: 15px; }
-        .contact-info { flex: 1; }
-        .contact-name { font-weight: 600; font-size: 17px; }
-        .contact-status { font-size: 13px; color: #888; margin-top: 2px; }
+        /* Main View */
+        .content { height: calc(100vh - 125px); overflow-y: auto; background: white; }
+        .contact-row { display: flex; align-items: center; padding: 12px 15px; border-bottom: 1px solid #f2f2f2; cursor: pointer; }
+        .contact-row:active { background: #f5f5f5; }
+        .avatar { width: 50px; height: 50px; border-radius: 50%; background: #ccc; margin-right: 15px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 20px; }
+        .contact-details { flex: 1; }
+        .contact-name { font-weight: bold; font-size: 16px; margin-bottom: 3px; }
+        .contact-last-msg { font-size: 13px; color: #666; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 
         /* Floating Plus Button */
-        .fab { position: fixed; bottom: 85px; right: 20px; width: 60px; height: 60px; background: var(--tg-blue); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 30px; box-shadow: 0 4px 15px rgba(36, 129, 204, 0.4); border: none; cursor: pointer; }
+        .fab { position: fixed; bottom: 80px; right: 20px; width: 55px; height: 55px; background: #25D366; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 25px; box-shadow: 0 3px 10px rgba(0,0,0,0.3); border: none; cursor: pointer; }
 
-        /* Profil Səhifəsi (Popup) */
-        .profile-page { position: fixed; top: 0; left: 100%; width: 100%; height: 100%; background: white; z-index: 200; transition: 0.3s; overflow-y: auto; }
-        .profile-page.active { left: 0; }
-        .profile-header { background: var(--gray); padding: 40px 20px; text-align: center; position: relative; }
-        .back-btn { position: absolute; top: 15px; left: 15px; font-size: 18px; color: var(--tg-blue); cursor: pointer; }
-        .history-item { padding: 12px 20px; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; }
-        .history-icon { margin-right: 10px; font-size: 18px; }
+        /* Profile & History Screen */
+        .sub-page { position: fixed; top: 0; left: 100%; width: 100%; height: 100%; background: #f0f0f0; z-index: 500; transition: 0.3s; }
+        .sub-page.active { left: 0; }
+        .sub-header { background: var(--wa-green); color: white; padding: 15px; display: flex; align-items: center; }
+        .back-btn { font-size: 24px; margin-right: 15px; cursor: pointer; }
+        
+        .profile-card { background: white; padding: 20px; text-align: center; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .history-list { background: white; padding: 10px; }
+        .hist-item { display: flex; justify-content: space-between; padding: 15px; border-bottom: 1px solid #eee; font-size: 14px; }
+        .call-actions { display: flex; justify-content: space-around; padding: 20px; background: white; border-bottom: 1px solid #eee; }
+        .call-btn-circle { width: 50px; height: 50px; border-radius: 50%; background: #25D366; color: white; border: none; display: flex; align-items: center; justify-content: center; font-size: 20px; }
 
-        /* Görüntülü Zəng (Bütöv Ekran) */
-        .call-ui { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 1000; display: none; flex-direction: column; }
-        .call-ui.active { display: flex; }
-        .video-container { flex: 1; display: flex; flex-direction: column; position: relative; }
-        video { width: 100%; height: 50%; object-fit: cover; background: #111; }
-        #localVideo { border-bottom: 1px solid #333; }
-        .call-overlay { position: absolute; top: 20px; width: 100%; text-align: center; color: white; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
-        .call-btns { height: 120px; background: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; gap: 40px; }
-        .btn-end { background: #ff3b30; color: white; border: none; padding: 20px; border-radius: 50%; cursor: pointer; font-size: 20px; }
+        /* Video Call UI (Full Screen Split) */
+        .call-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 1000; display: none; flex-direction: column; }
+        .call-overlay.active { display: flex; }
+        .video-box { flex: 1; display: flex; flex-direction: column; position: relative; }
+        video { width: 100%; height: 50%; object-fit: cover; background: #1a1a1a; }
+        .call-info-top { position: absolute; top: 30px; width: 100%; text-align: center; color: white; z-index: 10; pointer-events: none; }
+        .call-controls { height: 100px; display: flex; justify-content: center; align-items: center; background: rgba(0,0,0,0.8); }
+        .end-btn { background: #ff3b30; color: white; border: none; width: 65px; height: 65px; border-radius: 50%; font-size: 24px; cursor: pointer; }
 
         /* Bottom Nav */
-        .nav { position: fixed; bottom: 0; width: 100%; background: white; display: flex; border-top: 1px solid #eee; height: 65px; box-sizing: border-box; }
-        .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 12px; color: #777; cursor: pointer; }
-        .nav-item.active { color: var(--tg-blue); }
+        .nav { position: fixed; bottom: 0; width: 100%; background: #fff; display: flex; border-top: 1px solid #ddd; height: 60px; }
+        .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #555; font-size: 12px; cursor: pointer; }
+        .nav-item.active { color: var(--wa-green); border-top: 3px solid var(--wa-green); }
 
-        /* Modal */
+        /* Modals */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2000; align-items: center; justify-content: center; }
-        .modal-box { background: white; padding: 25px; border-radius: 15px; width: 80%; text-align: center; }
+        .modal-box { background: white; padding: 25px; border-radius: 10px; width: 85%; text-align: center; }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <div class="qr-btn" onclick="toggleModal('qr-modal')">🔳</div>
-        <div class="app-id">ID: <span id="my-id-display">......</span></div>
-        <div style="width: 30px;"></div>
+        <div class="qr-icon" onclick="openModal('qr-modal')">🔳 QR</div>
+        <div class="app-title">WhatsApp Connect</div>
+        <div class="my-id-badge" id="display-id">ID: ......</div>
     </div>
 
-    <div class="container" id="main-view">
-        <div id="contacts-list">
-            <div class="contact-item" onclick="openProfile('654321', 'Adil Abdullayev')">
-                <div class="avatar">A</div>
-                <div class="contact-info">
-                    <div class="contact-name">Adil Abdullayev</div>
-                    <div class="contact-status">Son görülmə: Rayonda (Mesh)</div>
-                </div>
+    <div class="content" id="contacts-list">
+        <div class="contact-row" onclick="openProfile('482930', 'Adil Hasanov')">
+            <div class="avatar" style="background:#075E54">A</div>
+            <div class="contact-details">
+                <div class="contact-name">Adil Hasanov</div>
+                <div class="contact-last-msg">Hazırda Mesh şəbəkəsində aktivdir</div>
             </div>
         </div>
     </div>
 
-    <button class="fab" onclick="toggleModal('add-contact-modal')">+</button>
+    <button class="fab" onclick="openModal('add-modal')">+</button>
 
     <div class="nav">
-        <div class="nav-item active" onclick="switchTab('contacts')">👥 Kontaktlar</div>
-        <div class="nav-item" onclick="switchTab('history')">🕒 Tarixçə</div>
-        <div class="nav-item" onclick="switchTab('settings')">⚙️ Parametrlər</div>
+        <div class="nav-item active">💬 Söhbətlər</div>
+        <div class="nav-item" onclick="alert('Yaxında...')">📞 Zənglər</div>
+        <div class="nav-item" onclick="alert('Tezliklə...')">⚙️ Parametrlər</div>
     </div>
 
-    <div id="profile-page" class="profile-page">
-        <div class="profile-header">
-            <div class="back-btn" onclick="closeProfile()">← Geri</div>
-            <div class="avatar" style="margin: 0 auto 15px; width: 80px; height: 80px; font-size: 30px;" id="p-avatar">?</div>
-            <h2 id="p-name">İstifadəçi</h2>
-            <p id="p-id" style="color: #666;">ID: 000000</p>
-            <div style="display: flex; justify-content: center; gap: 20px; margin-top: 20px;">
-                <button onclick="makeCall('video')" style="background: var(--tg-blue); color:white; border:none; padding:10px 20px; border-radius:20px;">📹 Görüntü</button>
-                <button onclick="makeCall('audio')" style="background: #4cd964; color:white; border:none; padding:10px 20px; border-radius:20px;">📞 Səsli</button>
-            </div>
+    <div id="profile-page" class="sub-page">
+        <div class="sub-header">
+            <div class="back-btn" onclick="closeProfile()">←</div>
+            <div id="p-title-name">Profil</div>
         </div>
-        <div style="padding: 10px;">
-            <h4 style="margin-left: 20px; color: #888;">ZƏNG TARİXÇƏSİ</h4>
-            <div class="history-item">
-                <span><span class="history-icon">📹</span> Görüntülü zəng</span>
-                <span style="font-size: 12px; color: #999;">Dünən 14:20</span>
-            </div>
-            <div class="history-item">
-                <span><span class="history-icon">📞</span> Səsli zəng</span>
-                <span style="font-size: 12px; color: #999;">2 gün əvvəl</span>
-            </div>
+        <div class="profile-card">
+            <div class="avatar" style="width: 80px; height: 80px; font-size: 30px; margin: 0 auto 15px;" id="p-avatar">?</div>
+            <h2 id="p-name" style="margin: 5px 0;">İstifadəçi</h2>
+            <p id="p-id" style="color: #666; margin-bottom: 20px;">ID: 000000</p>
+        </div>
+        <div class="call-actions">
+            <button class="call-btn-circle" onclick="initiateCall('video')">📹</button>
+            <button class="call-btn-circle" style="background:#34B7F1" onclick="initiateCall('audio')">📞</button>
+            <button class="call-btn-circle" style="background:#555" onclick="alert('Mesaj bölməsi aktivləşir...')">✉️</button>
+        </div>
+        <div class="history-list">
+            <h4 style="color: var(--wa-light-green); margin-left: 15px;">ZƏNG TARİXÇƏSİ</h4>
+            <div class="hist-item"><span>📹 Görüntülü zəng</span><small>Dünən 22:10</small></div>
+            <div class="hist-item"><span>📞 Səsli zəng</span><small>Bazar 10:45</small></div>
         </div>
     </div>
 
-    <div id="call-ui" class="call-ui">
-        <div class="video-container">
+    <div id="call-ui" class="call-overlay">
+        <div class="call-info-top">
+            <h2 id="calling-name">Adil Hasanov</h2>
+            <p id="call-status">Zəng edilir...</p>
+        </div>
+        <div class="video-box">
             <video id="remoteVideo" autoplay playsinline></video>
             <video id="localVideo" autoplay muted playsinline></video>
-            <div class="call-overlay">
-                <h3 id="call-target-name">Zəng edilir...</h3>
-                <p id="call-type-status">Görüntülü</p>
-            </div>
         </div>
-        <div class="call-btns">
-            <button class="btn-end" onclick="endCall()">✖</button>
+        <div class="call-controls">
+            <button class="end-btn" onclick="terminateCall()">✖</button>
         </div>
     </div>
 
-    <div id="qr-modal" class="modal" onclick="toggleModal('qr-modal')">
+    <div id="qr-modal" class="modal" onclick="closeModal('qr-modal')">
         <div class="modal-box" onclick="event.stopPropagation()">
-            <h3>Tətbiqi Paylaş</h3>
-            <div style="background: #eee; width: 200px; height: 200px; margin: 0 auto; display: flex; align-items: center; justify-content: center;">
-                [QR: APK YÜKLƏ]
-            </div>
-            <p style="font-size: 12px; color: #666; margin-top: 15px;">Bu kodu skan edərək EcoPix APK-sını internetsiz yükləyin.</p>
+            <h3>EcoPix APK Paylaş</h3>
+            <div style="background:#eee; width:180px; height:180px; margin: 20px auto; display:flex; align-items:center; justify-content:center;">[QR KOD]</div>
+            <p style="font-size:12px; color:#666;">Skan et və tətbiqi internetsiz yüklə!</p>
         </div>
     </div>
 
     <script>
-        // 6 Rəqəmli ID yaradılması
-        const myId = Math.floor(100000 + Math.random() * 900000).toString();
-        document.getElementById('my-id-display').innerText = myId;
+        // 6 Rəqəmli ID və PeerJS
+        const my6DigitId = Math.floor(100000 + Math.random() * 900000).toString();
+        document.getElementById('display-id').innerText = "ID: " + my6DigitId;
 
-        const peer = new Peer('ecopix-' + myId);
+        const peer = new Peer('ecopix-' + my6DigitId);
         let localStream;
-        let currentCall;
+        let callInstance;
 
-        // Kamera İcazəsi
-        function initMedia(video = true) {
-            return navigator.mediaDevices.getUserMedia({ video: video, audio: true });
-        }
-
-        // Profil Açmaq
+        // Profil İdarəçiliyi
         function openProfile(id, name) {
             document.getElementById('p-name').innerText = name;
             document.getElementById('p-id').innerText = "ID: " + id;
             document.getElementById('p-avatar').innerText = name[0];
+            document.getElementById('p-avatar').style.background = '#128C7E';
             document.getElementById('profile-page').classList.add('active');
         }
 
-        function closeProfile() {
-            document.getElementById('profile-page').classList.remove('active');
-        }
+        function closeProfile() { document.getElementById('profile-page').classList.remove('active'); }
 
-        // Zəng etmək
-        async function makeCall(type) {
-            const targetId = document.getElementById('p-id').innerText.replace("ID: ", "");
-            const isVideo = type === 'video';
+        // Zəng Funksiyaları
+        async function initiateCall(type) {
+            const target = document.getElementById('p-id').innerText.replace("ID: ", "");
+            const isVideo = (type === 'video');
             
             document.getElementById('call-ui').classList.add('active');
-            document.getElementById('call-target-name').innerText = document.getElementById('p-name').innerText;
-            document.getElementById('call-type-status').innerText = isVideo ? "Görüntülü" : "Səsli";
-            
-            localStream = await initMedia(isVideo);
+            document.getElementById('calling-name').innerText = document.getElementById('p-name').innerText;
+            document.getElementById('call-status').innerText = isVideo ? "Görüntülü zəng" : "Səsli zəng";
+
+            localStream = await navigator.mediaDevices.getUserMedia({video: isVideo, audio: true});
             if(isVideo) document.getElementById('localVideo').srcObject = localStream;
             else document.getElementById('localVideo').style.display = 'none';
 
-            currentCall = peer.call('ecopix-' + targetId, localStream);
-            currentCall.on('stream', rs => {
+            callInstance = peer.call('ecopix-' + target, localStream);
+            callInstance.on('stream', rs => {
                 document.getElementById('remoteVideo').srcObject = rs;
             });
         }
 
-        // Zəngi Bitirmək
-        function endCall() {
-            if(currentCall) currentCall.close();
+        function terminateCall() {
+            if(callInstance) callInstance.close();
             if(localStream) localStream.getTracks().forEach(t => t.stop());
             document.getElementById('call-ui').classList.remove('active');
-            location.reload(); // Sistemi sıfırlamaq üçün ən təmiz yol
+            location.reload(); 
         }
 
-        function toggleModal(id) {
-            const m = document.getElementById(id);
-            m.style.display = m.style.display === 'flex' ? 'none' : 'flex';
-        }
-
-        // Gələn zəngi tutmaq
-        peer.on('call', async (call) => {
-            localStream = await initMedia(true); // Default olaraq kameranı hazırla
-            call.answer(localStream);
+        // Gələn zəng (Listener)
+        peer.on('call', async (incoming) => {
+            localStream = await navigator.mediaDevices.getUserMedia({video: true, audio: true});
+            incoming.answer(localStream);
             document.getElementById('call-ui').classList.add('active');
-            call.on('stream', rs => {
+            incoming.on('stream', rs => {
                 document.getElementById('remoteVideo').srcObject = rs;
             });
         });
 
+        // Modallar
+        function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
     </script>
 </body>
 </html>
