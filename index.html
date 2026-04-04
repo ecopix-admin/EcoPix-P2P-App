@@ -3,126 +3,203 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ecopix Pro v25 - 1000 Channels</title>
+    <title>EcoPix P2P - No Firebase</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
         :root { --red: #ff0055; --green: #00ff41; --bg: #000; }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
         body { background: var(--bg); color: white; overflow: hidden; height: 100vh; }
 
         /* Header */
-        header { height: 60px; padding: 0 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; background: #050505; }
-        .logo { font-weight: 900; color: var(--red); text-shadow: 0 0 10px var(--red); font-size: 20px; }
-        .my-id { color: var(--green); border: 1px solid var(--green); padding: 3px 10px; border-radius: 5px; font-family: monospace; font-size: 14px; }
+        header { height: 60px; padding: 0 15px; display: flex; justify-content: space-between; align-items: center; background: #080808; border-bottom: 1px solid #222; }
+        .logo { font-weight: 900; color: var(--red); font-size: 22px; text-shadow: 0 0 10px var(--red); }
+        #my-id-display { color: var(--green); font-size: 12px; border: 1px solid var(--green); padding: 4px 8px; border-radius: 4px; cursor: pointer; }
 
         /* Screens */
-        .screen { display: none; height: calc(100vh - 130px); overflow-y: auto; position: relative; }
+        .screen { display: none; height: calc(100vh - 130px); overflow-y: auto; }
         .screen.active { display: block; }
 
-        /* TV Style TikTok */
-        #tv-screen { overflow-y: scroll; scroll-snap-type: y mandatory; }
-        .tv-slide { height: calc(100vh - 130px); width: 100vw; scroll-snap-align: start; position: relative; background: #000; }
-        iframe { width: 100%; height: 100%; border: none; pointer-events: auto; }
-        .ch-title { position: absolute; bottom: 30px; left: 15px; color: var(--red); font-weight: bold; font-size: 22px; text-shadow: 0 0 10px var(--red); z-index: 10; pointer-events: none; }
+        /* TV Section */
+        #tv-screen { scroll-snap-type: y mandatory; }
+        .tv-slide { height: calc(100vh - 130px); width: 100vw; scroll-snap-align: start; position: relative; }
+        iframe { width: 100%; height: 100%; border: none; }
+        .ch-info { position: absolute; bottom: 40px; left: 15px; z-index: 5; pointer-events: none; }
+        .ch-name { color: var(--red); font-size: 24px; font-weight: bold; text-shadow: 2px 2px 5px black; }
 
         /* Navigation */
-        .nav-bar { position: fixed; bottom: 0; width: 100%; height: 70px; background: #050505; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #222; }
-        .nav-item { text-align: center; color: #555; font-size: 10px; flex: 1; cursor: pointer; }
+        nav { position: fixed; bottom: 0; width: 100%; height: 70px; background: #080808; display: flex; border-top: 1px solid #222; }
+        .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #666; font-size: 11px; cursor: pointer; }
         .nav-item.active { color: var(--green); }
-        .nav-item i { font-size: 24px; display: block; margin-bottom: 5px; }
+        .nav-item i { font-size: 22px; margin-bottom: 4px; }
 
-        /* Contacts & FAB */
-        .list-item { display: flex; align-items: center; padding: 15px; border-bottom: 1px solid #111; }
-        .avatar { width: 45px; height: 45px; border-radius: 50%; background: var(--red); margin-right: 15px; display: flex; align-items: center; justify-content: center; font-weight: bold; }
-        .fab { position: absolute; bottom: 20px; right: 20px; width: 55px; height: 55px; background: var(--green); color: black; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; box-shadow: 0 0 15px var(--green); }
-
-        /* Chat & Call Modals (Simplified for Speed) */
-        #chat-modal, #call-ui { position: fixed; inset: 0; background: #000; z-index: 5000; display: none; flex-direction: column; }
-        .chat-header { padding: 15px; border-bottom: 1px solid #222; display: flex; justify-content: space-between; }
-        #messages { flex: 1; padding: 15px; overflow-y: auto; }
-        .msg { margin-bottom: 10px; padding: 8px 12px; border-radius: 10px; max-width: 80%; }
-        .sent { background: var(--green); color: black; align-self: flex-end; margin-left: auto; }
-        .rec { background: #222; color: white; }
+        /* Chat Modal */
+        #chat-ui { position: fixed; inset: 0; background: #000; z-index: 1000; display: none; flex-direction: column; }
+        #msg-box { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; }
+        .m { margin: 5px 0; padding: 10px; border-radius: 10px; max-width: 80%; font-size: 14px; }
+        .sent { background: var(--green); color: black; align-self: flex-end; }
+        .rec { background: #222; color: white; align-self: flex-start; }
         
-        video { width: 100%; height: 50%; object-fit: cover; }
+        /* Call UI */
+        #call-screen { position: fixed; inset: 0; background: #000; z-index: 2000; display: none; }
+        video { width: 100%; height: 100%; object-fit: cover; }
+        #local-video { position: absolute; top: 20px; right: 20px; width: 100px; height: 150px; border: 2px solid var(--green); border-radius: 10px; }
+        .call-btns { position: absolute; bottom: 50px; width: 100%; display: flex; justify-content: center; gap: 30px; }
+        .end-btn { width: 60px; height: 60px; background: red; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 25px; }
+
+        /* Contacts */
+        .c-item { padding: 15px; border-bottom: 1px solid #111; display: flex; align-items: center; }
+        .c-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--red); margin-right: 15px; display: flex; align-items: center; justify-content: center; font-weight: bold; }
     </style>
 </head>
 <body>
 
     <header>
         <div class="logo">ECOPIX</div>
-        <div class="my-id" id="my-id-display">AZ-999999</div>
+        <div id="my-id-display" onclick="copyMyID()">Yüklənir...</div>
     </header>
 
     <div id="tv-screen" class="screen active"></div>
-    
-    <div id="chat-screen" class="screen"><div id="thread-list"></div></div>
-    
+
     <div id="contact-screen" class="screen">
-        <div id="contact-list"></div>
-        <div class="fab" onclick="addNewContact()"><i class="fas fa-plus"></i></div>
+        <div style="padding:15px;"><button onclick="addFriend()" style="width:100%; padding:10px; background:var(--green); border:none; border-radius:5px; font-weight:bold;">+ DOST ƏLAVƏ ET</button></div>
+        <div id="friends-list"></div>
     </div>
 
-    <div id="chat-modal">
-        <div class="chat-header">
-            <i class="fas fa-arrow-left" onclick="closeChat()"></i>
-            <span id="target-name">Dost</span>
+    <div id="chat-ui">
+        <div style="padding:15px; border-bottom:1px solid #222; display:flex; justify-content:space-between; align-items:center;">
+            <i class="fas fa-chevron-left" onclick="closeChat()"></i>
+            <b id="chat-with">Dost</b>
             <div>
-                <i class="fas fa-phone" onclick="startCall('voice')" style="margin-right:20px; color:var(--green);"></i>
-                <i class="fas fa-video" onclick="startCall('video')" style="color:var(--green);"></i>
+                <i class="fas fa-video" onclick="makeCall()" style="color:var(--green); margin-left:15px;"></i>
             </div>
         </div>
-        <div id="messages"></div>
+        <div id="msg-box"></div>
         <div style="padding:15px; display:flex; gap:10px;">
-            <input type="text" id="m-input" style="flex:1; padding:10px; border-radius:5px; background:#111; border:1px solid #333; color:white;">
-            <button onclick="sendText()" style="padding:10px; background:var(--green); border:none; border-radius:5px;"><i class="fas fa-paper-plane"></i></button>
+            <input type="text" id="msg-input" placeholder="Mesaj yaz..." style="flex:1; padding:12px; background:#111; border:1px solid #333; color:white; border-radius:5px;">
+            <button onclick="sendMsg()" style="padding:12px 20px; background:var(--green); border:none; border-radius:5px;"><i class="fas fa-paper-plane"></i></button>
         </div>
     </div>
 
-    <div id="call-ui">
-        <video id="remoteV" autoplay playsinline></video>
-        <video id="localV" autoplay playsinline muted></video>
-        <div onclick="location.reload()" style="height:100px; background:red; display:flex; align-items:center; justify-content:center; font-size:30px;"><i class="fas fa-phone-slash"></i></div>
+    <div id="call-screen">
+        <video id="remote-video" autoplay playsinline></video>
+        <video id="local-video" autoplay playsinline muted></video>
+        <div class="call-btns">
+            <div class="end-btn" onclick="location.reload()"><i class="fas fa-phone-slash"></i></div>
+        </div>
     </div>
 
-    <nav class="nav-bar">
+    <nav>
         <div class="nav-item active" onclick="tab('tv-screen', this)"><i class="fas fa-tv"></i>TV</div>
-        <div class="nav-item" onclick="tab('chat-screen', this)"><i class="fas fa-comment"></i>ÇAT</div>
-        <div class="nav-item" onclick="tab('contact-screen', this)"><i class="fas fa-address-book"></i>DOSTLAR</div>
+        <div class="nav-item" onclick="tab('contact-screen', this)"><i class="fas fa-users"></i>DOSTLAR</div>
     </nav>
 
     <script>
-        // 1. ID SİSTEMİ (Sənin üçün AZ-999999)
-        let myID = localStorage.getItem('eco_id') || 'AZ-999999'; 
-        localStorage.setItem('eco_id', myID);
-        document.getElementById('my-id-display').innerText = myID;
+        // 1. PEER SİSTEMİ (Firebase yoxdur!)
+        let myID = localStorage.getItem('eco_p2p_id') || 'Eco-' + Math.floor(1000 + Math.random() * 9000);
+        localStorage.setItem('eco_p2p_id', myID);
+        document.getElementById('my-id-display').innerText = "ID: " + myID;
 
         const peer = new Peer(myID);
-        let activeConn, targetID;
+        let currentConn, currentTargetID;
 
-        // 2. KANAL BAZASI (İŞLƏK KODLAR)
-        const tvData = [
-            {n:"ARB CANLI", id:"itD_LhZzIq_v4pS_u7C3-g"},
-            {n:"XƏZƏR TV", id:"UC8XvP-TIs9p2Ube_Z_ZInyA"},
-            {n:"TRT HABER", id:"UC8sc805VLlp9pLxy9J9N4_Q"},
-            {n:"KANAL D", id:"UCpP7TfS8pA0A1X4r_9yD07A"},
-            {n:"STAR TV", id:"UC6_S7LpXfR0Xf6lX9YwH-0w"},
-            {n:"CNN INTERNATIONAL", id:"UCupvZG-5ko_eiXAupbDfxWw"},
-            {n:"BBC NEWS", id:"UC16niRr50-MSBwiO3YDb3RA"}
+        // 2. TV KANALLARI (YouTube ID-lərini bura artır)
+        const channels = [
+            {n: "Xəzər TV", id: "itD_LhZzIq_v4pS_u7C3-g"},
+            {n: "ARB Canlı", id: "UC8XvP-TIs9p2Ube_Z_ZInyA"},
+            {n: "TRT Haber", id: "UC8sc805VLlp9pLxy9J9N4_Q"},
+            {n: "CNN Türk", id: "UC9v7_v_Z_Z_Z_Z_Z_Z_Z_Z"} // Nümunə
         ];
 
-        function initTV() {
+        function loadTV() {
             const container = document.getElementById('tv-screen');
-            container.innerHTML = tvData.map(ch => `
+            container.innerHTML = channels.map(ch => `
                 <div class="tv-slide">
-                    <iframe src="https://www.youtube.com/embed/live_stream?channel=${ch.id}&autoplay=1&mute=1" allowfullscreen></iframe>
-                    <div class="ch-title">${ch.n}</div>
+                    <iframe src="https://www.youtube.com/embed/live_stream?channel=${ch.id}&autoplay=1&mute=1" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                    <div class="ch-info"><div class="ch-name">${ch.n}</div></div>
                 </div>
             `).join('');
         }
 
-        // 3. LOGİKA
+        // 3. DOSTLAR VƏ ÇAT
+        function addFriend() {
+            const name = prompt("Dostun adı:");
+            const id = prompt("Dostun Eco-ID-si (Məsələn: Eco-1234):");
+            if(name && id) {
+                let list = JSON.parse(localStorage.getItem('eco_friends') || '[]');
+                list.push({name, id});
+                localStorage.setItem('eco_friends', JSON.stringify(list));
+                renderFriends();
+            }
+        }
+
+        function renderFriends() {
+            const list = JSON.parse(localStorage.getItem('eco_friends') || '[]');
+            document.getElementById('friends-list').innerHTML = list.map(f => `
+                <div class="c-item" onclick="startChat('${f.name}', '${f.id}')">
+                    <div class="c-avatar">${f.name[0]}</div>
+                    <div><b>${f.name}</b><br><small style="color:#666">${f.id}</small></div>
+                </div>
+            `).join('');
+        }
+
+        function startChat(name, id) {
+            currentTargetID = id;
+            document.getElementById('chat-with').innerText = name;
+            document.getElementById('chat-ui').style.display = 'flex';
+            currentConn = peer.connect(id);
+            setupConnListeners(currentConn);
+        }
+
+        function sendMsg() {
+            const input = document.getElementById('msg-input');
+            if(input.value && currentConn) {
+                currentConn.send(input.value);
+                addMsgToUI(input.value, 'sent');
+                input.value = '';
+            }
+        }
+
+        function addMsgToUI(text, type) {
+            const div = document.createElement('div');
+            div.className = 'm ' + type;
+            div.innerText = text;
+            document.getElementById('msg-box').appendChild(div);
+            document.getElementById('msg-box').scrollTop = 10000;
+        }
+
+        peer.on('connection', conn => {
+            currentConn = conn;
+            document.getElementById('chat-ui').style.display = 'flex';
+            setupConnListeners(conn);
+        });
+
+        function setupConnListeners(conn) {
+            conn.on('data', data => addMsgToUI(data, 'rec'));
+        }
+
+        // 4. VİDEO ZƏNG
+        function makeCall() {
+            navigator.mediaDevices.getUserMedia({video: true, audio: true}).then(stream => {
+                document.getElementById('call-screen').style.display = 'block';
+                document.getElementById('local-video').srcObject = stream;
+                const call = peer.call(currentTargetID, stream);
+                call.on('stream', rs => document.getElementById('remote-video').srcObject = rs);
+            });
+        }
+
+        peer.on('call', call => {
+            if(confirm("Zəng gəlir! Cavab verilsin?")) {
+                navigator.mediaDevices.getUserMedia({video: true, audio: true}).then(stream => {
+                    document.getElementById('call-screen').style.display = 'block';
+                    document.getElementById('local-video').srcObject = stream;
+                    call.answer(stream);
+                    call.on('stream', rs => document.getElementById('remote-video').srcObject = rs);
+                });
+            }
+        });
+
+        // 5. YARDIMÇI FUNKSİYALAR
         function tab(id, el) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -130,68 +207,13 @@
             el.classList.add('active');
         }
 
-        function addNewContact() {
-            const n = prompt("Ad:");
-            const i = prompt("ID (AZ-XXXXXX):");
-            if(n && i) {
-                let db = JSON.parse(localStorage.getItem('eco_c') || '[]');
-                db.push({n, i});
-                localStorage.setItem('eco_c', JSON.stringify(db));
-                renderC();
-            }
+        function closeChat() { document.getElementById('chat-ui').style.display = 'none'; }
+        function copyMyID() { 
+            navigator.clipboard.writeText(myID);
+            alert("ID kopyalandı! Dostuna göndər: " + myID);
         }
 
-        function renderC() {
-            const db = JSON.parse(localStorage.getItem('eco_c') || '[]');
-            document.getElementById('contact-list').innerHTML = db.map(c => `
-                <div class="list-item" onclick="openChat('${c.n}', '${c.i}')">
-                    <div class="avatar">${c.n[0]}</div>
-                    <div style="flex:1"><b>${c.n}</b><br><small>${c.i}</small></div>
-                </div>
-            `).join('');
-        }
-
-        function openChat(name, id) {
-            targetID = id;
-            document.getElementById('target-name').innerText = name;
-            document.getElementById('chat-modal').style.display = 'flex';
-            activeConn = peer.connect(id);
-        }
-
-        function closeChat() { document.getElementById('chat-modal').style.display = 'none'; }
-
-        function sendText() {
-            const m = document.getElementById('m-input').value;
-            if(m && activeConn) {
-                activeConn.send(m);
-                const d = document.createElement('div');
-                d.className = 'msg sent'; d.innerText = m;
-                document.getElementById('messages').appendChild(d);
-                document.getElementById('m-input').value = '';
-            }
-        }
-
-        peer.on('connection', conn => {
-            activeConn = conn;
-            conn.on('data', data => {
-                const d = document.createElement('div');
-                d.className = 'msg rec'; d.innerText = data;
-                document.getElementById('messages').appendChild(d);
-                document.getElementById('chat-modal').style.display = 'flex';
-            });
-        });
-
-        function startCall(m) {
-            navigator.mediaDevices.getUserMedia({video: m==='video', audio:true}).then(s => {
-                document.getElementById('call-ui').style.display = 'flex';
-                document.getElementById('localV').srcObject = s;
-                const call = peer.call(targetID, s);
-                call.on('stream', rs => document.getElementById('remoteV').srcObject = rs);
-            });
-        }
-
-        initTV();
-        renderC();
+        window.onload = () => { loadTV(); renderFriends(); };
     </script>
 </body>
 </html>
