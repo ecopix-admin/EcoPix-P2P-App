@@ -3,49 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wire Tracker Pro v4.0</title>
+    <title>Wire Tracker Pro v4.5</title>
     <style>
-        body { background: #1a0000; color: white; font-family: 'Courier New', monospace; text-align: center; margin: 0; padding: 20px; transition: background 0.3s ease; }
+        body { background: #1a0000; color: white; font-family: sans-serif; text-align: center; margin: 0; padding: 20px; transition: background 0.2s; }
         .container { height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-        
-        /* Rəqəm qutusu */
-        .value-box { font-size: 80px; font-weight: bold; margin-bottom: 20px; transition: color 0.3s ease; text-shadow: 0 0 10px rgba(255,255,255,0.5); }
-        
-        /* Status və Log */
-        #status { font-size: 24px; font-weight: bold; margin-bottom: 10px; text-transform: uppercase; }
-        #log { font-size: 14px; color: #aaa; margin-bottom: 30px; }
-
-        /* Düymə */
-        button { background: #ff4444; color: white; border: none; padding: 20px 40px; font-size: 20px; font-weight: bold; border-radius: 50px; cursor: pointer; box-shadow: 0 0 15px rgba(255,68,68,0.5); }
-
-        /* NAQİL TAPILDI rejiminin stilləri */
+        .value-box { font-size: 80px; font-weight: bold; margin: 10px 0; }
+        #status { font-size: 24px; font-weight: bold; margin-bottom: 5px; }
+        button { background: #ff4444; color: white; border: none; padding: 20px 40px; font-size: 20px; border-radius: 50px; cursor: pointer; }
         .safe-mode { background: #001a00 !important; }
-        .safe-text { color: #00ff00 !important; text-shadow: 0 0 20px #00ff00 !important; }
+        .safe-text { color: #00ff00 !important; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>WIRE TRACKER PRO v4.0</h2>
+    <h2>WIRE TRACKER v4.5</h2>
     <div id="display" class="value-box">0.0</div>
     <div id="status">Hazırdır</div>
-    <div id="log">Skaneri başlatmaq üçün düyməyə basın</div>
-    
-    <button id="startBtn" onclick="startApp()">SKANERİ BAŞLAT</button>
+    <p id="info">Skaneri başladın</p>
+    <button id="startBtn" onclick="startApp()">BAŞLAT</button>
 </div>
 
 <script>
     let audioCtx, oscillator, gainNode;
-    let baselineHeading = null;
-    let smoothedHeading = 0;
-    const smoothingFactor = 0.05; // 0-1 arası (nə qədər kiçik olsa, o qədər səlis olar)
-    const threshold = 10; // Həssaslıq (mühitə görə dəyişə bilər, kalibrasiya ilə tənzimlənəcək)
+    let lastValue = 0;
+    let currentBaseline = null;
+    let isScanning = false;
 
     function setupAudio() {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         oscillator = audioCtx.createOscillator();
         gainNode = audioCtx.createGain();
-        oscillator.type = 'sine'; 
+        oscillator.type = 'sine';
         oscillator.connect(gainNode);
         gainNode.connect(audioCtx.destination);
         gainNode.gain.value = 0;
@@ -53,87 +42,60 @@
     }
 
     function startApp() {
-        // Brauzer icazələri üçün səs və sensor klikdən sonra başlamalıdır
-        if (!audioCtx) setupAudio();
-        if (audioCtx.state === 'suspended') audioCtx.resume();
-
+        setupAudio();
         if (window.DeviceOrientationEvent) {
-            // Mütləq orientasiya (Maqnit Şimalına əsaslanır)
             window.addEventListener('deviceorientationabsolute', handleData, true);
-            
             document.getElementById('startBtn').style.display = 'none';
-            document.getElementById('status').innerText = "Kalibrasiya edilir...";
-            document.getElementById('log').innerText = "Telefonu sabit tutun (5 saniyə)...";
-            
-            // 5 saniyə sonra kalibrasiya başa çatır
-            setTimeout(() => {
-                document.getElementById('status').innerText = "Skan edilir...";
-                document.getElementById('log').innerText = "Telefonu divara toxundurun və yavaşca hərəkət etdirin.";
-            }, 5000);
+            isScanning = true;
+            document.getElementById('status').innerText = "Skan Edilir...";
         } else {
-            alert("Təəssüf ki, cihazınızda tələb olunan sensorlar (Kompas) tapılmadı.");
+            alert("Sensor tapılmadı!");
         }
     }
 
     function handleData(event) {
-        let heading = event.alpha || event.webkitCompassHeading;
+        if (!isScanning) return;
         
-        if (heading === null || heading === undefined) {
-            document.getElementById('status').innerText = "Sensor Xətası";
-            document.getElementById('log').innerText = "Cihazınız kompas məlumatı vermir.";
-            return;
-        }
-
-        // 1. Rəqəmləri səlis etmək (Smoothing)
-        smoothedHeading = (smoothingFactor * heading) + ((1 - smoothingFactor) * smoothedHeading);
-        
-        // Ekranı yenilə
+        let heading = event.alpha || event.webkitCompassHeading || 0;
         const display = document.getElementById('display');
-        display.innerText = smoothedHeading.toFixed(1);
-
-        // 2. Kalibrasiya (Fon səviyyəsini təyin etmək)
-        if (baselineHeading === null) {
-            baselineHeading = smoothedHeading;
-            return; 
-        }
-
-        // 3. Naqil/Metal Təyini Məntiqi
-        // Hazırkı dərəcə ilə fon dərəcəsi arasındakı fərq
-        let diff = Math.abs(smoothedHeading - baselineHeading);
-        
-        // 0-360 dərəcə keçidini nəzərə almaq
-        if (diff > 180) diff = Math.abs(diff - 360);
-
         const status = document.getElementById('status');
         const body = document.body;
 
-        // Əgər fərq təyin olunmuş həddən (threshold) çoxdursa (Naqil yaxınlığı)
-        if (diff > threshold) {
-            // NAQİL TAPILDI REJİMİ
+        // Rəqəmi göstər
+        display.innerText = heading.toFixed(1);
+
+        // İlk dəyəri fon kimi götür
+        if (currentBaseline === null) {
+            currentBaseline = heading;
+            return;
+        }
+
+        // Maqnit sahəsindəki kəskin fərqi hesabla
+        let diff = Math.abs(heading - currentBaseline);
+        if (diff > 180) diff = Math.abs(diff - 360);
+
+        // Əgər dərəcə çox oynayırsa (diff > 8 dərəcə) - Naqil tapıldı
+        if (diff > 8) {
             body.classList.add('safe-mode');
             display.classList.add('safe-text');
             status.innerText = "NAQİL TAPILDI!";
-            status.classList.add('safe-text');
             
-            // Səs və Vibrasiya
-            if (navigator.vibrate) navigator.vibrate(100); // 100ms titrəyiş
-            
-            // Səs tonunu fərqə görə artırırıq
+            if (navigator.vibrate) navigator.vibrate(50);
             if (gainNode) {
-                oscillator.frequency.value = 200 + (diff * 5); // Təməl ton + fərq
-                gainNode.gain.value = 0.1; // Səsi aç
+                oscillator.frequency.value = 200 + (diff * 4);
+                gainNode.gain.value = 0.1;
             }
         } else {
-            // NORMAL REJİM (Naqil Yoxdur)
+            // Əgər rəqəm stabil qalırsa, həmin rəqəmi yeni "fon" (baseline) kimi qəbul et
+            // Bu, "hər yerdə yaşıl olma" problemini həll edir
+            currentBaseline = (0.1 * heading) + (0.9 * currentBaseline);
+            
             body.classList.remove('safe-mode');
             display.classList.remove('safe-text');
-            status.innerText = "Skan edilir...";
-            status.classList.remove('safe-text');
-            
-            // Səs və Vibrasiyanı kəs
-            if (navigator.vibrate) navigator.vibrate(0);
-            if (gainNode) gainNode.gain.value = 0; // Səsi kəs
+            status.innerText = "Skan Edilir...";
+            if (gainNode) gainNode.gain.value = 0;
         }
+        lastValue = heading;
     }
 </script>
 </body>
