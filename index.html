@@ -3,112 +3,111 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wire Tracker Professional v11</title>
+    <title>Wire X-Ray Visualizer</title>
     <style>
-        body { background: #000; color: #fff; text-align: center; font-family: 'Segoe UI', sans-serif; margin: 0; transition: 0.3s; }
-        .container { height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; }
-        #status { font-size: 22px; color: #00ff00; margin-bottom: 20px; font-weight: bold; min-height: 50px; }
-        .value { font-size: 90px; font-weight: 900; font-family: monospace; color: #333; }
-        button { background: #ff4444; color: #fff; border: none; padding: 25px 60px; font-size: 24px; border-radius: 15px; font-weight: bold; cursor: pointer; box-shadow: 0 5px 20px rgba(255,0,0,0.4); }
-        .detect-mode { background: #ff0000 !important; }
-        .active-val { color: #fff; text-shadow: 0 0 15px #00ff00; }
+        body { background: #000; color: #fff; font-family: sans-serif; margin: 0; overflow: hidden; text-align: center; }
+        canvas { display: block; background: #050505; touch-action: none; }
+        .ui-overlay { position: absolute; top: 10px; width: 100%; pointer-events: none; }
+        #status { font-size: 18px; color: #0f0; text-shadow: 0 0 10px #0f0; }
+        .controls { position: absolute; bottom: 20px; width: 100%; }
+        button { background: #ff4444; color: #fff; border: none; padding: 15px 40px; font-size: 20px; border-radius: 30px; cursor: pointer; pointer-events: auto; }
     </style>
 </head>
-<body id="mainBody">
+<body>
 
-<div class="container">
-    <div id="status">Нажмите кнопку для активации детектора</div>
-    <div id="display" class="value">0.0</div>
-    <br>
-    <button id="startBtn" onclick="runDetector()">ЗАПУСТИТЬ</button>
+<div class="ui-overlay">
+    <div id="status">Нажмите кнопку для калибровки</div>
+    <div style="font-size: 40px; font-weight: bold;" id="valDisplay">0</div>
+</div>
+
+<canvas id="heatmapCanvas"></canvas>
+
+<div class="controls">
+    <button id="startBtn" onclick="initXRay()">ЗАПУСТИТЬ РЕНТГЕН</button>
 </div>
 
 <script>
+    const canvas = document.getElementById('heatmapCanvas');
+    const ctx = canvas.getContext('2d');
     let baseline = null;
-    let isFound = false;
-    let lastSpeak = 0;
+    let isScanning = false;
+    let particles = [];
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
 
     function speak(text) {
         window.speechSynthesis.cancel();
         const msg = new SpeechSynthesisUtterance(text);
         msg.lang = 'ru-RU';
-        msg.rate = 1.0;
         window.speechSynthesis.speak(msg);
     }
 
-    function runDetector() {
+    function initXRay() {
         document.getElementById('startBtn').style.display = 'none';
-        speak("Система запускается. Приложите телефон к стене и не двигайте его три секунды.");
-        document.getElementById('status').innerText = "КАЛИБРОВКА... НЕ ДВИГАЙТЕСЬ";
-
+        speak("Приложите телефон к стене и не двигайте три секунды для настройки рентгена.");
+        document.getElementById('status').innerText = "НАСТРОЙКА ВИЗУАЛИЗАЦИИ...";
+        
         setTimeout(() => {
-            setupSensors();
+            startTracking();
         }, 3500);
     }
 
-    function setupSensors() {
-        // Əsas metod: Magnetometer
+    function startTracking() {
         if ('Magnetometer' in window) {
-            try {
-                const mag = new Magnetometer({frequency: 60});
-                mag.addEventListener('reading', () => {
-                    let total = Math.sqrt(mag.x**2 + mag.y**2 + mag.z**2);
-                    logic(total);
-                });
-                mag.start();
-            } catch (e) {
-                fallbackSensor();
-            }
+            const sensor = new Magnetometer({frequency: 60});
+            sensor.addEventListener('reading', () => {
+                let mag = Math.sqrt(sensor.x**2 + sensor.y**2 + sensor.z**2);
+                process(mag);
+            });
+            sensor.start();
         } else {
-            fallbackSensor();
+            window.addEventListener('deviceorientationabsolute', (e) => {
+                process(e.alpha || 0);
+            }, true);
         }
+        speak("Система готова. Медленно ведите телефон по стене. Красные пятна укажут на путь провода.");
+        document.getElementById('status').innerText = "РЕНТГЕН АКТИВЕН: ИЩИТЕ КРАСНЫЙ СЛЕД";
+        isScanning = true;
     }
 
-    function fallbackSensor() {
-        // Alternativ metod: Absolute Orientation (Chrome blokunu aşmaq üçün)
-        window.addEventListener('deviceorientationabsolute', (e) => {
-            let val = e.alpha || 0;
-            logic(val);
-        }, true);
-        speak("Внимание. Используется альтернативный сенсор. Медленно ведите телефон вправо и влево.");
-        document.getElementById('status').innerText = "ПОИСК (АЛЬТЕРНАТИВНЫЙ РЕЖИМ)";
-    }
-
-    function logic(val) {
-        const display = document.getElementById('display');
-        const body = document.getElementById('mainBody');
-        const status = document.getElementById('status');
-
-        if (baseline === null) {
-            baseline = val;
-            speak("Калибровка завершена. Медленно ведите телефон по стене.");
-            document.getElementById('status').innerText = "МЕДЛЕННО ИЩИТЕ ПРОВОД";
-            display.classList.add('active-val');
-            return;
-        }
-
+    function process(val) {
+        if (baseline === null) { baseline = val; return; }
+        
         let diff = Math.abs(val - baseline);
-        display.innerText = val.toFixed(1);
+        document.getElementById('valDisplay').innerText = val.toFixed(0);
 
-        // NAQİL TAPILDI MƏNTİQİ
-        if (diff > 40) { 
-            if (!isFound) {
-                body.classList.add('detect-mode');
-                status.innerText = "ПРОВОД НАЙДЕН! ЗАФИКСИРУЙТЕ МЕСТО!";
-                if (Date.now() - lastSpeak > 5000) {
-                    speak("Провод найден! Остановитесь и отметьте это место. Не двигайте телефон.");
-                    lastSpeak = Date.now();
-                }
-                if (navigator.vibrate) navigator.vibrate([500, 200, 500]);
-                isFound = true;
-            }
+        // Vizual iz buraxma (Heatmap məntiqi)
+        // Telefonu hərəkət etdirdikcə ekranın mərkəzinə rəngli dairələr çəkir
+        let centerX = canvas.width / 2;
+        let centerY = canvas.height / 2;
+        
+        let color;
+        if (diff > 40) {
+            color = `rgba(255, 0, 0, 0.5)`; // Naqil tapıldı - Qırmızı
+            if (Math.random() > 0.9) speak("Обнаружен провод. Двигайтесь по красной линии.");
+        } else if (diff > 15) {
+            color = `rgba(255, 165, 0, 0.3)`; // Yaxınlaşır - Narıncı
         } else {
-            body.classList.remove('detect-mode');
-            status.innerText = "МЕДЛЕННО ИЩИТЕ ПРОВОД";
-            isFound = false;
-            // Adaptasiya: Havada tərpədəndə boş danışmaması üçün
-            baseline = (0.01 * val) + (0.99 * baseline);
+            color = `rgba(0, 100, 255, 0.1)`; // Boş yer - Göy
         }
+
+        // Ekrana nöqtə əlavə et
+        drawHeatPoint(centerX, centerY, color, diff);
+        
+        // Fonu yavaşca adaptasiya et
+        baseline = (0.01 * val) + (0.99 * baseline);
+    }
+
+    function drawHeatPoint(x, y, color, intensity) {
+        let size = 20 + (intensity * 0.5);
+        ctx.beginPath();
+        ctx.arc(x, y, size, 0, Math.PI * 2);
+        ctx.fillStyle = color;
+        ctx.fill();
+        
+        // Köhnə izlərin yavaşca solmaması üçün ekranı təmizləmirik, 
+        // beləcə "Yol" çəkilmiş olur.
     }
 </script>
 </body>
