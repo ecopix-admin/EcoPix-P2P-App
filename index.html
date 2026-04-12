@@ -3,121 +3,118 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wire Tracker Pro + Sound & Haptic</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Wire Tracker Pro + Wave Animation</title>
     <style>
-        body { background: #050505; color: #00ff41; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; margin: 0; padding: 10px; }
-        .value-box { font-size: 60px; font-weight: bold; text-shadow: 0 0 20px #00ff41; margin: 20px 0; }
-        #status { font-size: 20px; color: #fff; height: 40px; margin-bottom: 10px; }
-        canvas { max-width: 100%; background: #111; border: 1px solid #333; border-radius: 10px; }
-        .controls { margin-top: 20px; }
-        button { background: #00ff41; color: #000; border: none; padding: 20px 40px; font-size: 20px; font-weight: bold; border-radius: 50px; cursor: pointer; box-shadow: 0 0 15px #00ff41; }
+        body { background: #000; color: #00ff00; font-family: 'Courier New', monospace; text-align: center; margin: 0; overflow: hidden; }
+        .container { padding: 20px; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        
+        /* Rəqəm qutusu */
+        .value-box { font-size: 70px; font-weight: bold; margin-bottom: 10px; text-shadow: 0 0 20px #00ff00; }
+        
+        /* Dalğa Animasiyası */
+        .wave-container { width: 100%; height: 150px; display: flex; align-items: flex-end; justify-content: center; gap: 5px; margin: 20px 0; }
+        .bar { width: 10px; background: #00ff00; border-radius: 5px 5px 0 0; transition: height 0.1s ease; box-shadow: 0 0 10px #00ff00; }
+
+        button { background: #00ff00; color: #000; border: none; padding: 20px 40px; font-size: 20px; font-weight: bold; border-radius: 50px; cursor: pointer; z-index: 10; }
         .danger { color: #ff0000; text-shadow: 0 0 20px #ff0000; }
+        .danger-bar { background: #ff0000 !important; box-shadow: 0 0 15px #ff0000 !important; }
     </style>
 </head>
 <body>
 
-    <h2>WIRE TRACKER v2.0</h2>
-    <div id="status">Sistem aktiv edilməyi gözləyir...</div>
-    <div id="display" class="value-box">0.00 µT</div>
+<div class="container">
+    <h2>WIRE TRACKER PRO</h2>
+    <div id="status">Hazırdır</div>
+    <div id="display" class="value-box">0.0</div>
     
-    <canvas id="liveChart" height="150"></canvas>
+    <div class="wave-container" id="waveContainer">
+        </div>
 
-    <div class="controls">
-        <button id="startBtn" onclick="startApp()">SKANERİ BAŞLAT</button>
-    </div>
+    <button id="startBtn" onclick="startApp()">SKANERİ BAŞLAT</button>
+</div>
 
 <script>
-    let sensor;
-    let chart;
-    let audioCtx;
-    let oscillator;
-    let gainNode;
+    let audioCtx, oscillator, gainNode;
+    let lastHeading = 0;
+    const bars = [];
+    const barCount = 20;
 
-    // Səs sistemini yaradırıq
+    // Dalğa barlarını yaradırıq
+    const waveContainer = document.getElementById('waveContainer');
+    for (let i = 0; i < barCount; i++) {
+        const bar = document.createElement('div');
+        bar.className = 'bar';
+        bar.style.height = '10px';
+        waveContainer.appendChild(bar);
+        bars.push(bar);
+    }
+
     function setupAudio() {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         oscillator = audioCtx.createOscillator();
         gainNode = audioCtx.createGain();
-        
-        oscillator.type = 'sine'; // Səs tipi
+        oscillator.type = 'square'; 
         oscillator.connect(gainNode);
         gainNode.connect(audioCtx.destination);
-        
-        gainNode.gain.value = 0; // Başlanğıcda səs bağlı
+        gainNode.gain.value = 0;
         oscillator.start();
     }
 
-    // Qrafik yaradılması
-    const ctx = document.getElementById('liveChart').getContext('2d');
-    chart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: Array(40).fill(''),
-            datasets: [{
-                label: 'Maqnit Sahəsi',
-                data: Array(40).fill(0),
-                borderColor: '#00ff41',
-                borderWidth: 2,
-                fill: true,
-                backgroundColor: 'rgba(0, 255, 65, 0.1)',
-                tension: 0.3
-            }]
-        },
-        options: {
-            scales: { y: { min: 0, max: 250 } },
-            animation: false,
-            plugins: { legend: { display: false } }
-        }
-    });
-
-    async function startApp() {
-        // Brauzer təhlükəsizliyi üçün səs və sensor istifadəçi klikindən sonra başlamalıdır
-        if (!audioCtx) setupAudio();
+    function startApp() {
+        setupAudio();
         if (audioCtx.state === 'suspended') audioCtx.resume();
 
-        if ('Magnetometer' in window) {
-            try {
-                sensor = new Magnetometer({frequency: 25}); // Daha sürətli reaksiya
-                sensor.addEventListener('reading', () => {
-                    const mag = Math.sqrt(sensor.x**2 + sensor.y**2 + sensor.z**2).toFixed(2);
-                    const val = parseFloat(mag);
-
-                    // 1. Rəqəmləri Yenilə
-                    document.getElementById('display').innerText = mag + " µT";
-
-                    // 2. Qrafiki Yenilə
-                    chart.data.datasets[0].data.shift();
-                    chart.data.datasets[0].data.push(val);
-                    chart.update();
-
-                    // 3. Səs və Titrəyiş Məntiqi
-                    if (val > 80) { // Naqil yaxınlaşdıqda
-                        document.getElementById('display').classList.add('danger');
-                        document.getElementById('status').innerText = "DİQQƏT: SİQNAL YÜKSƏKDİR!";
-                        
-                        // Səs tonunu rəqəmə görə artırırıq
-                        oscillator.frequency.value = 200 + (val * 2);
-                        gainNode.gain.value = 0.1; // Səsi aç
-
-                        // Titrəyiş (Naqilə yaxınlaşdıqca şiddəti artır)
-                        if (navigator.vibrate) {
-                            navigator.vibrate(Math.min(val / 2, 200)); 
-                        }
-                    } else {
-                        document.getElementById('display').classList.remove('danger');
-                        document.getElementById('status').innerText = "Axtarılır...";
-                        gainNode.gain.value = 0; // Səsi kəs
-                    }
-                });
-                sensor.start();
-                document.getElementById('startBtn').style.display = 'none';
-            } catch (err) {
-                alert("Xəta: " + err.message);
-            }
+        if (window.DeviceOrientationEvent) {
+            window.addEventListener('deviceorientationabsolute', handleData, true);
+            window.addEventListener('deviceorientation', handleData, true);
+            document.getElementById('startBtn').style.display = 'none';
+            document.getElementById('status').innerText = "Skan edilir...";
         } else {
-            alert("Magnetometer dəstəklənmir. Chrome Android istifadə edin.");
+            alert("Sensor tapılmadı!");
         }
+    }
+
+    function handleData(event) {
+        let heading = event.alpha || event.webkitCompassHeading || 0;
+        let diff = Math.abs(heading - lastHeading);
+        
+        // Sıçrayışları süzgəcdən keçiririk (0-360 keçidi üçün)
+        if (diff > 180) diff = Math.abs(diff - 360);
+
+        // Ekranı yenilə
+        const display = document.getElementById('display');
+        display.innerText = heading.toFixed(1);
+
+        // Naqil/Metal aşkarlananda (Həssaslıq: diff > 2)
+        if (diff > 2) {
+            let intensity = Math.min(diff * 10, 150); // Dalğa hündürlüyü
+            updateWaves(intensity, true);
+            
+            // Səs və Vibrasiya
+            oscillator.frequency.value = 100 + (intensity * 5);
+            gainNode.gain.value = 0.1;
+            if (navigator.vibrate) navigator.vibrate(50);
+            
+            display.classList.add('danger');
+        } else {
+            updateWaves(10, false);
+            gainNode.gain.value = 0;
+            display.classList.remove('danger');
+        }
+        lastHeading = heading;
+    }
+
+    function updateWaves(height, isDanger) {
+        bars.forEach((bar, index) => {
+            // Təsadüfi dalğa effekti üçün balaca rəqəmlər əlavə edirik
+            let randomHeight = height + Math.random() * 20;
+            bar.style.height = randomHeight + 'px';
+            if (isDanger) {
+                bar.classList.add('danger-bar');
+            } else {
+                bar.classList.remove('danger-bar');
+            }
+        });
     }
 </script>
 </body>
