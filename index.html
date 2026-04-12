@@ -3,32 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wire Tracker Pro v5.0</title>
+    <title>Wire Tracker Pro v6.0</title>
     <style>
-        body { background: #121212; color: #e0e0e0; font-family: sans-serif; text-align: center; margin: 0; padding: 20px; transition: background 0.3s; }
-        .container { height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-        .value-box { font-size: 90px; font-weight: bold; font-family: 'Courier New', monospace; margin: 15px 0; color: #444; }
-        #status { font-size: 22px; margin-bottom: 10px; color: #aaa; text-transform: uppercase; letter-spacing: 2px; }
-        button { background: #2ecc71; color: white; border: none; padding: 25px 50px; font-size: 22px; border-radius: 50px; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
-        .detect-mode { background: #000 !important; }
-        .detect-text { color: #00ff00 !important; text-shadow: 0 0 30px #00ff00; }
-        .no-detect-text { color: #ff3333 !important; }
+        body { background: #0a0a0a; color: #555; font-family: 'Segoe UI', sans-serif; text-align: center; margin: 0; transition: 0.4s; }
+        .container { height: 100vh; display: flex; flex-direction: column; justify-content: center; }
+        .value-box { font-size: 100px; font-weight: 900; letter-spacing: -2px; margin: 10px 0; }
+        #status { font-size: 18px; font-weight: bold; letter-spacing: 3px; color: #444; }
+        button { background: #444; color: #000; border: none; padding: 25px 60px; font-size: 22px; border-radius: 10px; cursor: pointer; font-weight: bold; }
+        
+        /* Tapıldı rejimi - Parlaq Yaşıl */
+        .found { background: #00ff41 !important; color: #000 !important; }
+        .found .value-box { color: #000 !important; }
+        .found #status { color: #000 !important; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div id="status">Sistem Hazırdır</div>
+<div class="container" id="mainBg">
+    <div id="status">SİSTEM DEAKTİVDİR</div>
     <div id="display" class="value-box">0.0</div>
-    <p id="msg">Telefonu havada sabit tutub başladın</p>
-    <button id="startBtn" onclick="startApp()">SKANERİ BAŞLAT</button>
+    <div id="msg">Kalibrasiya üçün düyməyə basıb 3 saniyə gözləyin</div>
+    <br>
+    <button id="startBtn" onclick="startApp()">SKANERI BAŞLAT</button>
 </div>
 
 <script>
     let audioCtx, oscillator, gainNode;
     let smoothedValue = 0;
-    let baseline = null;
-    let isReady = false;
+    let baseline = 0;
+    let isCalibrated = false;
 
     function setupAudio() {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -46,66 +49,58 @@
         if (window.DeviceOrientationEvent) {
             window.addEventListener('deviceorientationabsolute', handleData, true);
             document.getElementById('startBtn').style.display = 'none';
-            document.getElementById('status').innerText = "KALİBRASİYA...";
+            document.getElementById('status').innerText = "KALİBRASİYA OLUNUR...";
             
-            // 3 saniyəlik sakitləşmə müddəti
+            // 3 saniyə sabit saxlayın ki, fonu ölçsün
             setTimeout(() => {
-                isReady = true;
-                document.getElementById('status').innerText = "SKAN EDİLİR";
-                document.getElementById('msg').innerText = "Divar boyu yavaşca sürüşdürün";
+                isCalibrated = true;
+                document.getElementById('status').innerText = "HAZIR - SKAN EDİN";
+                document.getElementById('msg').innerText = "Yavaş hərəkət etdirin";
             }, 3000);
-        } else {
-            alert("Cihazınızda maqnit sensoru tapılmadı!");
         }
     }
 
     function handleData(event) {
         let rawVal = event.alpha || event.webkitCompassHeading || 0;
 
-        // 1. Rəqəmləri inanılmaz dərəcədə stabil edən filtr (EMA)
-        smoothedValue = (0.05 * rawVal) + (0.95 * smoothedValue);
+        // GÜCLÜ FİLTR: Rəqəmlərin qaçmasının qarşısını alır (Low-pass filter)
+        smoothedValue = (0.03 * rawVal) + (0.97 * smoothedValue);
         
         const display = document.getElementById('display');
         const status = document.getElementById('status');
-        const body = document.body;
+        const mainBg = document.getElementById('mainBg');
 
-        if (!isReady) {
+        if (!isCalibrated) {
             baseline = smoothedValue;
             display.innerText = smoothedValue.toFixed(1);
             return;
         }
 
-        // 2. Fon dərəcəsi ilə fərqi hesabla
+        // Fərqi hesabla
         let diff = Math.abs(smoothedValue - baseline);
         if (diff > 180) diff = Math.abs(diff - 360);
 
         display.innerText = smoothedValue.toFixed(1);
 
-        // 3. NAQİL TƏYİNİ (Yalnız kəskin sıçrayışda)
-        // Diff > 12: Bu rəqəmi artıra bilərsiniz ki, daha gec reaksiya versin (həssaslıq azalır)
-        if (diff > 12) {
-            body.classList.add('detect-mode');
-            display.classList.add('detect-text');
-            display.classList.remove('no-detect-text');
+        // HƏSSASLIQ AYARI: 15 dərəcədən çox sıçrayış olsa (Naqil deməkdir)
+        if (diff > 15) {
+            mainBg.classList.add('found');
             status.innerText = "NAQİL TAPILDI!";
             
-            // Titrəyiş və Səs yalnız burda işləyir
-            if (navigator.vibrate) navigator.vibrate(60);
+            // Vibrasiya və Səs
+            if (navigator.vibrate) navigator.vibrate(80);
             if (gainNode) {
-                oscillator.frequency.value = 150 + (diff * 3);
-                gainNode.gain.setTargetAtTime(0.1, audioCtx.currentTime, 0.01);
+                oscillator.frequency.value = 180 + (diff * 2);
+                gainNode.gain.setTargetAtTime(0.15, audioCtx.currentTime, 0.01);
             }
         } else {
-            // NORMAL HAL - Heç bir səs və ya vibra olmamalıdır
-            body.classList.remove('detect-mode');
-            display.classList.remove('detect-text');
-            display.classList.add('no-detect-text');
-            status.innerText = "SKAN EDİLİR";
-            
+            // NORMAL HAL: Heç bir səs və ya titrəyiş yoxdur
+            mainBg.classList.remove('found');
+            status.innerText = "SKAN EDİLİR...";
             if (gainNode) gainNode.gain.setTargetAtTime(0, audioCtx.currentTime, 0.01);
             
-            // Əgər stabil qalıbsa, baseline-ı yavaşca hazırkı vəziyyətə çək ki, rəqəm adaptasiya olsun
-            baseline = (0.02 * smoothedValue) + (0.98 * baseline);
+            // Adaptiv Baseline: Ətraf mühitə yavaşca uyğunlaşır ki, yalançı siqnal verməsin
+            baseline = (0.01 * smoothedValue) + (0.99 * baseline);
         }
     }
 </script>
