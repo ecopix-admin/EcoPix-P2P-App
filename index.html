@@ -3,99 +3,95 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Детектор Проводок Pro</title>
+    <title>Master Wire Detector</title>
     <style>
-        body { background: #000; color: #fff; text-align: center; font-family: sans-serif; margin: 0; transition: background 0.3s; }
-        .ui-container { height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; }
-        .value-box { font-size: 100px; font-weight: bold; margin: 20px 0; font-family: 'Courier New', monospace; }
-        #status { font-size: 22px; color: #666; font-weight: bold; margin-bottom: 30px; letter-spacing: 2px; }
-        button { background: #ff4444; color: #fff; border: none; padding: 25px 60px; font-size: 22px; border-radius: 10px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 15px rgba(255,0,0,0.3); }
-        .detected { background: #00ff00 !important; color: #000 !important; }
-        .detected .value-box, .detected #status { color: #000 !important; }
+        body { background: #000; color: #fff; text-align: center; font-family: 'Segoe UI', sans-serif; margin: 0; overflow: hidden; }
+        .main-container { height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; }
+        .value-display { font-size: 80px; font-weight: 900; margin: 20px 0; color: #444; transition: 0.2s; }
+        #instruction { font-size: 20px; color: #00ff00; margin-bottom: 40px; min-height: 60px; line-height: 1.5; }
+        button { background: #00ff00; color: #000; border: none; padding: 25px 60px; font-size: 24px; border-radius: 12px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
+        .active-scan { color: #fff !important; text-shadow: 0 0 20px #00ff00; }
+        .found { background: #ff0000 !important; }
     </style>
 </head>
-<body id="bg">
+<body id="bodyTag">
 
-<div class="ui-container">
-    <div id="status">СИСТЕМА ГОТОВА</div>
-    <div class="value-box" id="display">0</div>
-    <p id="msg">Держите телефон неподвижно 3 секунды для калибровки</p>
-    <button id="startBtn" onclick="initApp()">ЗАПУСТИТЬ СКАНЕР</button>
+<div class="main-container">
+    <div id="instruction">Нажмите кнопку, чтобы начать настройку системы</div>
+    <div id="val" class="value-display">0.0</div>
+    <button id="mainBtn" onclick="startMasterProcess()">Начать работу</button>
 </div>
 
 <script>
-    let baseline = null;
-    let isScanning = false;
+    let baseline = 0;
+    let isCalibrated = false;
     let lastSpeakTime = 0;
 
-    // РУССКАЯ ОЗВУЧКА
-    function speakRussian() {
-        const currentTime = Date.now();
-        // Повтор фразы раз в 4 секунды, чтобы не надоедало
-        if (currentTime - lastSpeakTime > 4000) {
-            const msg = new SpeechSynthesisUtterance();
-            msg.text = "Провод найден"; 
-            msg.lang = 'ru-RU'; // Rus dili ayarı
-            msg.rate = 1.0;
-            window.speechSynthesis.speak(msg);
-            lastSpeakTime = currentTime;
-        }
+    function speak(text) {
+        window.speechSynthesis.cancel(); // Köhnə səsi kəs ki, üst-üstə düşməsin
+        const msg = new SpeechSynthesisUtterance(text);
+        msg.lang = 'ru-RU';
+        msg.rate = 1.0;
+        window.speechSynthesis.speak(msg);
     }
 
-    function initApp() {
-        // APK daxilində tam maqnitometri işlətmək üçün ən yaxşı üsul
+    async function startMasterProcess() {
+        document.getElementById('mainBtn').style.display = 'none';
+        
+        // ADDIM 1: İlk təlimat
+        speak("Пожалуйста, приложите телефон к стене в чистом месте и не двигайте его три секунды.");
+        document.getElementById('instruction').innerText = "ПРИЛОЖИТЕ К СТЕНЕ И НЕ ДВИГАЙТЕ...";
+
+        setTimeout(() => {
+            // ADDIM 2: Kalibrasiya (Mühit ölçülür)
+            initSensor();
+        }, 3500);
+    }
+
+    function initSensor() {
         if ('Magnetometer' in window) {
             const sensor = new Magnetometer({frequency: 60});
             sensor.addEventListener('reading', () => {
-                let x = sensor.x, y = sensor.y, z = sensor.z;
-                let mag = Math.sqrt(x*x + y*y + z*z).toFixed(1);
-                processData(mag);
+                let mag = Math.sqrt(sensor.x**2 + sensor.y**2 + sensor.z**2);
+                
+                if (!isCalibrated) {
+                    baseline = mag;
+                    isCalibrated = true;
+                    speak("Система настроена. Теперь медленно ведите телефон вправо и влево по стене.");
+                    document.getElementById('instruction').innerText = "МЕДЛЕННО ВЕДИТЕ ВПРАВО И ВЛЕВО";
+                    document.getElementById('val').classList.add('active-scan');
+                } else {
+                    checkLogic(mag);
+                }
             });
             sensor.start();
         } else {
-            // Alternativ metod (Eski telefonlar üçün)
-            window.addEventListener('deviceorientationabsolute', (e) => {
-                let val = e.alpha || 0;
-                processData(val.toFixed(1));
-            }, true);
+            alert("Magnetometer API не поддерживается. Используйте Chrome Android.");
         }
-        
-        document.getElementById('startBtn').style.display = 'none';
-        document.getElementById('status').innerText = "ИДЕТ ПОИСК...";
-        isScanning = true;
     }
 
-    function processData(currentVal) {
-        const display = document.getElementById('display');
-        const bg = document.getElementById('bg');
-        const status = document.getElementById('status');
+    function checkLogic(currentMag) {
+        let diff = Math.abs(currentMag - baseline);
+        const display = document.getElementById('val');
+        const body = document.getElementById('bodyTag');
+        const instruction = document.getElementById('instruction');
+        
+        display.innerText = currentMag.toFixed(1);
 
-        display.innerText = currentVal;
-
-        if (baseline === null) {
-            baseline = currentVal;
-            return;
-        }
-
-        // КРИТИЧЕСКИЙ ПОРОГ: 
-        // Если отклонение больше 25 единиц — это металл или провод
-        let diff = Math.abs(currentVal - baseline);
-
-        if (diff > 25) { 
-            bg.classList.add('detected');
-            status.innerText = "ПРОВОД НАЙДЕН!";
+        // HƏSSASLIQ MƏNTİQİ
+        if (diff > 35) { // Real naqil tapıldı
+            body.classList.add('found');
+            instruction.innerText = "ПРОВОД НАЙДЕН! НЕ ДВИГАЙТЕСЬ И ОТМЕТЬТЕ МЕСТО!";
             
-            // Вибрация
-            if (navigator.vibrate) navigator.vibrate(300);
-            
-            // Голосовое уведомление
-            speakRussian();
+            if (Date.now() - lastSpeakTime > 5000) {
+                speak("Провод найден! Остановитесь и отметьте это место.");
+                lastSpeakTime = Date.now();
+                if (navigator.vibrate) navigator.vibrate([500, 200, 500]);
+            }
         } else {
-            bg.classList.remove('detected');
-            status.innerText = "ИДЕТ ПОИСК...";
-            
-            // Адаптивная калибровка: плавно подстраиваемся под фон (убирает реакцию на движение)
-            baseline = (0.01 * currentVal) + (0.99 * baseline);
+            body.classList.remove('found');
+            // Havada tərpədəndə boş danışmasın deyə bura səs qoymuruq
+            baseline = (0.02 * currentMag) + (0.98 * baseline); // Adaptasiya
         }
     }
 </script>
