@@ -3,86 +3,110 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wire Tracker Pro v7.0</title>
+    <title>Wire Tracker Master v8.0</title>
     <style>
-        body { background: #000; color: #333; font-family: 'Arial', sans-serif; text-align: center; margin: 0; overflow: hidden; transition: background 0.1s; }
-        .container { height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-        .value { font-size: 110px; font-weight: 900; margin: 0; transition: color 0.2s; }
-        #status { font-size: 20px; font-weight: bold; letter-spacing: 5px; margin-bottom: 20px; }
-        button { background: #222; color: #fff; border: 2px solid #444; padding: 20px 50px; font-size: 20px; border-radius: 5px; cursor: pointer; }
+        body { background: #000; color: #fff; font-family: 'Segoe UI', sans-serif; text-align: center; margin: 0; transition: background 0.1s; overflow: hidden; }
+        .container { height: 100vh; display: flex; flex-direction: column; justify-content: space-around; padding: 20px; }
+        .value { font-size: 120px; font-weight: bold; font-family: monospace; }
+        .status-text { font-size: 24px; font-weight: bold; color: #555; text-transform: uppercase; }
+        .slider-container { background: #222; padding: 20px; border-radius: 15px; }
+        input[type=range] { width: 100%; height: 20px; }
+        button { background: #ff4444; color: #fff; border: none; padding: 25px 60px; font-size: 24px; border-radius: 50px; font-weight: bold; cursor: pointer; box-shadow: 0 0 20px rgba(255,68,68,0.4); }
         
-        /* NAQİL TAPILDI - YAŞIL REJİM */
+        /* NAQİL TAPILANDA */
         .detected { background: #00ff00 !important; color: #000 !important; }
-        .detected .value { color: #000 !important; }
-        .detected #status { color: #000 !important; }
+        .detected .status-text { color: #000 !important; }
     </style>
 </head>
 <body>
 
-<div class="container" id="bg">
-    <div id="status">SİSTEM SÖNDÜRÜLÜB</div>
+<div class="container" id="mainBg">
+    <div id="status" class="status-text">SİSTEM DEAKTİVDİR</div>
+    
     <div id="display" class="value">0</div>
-    <div id="info" style="margin-bottom: 30px;">Naqili tapmaq üçün başlat düyməsinə basın</div>
-    <button id="btn" onclick="init()">BAŞLAT</button>
+    
+    <div class="slider-container">
+        <label>HƏSSASLIQ AYARI</label><br>
+        <input type="range" id="sensitivity" min="5" max="50" value="20">
+        <p>Divara görə tənzimləyin</p>
+    </div>
+
+    <button id="startBtn" onclick="initScanner()">DETEKTORU BAŞLAT</button>
 </div>
 
 <script>
     let audioCtx, osc, gain;
-    let values = [];
-    const windowSize = 10; // Stabilizasiya pəncərəsi
     let isRunning = false;
+    let lastValues = [];
+    let canSpeak = true;
 
-    function init() {
+    // Səsli bildiriş funksiyası
+    function speak(text) {
+        if (!canSpeak) return;
+        const msg = new SpeechSynthesisUtterance();
+        msg.text = text;
+        msg.lang = 'az-AZ';
+        msg.rate = 1.2;
+        window.speechSynthesis.speak(msg);
+        
+        // Səsin ard-arda təkrarlanmaması üçün 3 saniyəlik blok
+        canSpeak = false;
+        setTimeout(() => { canSpeak = true; }, 3000);
+    }
+
+    function initScanner() {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         osc = audioCtx.createOscillator();
         gain = audioCtx.createGain();
-        osc.type = 'square'; // Daha güclü səs üçün 'square'
+        osc.type = 'sawtooth'; 
         osc.connect(gain);
         gain.connect(audioCtx.destination);
         gain.gain.value = 0;
         osc.start();
 
         if (window.DeviceOrientationEvent) {
-            window.addEventListener('deviceorientationabsolute', process, true);
-            document.getElementById('btn').style.display = 'none';
-            document.getElementById('status').innerText = "SKANER AKTİVDİR";
+            window.addEventListener('deviceorientationabsolute', analyze, true);
+            document.getElementById('startBtn').style.display = 'none';
+            document.getElementById('status').innerText = "SKAN EDİLİR...";
             isRunning = true;
+        } else {
+            alert("Sensor tapılmadı!");
         }
     }
 
-    function process(e) {
+    function analyze(e) {
         if (!isRunning) return;
 
         let val = e.alpha || e.webkitCompassHeading || 0;
         
-        // Stabilizasiya Filtrləri (Moving Average)
-        values.push(val);
-        if (values.length > windowSize) values.shift();
-        let avg = values.reduce((a, b) => a + b) / values.length;
-
-        // Hazırkı dərəcə ilə ortalama arasındakı "Kəskin Fərq" (Jerk)
-        let delta = Math.abs(val - avg);
-        if (delta > 180) delta = Math.abs(delta - 360);
+        // Stabilizasiya üçün son 5 dəyəri saxla
+        lastValues.push(val);
+        if (lastValues.length > 5) lastValues.shift();
+        
+        // "Maqnit küyünü" (Jitter) hesabla
+        // Əgər telefon sabitdirsə amma rəqəm oynayırsa, bu naqildir
+        let jitter = Math.abs(val - lastValues[0]);
+        if (jitter > 180) jitter = Math.abs(jitter - 360);
 
         const display = document.getElementById('display');
-        const bg = document.getElementById('bg');
+        const bg = document.getElementById('mainBg');
         const status = document.getElementById('status');
+        const sensLimit = document.getElementById('sensitivity').value;
 
-        display.innerText = Math.floor(avg);
+        display.innerText = Math.floor(jitter);
 
-        // KRİTİK HƏDD: 25 dərəcə. 
-        // Əgər telefonun hərəkəti normaldırsa delta 2-5 arası olur. 
-        // Naqilin yanında bu rəqəm 25-i keçir.
-        if (delta > 25) { 
-            bg.classList.add('detected');
-            status.innerText = "NAQİL TAPILDI!";
+        // Əgər titrəmə (jitter) istifadəçinin qoyduğu həddən çoxdursa
+        if (jitter > sensLimit) {
+            if (!bg.classList.contains('detected')) {
+                bg.classList.add('detected');
+                status.innerText = "NAQİL TAPILDI!";
+                speak("Naqili tapdım");
+            }
             
-            // Güclü Vibrasiya
+            // Vibrasiya və Səs siqnalı
             if (navigator.vibrate) navigator.vibrate(200);
-            
-            // Möhkəm Səs
-            osc.frequency.setTargetAtTime(300 + (delta * 10), audioCtx.currentTime, 0.05);
-            gain.gain.setTargetAtTime(0.3, audioCtx.currentTime, 0.05);
+            osc.frequency.setTargetAtTime(400 + (jitter * 5), audioCtx.currentTime, 0.05);
+            gain.gain.setTargetAtTime(0.4, audioCtx.currentTime, 0.05);
         } else {
             bg.classList.remove('detected');
             status.innerText = "SKAN EDİLİR...";
