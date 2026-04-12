@@ -3,57 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wire Tracker Pro + Wave Animation</title>
+    <title>Wire Tracker Pro v4.0</title>
     <style>
-        body { background: #000; color: #00ff00; font-family: 'Courier New', monospace; text-align: center; margin: 0; overflow: hidden; }
-        .container { padding: 20px; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        body { background: #1a0000; color: white; font-family: 'Courier New', monospace; text-align: center; margin: 0; padding: 20px; transition: background 0.3s ease; }
+        .container { height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; }
         
         /* Rəqəm qutusu */
-        .value-box { font-size: 70px; font-weight: bold; margin-bottom: 10px; text-shadow: 0 0 20px #00ff00; }
+        .value-box { font-size: 80px; font-weight: bold; margin-bottom: 20px; transition: color 0.3s ease; text-shadow: 0 0 10px rgba(255,255,255,0.5); }
         
-        /* Dalğa Animasiyası */
-        .wave-container { width: 100%; height: 150px; display: flex; align-items: flex-end; justify-content: center; gap: 5px; margin: 20px 0; }
-        .bar { width: 10px; background: #00ff00; border-radius: 5px 5px 0 0; transition: height 0.1s ease; box-shadow: 0 0 10px #00ff00; }
+        /* Status və Log */
+        #status { font-size: 24px; font-weight: bold; margin-bottom: 10px; text-transform: uppercase; }
+        #log { font-size: 14px; color: #aaa; margin-bottom: 30px; }
 
-        button { background: #00ff00; color: #000; border: none; padding: 20px 40px; font-size: 20px; font-weight: bold; border-radius: 50px; cursor: pointer; z-index: 10; }
-        .danger { color: #ff0000; text-shadow: 0 0 20px #ff0000; }
-        .danger-bar { background: #ff0000 !important; box-shadow: 0 0 15px #ff0000 !important; }
+        /* Düymə */
+        button { background: #ff4444; color: white; border: none; padding: 20px 40px; font-size: 20px; font-weight: bold; border-radius: 50px; cursor: pointer; box-shadow: 0 0 15px rgba(255,68,68,0.5); }
+
+        /* NAQİL TAPILDI rejiminin stilləri */
+        .safe-mode { background: #001a00 !important; }
+        .safe-text { color: #00ff00 !important; text-shadow: 0 0 20px #00ff00 !important; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>WIRE TRACKER PRO</h2>
-    <div id="status">Hazırdır</div>
+    <h2>WIRE TRACKER PRO v4.0</h2>
     <div id="display" class="value-box">0.0</div>
+    <div id="status">Hazırdır</div>
+    <div id="log">Skaneri başlatmaq üçün düyməyə basın</div>
     
-    <div class="wave-container" id="waveContainer">
-        </div>
-
     <button id="startBtn" onclick="startApp()">SKANERİ BAŞLAT</button>
 </div>
 
 <script>
     let audioCtx, oscillator, gainNode;
-    let lastHeading = 0;
-    const bars = [];
-    const barCount = 20;
-
-    // Dalğa barlarını yaradırıq
-    const waveContainer = document.getElementById('waveContainer');
-    for (let i = 0; i < barCount; i++) {
-        const bar = document.createElement('div');
-        bar.className = 'bar';
-        bar.style.height = '10px';
-        waveContainer.appendChild(bar);
-        bars.push(bar);
-    }
+    let baselineHeading = null;
+    let smoothedHeading = 0;
+    const smoothingFactor = 0.05; // 0-1 arası (nə qədər kiçik olsa, o qədər səlis olar)
+    const threshold = 10; // Həssaslıq (mühitə görə dəyişə bilər, kalibrasiya ilə tənzimlənəcək)
 
     function setupAudio() {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         oscillator = audioCtx.createOscillator();
         gainNode = audioCtx.createGain();
-        oscillator.type = 'square'; 
+        oscillator.type = 'sine'; 
         oscillator.connect(gainNode);
         gainNode.connect(audioCtx.destination);
         gainNode.gain.value = 0;
@@ -61,60 +53,87 @@
     }
 
     function startApp() {
-        setupAudio();
+        // Brauzer icazələri üçün səs və sensor klikdən sonra başlamalıdır
+        if (!audioCtx) setupAudio();
         if (audioCtx.state === 'suspended') audioCtx.resume();
 
         if (window.DeviceOrientationEvent) {
+            // Mütləq orientasiya (Maqnit Şimalına əsaslanır)
             window.addEventListener('deviceorientationabsolute', handleData, true);
-            window.addEventListener('deviceorientation', handleData, true);
+            
             document.getElementById('startBtn').style.display = 'none';
-            document.getElementById('status').innerText = "Skan edilir...";
+            document.getElementById('status').innerText = "Kalibrasiya edilir...";
+            document.getElementById('log').innerText = "Telefonu sabit tutun (5 saniyə)...";
+            
+            // 5 saniyə sonra kalibrasiya başa çatır
+            setTimeout(() => {
+                document.getElementById('status').innerText = "Skan edilir...";
+                document.getElementById('log').innerText = "Telefonu divara toxundurun və yavaşca hərəkət etdirin.";
+            }, 5000);
         } else {
-            alert("Sensor tapılmadı!");
+            alert("Təəssüf ki, cihazınızda tələb olunan sensorlar (Kompas) tapılmadı.");
         }
     }
 
     function handleData(event) {
-        let heading = event.alpha || event.webkitCompassHeading || 0;
-        let diff = Math.abs(heading - lastHeading);
+        let heading = event.alpha || event.webkitCompassHeading;
         
-        // Sıçrayışları süzgəcdən keçiririk (0-360 keçidi üçün)
-        if (diff > 180) diff = Math.abs(diff - 360);
+        if (heading === null || heading === undefined) {
+            document.getElementById('status').innerText = "Sensor Xətası";
+            document.getElementById('log').innerText = "Cihazınız kompas məlumatı vermir.";
+            return;
+        }
 
+        // 1. Rəqəmləri səlis etmək (Smoothing)
+        smoothedHeading = (smoothingFactor * heading) + ((1 - smoothingFactor) * smoothedHeading);
+        
         // Ekranı yenilə
         const display = document.getElementById('display');
-        display.innerText = heading.toFixed(1);
+        display.innerText = smoothedHeading.toFixed(1);
 
-        // Naqil/Metal aşkarlananda (Həssaslıq: diff > 2)
-        if (diff > 2) {
-            let intensity = Math.min(diff * 10, 150); // Dalğa hündürlüyü
-            updateWaves(intensity, true);
+        // 2. Kalibrasiya (Fon səviyyəsini təyin etmək)
+        if (baselineHeading === null) {
+            baselineHeading = smoothedHeading;
+            return; 
+        }
+
+        // 3. Naqil/Metal Təyini Məntiqi
+        // Hazırkı dərəcə ilə fon dərəcəsi arasındakı fərq
+        let diff = Math.abs(smoothedHeading - baselineHeading);
+        
+        // 0-360 dərəcə keçidini nəzərə almaq
+        if (diff > 180) diff = Math.abs(diff - 360);
+
+        const status = document.getElementById('status');
+        const body = document.body;
+
+        // Əgər fərq təyin olunmuş həddən (threshold) çoxdursa (Naqil yaxınlığı)
+        if (diff > threshold) {
+            // NAQİL TAPILDI REJİMİ
+            body.classList.add('safe-mode');
+            display.classList.add('safe-text');
+            status.innerText = "NAQİL TAPILDI!";
+            status.classList.add('safe-text');
             
             // Səs və Vibrasiya
-            oscillator.frequency.value = 100 + (intensity * 5);
-            gainNode.gain.value = 0.1;
-            if (navigator.vibrate) navigator.vibrate(50);
+            if (navigator.vibrate) navigator.vibrate(100); // 100ms titrəyiş
             
-            display.classList.add('danger');
-        } else {
-            updateWaves(10, false);
-            gainNode.gain.value = 0;
-            display.classList.remove('danger');
-        }
-        lastHeading = heading;
-    }
-
-    function updateWaves(height, isDanger) {
-        bars.forEach((bar, index) => {
-            // Təsadüfi dalğa effekti üçün balaca rəqəmlər əlavə edirik
-            let randomHeight = height + Math.random() * 20;
-            bar.style.height = randomHeight + 'px';
-            if (isDanger) {
-                bar.classList.add('danger-bar');
-            } else {
-                bar.classList.remove('danger-bar');
+            // Səs tonunu fərqə görə artırırıq
+            if (gainNode) {
+                oscillator.frequency.value = 200 + (diff * 5); // Təməl ton + fərq
+                gainNode.gain.value = 0.1; // Səsi aç
             }
-        });
+        } else {
+            // NORMAL REJİM (Naqil Yoxdur)
+            body.classList.remove('safe-mode');
+            display.classList.remove('safe-text');
+            status.innerText = "Skan edilir...";
+            status.classList.remove('safe-text');
+            
+            // Səs və Vibrasiyanı kəs
+            if (navigator.vibrate) navigator.vibrate(0);
+            if (gainNode) gainNode.gain.value = 0; // Səsi kəs
+        }
     }
 </script>
 </body>
