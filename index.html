@@ -1,116 +1,101 @@
 <!DOCTYPE html>
-<html lang="az">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wire Tracker Master v8.0</title>
+    <title>Детектор Проводок Pro</title>
     <style>
-        body { background: #000; color: #fff; font-family: 'Segoe UI', sans-serif; text-align: center; margin: 0; transition: background 0.1s; overflow: hidden; }
-        .container { height: 100vh; display: flex; flex-direction: column; justify-content: space-around; padding: 20px; }
-        .value { font-size: 120px; font-weight: bold; font-family: monospace; }
-        .status-text { font-size: 24px; font-weight: bold; color: #555; text-transform: uppercase; }
-        .slider-container { background: #222; padding: 20px; border-radius: 15px; }
-        input[type=range] { width: 100%; height: 20px; }
-        button { background: #ff4444; color: #fff; border: none; padding: 25px 60px; font-size: 24px; border-radius: 50px; font-weight: bold; cursor: pointer; box-shadow: 0 0 20px rgba(255,68,68,0.4); }
-        
-        /* NAQİL TAPILANDA */
+        body { background: #000; color: #fff; text-align: center; font-family: sans-serif; margin: 0; transition: background 0.3s; }
+        .ui-container { height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; }
+        .value-box { font-size: 100px; font-weight: bold; margin: 20px 0; font-family: 'Courier New', monospace; }
+        #status { font-size: 22px; color: #666; font-weight: bold; margin-bottom: 30px; letter-spacing: 2px; }
+        button { background: #ff4444; color: #fff; border: none; padding: 25px 60px; font-size: 22px; border-radius: 10px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 15px rgba(255,0,0,0.3); }
         .detected { background: #00ff00 !important; color: #000 !important; }
-        .detected .status-text { color: #000 !important; }
+        .detected .value-box, .detected #status { color: #000 !important; }
     </style>
 </head>
-<body>
+<body id="bg">
 
-<div class="container" id="mainBg">
-    <div id="status" class="status-text">SİSTEM DEAKTİVDİR</div>
-    
-    <div id="display" class="value">0</div>
-    
-    <div class="slider-container">
-        <label>HƏSSASLIQ AYARI</label><br>
-        <input type="range" id="sensitivity" min="5" max="50" value="20">
-        <p>Divara görə tənzimləyin</p>
-    </div>
-
-    <button id="startBtn" onclick="initScanner()">DETEKTORU BAŞLAT</button>
+<div class="ui-container">
+    <div id="status">СИСТЕМА ГОТОВА</div>
+    <div class="value-box" id="display">0</div>
+    <p id="msg">Держите телефон неподвижно 3 секунды для калибровки</p>
+    <button id="startBtn" onclick="initApp()">ЗАПУСТИТЬ СКАНЕР</button>
 </div>
 
 <script>
-    let audioCtx, osc, gain;
-    let isRunning = false;
-    let lastValues = [];
-    let canSpeak = true;
+    let baseline = null;
+    let isScanning = false;
+    let lastSpeakTime = 0;
 
-    // Səsli bildiriş funksiyası
-    function speak(text) {
-        if (!canSpeak) return;
-        const msg = new SpeechSynthesisUtterance();
-        msg.text = text;
-        msg.lang = 'az-AZ';
-        msg.rate = 1.2;
-        window.speechSynthesis.speak(msg);
-        
-        // Səsin ard-arda təkrarlanmaması üçün 3 saniyəlik blok
-        canSpeak = false;
-        setTimeout(() => { canSpeak = true; }, 3000);
-    }
-
-    function initScanner() {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        osc = audioCtx.createOscillator();
-        gain = audioCtx.createGain();
-        osc.type = 'sawtooth'; 
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        gain.gain.value = 0;
-        osc.start();
-
-        if (window.DeviceOrientationEvent) {
-            window.addEventListener('deviceorientationabsolute', analyze, true);
-            document.getElementById('startBtn').style.display = 'none';
-            document.getElementById('status').innerText = "SKAN EDİLİR...";
-            isRunning = true;
-        } else {
-            alert("Sensor tapılmadı!");
+    // РУССКАЯ ОЗВУЧКА
+    function speakRussian() {
+        const currentTime = Date.now();
+        // Повтор фразы раз в 4 секунды, чтобы не надоедало
+        if (currentTime - lastSpeakTime > 4000) {
+            const msg = new SpeechSynthesisUtterance();
+            msg.text = "Провод найден"; 
+            msg.lang = 'ru-RU'; // Rus dili ayarı
+            msg.rate = 1.0;
+            window.speechSynthesis.speak(msg);
+            lastSpeakTime = currentTime;
         }
     }
 
-    function analyze(e) {
-        if (!isRunning) return;
-
-        let val = e.alpha || e.webkitCompassHeading || 0;
+    function initApp() {
+        // APK daxilində tam maqnitometri işlətmək üçün ən yaxşı üsul
+        if ('Magnetometer' in window) {
+            const sensor = new Magnetometer({frequency: 60});
+            sensor.addEventListener('reading', () => {
+                let x = sensor.x, y = sensor.y, z = sensor.z;
+                let mag = Math.sqrt(x*x + y*y + z*z).toFixed(1);
+                processData(mag);
+            });
+            sensor.start();
+        } else {
+            // Alternativ metod (Eski telefonlar üçün)
+            window.addEventListener('deviceorientationabsolute', (e) => {
+                let val = e.alpha || 0;
+                processData(val.toFixed(1));
+            }, true);
+        }
         
-        // Stabilizasiya üçün son 5 dəyəri saxla
-        lastValues.push(val);
-        if (lastValues.length > 5) lastValues.shift();
-        
-        // "Maqnit küyünü" (Jitter) hesabla
-        // Əgər telefon sabitdirsə amma rəqəm oynayırsa, bu naqildir
-        let jitter = Math.abs(val - lastValues[0]);
-        if (jitter > 180) jitter = Math.abs(jitter - 360);
+        document.getElementById('startBtn').style.display = 'none';
+        document.getElementById('status').innerText = "ИДЕТ ПОИСК...";
+        isScanning = true;
+    }
 
+    function processData(currentVal) {
         const display = document.getElementById('display');
-        const bg = document.getElementById('mainBg');
+        const bg = document.getElementById('bg');
         const status = document.getElementById('status');
-        const sensLimit = document.getElementById('sensitivity').value;
 
-        display.innerText = Math.floor(jitter);
+        display.innerText = currentVal;
 
-        // Əgər titrəmə (jitter) istifadəçinin qoyduğu həddən çoxdursa
-        if (jitter > sensLimit) {
-            if (!bg.classList.contains('detected')) {
-                bg.classList.add('detected');
-                status.innerText = "NAQİL TAPILDI!";
-                speak("Naqili tapdım");
-            }
+        if (baseline === null) {
+            baseline = currentVal;
+            return;
+        }
+
+        // КРИТИЧЕСКИЙ ПОРОГ: 
+        // Если отклонение больше 25 единиц — это металл или провод
+        let diff = Math.abs(currentVal - baseline);
+
+        if (diff > 25) { 
+            bg.classList.add('detected');
+            status.innerText = "ПРОВОД НАЙДЕН!";
             
-            // Vibrasiya və Səs siqnalı
-            if (navigator.vibrate) navigator.vibrate(200);
-            osc.frequency.setTargetAtTime(400 + (jitter * 5), audioCtx.currentTime, 0.05);
-            gain.gain.setTargetAtTime(0.4, audioCtx.currentTime, 0.05);
+            // Вибрация
+            if (navigator.vibrate) navigator.vibrate(300);
+            
+            // Голосовое уведомление
+            speakRussian();
         } else {
             bg.classList.remove('detected');
-            status.innerText = "SKAN EDİLİR...";
-            gain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.1);
+            status.innerText = "ИДЕТ ПОИСК...";
+            
+            // Адаптивная калибровка: плавно подстраиваемся под фон (убирает реакцию на движение)
+            baseline = (0.01 * currentVal) + (0.99 * baseline);
         }
     }
 </script>
