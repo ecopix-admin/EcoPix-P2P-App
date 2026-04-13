@@ -1,40 +1,37 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html>
 <head>
     <meta charset="utf-8">
-    <title>Görən Göz - AR Mars Mission</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Görən Göz AR Portal</title>
     <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
-    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar-nft.js"></script>
+    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
     <style>
-        body { margin: 0; overflow: hidden; background-color: black; }
-        .ui-panel { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 100; text-align: center; }
-        button { padding: 15px 30px; font-size: 18px; background: #ff4500; color: white; border: none; border-radius: 50px; font-weight: bold; cursor: pointer; }
-        #status { position: absolute; top: 20px; width: 100%; text-align: center; color: #ff0; font-family: sans-serif; z-index: 100; background: rgba(0,0,0,0.5); padding: 10px 0; }
-        /* "Zom" problemini həll etmək üçün: video tam ekrana uyğunlaşdırılır */
-        canvas.a-canvas { object-fit: cover !important; }
-        video#arjs-video { object-fit: cover !important; height: 100% !important; }
+        body { margin: 0; overflow: hidden; }
+        .buttons { position: absolute; bottom: 50px; left: 0; right: 0; text-align: center; z-index: 999; }
+        button { padding: 20px 40px; font-size: 20px; background: #ff4500; color: white; border: none; border-radius: 15px; font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        /* Zom problemini həll edən CSS */
+        video { width: 100vw !important; height: 100vh !important; object-fit: cover !important; position: fixed !important; top: 0; left: 0; }
     </style>
 </head>
 
-<body>
+<body style="margin: 0px; overflow: hidden;">
 
-    <div id="status">Направьте камеру на пол или стену и подождите</div>
-
-    <div class="ui-panel">
-        <button onclick="placePortal()">ПОСТАВИТЬ ПОРТАЛ</button>
+    <div class="buttons">
+        <button onclick="activatePortal()">PORTALI QUR</button>
     </div>
 
-    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false; smooth: true;" renderer="logarithmicDepthBuffer: true;">
+    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;">
         
         <a-assets>
-            <img id="mars" src="https://raw.githubusercontent.com/aframevr/aframe/master/examples/boilerplate/panorama/puydesancy.jpg">
+            <img id="mars-texture" src="https://raw.githubusercontent.com/aframevr/aframe/master/examples/boilerplate/panorama/puydesancy.jpg">
         </a-assets>
 
-        <a-entity id="portal-root" position="0 -1 -3" visible="false">
-            <a-sphere position="0 1 0" radius="1.5" material="src: #mars; side: double; shader: flat;">
-                <a-animation attribute="rotation" dur="15000" fill="forwards" to="0 360 0" repeat="indefinite" easing="linear"></a-animation>
+        <a-entity id="portal" position="0 1.5 -5" visible="false" scale="1 1 1">
+            <a-sphere radius="2" material="src: #mars-texture; side: double; shader: flat;">
+                <a-animation attribute="rotation" dur="20000" to="0 360 0" repeat="indefinite" easing="linear"></a-animation>
             </a-sphere>
-            <a-text value="MARS ПОРТАЛ" color="#ff4500" position="-1.2 2.8 0" scale="2.5 2.5 2.5"></a-text>
+            <a-text value="MARS MISSION" position="-1.2 2.5 0" scale="3 3 3" color="#ff4500" font="exo2bold"></a-text>
         </a-entity>
 
         <a-entity camera></a-entity>
@@ -48,21 +45,13 @@
             window.speechSynthesis.speak(msg);
         }
 
-        // Düyməyə basanda portalı mərkəzə qoyur
-        function placePortal() {
-            const root = document.getElementById('portal-root');
-            root.setAttribute('visible', 'true');
-            // Portalın mövqeyini bir az qabağa sürüşdürürük
-            root.setAttribute('position', '0 -1.2 -4'); 
-            
-            speak("Добро пожаловать на Марс. Портал открыт. Вы в красной зоне. Глубокий кратер прямо перед вами.");
-            document.getElementById('status').innerText = "ПОРТАЛ ОТКРЫТ! НЕ СТОЙТЕ НА МЕСТЕ!";
+        function activatePortal() {
+            const portal = document.getElementById('portal');
+            portal.setAttribute('visible', 'true');
+            // Səsli təlimat
+            speak("Добро пожаловать. Портал успешно установлен прямо перед вами. Осторожно, впереди кратер Марса.");
+            alert("Portal quruldu! İndi telefonu irəli-geri apararaq ətrafa baxın.");
         }
-
-        // Zom problemini həll etmək üçün səhnə ölçüsünü yenilə
-        window.addEventListener('load', () => {
-            document.querySelector('a-scene').resize();
-        });
     </script>
 </body>
 </html>
