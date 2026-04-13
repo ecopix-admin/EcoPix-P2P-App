@@ -4,34 +4,52 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Görən Göz - Mars Portal</title>
-    <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/aframe/1.2.0/aframe.min.js"></script>
     <style>
         body { margin: 0; overflow: hidden; background: #000; }
-        .ui { position: absolute; bottom: 40px; width: 100%; text-align: center; z-index: 999; }
-        button { padding: 15px 35px; font-size: 18px; background: #ff4500; color: #fff; border: none; border-radius: 50px; font-weight: bold; cursor: pointer; }
+        #loading-screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000; color: #ff4500; display: flex;
+            align-items: center; justify-content: center; z-index: 1000;
+            font-family: sans-serif; text-align: center;
+        }
+        .ui { position: absolute; bottom: 40px; width: 100%; text-align: center; z-index: 999; display: none; }
+        button { padding: 15px 35px; font-size: 18px; background: #ff4500; color: #fff; border: none; border-radius: 50px; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <div class="ui">
+    <div id="loading-screen">
+        <div>
+            <h2>MARS SİSTEMİ YÜKLƏNİR...</h2>
+            <p>Zəhmət olmasa gözləyin</p>
+        </div>
+    </div>
+
+    <div class="ui" id="controls">
         <button onclick="startExperience()">PORTALI QUR</button>
     </div>
 
     <a-scene embedded vr-mode-ui="enabled: false">
         <a-assets>
-            <img id="mars-360" src="https://raw.githubusercontent.com/aframevr/aframe/master/examples/boilerplate/panorama/puydesancy.jpg">
+            <img id="mars-360" src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/Mars_Valles_Marineris.jpg/2560px-Mars_Valles_Marineris.jpg" crossorigin="anonymous">
         </a-assets>
 
         <a-sky id="world" src="#mars-360" visible="false" rotation="0 -90 0"></a-sky>
 
         <a-entity id="rig" position="0 1.6 0">
-            <a-camera id="cam" look-controls="enabled: true; magicWindowTrackingEnabled: true" wasd-controls-enabled="false">
-                <a-cursor color="#FF4500"></a-cursor>
+            <a-camera id="cam" look-controls="enabled: true" wasd-controls-enabled="false">
             </a-camera>
         </a-entity>
     </a-scene>
 
     <script>
+        // Kitabxanalar və şəkil yüklənəndə ekranı aç
+        window.addEventListener('load', () => {
+            document.getElementById('loading-screen').style.display = 'none';
+            document.getElementById('controls').style.display = 'block';
+        });
+
         function speak(text) {
             window.speechSynthesis.cancel();
             const msg = new SpeechSynthesisUtterance(text);
@@ -40,21 +58,16 @@
         }
 
         function startExperience() {
-            // Dünyanı görünən edirik
             const world = document.getElementById('world');
             world.setAttribute('visible', 'true');
+            speak("Добро пожаловать на Марс. Система активна.");
             
-            // Səsli təlimat
-            speak("Добро пожаловать на Марс. Поворачивайте телефон вокруг себя, чтобы увидеть всю планету.");
-            
-            // Avtomatik fırlanma animasiyası (əgər sensor işləməsə belə hərəkət olsun)
+            // Sensor işləməsə belə mənzərənin yavaşca fırlanması
             let rot = 0;
             setInterval(() => {
-                rot += 0.1;
+                rot += 0.05;
                 world.setAttribute('rotation', `0 ${rot} 0`);
-            }, 20);
-
-            alert("Portal açıldı! İndi telefonu ətrafınızda 360 dərəcə çevirin.");
+            }, 30);
         }
     </script>
 </body>
