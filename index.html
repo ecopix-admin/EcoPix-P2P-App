@@ -3,38 +3,32 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Görən Göz AR Portal</title>
+    <title>Görən Göz - Mars Portal</title>
     <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
-    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
     <style>
-        body { margin: 0; overflow: hidden; }
-        .buttons { position: absolute; bottom: 50px; left: 0; right: 0; text-align: center; z-index: 999; }
-        button { padding: 20px 40px; font-size: 20px; background: #ff4500; color: white; border: none; border-radius: 15px; font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
-        /* Zom problemini həll edən CSS */
-        video { width: 100vw !important; height: 100vh !important; object-fit: cover !important; position: fixed !important; top: 0; left: 0; }
+        body { margin: 0; overflow: hidden; background: #000; }
+        .ui { position: absolute; bottom: 40px; width: 100%; text-align: center; z-index: 999; }
+        button { padding: 15px 35px; font-size: 18px; background: #ff4500; color: #fff; border: none; border-radius: 50px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
+<body>
 
-<body style="margin: 0px; overflow: hidden;">
-
-    <div class="buttons">
-        <button onclick="activatePortal()">PORTALI QUR</button>
+    <div class="ui">
+        <button onclick="startExperience()">PORTALI QUR</button>
     </div>
 
-    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;">
-        
+    <a-scene embedded vr-mode-ui="enabled: false">
         <a-assets>
-            <img id="mars-texture" src="https://raw.githubusercontent.com/aframevr/aframe/master/examples/boilerplate/panorama/puydesancy.jpg">
+            <img id="mars-360" src="https://raw.githubusercontent.com/aframevr/aframe/master/examples/boilerplate/panorama/puydesancy.jpg">
         </a-assets>
 
-        <a-entity id="portal" position="0 1.5 -5" visible="false" scale="1 1 1">
-            <a-sphere radius="2" material="src: #mars-texture; side: double; shader: flat;">
-                <a-animation attribute="rotation" dur="20000" to="0 360 0" repeat="indefinite" easing="linear"></a-animation>
-            </a-sphere>
-            <a-text value="MARS MISSION" position="-1.2 2.5 0" scale="3 3 3" color="#ff4500" font="exo2bold"></a-text>
-        </a-entity>
+        <a-sky id="world" src="#mars-360" visible="false" rotation="0 -90 0"></a-sky>
 
-        <a-entity camera></a-entity>
+        <a-entity id="rig" position="0 1.6 0">
+            <a-camera id="cam" look-controls="enabled: true; magicWindowTrackingEnabled: true" wasd-controls-enabled="false">
+                <a-cursor color="#FF4500"></a-cursor>
+            </a-camera>
+        </a-entity>
     </a-scene>
 
     <script>
@@ -45,12 +39,22 @@
             window.speechSynthesis.speak(msg);
         }
 
-        function activatePortal() {
-            const portal = document.getElementById('portal');
-            portal.setAttribute('visible', 'true');
+        function startExperience() {
+            // Dünyanı görünən edirik
+            const world = document.getElementById('world');
+            world.setAttribute('visible', 'true');
+            
             // Səsli təlimat
-            speak("Добро пожаловать. Портал успешно установлен прямо перед вами. Осторожно, впереди кратер Марса.");
-            alert("Portal quruldu! İndi telefonu irəli-geri apararaq ətrafa baxın.");
+            speak("Добро пожаловать на Марс. Поворачивайте телефон вокруг себя, чтобы увидеть всю планету.");
+            
+            // Avtomatik fırlanma animasiyası (əgər sensor işləməsə belə hərəkət olsun)
+            let rot = 0;
+            setInterval(() => {
+                rot += 0.1;
+                world.setAttribute('rotation', `0 ${rot} 0`);
+            }, 20);
+
+            alert("Portal açıldı! İndi telefonu ətrafınızda 360 dərəcə çevirin.");
         }
     </script>
 </body>
