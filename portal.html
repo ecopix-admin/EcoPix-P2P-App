@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>AR Portal - Mars Mission</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://unpkg.com/@aframevr/aframe"></script> <style>
+        body { margin: 0; overflow: hidden; }
+        #ui { position: absolute; top: 20px; width: 100%; text-align: center; color: white; font-family: sans-serif; z-index: 10; pointer-events: none; }
+        #btn { pointer-events: auto; padding: 15px 30px; background: #ff4500; border: none; border-radius: 50px; color: white; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div id="ui">
+    <div id="status">Направьте камеру на стену или пол</div>
+    <br>
+    <button id="btn" onclick="openPortal()">ОТКРЫТЬ ПОРТАЛ</button>
+</div>
+
+<a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;">
+    
+    <a-assets>
+        <img id="mars-texture" src="https://cdn.glitch.com/36cb3d32-d52e-4299-8a9d-9a0ce6300483%2Fmars.jpg">
+    </a-assets>
+
+    <a-marker preset="hiro"> <a-box position='0 0.5 0' material='opacity: 0.5; color: #ff4500;' scale="2 2 0.1">
+            <a-text value="MARS PORTAL" align="center" position="0 0 0.1"></a-text>
+        </a-box>
+    </a-marker>
+
+    <a-entity camera></a-entity>
+</a-scene>
+
+<script>
+    function speak(text) {
+        window.speechSynthesis.cancel();
+        const msg = new SpeechSynthesisUtterance(text);
+        msg.lang = 'ru-RU';
+        window.speechSynthesis.speak(msg);
+    }
+
+    function openPortal() {
+        document.getElementById('status').innerText = "ПОРТАЛ ОТКРЫВАЕТСЯ...";
+        speak("Добро пожаловать на Марс! Осторожно, вы входите в красную зону. Впереди глубокий кратер.");
+        
+        // Burada divarın "dağılma" animasiyası və 360 dərəcəlik fotonun aktivləşməsi baş verir
+        setTimeout(() => {
+            document.body.style.backgroundColor = "#552200"; // Mars rəngi
+        }, 2000);
+    }
+</script>
+</body>
+</html>
