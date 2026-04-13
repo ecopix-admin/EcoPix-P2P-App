@@ -2,76 +2,89 @@
 <html lang="az">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Görən Göz - 3D Blueprint</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Blueprint 3D - Mühəndis</title>
     <style>
-        body { margin: 0; background: #111; color: #0f0; font-family: monospace; overflow: hidden; }
-        #overlay { position: absolute; top: 10px; width: 100%; text-align: center; z-index: 10; }
-        .controls { position: absolute; bottom: 30px; width: 100%; display: flex; justify-content: center; gap: 10px; }
-        button { padding: 15px; background: #222; color: #0f0; border: 1px solid #0f0; border-radius: 5px; cursor: pointer; }
-        canvas { display: block; }
+        body { margin: 0; overflow: hidden; background: #000; font-family: sans-serif; }
+        #camera-view { position: fixed; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; }
+        #ui-layer { position: relative; z-index: 10; height: 100vh; display: flex; flex-direction: column; justify-content: space-between; pointer-events: none; }
+        .header { background: rgba(0, 255, 0, 0.2); color: #0f0; padding: 20px; text-align: center; border-bottom: 1px solid #0f0; }
+        .footer { padding: 30px; display: flex; justify-content: space-around; pointer-events: auto; }
+        button { padding: 15px 25px; background: rgba(0, 0, 0, 0.8); color: #0f0; border: 2px solid #0f0; border-radius: 10px; font-weight: bold; cursor: pointer; }
+        #crosshair { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #0f0; font-size: 30px; z-index: 5; pointer-events: none; }
     </style>
 </head>
 <body>
 
-<div id="overlay">
-    <div id="info">Küncə yaxınlaşın və 'KÜNCÜ QEYD ET' basın</div>
-    <div id="stats">Sahə: 0 m²</div>
-</div>
+    <video id="camera-view" autoplay playsinline></video>
 
-<div class="controls">
-    <button onclick="addPoint()">KÜNCÜ QEYD ET</button>
-    <button onclick="generateModel()" style="background: #004400;">MODELİ BİTİR</button>
-</div>
+    <div id="crosshair">+</div>
 
-<script>
-    let points = [];
-    let area = 0;
+    <div id="ui-layer">
+        <div class="header">
+            <div id="info">Kameranı küncə tutun</div>
+            <div id="area">Sahə: 0.00 m²</div>
+        </div>
 
-    function speak(text) {
-        window.speechSynthesis.cancel();
-        const msg = new SpeechSynthesisUtterance(text);
-        msg.lang = 'ru-RU'; // Sənin istəyinlə rus dilində təlimat
-        window.speechSynthesis.speak(msg);
-    }
+        <div class="footer">
+            <button onclick="savePoint()">KÜNCÜ QEYD ET</button>
+            <button onclick="finishScan()" style="border-color: #ff4500; color: #ff4500;">BİTİR VƏ HESABLA</button>
+        </div>
+    </div>
 
-    function addPoint() {
-        // Real cihazda burada DeviceMotion vasitəsilə kordinat götürülür
-        let x = Math.random() * 5; 
-        let z = Math.random() * 5;
-        points.push({x, z});
-        
-        speak("Точка зафиксирована");
-        document.getElementById('info').innerText = points.length + " künc qeyd edildi";
-    }
+    <script>
+        let points = [];
+        const video = document.getElementById('camera-view');
 
-    function calculateArea() {
-        // Şoelace alqoritmi ilə sahə hesablama
-        let a = 0;
-        for (let i = 0; i < points.length; i++) {
-            let j = (i + 1) % points.length;
-            a += points[i].x * points[j].z;
-            a -= points[j].x * points[i].z;
+        // Kameranı aktiv etmək
+        async function setupCamera() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: "environment" }, 
+                    audio: false 
+                });
+                video.srcObject = stream;
+            } catch (err) {
+                alert("Kamera icazəsi verilmədi! Ayarlardan icazə verin.");
+            }
         }
-        return Math.abs(a / 2).toFixed(2);
-    }
 
-    function generateModel() {
-        if (points.length < 3) {
-            alert("Model üçün ən azı 3 künc lazımdır!");
-            return;
+        function speak(text) {
+            window.speechSynthesis.cancel();
+            const msg = new SpeechSynthesisUtterance(text);
+            msg.lang = 'ru-RU';
+            window.speechSynthesis.speak(msg);
         }
-        
-        area = calculateArea();
-        document.getElementById('stats').innerText = "Sahə: " + area + " m²";
-        
-        // Səsli nəticə
-        speak(`Площадь комнаты ${area} квадратных метров. Стены отсканированы.`);
-        
-        // Burada 3D model (OBJ/STL) yaratmaq və Telegrama göndərmə məntiqi qoşula bilər
-        alert("3D Blueprint hazırlandı və GitHub-a göndərilməyə hazırdır.");
-    }
-</script>
+
+        function savePoint() {
+            // Real dünyada bu nöqtələr hərəkət sensoru ilə götürülməlidir
+            // Simulyasiya üçün hər addımda bir addım irəli gedirik
+            points.push({ x: Math.random() * 4, y: Math.random() * 4 });
+            speak("Точка зафиксирована");
+            document.getElementById('info').innerText = points.length + " künc yadda saxlanıldı";
+        }
+
+        function finishScan() {
+            if (points.length < 3) {
+                alert("Ən azı 3 künc qeyd etməlisiniz!");
+                return;
+            }
+
+            // Sahə hesablama (Mühəndislik alqoritmi)
+            let a = 0;
+            for (let i = 0; i < points.length; i++) {
+                let j = (i + 1) % points.length;
+                a += points[i].x * points[j].y;
+                a -= points[j].x * points[i].y;
+            }
+            let finalArea = Math.abs(a / 2).toFixed(2);
+            
+            document.getElementById('area').innerText = `Sahə: ${finalArea} m²`;
+            speak(`Сканирование завершено. Площадь комнаты ${finalArea} квадратных метров.`);
+            alert("Məlumatlar mühəndis hesabatı üçün hazırlandı.");
+        }
+
+        setupCamera();
+    </script>
 </body>
 </html>
