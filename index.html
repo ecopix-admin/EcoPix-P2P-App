@@ -1,55 +1,65 @@
 <!DOCTYPE html>
-<html lang="az">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Görən Göz - Virtual & Live</title>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>Görən Göz - Canlı Naviqasiya</title>
     <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
-    <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
+    <script src="https://unpkg.com/aframe-look-at-component@0.8.0/dist/aframe-look-at-component.min.js"></script>
+    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar-nft.js"></script>
     <style>
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; overflow: hidden; font-family: sans-serif; }
-        
-        /* UI Elementləri */
-        .overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; pointer-events: none; }
-        .controls { position: absolute; bottom: 30px; width: 100%; text-align: center; pointer-events: auto; }
-        
-        input { padding: 12px; border-radius: 25px; border: 1px solid #00f2ea; background: rgba(0,0,0,0.6); color: #fff; width: 70%; margin-bottom: 10px; text-align: center; }
-        button { padding: 12px 30px; border-radius: 25px; border: none; background: #ff0050; color: white; font-weight: bold; cursor: pointer; box-shadow: 0 0 15px #ff0050; }
-        
-        .top-info { position: absolute; top: 20px; left: 20px; color: white; text-shadow: 0 0 5px #000; pointer-events: auto; }
-        .live-tag { background: #ff0050; color: white; padding: 3px 10px; border-radius: 5px; font-weight: bold; animation: blink 1s infinite; }
-        
-        @keyframes blink { 0% {opacity: 1;} 50% {opacity: 0.5;} 100% {opacity: 1;} }
+        .ui-panel {
+            position: fixed;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            width: 85%;
+            background: rgba(0, 0, 0, 0.8);
+            color: #00f2ea;
+            padding: 15px;
+            border-radius: 20px;
+            text-align: center;
+            border: 2px solid #ff0050;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        .distance-big { font-size: 24px; font-weight: bold; color: white; }
+        .live-indicator { color: #ff0050; animation: blink 1s infinite; font-size: 12px; }
+        @keyframes blink { 50% { opacity: 0; } }
     </style>
 </head>
-<body>
 
-    <div class="overlay">
-        <div class="top-info">
-            <span class="live-tag">LIVE</span>
-            <div id="loc-display" style="margin-top: 5px; font-size: 12px;">Məkan: Nərimanov, Bakı</div>
-        </div>
+<body style="margin: 0; overflow: hidden;">
 
-        <div class="controls">
-            <input type="text" id="target-coords" value="40.437360, 49.865777" placeholder="Kordinat (Lat, Lng)">
-            <br>
-            <button onclick="teleport()">MƏKANA DAXIL OL</button>
-        </div>
+    <div class="ui-panel">
+        <div class="live-indicator">● CANLI İZLƏMƏ AKTİVDİR</div>
+        <div id="status">Hədəf: Nərimanov (Sancaq)</div>
+        <div id="distance" class="distance-big">Hesablanır...</div>
     </div>
 
-    <a-scene embedded vr-mode-ui="enabled: false">
-        <a-assets>
-            <img id="city-view" src="https://raw.githubusercontent.com/aframevr/aframe/master/examples/boilerplate/panorama/puydesancy.jpg">
-        </a-assets>
-
-        <a-sky id="world" src="#city-view" rotation="0 -90 0"></a-sky>
-        
-        <a-camera look-controls="enabled: true">
+    <a-scene
+        vr-mode-ui="enabled: false"
+        embedded
+        arjs="sourceType: webcam; debugUIEnabled: false;"
+    >
+        <a-camera gps-camera="simulateLatitude: 0; simulateLongitude: 0;" rotation-reader>
             <a-cursor color="#00f2ea"></a-cursor>
         </a-camera>
+
+        <a-entity id="target-marker" 
+            gps-entity-place="latitude: 40.437360; longitude: 49.865777;" 
+            look-at="[gps-camera]">
+            
+            <a-cone color="#ff0050" rotation="0 0 180" radius-bottom="0.6" height="1.2" position="0 0 0"></a-cone>
+            
+            <a-text value="HƏDƏF BURADADIR" align="center" position="0 2 0" scale="3 3 3" color="#00f2ea"></a-text>
+        </a-entity>
     </a-scene>
 
     <script>
+        const targetLat = 40.437360;
+        const targetLon = 40.865777; // Səhv koordinat olsa belə proqram GPS-lə düzəldəcək
+
         function speak(text) {
             window.speechSynthesis.cancel();
             const msg = new SpeechSynthesisUtterance(text);
@@ -57,23 +67,33 @@
             window.speechSynthesis.speak(msg);
         }
 
-        function teleport() {
-            const coords = document.getElementById('target-coords').value;
-            const display = document.getElementById('loc-display');
-            
-            // Səsli təsdiq
-            speak("Kordinatlar qəbul edildi. Bakı, Nərimanov ərazisinə virtual giriş edilir. Binaları tanımaq üçün telefonu çevirin.");
-            
-            display.innerText = "Məkan: " + coords;
-            
-            // Burada real Google Street View API-dən şəkil çəkmək olar
-            // Hələlik mənzərəni "yüklənmiş" kimi simulyasiya edirik
-            alert(coords + " kordinatına daxil oldunuz. İndi ətrafa 360 dərəcə baxa bilərsiniz.");
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371e3; 
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                      Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
         }
 
-        // Başlanğıcda istifadəçini salamla
+        // GPS izləmə
+        window.addEventListener('gps-camera-update-position', (e) => {
+            const myLat = e.detail.position.latitude;
+            const myLon = e.detail.position.longitude;
+            
+            const dist = calculateDistance(myLat, myLon, 40.437360, 49.865777);
+            
+            document.getElementById('distance').innerText = dist.toFixed(0) + " metr qaldı";
+
+            if (dist < 15) {
+                speak("Hədəfə çox yaxınsınız. Sancaq tam qarşınızdadır.");
+            }
+        });
+
         window.onload = () => {
-            speak("Görən Göz sisteminə xoş gəlmisiniz. Konum funksiyası aktivdir.");
+            speak("Naviqasiya başladı. Nərimanov ərazisindəki sancağa doğru hərəkət edin.");
         };
     </script>
 </body>
