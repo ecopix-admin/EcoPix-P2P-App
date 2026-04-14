@@ -3,62 +3,59 @@
 <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <title>Görən Göz - Canlı Naviqasiya</title>
+    <title>Görən Göz - Yol Naviqasiyası</title>
     <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
-    <script src="https://unpkg.com/aframe-look-at-component@0.8.0/dist/aframe-look-at-component.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar-nft.js"></script>
     <style>
-        .ui-panel {
+        .ui-overlay {
             position: fixed;
-            top: 10px;
+            bottom: 30px;
             left: 50%;
             transform: translateX(-50%);
             z-index: 1000;
-            width: 85%;
-            background: rgba(0, 0, 0, 0.8);
-            color: #00f2ea;
+            width: 80%;
+            background: rgba(0, 242, 234, 0.9);
+            color: black;
             padding: 15px;
-            border-radius: 20px;
+            border-radius: 50px;
             text-align: center;
-            border: 2px solid #ff0050;
-            font-family: 'Segoe UI', sans-serif;
+            font-family: sans-serif;
+            font-weight: bold;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
         }
-        .distance-big { font-size: 24px; font-weight: bold; color: white; }
-        .live-indicator { color: #ff0050; animation: blink 1s infinite; font-size: 12px; }
-        @keyframes blink { 50% { opacity: 0; } }
     </style>
 </head>
 
 <body style="margin: 0; overflow: hidden;">
 
-    <div class="ui-panel">
-        <div class="live-indicator">● CANLI İZLƏMƏ AKTİVDİR</div>
-        <div id="status">Hədəf: Nərimanov (Sancaq)</div>
-        <div id="distance" class="distance-big">Hesablanır...</div>
+    <div class="ui-overlay">
+        <div id="dist-info">Yol axtarılır...</div>
     </div>
 
     <a-scene
         vr-mode-ui="enabled: false"
         embedded
-        arjs="sourceType: webcam; debugUIEnabled: false;"
+        arjs="sourceType: webcam; debugUIEnabled: false; videoParameters: { width: 1280, height: 720, facingMode: 'environment' };"
     >
-        <a-camera gps-camera="simulateLatitude: 0; simulateLongitude: 0;" rotation-reader>
-            <a-cursor color="#00f2ea"></a-cursor>
+        <a-camera gps-camera rotation-reader fov="80">
         </a-camera>
 
-        <a-entity id="target-marker" 
-            gps-entity-place="latitude: 40.437360; longitude: 49.865777;" 
-            look-at="[gps-camera]">
-            
-            <a-cone color="#ff0050" rotation="0 0 180" radius-bottom="0.6" height="1.2" position="0 0 0"></a-cone>
-            
-            <a-text value="HƏDƏF BURADADIR" align="center" position="0 2 0" scale="3 3 3" color="#00f2ea"></a-text>
+        <a-entity id="target" gps-entity-place="latitude: 40.437360; longitude: 49.865777;">
+            <a-cylinder color="#00f2ea" height="0.1" radius="1.5"></a-cylinder>
+            <a-text value="Hədəf Nöqtəsi" align="center" position="0 2 0" scale="4 4 4" color="#ff0050"></a-text>
         </a-entity>
+
+        <a-entity id="road-line" 
+            geometry="primitive: box; width: 1; height: 0.05; depth: 1" 
+            material="color: #00f2ea; opacity: 0.7; transparent: true"
+            gps-projected-entity-place="latitude: 40.437360; longitude: 49.865777;">
+        </a-entity>
+
     </a-scene>
 
     <script>
         const targetLat = 40.437360;
-        const targetLon = 40.865777; // Səhv koordinat olsa belə proqram GPS-lə düzəldəcək
+        const targetLon = 49.865777;
 
         function speak(text) {
             window.speechSynthesis.cancel();
@@ -67,8 +64,26 @@
             window.speechSynthesis.speak(msg);
         }
 
+        window.addEventListener('gps-camera-update-position', (e) => {
+            const myLat = e.detail.position.latitude;
+            const myLon = e.detail.position.longitude;
+
+            // Məsafə hesablama
+            const dist = calculateDistance(myLat, myLon, targetLat, targetLon);
+            document.getElementById('dist-info').innerText = "Hədəfə " + dist.toFixed(0) + " metr qaldı";
+
+            // Yol xəttini dinamik olaraq ayağının altından hədəfə doğru uzadırıq
+            const roadLine = document.getElementById('road-line');
+            roadLine.setAttribute('scale', `1 1 ${dist}`); // Xəttin uzunluğu məsafə qədər olur
+            roadLine.setAttribute('position', `0 -1.6 -${dist/2}`); // Xətti yerə (ayaq altına) salırıq
+            
+            if(dist < 20) {
+                speak("Yolun sonuna çatdınız. Sancaq tam qarşınızdadır.");
+            }
+        });
+
         function calculateDistance(lat1, lon1, lat2, lon2) {
-            const R = 6371e3; 
+            const R = 6371e3;
             const dLat = (lat2 - lat1) * Math.PI / 180;
             const dLon = (lon2 - lon1) * Math.PI / 180;
             const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
@@ -78,22 +93,8 @@
             return R * c;
         }
 
-        // GPS izləmə
-        window.addEventListener('gps-camera-update-position', (e) => {
-            const myLat = e.detail.position.latitude;
-            const myLon = e.detail.position.longitude;
-            
-            const dist = calculateDistance(myLat, myLon, 40.437360, 49.865777);
-            
-            document.getElementById('distance').innerText = dist.toFixed(0) + " metr qaldı";
-
-            if (dist < 15) {
-                speak("Hədəfə çox yaxınsınız. Sancaq tam qarşınızdadır.");
-            }
-        });
-
         window.onload = () => {
-            speak("Naviqasiya başladı. Nərimanov ərazisindəki sancağa doğru hərəkət edin.");
+            speak("Yol xətti aktiv edildi. Göy xətti izləyərək hədəfə gedə bilərsiniz.");
         };
     </script>
 </body>
