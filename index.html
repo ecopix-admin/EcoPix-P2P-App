@@ -3,128 +3,67 @@
 <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <title>Görən Göz - Xətai Spatial Music</title>
+    <title>Görən Göz - Xətai 5 Qəpik Music</title>
     <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar-nft.js"></script>
-    <style>
-        .ui-panel {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 1000;
-            background: rgba(0, 0, 0, 0.85);
-            color: #00f2ea;
-            padding: 20px;
-            border-radius: 50px;
-            text-align: center;
-            font-family: 'Segoe UI', sans-serif;
-            border: 2px solid #ff0050;
-            width: 80%;
-        }
-        #play-hint { font-size: 11px; color: #ccc; margin-top: 5px; }
-    </style>
 </head>
 
 <body style="margin: 0; overflow: hidden;">
 
-    <div class="ui-panel">
-        <div id="status">Xətai Musiqi Sancağı Axtarılır...</div>
-        <div id="play-hint">Havada uçan rəngli obyekti tap və üzərinə toxun</div>
-    </div>
-
-    <audio id="bg-music" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3" preload="auto"></audio>
+    <audio id="local-audio" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" preload="auto"></audio>
 
     <a-scene
         vr-mode-ui="enabled: false"
         embedded
         arjs="sourceType: webcam; debugUIEnabled: false;"
-        cursor="rayOrigin: mouse" 
+        cursor="rayOrigin: mouse"
     >
-        <a-camera gps-camera rotation-reader>
-            <a-cursor color="#00f2ea" scale="2 2 2"></a-cursor>
+        <a-camera gps-camera rotation-reader fov="80">
+            <a-cursor color="#00f2ea" scale="1 1 1"></a-cursor>
         </a-camera>
 
-        <a-entity id="music-node" 
-            gps-entity-place="latitude: 40.353450; longitude: 49.965261;">
+        <a-entity id="music-point" 
+            gps-entity-place="latitude: 40.352872; longitude: 49.962667;">
             
-            <a-sphere id="sphere-target" 
-                color="#ff0050" 
-                radius="1.5" 
-                opacity="0.7"
-                animation="property: rotation; to: 0 360 0; loop: true; dur: 2000"
-                animation__pulse="property: scale; to: 1.3 1.3 1.3; dir: alternate; dur: 800; loop: true"
-                material="emissive: #ff0050; emissiveIntensity: 0.5">
+            <a-sphere id="music-button" 
+                position="0 1.60 0" 
+                radius="0.02" 
+                color="#DAA520" 
+                material="emissive: #DAA520; emissiveIntensity: 0.8"
+                animation="property: rotation; to: 0 360 0; loop: true; dur: 2000">
             </a-sphere>
 
-            <a-text value="XƏTAİ SOUND" align="center" position="0 2.5 0" scale="4 4 4" color="#00f2ea"></a-text>
+            <a-text value="Tap to Play" align="center" position="0 1.70 0" scale="0.3 0.3 0.3" color="#fff"></a-text>
         </a-entity>
 
     </a-scene>
 
     <script>
-        const music = document.getElementById('bg-music');
-        const target = document.getElementById('sphere-target');
-        const statusText = document.getElementById('status');
+        const audio = document.getElementById('local-audio');
+        const button = document.getElementById('music-button');
         let isPlaying = false;
 
-        // Obyektə (Sferaya) toxunanda musiqini aç/bağla
-        target.addEventListener('click', function () {
+        // Obyektə toxunma funksiyası
+        button.addEventListener('click', function () {
             if (!isPlaying) {
-                music.play().then(() => {
-                    target.setAttribute('color', '#00f2ea');
-                    target.setAttribute('material', 'emissive: #00f2ea');
-                    statusText.innerText = "Musiqi Aktivdir";
-                    isPlaying = true;
-                    speak("Xətai nöqtəsində musiqi başladı");
-                }).catch(err => {
-                    alert("Brauzer musiqini blokladı. Ekrana bir dəfə toxunun.");
-                });
+                audio.play();
+                button.setAttribute('color', '#00ff00'); // Oxuyanda yaşıl olsun
+                isPlaying = true;
+                console.log("Musiqi başladı");
             } else {
-                music.pause();
-                target.setAttribute('color', '#ff0050');
-                target.setAttribute('material', 'emissive: #ff0050');
-                statusText.innerText = "Musiqi Dayandırıldı";
+                audio.pause();
+                button.setAttribute('color', '#DAA520'); // Dayananda qızılı (5 qəpik) rəngə qayıtsın
                 isPlaying = false;
+                console.log("Musiqi dayandı");
             }
         });
 
-        function speak(text) {
-            window.speechSynthesis.cancel();
-            const msg = new SpeechSynthesisUtterance(text);
-            msg.lang = 'az-AZ';
-            window.speechSynthesis.speak(msg);
-        }
-
-        // GPS məsafəsini izləmə
-        window.addEventListener('gps-camera-update-position', (e) => {
-            const myLat = e.detail.position.latitude;
-            const myLon = e.detail.position.longitude;
-            
-            // Xətai koordinatı ilə məsafəni hesabla
-            const dist = calculateDistance(myLat, myLon, 40.353450, 49.965261);
-            
-            if (dist < 100) {
-                statusText.innerText = `Sancaq yaxınlıqdadır: ${dist.toFixed(0)} metr`;
-            } else {
-                statusText.innerText = "Sancağa doğru hərəkət edin...";
+        // Brauzer təhlükəsizliyi üçün ilk toxunuşda audio icazəsi
+        window.addEventListener('click', () => {
+            if (audio.paused && !isPlaying) {
+                audio.muted = false;
             }
-        });
-
-        function calculateDistance(lat1, lon1, lat2, lon2) {
-            const R = 6371e3;
-            const dLat = (lat2 - lat1) * Math.PI / 180;
-            const dLon = (lon2 - lon1) * Math.PI / 180;
-            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-                      Math.sin(dLon/2) * Math.sin(dLon/2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-            return R * c;
-        }
-
-        window.onload = () => {
-            speak("Yeni koordinat təyin olundu. Xətai bölgəsindəki musiqi sancağını axtarın.");
-        };
+        }, { once: true });
     </script>
 </body>
 </html>
