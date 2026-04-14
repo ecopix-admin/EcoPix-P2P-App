@@ -1,107 +1,98 @@
 <!DOCTYPE html>
-<html>
+<html lang="az">
 <head>
-    <meta charset="utf-8" />
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Görən Göz - Matrix AR</title>
+    <title>Görən Göz - Kosmos Naviqatoru</title>
     <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
     <style>
-        body { margin: 0; overflow: hidden; font-family: 'Courier New', Courier, monospace; }
+        body { margin: 0; overflow: hidden; background: #000; font-family: sans-serif; }
         
-        /* HUD Çərçivələri */
-        .hud-element {
+        /* UI Panel */
+        #ui-panel {
             position: fixed;
+            top: 20px; left: 50%;
+            transform: translateX(-50%);
             z-index: 10000;
+            background: rgba(0,0,0,0.8);
             color: #00f2ea;
-            text-shadow: 0 0 10px #00f2ea;
+            padding: 10px 20px;
+            border-radius: 20px;
+            text-align: center;
+            border: 2px solid #ff0050;
             pointer-events: none;
         }
-
-        /* Sol Üst: GPS və Sürət */
-        .top-left { top: 20px; left: 20px; font-size: 14px; border-left: 3px solid #ff0050; padding-left: 10px; }
-        
-        /* Sağ Üst: Sistem Statusu */
-        .top-right { top: 20px; right: 20px; text-align: right; font-size: 14px; }
-
-        /* Mərkəzi Nəhəng TikTok */
-        #tiktok-screen {
-            position: fixed;
-            top: 55%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 85vw;
-            height: 70vh;
-            z-index: 9999;
-            border: 2px solid rgba(0, 242, 234, 0.3);
-            box-shadow: 0 0 30px rgba(0, 242, 234, 0.2);
-            opacity: 0.8; /* Şəffaf rejim */
-        }
-
-        /* Aşağı: Scaner Effekti */
-        .scanner-line {
-            position: fixed;
-            width: 100%;
-            height: 2px;
-            background: rgba(0, 242, 234, 0.5);
-            z-index: 10001;
-            animation: scan 4s linear infinite;
-        }
-
-        @keyframes scan { 0% { top: 0; } 100% { top: 100%; } }
-
-        .live-tag { background: #ff0050; color: white; padding: 2px 8px; border-radius: 4px; font-size: 10px; margin-bottom: 5px; display: inline-block; }
+        #info { font-size: 10px; color: white; margin-top: 5px; }
     </style>
 </head>
 <body>
 
-    <div class="scanner-line"></div>
-
-    <div class="hud-element top-left">
-        <span class="live-tag">GPS CONNECTED</span><br>
-        MƏKAN: <span id="loc-name">Nərimanov, Bakı</span><br>
-        SÜRƏT: <span id="speed">0</span> KM/H<br>
-        COORD: <span id="coords">40.43, 49.86</span>
+    <div id="ui-panel">
+        <div>KOSMOS REGİONU: XƏTAİ, BAKI</div>
+        <div id="info">Telefonu fırladaraq planetləri tapın.</div>
     </div>
 
-    <div class="hud-element top-right">
-        SYS: ACTIVE<br>
-        BATT: <span id="batt">100%</span><br>
-        V-MODE: GHOST-AR
-    </div>
+    <a-scene embedded vr-mode-ui="enabled: false">
+        
+        <a-assets>
+            <img id="stars-bg" src="https://raw.githubusercontent.com/aframevr/aframe/master/examples/boilerplate/panorama/puydesancy.jpg">
+            </a-assets>
 
-    <div id="tiktok-screen">
-        <iframe 
-            src="https://www.tiktok.com/embed/v2/7106794791338888494" 
-            style="width: 100%; height: 100%; border: none;" 
-            allow="autoplay; encrypted-media; fullscreen">
-        </iframe>
-    </div>
+        <a-sky color="#00021a"></a-sky>
+        
+        <a-sphere id="sun" position="0 0 -15" radius="5" color="#ffea00" material="emissive: #ffea00; emissiveIntensity: 2;"></a-sphere>
 
-    <a-scene embedded vr-mode-ui="enabled: false" arjs="sourceType: webcam; debugUIEnabled: false;">
-        <a-camera look-controls-enabled="false"></a-camera>
+        <a-sphere id="mercury" position="8 0 -20" radius="0.3" color="#a8a8a8"></a-sphere>
+
+        <a-sphere id="venus" position="15 0 -10" radius="0.6" color="#e6a760"></a-sphere>
+
+        <a-entity id="earth-system" position="-10 0 -5">
+            <a-sphere id="earth" radius="1" color="#1a4d8c" material="src: url(https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Haxby_-_Earth_Texture_Map_2004.jpg/1200px-Haxby_-_Earth_Texture_Map_2004.jpg)"></a-sphere>
+            <a-sphere id="moon" position="2 1 0" radius="0.2" color="#cccccc"></a-sphere>
+        </a-entity>
+
+        <a-sphere id="mars" position="-20 0 10" radius="0.5" color="#c1440e"></a-sphere>
+
+        <a-sphere id="jupiter" position="0 0 30" radius="4" color="#d1ac7c"></a-sphere>
+
+        <a-entity id="saturn-system" position="30 0 10" rotation="0 0 15">
+            <a-sphere id="saturn" radius="3" color="#fce2a8"></a-sphere>
+            <a-torus id="saturn-ring" color="#fce2a8" radius="5" radius-tubular="0.02" rotation="90 0 0"></a-torus>
+        </a-entity>
+
+        <a-sphere id="uranus" position="20 10 -40" radius="2" color="#93b8d9"></a-sphere>
+
+        <a-sphere id="neptune" position="-30 5 -50" radius="1.8" color="#4b70dd"></a-sphere>
+
+        <a-entity id="starfield">
+            <script>
+                const starField = document.getElementById('starfield');
+                for (let i = 0; i < 500; i++) {
+                    const star = document.createElement('a-sphere');
+                    star.setAttribute('radius', 0.05);
+                    star.setAttribute('color', '#ffffff');
+                    star.setAttribute('position', `${Math.random() * 200 - 100} ${Math.random() * 200 - 100} ${Math.random() * 200 - 100}`);
+                    starField.appendChild(star);
+                }
+            </script>
+        </a-entity>
+
+        <a-camera look-controls="enabled: true" wasd-controls-enabled="false">
+            <a-cursor color="#00f2ea"></a-cursor>
+        </a-camera>
+
     </a-scene>
 
     <script>
-        // GPS və Sürət Məlumatı
-        navigator.geolocation.watchPosition((pos) => {
-            document.getElementById('coords').innerText = `${pos.coords.latitude.toFixed(2)}, ${pos.coords.longitude.toFixed(2)}`;
-            const speed = pos.coords.speed ? (pos.coords.speed * 3.6).toFixed(0) : "0";
-            document.getElementById('speed').innerText = speed;
-        });
-
-        // Batareya Məlumatı
-        navigator.getBattery().then(function(battery) {
-            function updateBtn() {
-                document.getElementById('batt').innerText = (battery.level * 100).toFixed(0) + "%";
-            }
-            updateBtn();
-            battery.addEventListener('levelchange', updateBtn);
-        });
-
-        window.onload = () => {
-            const msg = new SpeechSynthesisUtterance("Matrix rejimi aktivdir. Sistem tarandı.");
+        function speak(text) {
+            window.speechSynthesis.cancel();
+            const msg = new SpeechSynthesisUtterance(text);
             msg.lang = 'az-AZ';
             window.speechSynthesis.speak(msg);
+        }
+
+        window.onload = () => {
+            speak("Kosmos naviqasiyası başladı. Xətai üzərindəki ulduzlu göyə baxın.");
         };
     </script>
 </body>
