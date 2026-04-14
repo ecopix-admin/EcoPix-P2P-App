@@ -2,99 +2,106 @@
 <html>
 <head>
     <meta charset="utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <title>Görən Göz - Yol Naviqasiyası</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Görən Göz - Matrix AR</title>
     <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
-    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar-nft.js"></script>
     <style>
-        .ui-overlay {
+        body { margin: 0; overflow: hidden; font-family: 'Courier New', Courier, monospace; }
+        
+        /* HUD Çərçivələri */
+        .hud-element {
             position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 1000;
-            width: 80%;
-            background: rgba(0, 242, 234, 0.9);
-            color: black;
-            padding: 15px;
-            border-radius: 50px;
-            text-align: center;
-            font-family: sans-serif;
-            font-weight: bold;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            z-index: 10000;
+            color: #00f2ea;
+            text-shadow: 0 0 10px #00f2ea;
+            pointer-events: none;
         }
+
+        /* Sol Üst: GPS və Sürət */
+        .top-left { top: 20px; left: 20px; font-size: 14px; border-left: 3px solid #ff0050; padding-left: 10px; }
+        
+        /* Sağ Üst: Sistem Statusu */
+        .top-right { top: 20px; right: 20px; text-align: right; font-size: 14px; }
+
+        /* Mərkəzi Nəhəng TikTok */
+        #tiktok-screen {
+            position: fixed;
+            top: 55%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 85vw;
+            height: 70vh;
+            z-index: 9999;
+            border: 2px solid rgba(0, 242, 234, 0.3);
+            box-shadow: 0 0 30px rgba(0, 242, 234, 0.2);
+            opacity: 0.8; /* Şəffaf rejim */
+        }
+
+        /* Aşağı: Scaner Effekti */
+        .scanner-line {
+            position: fixed;
+            width: 100%;
+            height: 2px;
+            background: rgba(0, 242, 234, 0.5);
+            z-index: 10001;
+            animation: scan 4s linear infinite;
+        }
+
+        @keyframes scan { 0% { top: 0; } 100% { top: 100%; } }
+
+        .live-tag { background: #ff0050; color: white; padding: 2px 8px; border-radius: 4px; font-size: 10px; margin-bottom: 5px; display: inline-block; }
     </style>
 </head>
+<body>
 
-<body style="margin: 0; overflow: hidden;">
+    <div class="scanner-line"></div>
 
-    <div class="ui-overlay">
-        <div id="dist-info">Yol axtarılır...</div>
+    <div class="hud-element top-left">
+        <span class="live-tag">GPS CONNECTED</span><br>
+        MƏKAN: <span id="loc-name">Nərimanov, Bakı</span><br>
+        SÜRƏT: <span id="speed">0</span> KM/H<br>
+        COORD: <span id="coords">40.43, 49.86</span>
     </div>
 
-    <a-scene
-        vr-mode-ui="enabled: false"
-        embedded
-        arjs="sourceType: webcam; debugUIEnabled: false; videoParameters: { width: 1280, height: 720, facingMode: 'environment' };"
-    >
-        <a-camera gps-camera rotation-reader fov="80">
-        </a-camera>
+    <div class="hud-element top-right">
+        SYS: ACTIVE<br>
+        BATT: <span id="batt">100%</span><br>
+        V-MODE: GHOST-AR
+    </div>
 
-        <a-entity id="target" gps-entity-place="latitude: 40.437360; longitude: 49.865777;">
-            <a-cylinder color="#00f2ea" height="0.1" radius="1.5"></a-cylinder>
-            <a-text value="Hədəf Nöqtəsi" align="center" position="0 2 0" scale="4 4 4" color="#ff0050"></a-text>
-        </a-entity>
+    <div id="tiktok-screen">
+        <iframe 
+            src="https://www.tiktok.com/embed/v2/7106794791338888494" 
+            style="width: 100%; height: 100%; border: none;" 
+            allow="autoplay; encrypted-media; fullscreen">
+        </iframe>
+    </div>
 
-        <a-entity id="road-line" 
-            geometry="primitive: box; width: 1; height: 0.05; depth: 1" 
-            material="color: #00f2ea; opacity: 0.7; transparent: true"
-            gps-projected-entity-place="latitude: 40.437360; longitude: 49.865777;">
-        </a-entity>
-
+    <a-scene embedded vr-mode-ui="enabled: false" arjs="sourceType: webcam; debugUIEnabled: false;">
+        <a-camera look-controls-enabled="false"></a-camera>
     </a-scene>
 
     <script>
-        const targetLat = 40.437360;
-        const targetLon = 49.865777;
-
-        function speak(text) {
-            window.speechSynthesis.cancel();
-            const msg = new SpeechSynthesisUtterance(text);
-            msg.lang = 'az-AZ';
-            window.speechSynthesis.speak(msg);
-        }
-
-        window.addEventListener('gps-camera-update-position', (e) => {
-            const myLat = e.detail.position.latitude;
-            const myLon = e.detail.position.longitude;
-
-            // Məsafə hesablama
-            const dist = calculateDistance(myLat, myLon, targetLat, targetLon);
-            document.getElementById('dist-info').innerText = "Hədəfə " + dist.toFixed(0) + " metr qaldı";
-
-            // Yol xəttini dinamik olaraq ayağının altından hədəfə doğru uzadırıq
-            const roadLine = document.getElementById('road-line');
-            roadLine.setAttribute('scale', `1 1 ${dist}`); // Xəttin uzunluğu məsafə qədər olur
-            roadLine.setAttribute('position', `0 -1.6 -${dist/2}`); // Xətti yerə (ayaq altına) salırıq
-            
-            if(dist < 20) {
-                speak("Yolun sonuna çatdınız. Sancaq tam qarşınızdadır.");
-            }
+        // GPS və Sürət Məlumatı
+        navigator.geolocation.watchPosition((pos) => {
+            document.getElementById('coords').innerText = `${pos.coords.latitude.toFixed(2)}, ${pos.coords.longitude.toFixed(2)}`;
+            const speed = pos.coords.speed ? (pos.coords.speed * 3.6).toFixed(0) : "0";
+            document.getElementById('speed').innerText = speed;
         });
 
-        function calculateDistance(lat1, lon1, lat2, lon2) {
-            const R = 6371e3;
-            const dLat = (lat2 - lat1) * Math.PI / 180;
-            const dLon = (lon2 - lon1) * Math.PI / 180;
-            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-                      Math.sin(dLon/2) * Math.sin(dLon/2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-            return R * c;
-        }
+        // Batareya Məlumatı
+        navigator.getBattery().then(function(battery) {
+            function updateBtn() {
+                document.getElementById('batt').innerText = (battery.level * 100).toFixed(0) + "%";
+            }
+            updateBtn();
+            battery.addEventListener('levelchange', updateBtn);
+        });
 
         window.onload = () => {
-            speak("Yol xətti aktiv edildi. Göy xətti izləyərək hədəfə gedə bilərsiniz.");
+            const msg = new SpeechSynthesisUtterance("Matrix rejimi aktivdir. Sistem tarandı.");
+            msg.lang = 'az-AZ';
+            window.speechSynthesis.speak(msg);
         };
     </script>
 </body>
