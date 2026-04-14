@@ -3,34 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Görən Göz - Kosmos Naviqatoru</title>
+    <title>Görən Göz - Kosmos Naviqatoru v2</title>
     <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
     <style>
         body { margin: 0; overflow: hidden; background: #000; font-family: sans-serif; }
         
-        /* UI Panel */
+        /* UI Panel - Daha təmiz və dəqiq */
         #ui-panel {
             position: fixed;
             top: 20px; left: 50%;
             transform: translateX(-50%);
             z-index: 10000;
-            background: rgba(0,0,0,0.8);
+            background: rgba(0, 242, 234, 0.2);
             color: #00f2ea;
             padding: 10px 20px;
-            border-radius: 20px;
+            border-radius: 10px;
             text-align: center;
-            border: 2px solid #ff0050;
+            border: 1px solid #ff0050;
+            pointer-events: none;
+            box-shadow: 0 0 20px rgba(0, 242, 234, 0.3);
+        }
+        #info { font-size: 11px; color: white; margin-top: 5px; }
+        
+        /* Məkan Göstəricisi - Real GPS-dən */
+        #gps-display {
+            position: fixed;
+            left: 20px; bottom: 20px;
+            color: #00f2ea;
+            z-index: 10001;
+            font-size: 10px;
             pointer-events: none;
         }
-        #info { font-size: 10px; color: white; margin-top: 5px; }
     </style>
 </head>
 <body>
 
     <div id="ui-panel">
         <div>KOSMOS REGİONU: XƏTAİ, BAKI</div>
-        <div id="info">Telefonu fırladaraq planetləri tapın.</div>
+        <div id="info">Mərkəzdə Günəşi tapın. Telefonu 360 dərəcə fırladın.</div>
     </div>
+    
+    <div id="gps-display">REGION_COORD: <span id="coords">WAITING...</span></div>
 
     <a-scene embedded vr-mode-ui="enabled: false">
         
@@ -40,60 +53,75 @@
 
         <a-sky color="#00021a"></a-sky>
         
-        <a-sphere id="sun" position="0 0 -15" radius="5" color="#ffea00" material="emissive: #ffea00; emissiveIntensity: 2;"></a-sphere>
+        <a-sphere id="sun" position="0 0 -8" radius="2" color="#ffea00" material="emissive: #ffea00; emissiveIntensity: 2;"></a-sphere>
 
-        <a-sphere id="mercury" position="8 0 -20" radius="0.3" color="#a8a8a8"></a-sphere>
+        <a-sphere id="mercury" position="4 0 -10" radius="0.3" color="#a8a8a8">
+            <a-animation attribute="rotation" to="0 360 0" dur="5000" repeat="infinite" easing="linear"></a-animation>
+        </a-sphere>
 
-        <a-sphere id="venus" position="15 0 -10" radius="0.6" color="#e6a760"></a-sphere>
+        <a-sphere id="venus" position="7 0 -6" radius="0.6" color="#e6a760">
+            <a-animation attribute="rotation" to="0 360 0" dur="10000" repeat="infinite" easing="linear"></a-animation>
+        </a-sphere>
 
-        <a-entity id="earth-system" position="-10 0 -5">
-            <a-sphere id="earth" radius="1" color="#1a4d8c" material="src: url(https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Haxby_-_Earth_Texture_Map_2004.jpg/1200px-Haxby_-_Earth_Texture_Map_2004.jpg)"></a-sphere>
-            <a-sphere id="moon" position="2 1 0" radius="0.2" color="#cccccc"></a-sphere>
+        <a-sphere id="earth" position="-6 0 -5" radius="1" color="#1a4d8c">
+            <a-animation attribute="rotation" to="0 360 0" dur="24000" repeat="infinite" easing="linear"></a-animation>
+        </a-sphere>
+
+        <a-sphere id="mars" position="-12 0 5" radius="0.5" color="#c1440e">
+            <a-animation attribute="rotation" to="0 360 0" dur="24600" repeat="infinite" easing="linear"></a-animation>
+        </a-sphere>
+
+        <a-sphere id="jupiter" position="0 0 15" radius="4" color="#d1ac7c">
+            <a-animation attribute="rotation" to="0 360 0" dur="10000" repeat="infinite" easing="linear"></a-animation>
+        </a-sphere>
+
+        <a-entity id="saturn-system" position="15 0 8" rotation="0 0 15">
+            <a-sphere id="saturn" radius="2.5" color="#fce2a8">
+                <a-animation attribute="rotation" to="0 360 0" dur="10600" repeat="infinite" easing="linear"></a-animation>
+            </a-sphere>
+            <a-torus id="saturn-ring" color="#fce2a8" radius="4" radius-tubular="0.02" rotation="90 0 0"></a-torus>
         </a-entity>
 
-        <a-sphere id="mars" position="-20 0 10" radius="0.5" color="#c1440e"></a-sphere>
+        <a-sphere id="uranus" position="-10 8 -20" radius="1.8" color="#93b8d9">
+            <a-animation attribute="rotation" to="0 360 0" dur="17200" repeat="infinite" easing="linear"></a-animation>
+        </a-sphere>
 
-        <a-sphere id="jupiter" position="0 0 30" radius="4" color="#d1ac7c"></a-sphere>
+        <a-sphere id="neptune" position="15 -5 -30" radius="1.6" color="#4b70dd">
+            <a-animation attribute="rotation" to="0 360 0" dur="16100" repeat="infinite" easing="linear"></a-animation>
+        </a-sphere>
 
-        <a-entity id="saturn-system" position="30 0 10" rotation="0 0 15">
-            <a-sphere id="saturn" radius="3" color="#fce2a8"></a-sphere>
-            <a-torus id="saturn-ring" color="#fce2a8" radius="5" radius-tubular="0.02" rotation="90 0 0"></a-torus>
-        </a-entity>
+        <a-entity id="starfield"></a-entity>
 
-        <a-sphere id="uranus" position="20 10 -40" radius="2" color="#93b8d9"></a-sphere>
-
-        <a-sphere id="neptune" position="-30 5 -50" radius="1.8" color="#4b70dd"></a-sphere>
-
-        <a-entity id="starfield">
-            <script>
-                const starField = document.getElementById('starfield');
-                for (let i = 0; i < 500; i++) {
-                    const star = document.createElement('a-sphere');
-                    star.setAttribute('radius', 0.05);
-                    star.setAttribute('color', '#ffffff');
-                    star.setAttribute('position', `${Math.random() * 200 - 100} ${Math.random() * 200 - 100} ${Math.random() * 200 - 100}`);
-                    starField.appendChild(star);
-                }
-            </script>
-        </a-entity>
-
-        <a-camera look-controls="enabled: true" wasd-controls-enabled="false">
+        <a-camera look-controls="enabled: true" wasd-controls-enabled="false" fov="100">
             <a-cursor color="#00f2ea"></a-cursor>
         </a-camera>
 
     </a-scene>
 
     <script>
-        function speak(text) {
-            window.speechSynthesis.cancel();
-            const msg = new SpeechSynthesisUtterance(text);
+        // GPS koordinatlarını alıb aşağıda göstəririk (İnqilabi deyil, sadəcə məlumat üçün)
+        navigator.geolocation.getCurrentPosition((pos) => {
+            const lat = pos.coords.latitude.toFixed(6);
+            const lon = pos.coords.longitude.toFixed(6);
+            document.getElementById('coords').innerText = `${lat}, ${lon}`;
+        });
+
+        // Ulduzlu göy yaradan funksiya
+        window.addEventListener('load', () => {
+            const starField = document.getElementById('starfield');
+            for (let i = 0; i < 2000; i++) {
+                const star = document.createElement('a-sphere');
+                star.setAttribute('radius', 0.03);
+                star.setAttribute('color', '#ffffff');
+                star.setAttribute('position', `${Math.random() * 200 - 100} ${Math.random() * 200 - 100} ${Math.random() * 200 - 100}`);
+                starField.appendChild(star);
+            }
+            
+            // Səsli salamlaşma
+            const msg = new SpeechSynthesisUtterance("Görən Göz Kosmos naviqatoru başladı. Mərkəzdə Günəşi tapın.");
             msg.lang = 'az-AZ';
             window.speechSynthesis.speak(msg);
-        }
-
-        window.onload = () => {
-            speak("Kosmos naviqasiyası başladı. Xətai üzərindəki ulduzlu göyə baxın.");
-        };
+        });
     </script>
 </body>
 </html>
