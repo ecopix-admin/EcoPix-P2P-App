@@ -1,127 +1,130 @@
 <!DOCTYPE html>
-<html lang="az">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Görən Göz - Kosmos Naviqatoru v2</title>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>Görən Göz - Xətai Spatial Music</title>
     <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
+    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar-nft.js"></script>
     <style>
-        body { margin: 0; overflow: hidden; background: #000; font-family: sans-serif; }
-        
-        /* UI Panel - Daha təmiz və dəqiq */
-        #ui-panel {
+        .ui-panel {
             position: fixed;
-            top: 20px; left: 50%;
+            bottom: 30px;
+            left: 50%;
             transform: translateX(-50%);
-            z-index: 10000;
-            background: rgba(0, 242, 234, 0.2);
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.85);
             color: #00f2ea;
-            padding: 10px 20px;
-            border-radius: 10px;
+            padding: 20px;
+            border-radius: 50px;
             text-align: center;
-            border: 1px solid #ff0050;
-            pointer-events: none;
-            box-shadow: 0 0 20px rgba(0, 242, 234, 0.3);
+            font-family: 'Segoe UI', sans-serif;
+            border: 2px solid #ff0050;
+            width: 80%;
         }
-        #info { font-size: 11px; color: white; margin-top: 5px; }
-        
-        /* Məkan Göstəricisi - Real GPS-dən */
-        #gps-display {
-            position: fixed;
-            left: 20px; bottom: 20px;
-            color: #00f2ea;
-            z-index: 10001;
-            font-size: 10px;
-            pointer-events: none;
-        }
+        #play-hint { font-size: 11px; color: #ccc; margin-top: 5px; }
     </style>
 </head>
-<body>
 
-    <div id="ui-panel">
-        <div>KOSMOS REGİONU: XƏTAİ, BAKI</div>
-        <div id="info">Mərkəzdə Günəşi tapın. Telefonu 360 dərəcə fırladın.</div>
+<body style="margin: 0; overflow: hidden;">
+
+    <div class="ui-panel">
+        <div id="status">Xətai Musiqi Sancağı Axtarılır...</div>
+        <div id="play-hint">Havada uçan rəngli obyekti tap və üzərinə toxun</div>
     </div>
-    
-    <div id="gps-display">REGION_COORD: <span id="coords">WAITING...</span></div>
 
-    <a-scene embedded vr-mode-ui="enabled: false">
-        
-        <a-assets>
-            <img id="stars-bg" src="https://raw.githubusercontent.com/aframevr/aframe/master/examples/boilerplate/panorama/puydesancy.jpg">
-            </a-assets>
+    <audio id="bg-music" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3" preload="auto"></audio>
 
-        <a-sky color="#00021a"></a-sky>
-        
-        <a-sphere id="sun" position="0 0 -8" radius="2" color="#ffea00" material="emissive: #ffea00; emissiveIntensity: 2;"></a-sphere>
-
-        <a-sphere id="mercury" position="4 0 -10" radius="0.3" color="#a8a8a8">
-            <a-animation attribute="rotation" to="0 360 0" dur="5000" repeat="infinite" easing="linear"></a-animation>
-        </a-sphere>
-
-        <a-sphere id="venus" position="7 0 -6" radius="0.6" color="#e6a760">
-            <a-animation attribute="rotation" to="0 360 0" dur="10000" repeat="infinite" easing="linear"></a-animation>
-        </a-sphere>
-
-        <a-sphere id="earth" position="-6 0 -5" radius="1" color="#1a4d8c">
-            <a-animation attribute="rotation" to="0 360 0" dur="24000" repeat="infinite" easing="linear"></a-animation>
-        </a-sphere>
-
-        <a-sphere id="mars" position="-12 0 5" radius="0.5" color="#c1440e">
-            <a-animation attribute="rotation" to="0 360 0" dur="24600" repeat="infinite" easing="linear"></a-animation>
-        </a-sphere>
-
-        <a-sphere id="jupiter" position="0 0 15" radius="4" color="#d1ac7c">
-            <a-animation attribute="rotation" to="0 360 0" dur="10000" repeat="infinite" easing="linear"></a-animation>
-        </a-sphere>
-
-        <a-entity id="saturn-system" position="15 0 8" rotation="0 0 15">
-            <a-sphere id="saturn" radius="2.5" color="#fce2a8">
-                <a-animation attribute="rotation" to="0 360 0" dur="10600" repeat="infinite" easing="linear"></a-animation>
-            </a-sphere>
-            <a-torus id="saturn-ring" color="#fce2a8" radius="4" radius-tubular="0.02" rotation="90 0 0"></a-torus>
-        </a-entity>
-
-        <a-sphere id="uranus" position="-10 8 -20" radius="1.8" color="#93b8d9">
-            <a-animation attribute="rotation" to="0 360 0" dur="17200" repeat="infinite" easing="linear"></a-animation>
-        </a-sphere>
-
-        <a-sphere id="neptune" position="15 -5 -30" radius="1.6" color="#4b70dd">
-            <a-animation attribute="rotation" to="0 360 0" dur="16100" repeat="infinite" easing="linear"></a-animation>
-        </a-sphere>
-
-        <a-entity id="starfield"></a-entity>
-
-        <a-camera look-controls="enabled: true" wasd-controls-enabled="false" fov="100">
-            <a-cursor color="#00f2ea"></a-cursor>
+    <a-scene
+        vr-mode-ui="enabled: false"
+        embedded
+        arjs="sourceType: webcam; debugUIEnabled: false;"
+        cursor="rayOrigin: mouse" 
+    >
+        <a-camera gps-camera rotation-reader>
+            <a-cursor color="#00f2ea" scale="2 2 2"></a-cursor>
         </a-camera>
+
+        <a-entity id="music-node" 
+            gps-entity-place="latitude: 40.353450; longitude: 49.965261;">
+            
+            <a-sphere id="sphere-target" 
+                color="#ff0050" 
+                radius="1.5" 
+                opacity="0.7"
+                animation="property: rotation; to: 0 360 0; loop: true; dur: 2000"
+                animation__pulse="property: scale; to: 1.3 1.3 1.3; dir: alternate; dur: 800; loop: true"
+                material="emissive: #ff0050; emissiveIntensity: 0.5">
+            </a-sphere>
+
+            <a-text value="XƏTAİ SOUND" align="center" position="0 2.5 0" scale="4 4 4" color="#00f2ea"></a-text>
+        </a-entity>
 
     </a-scene>
 
     <script>
-        // GPS koordinatlarını alıb aşağıda göstəririk (İnqilabi deyil, sadəcə məlumat üçün)
-        navigator.geolocation.getCurrentPosition((pos) => {
-            const lat = pos.coords.latitude.toFixed(6);
-            const lon = pos.coords.longitude.toFixed(6);
-            document.getElementById('coords').innerText = `${lat}, ${lon}`;
+        const music = document.getElementById('bg-music');
+        const target = document.getElementById('sphere-target');
+        const statusText = document.getElementById('status');
+        let isPlaying = false;
+
+        // Obyektə (Sferaya) toxunanda musiqini aç/bağla
+        target.addEventListener('click', function () {
+            if (!isPlaying) {
+                music.play().then(() => {
+                    target.setAttribute('color', '#00f2ea');
+                    target.setAttribute('material', 'emissive: #00f2ea');
+                    statusText.innerText = "Musiqi Aktivdir";
+                    isPlaying = true;
+                    speak("Xətai nöqtəsində musiqi başladı");
+                }).catch(err => {
+                    alert("Brauzer musiqini blokladı. Ekrana bir dəfə toxunun.");
+                });
+            } else {
+                music.pause();
+                target.setAttribute('color', '#ff0050');
+                target.setAttribute('material', 'emissive: #ff0050');
+                statusText.innerText = "Musiqi Dayandırıldı";
+                isPlaying = false;
+            }
         });
 
-        // Ulduzlu göy yaradan funksiya
-        window.addEventListener('load', () => {
-            const starField = document.getElementById('starfield');
-            for (let i = 0; i < 2000; i++) {
-                const star = document.createElement('a-sphere');
-                star.setAttribute('radius', 0.03);
-                star.setAttribute('color', '#ffffff');
-                star.setAttribute('position', `${Math.random() * 200 - 100} ${Math.random() * 200 - 100} ${Math.random() * 200 - 100}`);
-                starField.appendChild(star);
-            }
-            
-            // Səsli salamlaşma
-            const msg = new SpeechSynthesisUtterance("Görən Göz Kosmos naviqatoru başladı. Mərkəzdə Günəşi tapın.");
+        function speak(text) {
+            window.speechSynthesis.cancel();
+            const msg = new SpeechSynthesisUtterance(text);
             msg.lang = 'az-AZ';
             window.speechSynthesis.speak(msg);
+        }
+
+        // GPS məsafəsini izləmə
+        window.addEventListener('gps-camera-update-position', (e) => {
+            const myLat = e.detail.position.latitude;
+            const myLon = e.detail.position.longitude;
+            
+            // Xətai koordinatı ilə məsafəni hesabla
+            const dist = calculateDistance(myLat, myLon, 40.353450, 49.965261);
+            
+            if (dist < 100) {
+                statusText.innerText = `Sancaq yaxınlıqdadır: ${dist.toFixed(0)} metr`;
+            } else {
+                statusText.innerText = "Sancağa doğru hərəkət edin...";
+            }
         });
+
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371e3;
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                      Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        }
+
+        window.onload = () => {
+            speak("Yeni koordinat təyin olundu. Xətai bölgəsindəki musiqi sancağını axtarın.");
+        };
     </script>
 </body>
 </html>
