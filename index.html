@@ -2,139 +2,165 @@
 <html lang="az">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AirPiano Ultra-Smooth v4.0</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AirPiano Extreme v5.0</title>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background: #020617; touch-action: none; }
-        #canvas-container { position: relative; width: 100%; max-width: 800px; border-radius: 2rem; overflow: hidden; border: 4px solid #1e293b; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
-        /* Güzgü effekti tam idarəli */
-        canvas { transform: scaleX(-1); width: 100%; height: auto; background: #000; }
-        .key { transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1); flex: 1; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); border-radius: 0.75rem; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 1rem; color: #64748b; font-weight: 800; font-size: 0.75rem; position: relative; }
-        .key-active { background: linear-gradient(to top, #3b82f6, #60a5fa) !important; color: white !important; transform: translateY(8px); box-shadow: 0 0 20px rgba(59, 130, 246, 0.5); }
-        #keyboard-overlay { position: absolute; bottom: 0; left: 0; width: 100%; height: 30%; display: flex; gap: 4px; padding: 10px; pointer-events: none; z-index: 20; transform: scaleX(-1); }
-        video { display: none; }
+        body { background: #020617; touch-action: none; overflow: hidden; }
+        #app-container { position: relative; width: 100vw; height: 100vh; display: flex; flex-col items-center; justify-content: center; }
+        
+        /* Kamera sahəsi - Tək görüntü, sürətli render */
+        #canvas-wrapper { position: relative; width: 95%; max-width: 900px; aspect-ratio: 16/9; border-radius: 1.5rem; overflow: hidden; background: #000; border: 2px solid #334155; }
+        canvas { transform: scaleX(-1); width: 100%; height: 100%; object-fit: cover; }
+        video { display: none; } /* Aşağıdakı kameranı tamamilə ləğv etdik */
+
+        /* Professional Piano Düymələri */
+        #piano-board { 
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 35%; 
+            display: flex; gap: 2px; padding: 5px; transform: scaleX(-1); z-index: 50;
+        }
+        .white-key { 
+            flex: 1; background: linear-gradient(to bottom, #f8fafc 0%, #cbd5e1 100%); 
+            border-radius: 0 0 8px 8px; border: 1px solid #94a3b8;
+            display: flex; align-items: flex-end; justify-content: center; 
+            padding-bottom: 10px; color: #64748b; font-size: 0.6rem; font-weight: bold;
+            transition: all 0.05s;
+        }
+        .key-pressed { background: linear-gradient(to bottom, #3b82f6 0%, #1d4ed8 100%) !important; transform: translateY(5px); color: white !important; }
     </style>
 </head>
-<body class="flex flex-col items-center justify-center min-h-screen p-4">
+<body>
 
-    <div class="mb-6 text-center">
-        <h1 class="text-4xl font-black text-white tracking-tighter italic">AIR PIANO <span class="text-blue-500">PRO</span></h1>
-        <div id="status" class="text-blue-400 font-mono text-xs mt-2 uppercase tracking-widest animate-pulse font-bold">Kamera Yüklənir...</div>
-    </div>
+    <div id="app-container">
+        <div class="absolute top-5 flex flex-col items-center gap-2 z-[100]">
+            <h1 class="text-2xl font-black text-white italic tracking-widest">PIANO <span class="text-blue-500">ULTRA</span></h1>
+            <button id="startBtn" class="bg-blue-600 px-6 py-2 rounded-full text-white font-bold shadow-lg active:scale-95 transition-all text-sm">SƏSİ AÇ & BAŞLA</button>
+            <div id="status" class="text-[10px] text-slate-500 font-mono">SİSTEM HAZIRLANIR...</div>
+        </div>
 
-    <div id="canvas-container">
-        <video id="input_video"></video>
-        <canvas id="output_canvas" width="1280" height="720"></canvas>
-        <div id="keyboard-overlay"></div>
-    </div>
-
-    <div class="mt-8 w-full max-w-sm">
-        <button id="startBtn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-5 rounded-2xl shadow-xl transition-all active:scale-95 text-lg">
-            SƏSİ AKTİVLƏŞDİR & BAŞLA
-        </button>
+        <div id="canvas-wrapper">
+            <video id="input_video"></video>
+            <canvas id="output_canvas"></canvas>
+            <div id="piano-board"></div>
+        </div>
     </div>
 
     <script>
         const videoElement = document.getElementById('input_video');
         const canvasElement = document.getElementById('output_canvas');
         const canvasCtx = canvasElement.getContext('2d');
-        const keyboard = document.getElementById('keyboard-overlay');
+        const pianoBoard = document.getElementById('piano-board');
         const startBtn = document.getElementById('startBtn');
         const status = document.getElementById('status');
 
         let audioCtx, isReady = false;
-        let smoothedX = 0, smoothedY = 0;
-        const alpha = 0.3; // Yumşaltma dərəcəsi (0-1 arası, aşağı rəqəm daha hamar edir)
+        const notes = ['C3','D3','E3','F3','G3','A3','B3','C4','D4','E4','F4','G4','A4','B4','C5'];
+        const freqs = [130.81, 146.83, 164.81, 174.61, 196.00, 220.00, 246.94, 261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25];
         
-        const notes = ['C4', 'D4', 'E4', 'F4', 'G4', 'A4', 'B4', 'C5'];
-        const freqs = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25];
-        let lastKey = -1;
+        let activeKeys = new Set();
 
-        // Düymələri yarat
+        // Düymələrin sayını çoxaltdıq (15 nota)
         notes.forEach((n, i) => {
-            const div = document.createElement('div');
-            div.className = 'key';
-            div.id = `k-${i}`;
-            div.innerText = n;
-            keyboard.appendChild(div);
+            const key = document.createElement('div');
+            key.className = 'white-key';
+            key.id = `note-${i}`;
+            key.innerText = n;
+            pianoBoard.appendChild(key);
         });
 
         startBtn.onclick = () => {
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             isReady = true;
-            startBtn.innerHTML = "SİSTEM AKTİVDİR ✅";
-            startBtn.classList.replace('bg-blue-600', 'bg-emerald-600');
+            startBtn.classList.add('hidden');
+            status.innerText = "SİSTEM AKTİVDİR";
         };
 
-        function play(i) {
-            if(!isReady) return;
-            const osc = audioCtx.createOscillator();
-            const g = audioCtx.createGain();
-            osc.type = 'sine'; // Peşəkar təmiz səs
-            osc.frequency.value = freqs[i];
-            g.gain.setValueAtTime(0.3, audioCtx.currentTime);
-            g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.6);
-            osc.connect(g); g.connect(audioCtx.destination);
-            osc.start(); osc.stop(audioCtx.currentTime + 0.6);
+        function playNote(i) {
+            if(!isReady || activeKeys.has(i)) return;
+            activeKeys.add(i);
 
-            const el = document.getElementById(`k-${i}`);
-            el.classList.add('key-active');
-            setTimeout(() => el.classList.remove('key-active'), 200);
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            
+            // Həqiqi səs üçün "Sawtooth" və "Sine" qarışığı effekti
+            osc.type = 'triangle'; 
+            osc.frequency.setValueAtTime(freqs[i], audioCtx.currentTime);
+            
+            gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.8);
+            
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.8);
+
+            const el = document.getElementById(`note-${i}`);
+            el.classList.add('key-pressed');
+            setTimeout(() => {
+                el.classList.remove('key-pressed');
+                activeKeys.delete(i);
+            }, 150);
         }
 
         function onResults(results) {
+            // Render sürətini artırmaq üçün təmizləmə
             canvasCtx.save();
             canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
             canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
 
-            if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
-                status.innerText = "ƏL AŞKARLANDI - ÇALIN";
-                const hand = results.multiHandLandmarks[0];
-                const indexTip = hand[8]; // Şəhadət barmağı
+            if (results.multiHandLandmarks) {
+                for (const landmarks of results.multiHandLandmarks) {
+                    // Hər əldəki hər barmaq ucunu (4, 8, 12, 16, 20 nömrəli nöqtələr) yoxla
+                    const fingertips = [4, 8, 12, 16, 20];
+                    
+                    fingertips.forEach(pointIdx => {
+                        const point = landmarks[pointIdx];
+                        const x = point.x * canvasElement.width;
+                        const y = point.y * canvasElement.height;
 
-                // 1. Tərs vurmamaq üçün X koordinatını vizual ilə eyniləşdiririk
-                const rawX = indexTip.x * canvasElement.width;
-                const rawY = indexTip.y * canvasElement.height;
+                        // Vizual göstərici
+                        canvasCtx.fillStyle = pointIdx === 8 ? "#3b82f6" : "#f8fafc";
+                        canvasCtx.beginPath();
+                        canvasCtx.arc(x, y, 8, 0, 2 * Math.PI);
+                        canvasCtx.fill();
 
-                // 2. Exponential Smoothing (Titriləmənin qarşısını alan riyaziyyat)
-                smoothedX = alpha * rawX + (1 - alpha) * smoothedX;
-                smoothedY = alpha * rawY + (1 - alpha) * smoothedY;
-
-                // 3. Vizual Marker
-                canvasCtx.shadowBlur = 15;
-                canvasCtx.shadowColor = "#3b82f6";
-                canvasCtx.fillStyle = "white";
-                canvasCtx.beginPath();
-                canvasCtx.arc(smoothedX, smoothedY, 12, 0, 2 * Math.PI);
-                canvasCtx.fill();
-
-                // 4. Məntiqi Yoxlama (Düymə zonası)
-                if (smoothedY > canvasElement.height * 0.7) {
-                    const keyIdx = Math.floor((smoothedX / canvasElement.width) * notes.length);
-                    if (keyIdx !== lastKey && keyIdx >= 0 && keyIdx < notes.length) {
-                        play(keyIdx);
-                        lastKey = keyIdx;
-                    }
-                } else {
-                    lastKey = -1;
+                        // Düyməyə dəyib-dəymədiyini yoxla
+                        if (y > canvasElement.height * 0.65) {
+                            const keyIdx = Math.floor((x / canvasElement.width) * notes.length);
+                            if (keyIdx >= 0 && keyIdx < notes.length) {
+                                playNote(keyIdx);
+                            }
+                        }
+                    });
                 }
-            } else {
-                status.innerText = "ƏLİNİZİ GÖSTƏRİN";
-                lastKey = -1;
             }
             canvasCtx.restore();
         }
 
-        const hands = new Hands({locateFile: (f) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${f}`});
-        hands.setOptions({ maxNumHands: 1, modelComplexity: 1, minDetectionConfidence: 0.8, minTrackingConfidence: 0.8 });
+        const hands = new Hands({
+            locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+        });
+
+        hands.setOptions({
+            maxNumHands: 2,
+            modelComplexity: 0, // 0 = Ən yüksək sürət (Dona-dona işləməni aradan qaldırır)
+            minDetectionConfidence: 0.5,
+            minTrackingConfidence: 0.5
+        });
+
         hands.onResults(onResults);
 
         const camera = new Camera(videoElement, {
-            onFrame: async () => { await hands.send({image: videoElement}); },
-            width: 1280, height: 720
+            onFrame: async () => {
+                canvasElement.width = videoElement.videoWidth;
+                canvasElement.height = videoElement.videoHeight;
+                await hands.send({image: videoElement});
+            },
+            width: 640,
+            height: 360 // Daha aşağı çözünürlük = daha çox FPS (sürət)
         });
         camera.start();
     </script>
