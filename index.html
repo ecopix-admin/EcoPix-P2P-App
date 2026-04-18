@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SonarMaster AI | Akustik Metrə</title>
+    <title>SonarMaster AI Pro v2.0 | Ultra-Precision Sonar</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .pulse-bg { animation: pulse 2s infinite; }
@@ -12,19 +12,26 @@
             50% { transform: scale(1.05); opacity: 0.8; }
             100% { transform: scale(1); opacity: 0.5; }
         }
+        .hidden { display: none; }
     </style>
 </head>
-<body class="bg-slate-900 text-white min-h-screen flex flex-col items-center justify-center p-6">
+<body class="bg-slate-950 text-white min-h-screen flex flex-col items-center justify-center p-6">
 
-    <div class="text-center mb-10">
+    <div class="text-center mb-8">
         <h1 class="text-3xl font-bold bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">
-            SonarMaster AI
+            SonarMaster AI Pro
         </h1>
-        <p class="text-slate-400 text-sm uppercase tracking-widest mt-2">Ultra-Precision Sonar</p>
+        <p class="text-slate-500 text-xs uppercase tracking-widest mt-2">Ultra-Precision Sonar v2.0</p>
+    </div>
+
+    <div class="absolute top-4 right-4 bg-slate-800 p-4 rounded-xl border border-slate-700 text-right">
+        <span class="block text-slate-500 uppercase text-xs">Toplam Ölçü</span>
+        <span id="total-val" class="text-3xl font-bold text-emerald-400">0.00</span>
+        <span class="text-lg font-bold text-emerald-500/80 ml-1">m</span>
     </div>
 
     <div class="relative w-64 h-64 flex items-center justify-center mb-10">
-        <div id="visualizer" class="absolute inset-0 border-4 border-blue-500/30 rounded-full pulse-bg"></div>
+        <div id="visualizer" class="absolute inset-0 border-4 border-blue-500/30 rounded-full pulse-bg hidden"></div>
         <div class="text-center z-10">
             <span id="dist-val" class="text-6xl font-black font-mono">0.00</span>
             <span class="text-2xl font-bold text-blue-400 ml-1">m</span>
@@ -32,32 +39,38 @@
     </div>
 
     <div class="w-full max-w-xs space-y-4">
-        <button id="startBtn" class="w-full bg-blue-600 hover:bg-blue-500 active:scale-95 transition-all py-4 rounded-2xl font-bold text-xl shadow-lg shadow-blue-900/40">
+        <button id="measureBtn" class="w-full bg-blue-600 hover:bg-blue-500 active:scale-95 transition-all py-4 rounded-2xl font-bold text-xl shadow-lg shadow-blue-900/40">
             ÖLÇMƏYƏ BAŞLA
         </button>
         
         <div class="grid grid-cols-2 gap-3 text-xs">
-            <div class="bg-slate-800 p-3 rounded-xl border border-slate-700">
-                <span class="block text-slate-500 uppercase">Səs Sürəti</span>
-                <span id="sound-speed" class="font-bold">343.2 m/s</span>
-            </div>
-            <div class="bg-slate-800 p-3 rounded-xl border border-slate-700">
-                <span class="block text-slate-500 uppercase">Gecikmə</span>
-                <span id="latency" class="font-bold">-- ms</span>
-            </div>
+            <button id="addTotalBtn" class="bg-slate-800 hover:bg-slate-700 active:scale-95 transition-all p-3 rounded-xl border border-slate-700 disabled:opacity-50">
+                <span class="block text-slate-500 uppercase">Topla</span>
+                <span class="font-bold text-blue-400">+ Toplama Əlavə Et</span>
+            </button>
+            <button id="resetAllBtn" class="bg-slate-800 hover:bg-slate-700 active:scale-95 transition-all p-3 rounded-xl border border-slate-700">
+                <span class="block text-slate-500 uppercase">Sıfırla</span>
+                <span class="font-bold text-red-400">⚠️ Sıfırla</span>
+            </button>
+        </div>
+        
+        <div class="bg-slate-900 p-3 rounded-xl border border-slate-800 text-center text-xs text-slate-600">
+            Maksimum Ölçü: 5.0m (4 metrlik divar üçün optimaldır)
         </div>
     </div>
-
-    <canvas id="waveCanvas" class="w-full h-24 mt-8 opacity-40"></canvas>
 
     <script>
         let audioCtx;
         let isMeasuring = false;
+        let currentMeasure = 0;
+        let totalMeasure = 0;
 
-        const startBtn = document.getElementById('startBtn');
+        const measureBtn = document.getElementById('measureBtn');
         const distVal = document.getElementById('dist-val');
-        const waveCanvas = document.getElementById('waveCanvas');
-        const canvasCtx = waveCanvas.getContext('2d');
+        const totalVal = document.getElementById('total-val');
+        const visualizer = document.getElementById('visualizer');
+        const addTotalBtn = document.getElementById('addTotalBtn');
+        const resetAllBtn = document.getElementById('resetAllBtn');
 
         async function initAudio() {
             if (!audioCtx) {
@@ -72,8 +85,9 @@
             if (isMeasuring) return;
             isMeasuring = true;
             
-            startBtn.innerText = "SİQNAL GÖNDƏRİLİR...";
-            startBtn.classList.replace('bg-blue-600', 'bg-emerald-600');
+            measureBtn.innerText = "SİQNAL GÖNDƏRİLİR...";
+            measureBtn.classList.replace('bg-blue-600', 'bg-emerald-600');
+            visualizer.classList.remove('hidden');
 
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: {
@@ -87,7 +101,7 @@
                 const buffer = audioCtx.createBuffer(1, sampleRate * duration, sampleRate);
                 const data = buffer.getChannelData(0);
 
-                // Chirp Signal (18kHz - 22kHz) - İnsan qulağı demək olar eşitmir
+                // Chirp Signal (18kHz - 22kHz)
                 for (let i = 0; i < buffer.length; i++) {
                     const t = i / sampleRate;
                     const f = 18000 + (4000 * t / duration);
@@ -108,7 +122,8 @@
                 processor.onaudioprocess = (e) => {
                     if (audioCtx.currentTime >= startTime) {
                         recording.push(...e.inputBuffer.getChannelData(0));
-                        if (recording.length > sampleRate * 0.2) { // 200ms dinlə
+                        // Yalnız 30ms (maksimum 5m məsafə üçün) dinlə, 36m kimi mənasız rəqəmləri blokla
+                        if (recording.length > sampleRate * 0.03) { 
                             stopAndAnalyze(recording, data, sampleRate);
                             processor.disconnect();
                             source.disconnect();
@@ -122,16 +137,15 @@
 
             } catch (err) {
                 alert("Mikrofon icazəsi lazımdır!");
-                resetBtn();
+                resetMeasureState();
             }
         }
 
         function stopAndAnalyze(recorded, original, sr) {
-            // Cross-correlation (Dəqiqlik buradadır)
+            // Cross-correlation (DSP Alqoritmi)
             let maxCorr = -1;
             let bestDelay = 0;
 
-            // Sadələşdirilmiş korrelyasiya alqoritmi
             for (let i = 0; i < recorded.length - original.length; i++) {
                 let corr = 0;
                 for (let j = 0; j < original.length; j++) {
@@ -144,24 +158,39 @@
             }
 
             const timeOfFlight = bestDelay / sr;
-            const distance = (timeOfFlight * 343.2) / 2;
+            // OFFSET kompensasiyasını (0.04m) öz telefonuna görə bir az artırıb-azalda bilərsən
+            const distance = Math.max(0, (timeOfFlight * 343.2 / 2) - 0.04);
             
-            // Offset/Gecikmə kompensasiyası (Hər cihaz üçün təxmini 0.04m çıxılır)
-            const finalDist = Math.max(0, distance - 0.04);
-
-            distVal.innerText = finalDist.toFixed(2);
-            document.getElementById('latency').innerText = (timeOfFlight * 1000).toFixed(1) + " ms";
+            currentMeasure = distance;
+            distVal.innerText = currentMeasure.toFixed(2);
             
-            resetBtn();
+            // Dəqiqlik dərəcəsi (Cross-Correlation gücünə görə rəng dəyişdirə bilərik - gələcək üçün)
+            
+            resetMeasureState();
         }
 
-        function resetBtn() {
+        function resetMeasureState() {
             isMeasuring = false;
-            startBtn.innerText = "ÖLÇMƏYƏ BAŞLA";
-            startBtn.classList.replace('bg-emerald-600', 'bg-blue-600');
+            measureBtn.innerText = "ÖLÇMƏYƏ BAŞLA";
+            measureBtn.classList.replace('bg-emerald-600', 'bg-blue-600');
+            visualizer.classList.add('hidden');
         }
 
-        startBtn.addEventListener('click', measure);
+        measureBtn.addEventListener('click', measure);
+        
+        addTotalBtn.addEventListener('click', () => {
+            totalMeasure += currentMeasure;
+            totalVal.innerText = totalMeasure.toFixed(2);
+            currentMeasure = 0; // Hər toplamadan sonra ölçünü sıfırla (gələcək addım üçün)
+            distVal.innerText = "0.00";
+        });
+        
+        resetAllBtn.addEventListener('click', () => {
+            currentMeasure = 0;
+            totalMeasure = 0;
+            distVal.innerText = "0.00";
+            totalVal.innerText = "0.00";
+        });
     </script>
 </body>
 </html>
