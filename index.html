@@ -3,182 +3,132 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SonarMaster AI Pro | Ultra-Precision</title>
+    <title>AirPiano AI | Havada Pianino</title>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        .pulse-bg { animation: pulse 1.5s infinite; }
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0px rgba(59, 130, 246, 0.5); }
-            100% { box-shadow: 0 0 0 20px rgba(59, 130, 246, 0); }
-        }
+        .key-active { background: rgba(59, 130, 246, 0.8) !important; transform: translateY(10px); }
+        canvas { transform: scaleX(-1); } /* Güzgü effekti */
+        video { display: none; }
     </style>
 </head>
-<body class="bg-[#0f172a] text-white min-h-screen flex flex-col items-center justify-between p-6 font-sans">
+<body class="bg-slate-950 text-white min-h-screen flex flex-col items-center overflow-hidden">
 
-    <div class="w-full flex justify-between items-start pt-4">
-        <div class="bg-slate-800/50 p-3 rounded-2xl border border-slate-700">
-            <p class="text-[10px] text-slate-400 uppercase tracking-tighter">Cari Ölçü</p>
-            <p id="current-display" class="text-xl font-bold text-blue-400">0.00 m</p>
-        </div>
-        <div class="bg-slate-800/50 p-3 rounded-2xl border border-slate-700 text-right">
-            <p class="text-[10px] text-slate-400 uppercase tracking-tighter">Toplam Yaddaş</p>
-            <p id="total-display" class="text-xl font-bold text-emerald-400">0.00 m</p>
-        </div>
+    <div class="mt-6 text-center">
+        <h1 class="text-3xl font-black text-blue-500 uppercase tracking-tighter">AirPiano AI</h1>
+        <p class="text-slate-500 text-xs">Əllərinizi kameraya göstərin və havada çalın</p>
     </div>
 
-    <div class="flex flex-col items-center">
-        <div id="visual-ring" class="w-64 h-64 rounded-full border-2 border-slate-700 flex items-center justify-center relative transition-all duration-300">
-            <div class="text-center">
-                <h2 id="main-dist" class="text-7xl font-black tracking-tighter">0.00</h2>
-                <p class="text-blue-500 font-bold text-xl uppercase tracking-widest">Metr</p>
+    <div class="relative mt-8 border-4 border-slate-800 rounded-3xl overflow-hidden bg-black shadow-2xl">
+        <video id="input_video"></video>
+        <canvas id="output_canvas" width="640" height="480"></canvas>
+        
+        <div id="keyboard" class="absolute bottom-0 left-0 w-full h-32 flex gap-1 px-2 mb-2">
             </div>
-        </div>
-        <p id="status-text" class="mt-6 text-slate-500 text-sm italic font-light">Ölçmək üçün aşağıdakı düyməni basın</p>
     </div>
 
-    <div class="w-full max-w-sm space-y-4 pb-8">
-        <button id="measureBtn" class="w-full bg-blue-600 h-20 rounded-3xl font-black text-xl shadow-2xl shadow-blue-900/40 active:scale-95 transition-transform uppercase tracking-wider">
-            ÖLÇMƏYƏ BAŞLA
-        </button>
-
-        <div class="flex gap-3">
-            <button id="addBtn" class="flex-1 bg-slate-800 h-14 rounded-2xl border border-slate-700 font-bold text-sm hover:bg-slate-700 active:scale-95 transition-all">
-                📥 YADDAŞA AT
-            </button>
-            <button id="clearBtn" class="flex-1 bg-slate-800 h-14 rounded-2xl border border-slate-700 font-bold text-sm hover:bg-red-900/20 active:scale-95 transition-all text-red-400">
-                🔄 SIFIRLA
-            </button>
-        </div>
-    </div>
+    <div id="status" class="mt-4 text-emerald-500 font-mono text-sm uppercase">Sistem yüklənir...</div>
 
     <script>
-        let audioCtx;
-        let currentVal = 0;
-        let totalVal = 0;
-        let isWorking = false;
+        const videoElement = document.getElementById('input_video');
+        const canvasElement = document.getElementById('output_canvas');
+        const canvasCtx = canvasElement.getContext('2d');
+        const keyboard = document.getElementById('keyboard');
+        const status = document.getElementById('status');
 
-        const mainDist = document.getElementById('main-dist');
-        const totalDisplay = document.getElementById('total-display');
-        const currentDisplay = document.getElementById('current-display');
-        const measureBtn = document.getElementById('measureBtn');
-        const visualRing = document.getElementById('visual-ring');
-        const statusText = document.getElementById('status-text');
+        const notes = ['C4', 'D4', 'E4', 'F4', 'G4', 'A4', 'B4', 'C5'];
+        const freqs = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25];
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-        async function startMeasurement() {
-            if (isWorking) return;
-            isWorking = true;
+        // Düymələri yarat
+        notes.forEach((note, i) => {
+            const key = document.createElement('div');
+            key.className = "flex-1 bg-white/10 border border-white/20 rounded-lg flex items-end justify-center pb-2 transition-all duration-100";
+            key.innerHTML = `<span class="text-slate-400 font-bold">${note}</span>`;
+            key.id = `key-${i}`;
+            keyboard.appendChild(key);
+        });
 
-            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            
-            measureBtn.innerText = "GÖZLƏYİN...";
-            measureBtn.classList.add('opacity-50');
-            visualRing.classList.add('pulse-bg', 'border-blue-500');
+        function playNote(index) {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(freqs[index], audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.5);
 
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: {
-                    echoCancellation: false, noiseSuppression: false, autoGainControl: false 
-                }});
-                
-                const sampleRate = audioCtx.sampleRate;
-                const chirpLen = 0.01; // 10ms
-                const buffer = audioCtx.createBuffer(1, sampleRate * chirpLen, sampleRate);
-                const data = buffer.getChannelData(0);
+            const keyEl = document.getElementById(`key-${index}`);
+            keyEl.classList.add('key-active');
+            setTimeout(() => keyEl.classList.remove('key-active'), 150);
+        }
 
-                // Chirp Signal (Yüksək tezlikli "imza" səs)
-                for (let i = 0; i < buffer.length; i++) {
-                    const t = i / sampleRate;
-                    data[i] = Math.sin(2 * Math.PI * (17000 + 3000 * t / chirpLen) * t);
-                }
+        let lastActiveKey = -1;
 
-                const source = audioCtx.createMediaStreamSource(stream);
-                const processor = audioCtx.createScriptProcessor(4096, 1, 1);
-                let recording = [];
+        function onResults(results) {
+            canvasCtx.save();
+            canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+            canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
 
-                const node = audioCtx.createBufferSource();
-                node.buffer = buffer;
-                node.connect(audioCtx.destination);
+            if (results.multiHandLandmarks) {
+                status.innerText = "Əl aşkarlandı - Çalmağa hazırdır";
+                for (const landmarks of results.multiHandLandmarks) {
+                    // Şəhadət barmağının ucu (Nöqtə 8)
+                    const indexFinger = landmarks[8];
+                    const x = (1 - indexFinger.x) * canvasElement.width;
+                    const y = indexFinger.y * canvasElement.height;
 
-                const emitTime = audioCtx.currentTime + 0.1;
-                
-                processor.onaudioprocess = (e) => {
-                    if (audioCtx.currentTime >= emitTime) {
-                        recording.push(...e.inputBuffer.getChannelData(0));
-                        // 4 metr üçün təxminən 0.05 saniyə kifayətdir
-                        if (recording.length > sampleRate * 0.05) { 
-                            analyze(recording, data, sampleRate);
-                            processor.disconnect();
-                            source.disconnect();
+                    // Barmağı çək
+                    canvasCtx.fillStyle = "#3b82f6";
+                    canvasCtx.beginPath();
+                    canvasCtx.arc(x, y, 10, 0, 2 * Math.PI);
+                    canvasCtx.fill();
+
+                    // Düyməyə dəyib-dəymədiyini yoxla
+                    if (y > canvasElement.height - 128) { // Düymələr sahəsi
+                        const keyWidth = canvasElement.width / notes.length;
+                        const keyIndex = Math.floor(x / keyWidth);
+                        
+                        if (keyIndex !== lastActiveKey && keyIndex >= 0 && keyIndex < notes.length) {
+                            playNote(keyIndex);
+                            lastActiveKey = keyIndex;
                         }
+                    } else {
+                        lastActiveKey = -1;
                     }
-                };
-
-                source.connect(processor);
-                processor.connect(audioCtx.destination);
-                node.start(emitTime);
-
-            } catch (err) {
-                alert("Mikrofon icazəsi lazımdır!");
-                stopUI();
-            }
-        }
-
-        function analyze(rec, orig, sr) {
-            let maxCorr = -1;
-            let bestDelay = 0;
-
-            // MÜHƏNDİSLİK DÜZƏLİŞİ: İlk 3ms-ni (təxminən 50sm) görməzdən gəlirik 
-            // Bu, telefonun öz səsini "əks-səda" kimi tutmasının qarşısını alır.
-            const ignoreSamples = Math.floor(sr * 0.003); 
-
-            for (let i = ignoreSamples; i < rec.length - orig.length; i++) {
-                let corr = 0;
-                for (let j = 0; j < orig.length; j++) {
-                    corr += rec[i + j] * orig[j];
                 }
-                if (corr > maxCorr) {
-                    maxCorr = corr;
-                    bestDelay = i;
-                }
+            } else {
+                status.innerText = "Kameraya əlinizi göstərin";
+                lastActiveKey = -1;
             }
-
-            const time = bestDelay / sr;
-            const dist = (time * 343) / 2;
-            
-            // Reallığa yaxınlaşdırmaq üçün kiçik filtr
-            currentVal = Math.max(0, dist - 0.05); 
-            
-            // Ekrana yazdır
-            mainDist.innerText = currentVal.toFixed(2);
-            currentDisplay.innerText = currentVal.toFixed(2) + " m";
-            
-            stopUI();
+            canvasCtx.restore();
         }
 
-        function stopUI() {
-            isWorking = false;
-            measureBtn.innerText = "ÖLÇMƏYƏ BAŞLA";
-            measureBtn.classList.remove('opacity-50');
-            visualRing.classList.remove('pulse-bg', 'border-blue-500');
-            statusText.innerText = "Ölçmə tamamlandı.";
-        }
-
-        // Düymə Funksiyaları
-        document.getElementById('addBtn').addEventListener('click', () => {
-            totalVal += currentVal;
-            document.getElementById('total-display').innerText = totalVal.toFixed(2) + " m";
-            statusText.innerText = "Yaddaşa əlavə edildi.";
+        const hands = new Hands({
+            locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
         });
 
-        document.getElementById('clearBtn').addEventListener('click', () => {
-            currentVal = 0;
-            totalVal = 0;
-            mainDist.innerText = "0.00";
-            document.getElementById('current-display').innerText = "0.00 m";
-            document.getElementById('total-display').innerText = "0.00 m";
-            statusText.innerText = "Sıfırlandı.";
+        hands.setOptions({
+            maxNumHands: 2,
+            modelComplexity: 1,
+            minDetectionConfidence: 0.7,
+            minTrackingConfidence: 0.7
         });
 
-        measureBtn.addEventListener('click', startMeasurement);
+        hands.onResults(onResults);
+
+        const camera = new Camera(videoElement, {
+            onFrame: async () => {
+                await hands.send({image: videoElement});
+            },
+            width: 640,
+            height: 480
+        });
+        camera.start();
     </script>
 </body>
 </html>
