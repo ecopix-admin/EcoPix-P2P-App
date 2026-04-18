@@ -2,129 +2,254 @@
 <html lang="az">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AirPiano Studio Pro v6.0</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>HoloTool OS | Spatial AI Interface</title>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background: #020617; touch-action: none; overflow: hidden; font-family: 'Inter', sans-serif; }
-        #canvas-wrapper { position: relative; width: 98vw; height: 75vh; border-radius: 2rem; overflow: hidden; background: #000; border: 3px solid #1e293b; margin-top: 10px; }
+        body { background: #010409; color: white; touch-action: none; overflow: hidden; font-family: 'SF Pro Display', -apple-system, sans-serif; padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
         
-        /* Güzgü effekti - Həm vizual, həm məntiqi */
-        canvas { transform: scaleX(-1); width: 100%; height: 100%; object-fit: cover; }
+        /* Professional Studio Canvas */
+        #studio-container { position: relative; width: 100vw; height: 100vh; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+        canvas { transform: scaleX(-1); width: 100%; height: 100%; object-fit: cover; background: radial-gradient(circle at center, #111 0%, #000 100%); transition: all 0.3s ease; }
         video { display: none; }
 
-        /* Piano Düymələri - Daha geniş və professional */
-        #piano-board { 
-            position: absolute; bottom: 0; left: 0; width: 100%; height: 40%; 
-            display: flex; gap: 3px; padding: 10px; z-index: 50;
-            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
-        }
-        .white-key { 
-            flex: 1; background: #fff; border-radius: 0 0 10px 10px; 
-            box-shadow: inset 0 -5px 10px rgba(0,0,0,0.1);
-            display: flex; align-items: flex-end; justify-content: center; 
-            padding-bottom: 15px; color: #94a3b8; font-size: 0.7rem; font-weight: 900;
-            transition: all 0.05s ease-out; position: relative;
-        }
-        .key-active { 
-            background: #3b82f6 !important; 
-            transform: translateY(10px); 
-            box-shadow: 0 0 30px #3b82f6;
-            color: white !important;
-        }
+        /* UI Elements */
+        .hud-panel { position: absolute; z-index: 100; pointer-events: none; opacity: 0; transition: opacity 0.5s ease; }
+        .hud-visible { opacity: 1; }
+        
+        /* Professional UI Styling */
+        .glass-panel { background: rgba(13, 17, 23, 0.7); backdrop-filter: blur(15px); border: 1px solid rgba(48, 54, 61, 0.8); border-radius: 1.5rem; padding: 1.5rem; box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
+        .inst-label { position: absolute; top: 1.5rem; left: 1.5rem; font-weight: 900; font-size: 1.25rem; letter-spacing: -1px; text-transform: uppercase; color: #3b82f6; }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; margin-right: 8px; animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { opacity: 0.5; } 100% { opacity: 1; } }
 
-        /* Alət Seçimi Paneli */
-        .instrument-panel { position: absolute; right: 20px; top: 100px; display: flex; flex-direction: column; gap: 10px; z-index: 100; }
-        .inst-btn { background: rgba(30, 41, 59, 0.8); border: 1px solid #334155; padding: 12px; rounded-xl text-xs font-bold hover:bg-blue-600 transition-all; }
-        .inst-active { background: #3b82f6; border-color: #60a5fa; }
+        /* Instrument UIs - Dinamik olaraq dəyişəcək */
+        #piano-board { position: absolute; bottom: 10px; left: 0; width: 100%; height: 35%; display: flex; gap: 3px; padding: 10px; transform: scaleX(-1); z-index: 50; transform-origin: center; transition: transform 0.3s; pointer-events: none; }
+        .white-key { flex: 1; background: linear-gradient(to bottom, #fff 0%, #cbd5e1 100%); border-radius: 0 0 10px 10px; border: 1px solid #e2e8f0; position: relative; transition: all 0.1s; }
+        .key-pressed { background: linear-gradient(to bottom, #3b82f6 0%, #1d4ed8 100%) !important; transform: translateY(6px); color: white; }
+
+        #joystick-ui { position: absolute; bottom: 30px; left: 30px; width: 150px; height: 150px; border-radius: 50%; background: rgba(255,255,255,0.05); border: 4px solid rgba(255,255,255,0.1); z-index: 60; display: none; transform: scaleX(-1); }
+        #joystick-stick { position: absolute; top: 50%; left: 50%; width: 60px; height: 60px; background: rgba(255,255,255,0.8); border-radius: 50%; transform: translate(-50%, -50%); transition: all 0.1s; }
+        
+        #drawing-status { position: absolute; bottom: 30px; left: 30px; display: none; transform: scaleX(-1); }
+
+        #start-overlay { position: fixed; inset: 0; background: rgba(1, 4, 9, 0.95); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; padding: 2rem; backdrop-filter: blur(20px); }
+        #startBtn { background: #3b82f6; color: white; padding: 1.5rem 3rem; border-radius: 2rem; font-size: 1.5rem; font-weight: 900; text-transform: uppercase; transition: all 0.2s; }
+        #startBtn:active { transform: scale(0.95); }
     </style>
 </head>
-<body class="flex flex-col items-center">
+<body class="flex flex-col items-center justify-center">
 
-    <div class="w-full px-6 py-4 flex justify-between items-center bg-[#0f172a] border-b border-slate-800">
-        <h1 class="text-xl font-black text-white tracking-tighter">PIANO <span class="text-blue-500 text-sm italic">STUDIO PRO</span></h1>
-        <button id="startBtn" class="bg-blue-600 hover:bg-blue-500 px-6 py-2 rounded-xl text-white font-bold text-sm shadow-lg transition-all animate-bounce">SİSTEMİ AKTİVLƏŞDİR</button>
-        <div id="status" class="text-[10px] text-emerald-400 font-mono hidden">LIVE TRACKING ACTIVE</div>
+    <div id="start-overlay">
+        <h1 class="text-5xl font-black text-white italic tracking-tighter mb-4 text-center">HoloTool <span class="text-blue-500">OS</span></h1>
+        <p class="text-slate-400 text-center mb-10 max-w-sm">Virtual Holographic Multi-Tool interfeysini aktivləşdirmək üçün klikləyin. Səs icazəsi verilməlidir.</p>
+        <button id="startBtn">SİSTEMİ BAŞLAT</button>
     </div>
 
-    <div class="instrument-panel">
-        <button onclick="setInst('sine')" id="inst-sine" class="inst-btn inst-active text-white">🎹 KLASSİK</button>
-        <button onclick="setInst('square')" id="inst-square" class="inst-btn text-white">🎸 ELEKTRO</button>
-        <button onclick="setInst('sawtooth')" id="inst-sawtooth" class="inst-btn text-white">🎷 SİNT-PRO</button>
-        <button onclick="setInst('triangle')" id="inst-triangle" class="inst-btn text-white">🔔 ZƏNG</button>
-    </div>
+    <div id="studio-container">
+        <div id="status-bar" class="absolute top-4 right-4 flex items-center bg-[#0d1117]/80 backdrop-blur border border-slate-800 px-4 py-2 rounded-full z-[100] text-xs font-mono tracking-widest pointer-events-none opacity-0 transition-opacity duration-300">
+            <div class="status-dot"></div>
+            SPATIAL AI ACTIVE
+        </div>
+        <div id="inst-label" class="inst-label tracking-tighter italic z-[100] opacity-0 transition-opacity duration-300">PIANO MODE</div>
 
-    <div id="canvas-wrapper">
         <video id="input_video"></video>
         <canvas id="output_canvas"></canvas>
-        <div id="piano-board"></div>
+        
+        <div id="piano-board" class="opacity-0 transition-opacity duration-300"></div>
+        <div id="joystick-ui" class="opacity-0 transition-opacity duration-300">
+            <div id="joystick-stick"></div>
+        </div>
+        <div id="drawing-status" class="bg-red-950/20 border border-red-900/50 text-red-400 px-4 py-2 rounded-full font-mono text-xs opacity-0 transition-opacity duration-300">AIR-DRAW ACTIVE (3D PENCIL)</div>
     </div>
 
     <script>
         const videoElement = document.getElementById('input_video');
         const canvasElement = document.getElementById('output_canvas');
         const canvasCtx = canvasElement.getContext('2d');
-        const pianoBoard = document.getElementById('piano-board');
         const startBtn = document.getElementById('startBtn');
-        const status = document.getElementById('status');
+        const startOverlay = document.getElementById('start-overlay');
+        const status = document.getElementById('status-bar');
+        const instLabel = document.getElementById('inst-label');
+
+        // Instrument UIs
+        const pianoBoard = document.getElementById('piano-board');
+        const joystickUI = document.getElementById('joystick-ui');
+        const drawingUI = document.getElementById('drawing-status');
 
         let audioCtx, isReady = false;
-        let instrumentType = 'sine';
+        let currentMode = 'NONE'; // PIANO, JOYSTICK, DRAW
         
         const notes = ['C3','D3','E3','F3','G3','A3','B3','C4','D4','E4','F4','G4','A4','B4','C5'];
         const freqs = [130.81, 146.83, 164.81, 174.61, 196.00, 220.00, 246.94, 261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25];
-        
-        let lastPlayedKeys = {}; // Barmaqların id-si ilə izlənilməsi
+        let activeKeys = new Set();
+        let lastPlayedKeys = {};
 
-        // Düymələrin yaradılması
+        // 3D Drawing Variables
+        let drawingPoints = [];
+        let isPenDown = false;
+
+        // Düymələri yaradın
         notes.forEach((n, i) => {
             const key = document.createElement('div');
             key.className = 'white-key';
             key.id = `note-${i}`;
-            key.innerText = n;
+            //key.innerText = n;
             pianoBoard.appendChild(key);
         });
-
-        function setInst(type) {
-            instrumentType = type;
-            document.querySelectorAll('.inst-btn').forEach(b => b.classList.remove('inst-active'));
-            document.getElementById(`inst-${type}`).classList.add('inst-active');
-        }
 
         startBtn.onclick = () => {
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             isReady = true;
-            startBtn.classList.add('hidden');
-            status.classList.remove('hidden');
+            startOverlay.classList.add('hidden');
+            status.classList.add('opacity-100');
+            instLabel.classList.add('opacity-100');
         };
 
+        function setMode(mode) {
+            if (currentMode === mode) return;
+            currentMode = mode;
+            instLabel.innerText = `${mode} MODE`;
+
+            // UI-ları təmizlə
+            [pianoBoard, joystickUI, drawingUI].forEach(el => el.classList.remove('opacity-100'));
+            [pianoBoard, joystickUI, drawingUI].forEach(el => el.style.display = 'none');
+
+            // Yeni rejimi aktivləşdir
+            if (mode === 'PIANO') {
+                pianoBoard.style.display = 'flex';
+                setTimeout(() => pianoBoard.classList.add('opacity-100'), 50);
+            } else if (mode === 'JOYSTICK') {
+                joystickUI.style.display = 'block';
+                setTimeout(() => joystickUI.classList.add('opacity-100'), 50);
+            } else if (mode === 'DRAW') {
+                drawingUI.style.display = 'block';
+                setTimeout(() => drawingUI.classList.add('opacity-100'), 50);
+                drawingPoints = []; // Rəsmi sıfırla
+            }
+        }
+
         function playNote(i, fingerId) {
-            if(!isReady) return;
-            
-            // Əgər həmin barmaq artıq bu notu çalıbsa, təkrar etmə (Həssaslıq tənzimləməsi)
-            if(lastPlayedKeys[fingerId] === i) return;
+            if(!isReady || lastPlayedKeys[fingerId] === i) return;
             lastPlayedKeys[fingerId] = i;
 
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
-            
-            osc.type = instrumentType;
+            osc.type = 'triangle'; 
             osc.frequency.setValueAtTime(freqs[i], audioCtx.currentTime);
-            
-            gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1.0);
-            
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            
-            osc.start();
-            osc.stop(audioCtx.currentTime + 1.0);
+            gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.6);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.6);
 
             const el = document.getElementById(`note-${i}`);
-            el.classList.add('key-active');
-            setTimeout(() => el.classList.remove('key-active'), 200);
+            el.classList.add('key-pressed');
+            setTimeout(() => el.classList.remove('key-pressed'), 200);
+        }
+
+        // PEŞƏKAR JEST KLASSİFİKATORU (0-1 arası)
+        function getGestureScore(landmarks) {
+            // Hər barmağın ucu ilə boğazı arasındakı məsafə
+            const tips = [8, 12, 16, 20]; // Şəhadət, Orta, Üzük, Çitçələ
+            const bases = [5, 9, 13, 17];
+            
+            let totalSpread = 0;
+            for(let i=0; i<4; i++) {
+                const dx = landmarks[tips[i]].x - landmarks[bases[i]].x;
+                const dy = landmarks[tips[i]].y - landmarks[bases[i]].y;
+                totalSpread += Math.sqrt(dx*dx + dy*dy);
+            }
+            
+            // Baş barmaq ilə şəhadət barmağı (İki barmaq jesi üçün)
+            const thumbTip = landmarks[4];
+            const indexTip = landmarks[8];
+            const thumbIndexDx = thumbTip.x - indexTip.x;
+            const thumbIndexDy = thumbTip.y - indexTip.y;
+            const thumbIndexDist = Math.sqrt(thumbIndexDx*thumbIndexDx + thumbIndexDy*thumbIndexDy);
+
+            return { totalSpread, thumbIndexDist };
+        }
+
+        function updatePiano(landmarks) {
+            const fingertips = [4, 8, 12, 16, 20];
+            
+            fingertips.forEach(pointIdx => {
+                const point = landmarks[pointIdx];
+                const x = (1 - point.x) * canvasElement.width;
+                const y = point.y * canvasElement.height;
+                const fingerId = `hand-finger-${pointIdx}`;
+
+                canvasCtx.fillStyle = pointIdx === 8 ? "#3b82f6" : "#f8fafc";
+                canvasCtx.beginPath(); canvasCtx.arc(x, y, 8, 0, 2 * Math.PI); canvasCtx.fill();
+
+                if (y > canvasElement.height * 0.65) {
+                    const keyIdx = Math.floor((x / canvasElement.width) * notes.length);
+                    if (keyIdx >= 0 && keyIdx < notes.length) {
+                        playNote(keyIdx, fingerId);
+                    }
+                } else {
+                    lastPlayedKeys[fingerId] = null;
+                }
+            });
+        }
+
+        function updateJoystick(landmarks) {
+            const centerHand = landmarks[9]; // Orta barmağın kökü
+            const x = (1 - centerHand.x) * canvasElement.width;
+            const y = centerHand.y * canvasElement.height;
+
+            // Vizual marker
+            canvasCtx.fillStyle = "#fff";
+            canvasCtx.beginPath(); canvasCtx.arc(x, y, 20, 0, 2 * Math.PI); canvasCtx.fill();
+
+            // Joystick-i hərəkət etdir
+            const stickX = (1 - centerHand.x) * 150; // Joystick UI ölçüsünə görə
+            const stickY = centerHand.y * 150;
+            const stickEl = document.getElementById('joystick-stick');
+            stickEl.style.left = `${(stickX / 150) * 100}%`;
+            stickEl.style.top = `${(stickY / 150) * 100}%`;
+        }
+
+        function updateDrawing(landmarks) {
+            const thumbTip = landmarks[4];
+            const indexTip = landmarks[8];
+            const x = (1 - indexTip.x) * canvasElement.width;
+            const y = indexTip.y * canvasElement.height;
+            const depth = indexTip.z * -1000; // Z oxunu dərinliyə çeviririk
+
+            // Vizual marker (Qələm ucu)
+            canvasCtx.shadowBlur = 10; canvasCtx.shadowColor = "#ef4444";
+            canvasCtx.fillStyle = "#ef4444";
+            canvasCtx.beginPath(); canvasCtx.arc(x, y, 8, 0, 2 * Math.PI); canvasCtx.fill();
+            canvasCtx.shadowBlur = 0;
+
+            // Rəsm çəkmə
+            const gesture = getGestureScore(landmarks);
+            if (gesture.thumbIndexDist < 0.03) { // Baş barmaq və şəhadət bir-birinə çox yaxındır (Qələm aşağı)
+                if (!isPenDown) { drawingPoints.push([]); isPenDown = true; }
+                if (drawingPoints.length > 0) {
+                    drawingPoints[drawingPoints.length - 1].push({ x, y, depth });
+                }
+            } else {
+                isPenDown = false;
+            }
+
+            // Çəkilmiş xətləri render et
+            canvasCtx.lineWidth = 4;
+            canvasCtx.lineCap = 'round';
+            for (const stroke of drawingPoints) {
+                if (stroke.length < 2) continue;
+                canvasCtx.beginPath();
+                canvasCtx.moveTo(stroke[0].x, stroke[0].y);
+                for (let i = 1; i < stroke.length; i++) {
+                    const p = stroke[i];
+                    canvasCtx.strokeStyle = `rgba(239, 68, 68, ${0.5 + p.depth/2000})`; // Dərinliyə görə şəffaflıq
+                    canvasCtx.lineTo(p.x, p.y);
+                }
+                canvasCtx.stroke();
+            }
         }
 
         function onResults(results) {
@@ -132,51 +257,37 @@
             canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
             canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
 
-            if (results.multiHandLandmarks) {
-                results.multiHandLandmarks.forEach((landmarks, handIdx) => {
-                    // Hər 5 barmağın ucu
-                    const fingertips = [4, 8, 12, 16, 20];
-                    
-                    fingertips.forEach((pointIdx) => {
-                        const point = landmarks[pointIdx];
-                        // GÜZGÜ EFFEKTİ DÜZƏLİŞİ: (1 - point.x) istifadə edərək riyazi sağı-solu düzəldirik
-                        const x = (1 - point.x) * canvasElement.width;
-                        const y = point.y * canvasElement.height;
-                        const fingerId = `${handIdx}-${pointIdx}`;
+            if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+                const hand = results.multiHandLandmarks[0];
+                
+                // JEST TƏYİNİ (REJİM KEÇİDİ)
+                const gesture = getGestureScore(hand);
 
-                        // Vizual kursor (Yalnız şəhadət barmağını vurğula)
-                        canvasCtx.fillStyle = pointIdx === 8 ? "#3b82f6" : "#ffffff";
-                        canvasCtx.beginPath();
-                        canvasCtx.arc(x, y, 6, 0, 2 * Math.PI);
-                        canvasCtx.fill();
+                // Mühəndislik Həlli: Yüksək dəqiqlik üçün "Debounce"
+                if (gesture.thumbIndexDist < 0.03 && gesture.totalSpread < 0.1) {
+                    //setMode('DRAW'); // İki barmaq birləşdi (Qələm)
+                } else if (gesture.totalSpread < 0.1) {
+                    setMode('JOYSTICK'); // Yumruq (Qatlanmış)
+                } else if (gesture.totalSpread > 0.4) {
+                    setMode('PIANO'); // Əli açdı (Yayılmış)
+                } else if (gesture.thumbIndexDist < 0.05) {
+                   setMode('DRAW'); // İki barmaq birləşdi (Qələm)
+                }
 
-                        // Piano zonası yoxlanışı (Dəqiqlik üçün y > 0.6)
-                        if (y > canvasElement.height * 0.6) {
-                            const keyIdx = Math.floor((x / canvasElement.width) * notes.length);
-                            if (keyIdx >= 0 && keyIdx < notes.length) {
-                                playNote(keyIdx, fingerId);
-                            }
-                        } else {
-                            // Barmaq yuxarı qalxdıqda həmin barmağın "not yaddaşı"nı sil
-                            lastPlayedKeys[fingerId] = null;
-                        }
-                    });
-                });
+                // AKTİV REJİMƏ GÖRƏ FUNKSİYANİ İŞLƏT
+                if (currentMode === 'PIANO') updatePiano(hand);
+                else if (currentMode === 'JOYSTICK') updateJoystick(hand);
+                else if (currentMode === 'DRAW') updateDrawing(hand);
+
+            } else {
+                canvasCtx.fillStyle = "rgba(255,255,255,0.05)"; canvasCtx.font = "20px mono tracking-widest";
+                canvasCtx.textAlign = "center"; canvasCtx.fillText("ƏLİNİZİ GÖSTƏRİN", canvasElement.width/2, canvasElement.height/2);
             }
             canvasCtx.restore();
         }
 
-        const hands = new Hands({
-            locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
-        });
-
-        hands.setOptions({
-            maxNumHands: 2,
-            modelComplexity: 1, // Dəqiqlik üçün 1-ə qaldırdım
-            minDetectionConfidence: 0.7,
-            minTrackingConfidence: 0.7
-        });
-
+        const hands = new Hands({locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`});
+        hands.setOptions({ maxNumHands: 1, modelComplexity: 1, minDetectionConfidence: 0.8, minTrackingConfidence: 0.8 });
         hands.onResults(onResults);
 
         const camera = new Camera(videoElement, {
@@ -185,8 +296,7 @@
                 canvasElement.height = videoElement.videoHeight;
                 await hands.send({image: videoElement});
             },
-            width: 1280,
-            height: 720
+            width: 960, height: 540 // Çözünürlük/Sürət balansı
         });
         camera.start();
     </script>
