@@ -3,85 +3,165 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SHAM-CELL: Azad Şəbəkə</title>
+    <title>SonarMaster AI | Akustik Metrə</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body {
-            background-color: #121212;
-            color: #00FF00;
-            font-family: sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 50px;
+        .pulse-bg { animation: pulse 2s infinite; }
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.05); opacity: 0.8; }
+            100% { transform: scale(1); opacity: 0.5; }
         }
-        h1 { font-size: 26px; margin-bottom: 20px; }
-        input {
-            width: 300px;
-            padding: 15px;
-            background: #1e1e1e;
-            border: 1px solid #333;
-            color: white;
-            margin-bottom: 10px;
-            border-radius: 5px;
-        }
-        button {
-            width: 330px;
-            padding: 15px;
-            margin: 5px;
-            cursor: pointer;
-            font-weight: bold;
-            border: none;
-            border-radius: 5px;
-            text-transform: uppercase;
-        }
-        .btn-send { background-color: #1E88E5; color: white; }
-        .btn-call { background-color: #E53935; color: white; }
-        .btn-media { background-color: #43A047; color: white; }
-        #status { color: #888; margin-top: 15px; font-size: 14px; }
     </style>
 </head>
-<body>
+<body class="bg-slate-900 text-white min-h-screen flex flex-col items-center justify-center p-6">
 
-    <h1>SHAM-CELL: AZAD ŞƏBƏKƏ</h1>
-    
-    <input type="text" id="msgInput" placeholder="Mesaj yazın...">
-    
-    <button class="btn-send" onclick="sendData()">Göyə Göndər (Mesaj)</button>
-    <button class="btn-call" onclick="startCall()">İonosfer Zəngi</button>
-    <button class="btn-media" onclick="sendMedia()">Foto/Video Ötürücü</button>
+    <div class="text-center mb-10">
+        <h1 class="text-3xl font-bold bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">
+            SonarMaster AI
+        </h1>
+        <p class="text-slate-400 text-sm uppercase tracking-widest mt-2">Ultra-Precision Sonar</p>
+    </div>
 
-    <p id="status">Status: Sistem Hazırdır</p>
+    <div class="relative w-64 h-64 flex items-center justify-center mb-10">
+        <div id="visualizer" class="absolute inset-0 border-4 border-blue-500/30 rounded-full pulse-bg"></div>
+        <div class="text-center z-10">
+            <span id="dist-val" class="text-6xl font-black font-mono">0.00</span>
+            <span class="text-2xl font-bold text-blue-400 ml-1">m</span>
+        </div>
+    </div>
+
+    <div class="w-full max-w-xs space-y-4">
+        <button id="startBtn" class="w-full bg-blue-600 hover:bg-blue-500 active:scale-95 transition-all py-4 rounded-2xl font-bold text-xl shadow-lg shadow-blue-900/40">
+            ÖLÇMƏYƏ BAŞLA
+        </button>
+        
+        <div class="grid grid-cols-2 gap-3 text-xs">
+            <div class="bg-slate-800 p-3 rounded-xl border border-slate-700">
+                <span class="block text-slate-500 uppercase">Səs Sürəti</span>
+                <span id="sound-speed" class="font-bold">343.2 m/s</span>
+            </div>
+            <div class="bg-slate-800 p-3 rounded-xl border border-slate-700">
+                <span class="block text-slate-500 uppercase">Gecikmə</span>
+                <span id="latency" class="font-bold">-- ms</span>
+            </div>
+        </div>
+    </div>
+
+    <canvas id="waveCanvas" class="w-full h-24 mt-8 opacity-40"></canvas>
 
     <script>
-        // DAXİLİ ŞİFRƏLƏMƏ (Eynilə sənin Kotlin kodundakı məntiq)
-        function xorEncrypt(text) {
-            const key = "SHAMXAL_KEY_2026";
-            let output = "";
-            for (let i = 0; i < text.length; i++) {
-                output += String.fromCharCode(text.charCodeAt(i) ^ key.charCodeAt(i % key.length));
-            }
-            return btoa(output); // Radio dalğası üçün Base64 formatına salırıq
-        }
+        let audioCtx;
+        let isMeasuring = false;
 
-        function sendData() {
-            const msg = document.getElementById('msgInput').value;
-            if (msg) {
-                const encrypted = xorEncrypt(msg);
-                console.log("Radio Paketi Hazırdır: SHAM_PROT_V1_" + encrypted);
-                alert("Mesaj İonosferə buraxıldı: " + encrypted);
-                document.getElementById('msgInput').value = "";
-                document.getElementById('status').innerText = "Status: Mesaj Göndərildi";
+        const startBtn = document.getElementById('startBtn');
+        const distVal = document.getElementById('dist-val');
+        const waveCanvas = document.getElementById('waveCanvas');
+        const canvasCtx = waveCanvas.getContext('2d');
+
+        async function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)({
+                    sampleRate: 48000 // Yüksək dəqiqlik üçün
+                });
             }
         }
 
-        function startCall() {
-            alert("İnternetsiz və Azad Zəng Aktivdir!");
-            document.getElementById('status').innerText = "Status: Zəng Davam Edir...";
+        async function measure() {
+            await initAudio();
+            if (isMeasuring) return;
+            isMeasuring = true;
+            
+            startBtn.innerText = "SİQNAL GÖNDƏRİLİR...";
+            startBtn.classList.replace('bg-blue-600', 'bg-emerald-600');
+
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: {
+                    echoCancellation: false,
+                    noiseSuppression: false,
+                    autoGainControl: false
+                }});
+
+                const duration = 0.01; // 10ms chirp
+                const sampleRate = audioCtx.sampleRate;
+                const buffer = audioCtx.createBuffer(1, sampleRate * duration, sampleRate);
+                const data = buffer.getChannelData(0);
+
+                // Chirp Signal (18kHz - 22kHz) - İnsan qulağı demək olar eşitmir
+                for (let i = 0; i < buffer.length; i++) {
+                    const t = i / sampleRate;
+                    const f = 18000 + (4000 * t / duration);
+                    data[i] = Math.sin(2 * Math.PI * f * t) * Math.exp(-t * 100);
+                }
+
+                // Dinləmə
+                const source = audioCtx.createMediaStreamSource(stream);
+                const processor = audioCtx.createScriptProcessor(2048, 1, 1);
+                
+                let recording = [];
+                const startTime = audioCtx.currentTime + 0.05;
+
+                const node = audioCtx.createBufferSource();
+                node.buffer = buffer;
+                node.connect(audioCtx.destination);
+
+                processor.onaudioprocess = (e) => {
+                    if (audioCtx.currentTime >= startTime) {
+                        recording.push(...e.inputBuffer.getChannelData(0));
+                        if (recording.length > sampleRate * 0.2) { // 200ms dinlə
+                            stopAndAnalyze(recording, data, sampleRate);
+                            processor.disconnect();
+                            source.disconnect();
+                        }
+                    }
+                };
+
+                source.connect(processor);
+                processor.connect(audioCtx.destination);
+                node.start(startTime);
+
+            } catch (err) {
+                alert("Mikrofon icazəsi lazımdır!");
+                resetBtn();
+            }
         }
 
-        function sendMedia() {
-            alert("Media paketi göyə atəşləndi!");
+        function stopAndAnalyze(recorded, original, sr) {
+            // Cross-correlation (Dəqiqlik buradadır)
+            let maxCorr = -1;
+            let bestDelay = 0;
+
+            // Sadələşdirilmiş korrelyasiya alqoritmi
+            for (let i = 0; i < recorded.length - original.length; i++) {
+                let corr = 0;
+                for (let j = 0; j < original.length; j++) {
+                    corr += recorded[i + j] * original[j];
+                }
+                if (corr > maxCorr) {
+                    maxCorr = corr;
+                    bestDelay = i;
+                }
+            }
+
+            const timeOfFlight = bestDelay / sr;
+            const distance = (timeOfFlight * 343.2) / 2;
+            
+            // Offset/Gecikmə kompensasiyası (Hər cihaz üçün təxmini 0.04m çıxılır)
+            const finalDist = Math.max(0, distance - 0.04);
+
+            distVal.innerText = finalDist.toFixed(2);
+            document.getElementById('latency').innerText = (timeOfFlight * 1000).toFixed(1) + " ms";
+            
+            resetBtn();
         }
+
+        function resetBtn() {
+            isMeasuring = false;
+            startBtn.innerText = "ÖLÇMƏYƏ BAŞLA";
+            startBtn.classList.replace('bg-emerald-600', 'bg-blue-600');
+        }
+
+        startBtn.addEventListener('click', measure);
     </script>
 </body>
 </html>
