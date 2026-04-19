@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HoloSketch Pro v7.0 | Zərgər Dəqiqliyi</title>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .key-active { background: rgba(59, 130, 246, 0.9) !important; transform: translateY(12px) scale(0.98); }
+        .key { transition: all 120ms ease; }
+        #canvas-group { max-width: 640px; aspect-ratio: 4/3; }
+        /* 100% Güzgü Effekti */
+        #output_canvas { transform: scaleX(-1); }
+        #drawing-status { transform: scaleX(-1); }
+        video { display: none; }
+    </style>
+</head>
+<body class="bg-[#0f172a] text-white min-h-screen flex flex-col items-center justify-between p-6 font-sans overflow-hidden">
+
+    <div class="mt-4 text-center">
+        <h1 class="text-3xl font-black bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent uppercase tracking-tighter">HoloSketch Pro</h1>
+        <p class="text-slate-500 text-xs">Telefonu masaya qoyun və əlinizi kameraya göstərin</p>
+    </div>
+
+    <div id="canvas-group" class="relative mt-8 border-8 border-slate-800 rounded-3xl overflow-hidden bg-black shadow-3xl w-full">
+        <video id="input_video"></video>
+        <canvas id="output_canvas" width="640" height="480" class="w-full h-full object-cover"></canvas>
+    </div>
+
+    <div id="status" class="mt-4 text-emerald-500 font-mono text-sm uppercase px-4 py-2 bg-emerald-950/20 rounded-full border border-emerald-900/50 hidden">Sistem Hazırdır</div>
+
+    <div class="w-full max-w-sm space-y-4 pb-8 z-20">
+        <button id="activateSoundBtn" class="w-full bg-blue-600 h-20 rounded-3xl font-black text-xl shadow-2xl shadow-blue-900/40 active:scale-95 transition-transform uppercase tracking-wider">
+            🔊 ƏL İZLƏMƏNİ AKTİVLƏŞDİR
+        </button>
+        <div class="text-center text-xs text-slate-600">Bu düymə səs icazəsi vermək üçün mütləqdir.</div>
+    </div>
+
+    <script>
+        const videoElement = document.getElementById('input_video');
+        const canvasElement = document.getElementById('output_canvas');
+        const canvasCtx = canvasElement.getContext('2d');
+        const status = document.getElementById('status');
+        const activateSoundBtn = document.getElementById('activateSoundBtn');
+
+        let audioCtx;
+        let isSoundActive = false;
+
+        // Rəsm çəkmə dəyişənləri
+        let smoothedX = 0, smoothedY = 0;
+        const smoothingFactor = 0.3; // Yumşaltma dərəcəsi (0-1 arası)
+        let drawingPoints = [];
+        let isDrawing = false;
+        let currentColor = '#ef4444'; // İlkin rəng (Qırmızı)
+
+        // Səs Kontekstini Aktivləşdirən Düymə (Mütləqdir)
+        activateSoundBtn.addEventListener('click', () => {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            isSoundActive = true;
+            activateSoundBtn.innerText = "🔊 SƏS AKTİVDİR";
+            activateSoundBtn.classList.replace('bg-blue-600', 'bg-emerald-600');
+            status.classList.remove('hidden');
+        });
+
+        function onResults(results) {
+            canvasCtx.save();
+            canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+            canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
+
+            if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+                const hand = results.multiHandLandmarks[0];
+                
+                // Barmaqların bir-birinə yayılma dərəcəsi (Açıq/Yumulu əl üçün)
+                const tips = [8, 12, 16, 20]; const bases = [5, 9, 13, 17];
+                let totalSpread = 0;
+                for(let i=0; i<4; i++) {
+                    const dx = hand[tips[i]].x - hand[bases[i]].x;
+                    const dy = hand[tips[i]].y - hand[bases[i]].y;
+                    totalSpread += Math.sqrt(dx*dx + dy*dy);
+                }
+
+                // Baş barmaq ilə şəhadət (Pinch jesti üçün)
+                const thumbTip = hand[4]; const indexTip = hand[8];
+                const thumbIndexDx = thumbTip.x - indexTip.x; const thumbIndexDy = thumbTip.y - indexTip.y;
+                const thumbIndexDist = Math.sqrt(thumbIndexDx*thumbIndexDx + thumbIndexDy*thumbIndexDy);
+
+                // KURSOR KOORDİNATLARINI HESABLA VƏ YUMŞALT
+                // Güzgü effekti düzəlişi: (1 - indexTip.x)
+                const rawX = (1 - indexTip.x) * canvasElement.width;
+                const rawY = indexTip.y * canvasElement.height;
+
+                // Riyazi Süzgəc: Exponential Smoothing
+                smoothedX = smoothingFactor * rawX + (1 - smoothingFactor) * smoothedX;
+                smoothedY = smoothingFactor * rawY + (1 - smoothingFactor) * smoothedY;
+
+                // Vizual marker (Qələm ucu)
+                canvasCtx.fillStyle = currentColor;
+                canvasCtx.beginPath(); canvasCtx.arc(smoothedX, smoothedY, 10, 0, 2 * Math.PI); canvasCtx.fill();
+                canvasCtx.lineWidth = 3; canvasCtx.strokeStyle = "white"; canvasCtx.stroke();
+
+                // JESTLƏRİN İDARƏSİ
+
+                // 1. Rəsm Çəkmə (Pinch - Baş + Şəhadət barmaq)
+                if (thumbIndexDist < 0.04 && !isDrawing) { 
+                    if (!isDrawing) { drawingPoints.push([]); isDrawing = true; }
+                    if (drawingPoints.length > 0) {
+                        drawingPoints[drawingPoints.length - 1].push({ x: smoothedX, y: smoothedY });
+                    }
+                } else {
+                    isDrawing = false;
+                }
+
+                // Çəkilmiş xətləri render et
+                for (const stroke of drawingPoints) {
+                    drawBrushLine(stroke);
+                }
+
+            } else {
+                // Əl yoxdursa, kursoru və yaddaşı sıfırla
+                isDrawing = false;
+                
+                // Çəkilmiş rəsmləri göstər (Hətta əl yoxdursa belə)
+                for (const stroke of drawingPoints) {
+                    drawBrushLine(stroke);
+                }
+            }
+            canvasCtx.restore();
+        }
+
+        // Professional Tekstura Render Motoru
+        function drawBrushLine(points) {
+            if (points.length < 2) return;
+            canvasCtx.lineJoin = 'round';
+            canvasCtx.lineCap = 'round';
+
+            // Qələm effekti (Nazik və kəsik-kəsik)
+            canvasCtx.strokeStyle = `${currentColor}dd`; // Bir az şəffaf
+            canvasCtx.lineWidth = 3;
+            canvasCtx.beginPath();
+            canvasCtx.moveTo(points[0].x, points[0].y);
+            for (let i = 1; i < points.length; i++) {
+                canvasCtx.lineTo(points[i].x, points[i].y);
+            }
+            canvasCtx.stroke();
+        }
+
+        const hands = new Hands({
+            locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+        });
+
+        hands.setOptions({
+            maxNumHands: 1,
+            modelComplexity: 1, // Sürət üçün optimal model
+            minDetectionConfidence: 0.8,
+            minTrackingConfidence: 0.8
+        });
+
+        hands.onResults(onResults);
+
+        const camera = new Camera(videoElement, {
+            onFrame: async () => {
+                canvasElement.width = videoElement.videoWidth;
+                canvasElement.height = videoElement.videoHeight;
+                await hands.send({image: videoElement});
+            },
+            width: 960,
+            height: 540 // Çözünürlük/Sürət balansı (HD)
+        });
+        camera.start();
+    </script>
+</body>
+</html>
