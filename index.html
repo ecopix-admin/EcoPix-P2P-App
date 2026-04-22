@@ -1,99 +1,116 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="az">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Görən Göz AI - Dostun</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Görən Göz - VBN Navigation</title>
+    <script async src="https://docs.opencv.org/4.5.4/opencv.js" type="text/javascript"></script>
     <style>
-        body { margin: 0; background: #000; color: #fff; font-family: sans-serif; height: 100vh; display: flex; flex-direction: column; }
-        #video-container { position: relative; flex: 1; width: 100%; overflow: hidden; }
-        video { width: 100%; height: 100%; object-fit: cover; }
-        .full-btn { 
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
-            background: rgba(39, 174, 96, 0.2); border: none; color: white; 
-            font-size: 2rem; font-weight: bold; cursor: pointer; z-index: 10;
-        }
-        .status-bar { height: 60px; background: #1a1a1a; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; border-top: 3px solid #27ae60; }
+        body { margin: 0; background: #000; color: #0f0; font-family: monospace; overflow: hidden; }
+        #canvasOutput { width: 100vw; height: 100vh; object-fit: cover; }
+        .hud { position: absolute; top: 20px; left: 20px; background: rgba(0,0,0,0.7); padding: 15px; border: 1px solid #0f0; pointer-events: none; }
+        #startBtn { position: absolute; bottom: 50px; left: 50%; transform: translateX(-50%); padding: 20px 40px; background: #0f0; border: none; font-weight: bold; cursor: pointer; z-index: 100; }
+        .axis { color: #fff; font-size: 20px; margin: 5px 0; }
     </style>
 </head>
 <body>
 
-    <div id="video-container">
-        <video id="webcam" autoplay playsinline muted></video>
-        <button id="mainBtn" class="full-btn" onclick="init()">BAŞLATMAK İÇİN DOKUN</button>
+    <button id="startBtn">SİSTEMİ İŞƏ SAL (VBN)</button>
+
+    <div class="hud">
+        <div class="axis">X (Sağ/Sol): <span id="x_val">0.00</span> m</div>
+        <div class="axis">Y (Yuxarı/Aşağı): <span id="y_val">0.00</span> m</div>
+        <div class="axis">Z (İrəli/Geri): <span id="z_val">0.00</span> m</div>
+        <hr>
+        <div>STATUS: <span id="status">HAZIR</span></div>
     </div>
-    <div id="status" class="status-bar">Sistem Hazır</div>
 
-    <script>
-        let model;
-        let video = document.getElementById('webcam');
-        let statusDiv = document.getElementById('status');
-        let mainBtn = document.getElementById('mainBtn');
-        let synth = window.speechSynthesis;
-        let lastObject = "";
-        let isRunning = false;
+    <video id="videoInput" style="display:none" playsinline muted></video>
+    <canvas id="canvasOutput"></canvas>
 
-        function speak(text) {
-            if (synth.speaking) return; 
-            let utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'tr-TR';
-            utterance.rate = 1.1; // Biraz daha hızlı ve doğal konuşma
-            synth.speak(utterance);
-        }
+    <script type="text/javascript">
+        let video = document.getElementById('videoInput');
+        let x_text = document.getElementById('x_val');
+        let y_text = document.getElementById('y_val');
+        let z_text = document.getElementById('z_val');
+        let statusText = document.getElementById('status');
 
-        async function init() {
-            if(isRunning) return;
-            
-            mainBtn.innerText = "SİSTEM ÇALIŞIYOR...";
-            statusDiv.innerText = "Yükleniyor...";
-            speak("Merhaba dostum, gözlerini açıyorum. Lütfen bekle.");
+        // Naviqasiya dəyişənləri
+        let posX = 0, posY = 0, posZ = 0;
+        const FOCAL_LENGTH = 800; // Samsung A32 üçün kalibrasiya
 
-            model = await cocoSsd.load();
-            
-            const stream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: "environment" },
-                audio: false
+        document.getElementById('startBtn').addEventListener('click', function() {
+            this.style.display = 'none';
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+            .then(stream => {
+                video.srcObject = stream;
+                video.play();
+                startNavigation();
             });
-            video.srcObject = stream;
-            
-            isRunning = true;
-            mainBtn.style.display = "none"; // Başladıktan sonra ekranı temizle
-            statusDiv.innerText = "Görüyorum...";
-            speak("Sistem aktif. Etrafı senin için izliyorum.");
-            
-            predict();
-        }
+        });
 
-        const tr_dict = {
-            "person": "Bir kişi", "car": "Araba geliyor", "chair": "Sandalye", 
-            "bottle": "Şişe", "cell phone": "Telefon", "laptop": "Bilgisayar",
-            "cup": "Bardak", "bed": "Yatak", "tv": "Televizyon", 
-            "backpack": "Çanta", "handbag": "El çantası", "bicycle": "Bisiklet"
-        };
+        function startNavigation() {
+            let cap = new cv.VideoCapture(video);
+            let frame = new cv.Mat(video.height, video.width, cv.CV_8UC4);
+            let gray = new cv.Mat();
+            let prevGray = new cv.Mat();
+            let p0 = new cv.Mat();
+            let p1 = new cv.Mat();
+            let st = new cv.Mat();
+            let err = new cv.Mat();
 
-        async function predict() {
-            if(!isRunning) return;
+            function compute() {
+                cap.read(frame);
+                cv.cvtColor(frame, gray, cv.COLOR_RGBA2GRAY);
 
-            const predictions = await model.detect(video, 3, 0.5); // Sadece en yakın 3 objeyi al
-            
-            if (predictions.length > 0) {
-                let currentObj = predictions[0].class;
-                let turkishName = tr_dict[currentObj] || currentObj;
+                if (prevGray.empty()) {
+                    gray.copyTo(prevGray);
+                    cv.goodFeaturesToTrack(gray, p0, 50, 0.3, 7);
+                } else {
+                    cv.calcOpticalFlowPyrLK(prevGray, gray, p0, p1, st, err);
 
-                if (turkishName !== lastObject) {
-                    statusDiv.innerText = "Gördüğüm: " + turkishName;
-                    speak(turkishName);
-                    lastObject = turkishName;
+                    let moveX = 0, moveY = 0, moveZ = 0, count = 0;
+
+                    for (let i = 0; i < st.rows; i++) {
+                        if (st.data[i] === 1) {
+                            let dx = p1.data32F[i*2] - p0.data32F[i*2];
+                            let dy = p1.data32F[i*2+1] - p0.data32F[i*2+1];
+
+                            moveX += dx;
+                            moveY += dy;
+                            // Z (irəli hərəkət) nöqtələrin mərkəzdən qaçma sürətinə görə hesablanır
+                            count++;
+                        }
+                    }
+
+                    if (count > 10) {
+                        // Piksel hərəkətini metrlərə çevirmə (Fundamental VBN düsturu)
+                        // x_metr = (dx * məsafə) / focal_length
+                        let dt = 0.01; // Təxmini zaman sabiti
+                        posX += (moveX / count) / 100; 
+                        posY -= (moveY / count) / 100;
+                        posZ += (Math.abs(moveX + moveY) / count) / 200; // İrəli hərəkət təxmini
+
+                        // HUD Yenilə
+                        x_text.innerText = posX.toFixed(2);
+                        y_text.innerText = posY.toFixed(2);
+                        z_text.innerText = posZ.toFixed(2);
+                        statusText.innerText = "NAVİQASİYA AKTİVDİR";
+                    }
+
+                    // Nöqtələri yenilə
+                    if (count < 30) cv.goodFeaturesToTrack(gray, p0, 50, 0.3, 7);
+                    else p1.copyTo(p0);
                 }
+
+                gray.copyTo(prevGray);
+                cv.imshow('canvasOutput', frame);
+                requestAnimationFrame(compute);
             }
-            
-            // Daha akıcı analiz için kısa gecikme ile sürekli döngü
-            setTimeout(() => {
-                requestAnimationFrame(predict);
-            }, 500); 
+            compute();
         }
+
+        var Module = { onRuntimeInitialized() { statusText.innerText = "OPENCV HAZIR"; } };
     </script>
 </body>
 </html>
