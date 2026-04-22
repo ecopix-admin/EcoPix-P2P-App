@@ -3,160 +3,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AirPiano AI Pro | v3.0 Ultra-Precision</title>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Görən Göz AI - Professional</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
     <style>
-        .key-active { background: rgba(59, 130, 246, 0.9) !important; transform: translateY(12px) scale(0.98); }
-        .key { transition: all 120ms ease; }
-        #canvas-group { max-width: 640px; aspect-ratio: 4/3; }
-        /* 100% Güzgü Effekti */
-        #output_canvas { transform: scaleX(-1); }
-        #keyboard { transform: scaleX(-1); } /* Düymələr də güzgü effekti ilə işləməlidir */
-        video { display: none; }
-        
-        #starter-overlay { backdrop-filter: blur(8px); }
+        body { margin: 0; background: #000; color: #fff; font-family: Arial; text-align: center; overflow: hidden; }
+        video { width: 100%; height: 80vh; object-fit: cover; border-bottom: 5px solid #27ae60; }
+        .status { padding: 20px; font-size: 1.5rem; background: #1a1a1a; }
+        .btn-start { padding: 20px 40px; font-size: 1.5rem; background: #27ae60; color: white; border: none; border-radius: 10px; margin-top: 20px; cursor: pointer; }
     </style>
 </head>
-<body class="bg-[#0f172a] text-white min-h-screen flex flex-col items-center justify-between p-6 font-sans overflow-hidden">
+<body>
 
-    <div class="mt-4 text-center">
-        <h1 class="text-3xl font-black bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent uppercase tracking-tighter">AirPiano AI Pro</h1>
-        <p class="text-slate-500 text-xs">Telefonu masaya qoyun və əlinizi kameraya göstərin</p>
-    </div>
-
-    <div id="canvas-group" class="relative mt-8 border-8 border-slate-800 rounded-3xl overflow-hidden bg-black shadow-3xl w-full">
-        <video id="input_video"></video>
-        <canvas id="output_canvas" width="640" height="480" class="w-full h-full object-cover"></canvas>
-        
-        <div id="keyboard" class="absolute bottom-0 left-0 w-full h-36 flex gap-1.5 px-3 mb-3 z-10">
-            </div>
-    </div>
-
-    <div id="status" class="mt-4 text-emerald-500 font-mono text-sm uppercase px-4 py-2 bg-emerald-950/20 rounded-full border border-emerald-900/50 hidden">Sistem Hazırdır</div>
-
-    <div class="w-full max-w-sm space-y-4 pb-8 z-20">
-        <button id="activateSoundBtn" class="w-full bg-blue-600 h-20 rounded-3xl font-black text-xl shadow-2xl shadow-blue-900/40 active:scale-95 transition-transform uppercase tracking-wider">
-            🔊 PİANİNONU AKTİVLƏŞDİR (SƏS)
-        </button>
-        <div class="text-center text-xs text-slate-600">Bu düymə səs icazəsi vermək üçün mütləqdir.</div>
-    </div>
+    <video id="webcam" autoplay playsinline muted></video>
+    <div id="status" class="status">Sistemi başlatmaq üçün ekrana toxunun</div>
+    <button class="btn-start" onclick="init()">BAŞLAT</button>
 
     <script>
-        const videoElement = document.getElementById('input_video');
-        const canvasElement = document.getElementById('output_canvas');
-        const canvasCtx = canvasElement.getContext('2d');
-        const keyboard = document.getElementById('keyboard');
-        const status = document.getElementById('status');
-        const activateSoundBtn = document.getElementById('activateSoundBtn');
+        let model;
+        let video = document.getElementById('webcam');
+        let statusDiv = document.getElementById('status');
+        let synth = window.speechSynthesis;
+        let lastAnnounced = "";
 
-        let audioCtx;
-        let isSoundActive = false;
-
-        const notes = ['C4', 'D4', 'E4', 'F4', 'G4', 'A4', 'B4', 'C5'];
-        const freqs = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25];
-
-        // Səs Kontekstini Aktivləşdirən Düymə (Mütləqdir)
-        activateSoundBtn.addEventListener('click', () => {
-            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            isSoundActive = true;
-            activateSoundBtn.innerText = "🔊 SƏS AKTİVDİR";
-            activateSoundBtn.classList.replace('bg-blue-600', 'bg-emerald-600');
-            status.classList.remove('hidden');
-        });
-
-        // Düymələri yarat
-        notes.forEach((note, i) => {
-            const key = document.createElement('div');
-            key.className = "key flex-1 bg-white/10 border border-white/20 rounded-xl flex items-end justify-center pb-3";
-            key.innerHTML = `<span class="text-slate-400 font-bold">${note}</span>`;
-            key.id = `key-${i}`;
-            keyboard.appendChild(key);
-        });
-
-        function playNote(index) {
-            if (!isSoundActive) return;
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = 'triangle'; // Piano kimi səs
-            osc.frequency.setValueAtTime(freqs[index], audioCtx.currentTime);
-            gain.gain.setValueAtTime(0.6, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.4);
-
-            const keyEl = document.getElementById(`key-${index}`);
-            keyEl.classList.add('key-active');
-            setTimeout(() => keyEl.classList.remove('key-active'), 180);
+        // Səsli Bildiriş Funksiyası
+        function speak(text) {
+            if (synth.speaking) return;
+            let utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'tr-TR'; // Azərbaycan dili dəstəyi üçün ən yaxın alternativ
+            synth.speak(utterance);
         }
 
-        let lastActiveKey = -1;
+        // Kameranı və Modeli Başlat
+        async function init() {
+            statusDiv.innerText = "Model yüklənir, lütfən gözləyin...";
+            speak("Sistem başladılır. Kamera və süni intellekt hazırlanır.");
 
-        function onResults(results) {
-            canvasCtx.save();
-            canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
-            canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
+            // COCO-SSD Modelini yüklə (Obyekt tanıma üçün)
+            model = await cocoSsd.load();
+            
+            // Kamera icazəsi
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: "environment" },
+                audio: false
+            });
+            video.srcObject = stream;
 
-            if (results.multiHandLandmarks) {
-                for (const landmarks of results.multiHandLandmarks) {
-                    // Şəhadət barmağının ucu (Nöqtə 8)
-                    const indexFinger = landmarks[8];
-                    
-                    // MÜHƏNDİSLİK DÜZƏLİŞİ: Güzgü effektini (Mirorring) proqram tərəfdən dəqiqləşdiririk
-                    // CSS `scaleX(-1)` görüntünü güzgü kimi çevirir, barmaq koordinatları da buna uyğun olmalıdır.
-                    const x = indexFinger.x * canvasElement.width;
-                    const y = indexFinger.y * canvasElement.height;
+            statusDiv.innerText = "Sistem AKTİVDİR";
+            speak("Sistem aktivdir. Ətrafı izləyirəm.");
+            
+            predict();
+        }
 
-                    // Barmağın ucunda vizual "kursor" nöqtəsi
-                    canvasCtx.fillStyle = "#3b82f6";
-                    canvasCtx.beginPath();
-                    canvasCtx.arc(x, y, 10, 0, 2 * Math.PI);
-                    canvasCtx.fill();
+        // Obyektləri və Maneələri Tanıma
+        async function predict() {
+            const predictions = await model.detect(video);
+            
+            if (predictions.length > 0) {
+                let primaryObject = predictions[0].class;
+                let score = Math.round(predictions[0].score * 100);
 
-                    // Düyməyə dəyib-dəymədiyini yoxla
-                    if (y > canvasElement.height - 144) { // Düymələr sahəsi
-                        const keyWidth = canvasElement.width / notes.length;
-                        const keyIndex = Math.floor(x / keyWidth);
-                        
-                        // Yalnız barmaq zonaya daxil olanda səs çıxar, zonanın içində hərəkət edəndə deyil.
-                        if (keyIndex !== lastActiveKey && keyIndex >= 0 && keyIndex < notes.length) {
-                            playNote(keyIndex);
-                            lastActiveKey = keyIndex;
-                        }
-                    } else {
-                        lastActiveKey = -1;
-                    }
+                // Azərbaycan dilinə tərcümə lüğəti
+                const dictionary = {
+                    "person": "İnsan",
+                    "car": "Maşın gəlir, diqqətli olun",
+                    "chair": "Qarşınızda oturacaq var",
+                    "bottle": "Su qabı",
+                    "cell phone": "Telefon",
+                    "laptop": "Kompyuter",
+                    "door": "Qapı tapıldı"
+                };
+
+                let message = dictionary[primaryObject] || primaryObject;
+
+                if (message !== lastAnnounced) {
+                    statusDiv.innerText = "Görürəm: " + message;
+                    speak(message);
+                    lastAnnounced = message;
                 }
-            } else {
-                lastActiveKey = -1;
             }
-            canvasCtx.restore();
+            
+            requestAnimationFrame(predict);
         }
 
-        const hands = new Hands({
-            locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
-        });
+        // Virtual Zəng Simulyasiyası (Zəng gələndə bildirmək üçün)
+        // Qeyd: Brauzer birbaşa real GSM zənglərinə giriş icazəsi vermir (təhlükəsizlik üçün), 
+        // lakin bu funksiya API vasitəsilə inteqrasiya oluna bilər.
+        function simulateIncomingCall(contactName) {
+            speak("Zəng gəlir. Zəng edən şəxs: " + contactName + ". Cavab vermək üçün ekrana iki dəfə toxunun.");
+        }
 
-        hands.setOptions({
-            maxNumHands: 2,
-            modelComplexity: 1, // Sürət üçün optimal model
-            minDetectionConfidence: 0.75,
-            minTrackingConfidence: 0.75
-        });
-
-        hands.onResults(onResults);
-
-        const camera = new Camera(videoElement, {
-            onFrame: async () => {
-                await hands.send({image: videoElement});
-            },
-            width: 640,
-            height: 480
-        });
-        camera.start();
+        // Ekran oxuma (OCR) üçün gələcəkdə Tesseract.js əlavə edilə bilər.
     </script>
 </body>
 </html>
