@@ -1,99 +1,99 @@
 <!DOCTYPE html>
-<html lang="az">
+<html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Görən Göz AI - Professional</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Görən Göz AI - Dostun</title>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
     <style>
-        body { margin: 0; background: #000; color: #fff; font-family: Arial; text-align: center; overflow: hidden; }
-        video { width: 100%; height: 80vh; object-fit: cover; border-bottom: 5px solid #27ae60; }
-        .status { padding: 20px; font-size: 1.5rem; background: #1a1a1a; }
-        .btn-start { padding: 20px 40px; font-size: 1.5rem; background: #27ae60; color: white; border: none; border-radius: 10px; margin-top: 20px; cursor: pointer; }
+        body { margin: 0; background: #000; color: #fff; font-family: sans-serif; height: 100vh; display: flex; flex-direction: column; }
+        #video-container { position: relative; flex: 1; width: 100%; overflow: hidden; }
+        video { width: 100%; height: 100%; object-fit: cover; }
+        .full-btn { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(39, 174, 96, 0.2); border: none; color: white; 
+            font-size: 2rem; font-weight: bold; cursor: pointer; z-index: 10;
+        }
+        .status-bar { height: 60px; background: #1a1a1a; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; border-top: 3px solid #27ae60; }
     </style>
 </head>
 <body>
 
-    <video id="webcam" autoplay playsinline muted></video>
-    <div id="status" class="status">Sistemi başlatmaq üçün ekrana toxunun</div>
-    <button class="btn-start" onclick="init()">BAŞLAT</button>
+    <div id="video-container">
+        <video id="webcam" autoplay playsinline muted></video>
+        <button id="mainBtn" class="full-btn" onclick="init()">BAŞLATMAK İÇİN DOKUN</button>
+    </div>
+    <div id="status" class="status-bar">Sistem Hazır</div>
 
     <script>
         let model;
         let video = document.getElementById('webcam');
         let statusDiv = document.getElementById('status');
+        let mainBtn = document.getElementById('mainBtn');
         let synth = window.speechSynthesis;
-        let lastAnnounced = "";
+        let lastObject = "";
+        let isRunning = false;
 
-        // Səsli Bildiriş Funksiyası
         function speak(text) {
-            if (synth.speaking) return;
+            if (synth.speaking) return; 
             let utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'tr-TR'; // Azərbaycan dili dəstəyi üçün ən yaxın alternativ
+            utterance.lang = 'tr-TR';
+            utterance.rate = 1.1; // Biraz daha hızlı ve doğal konuşma
             synth.speak(utterance);
         }
 
-        // Kameranı və Modeli Başlat
         async function init() {
-            statusDiv.innerText = "Model yüklənir, lütfən gözləyin...";
-            speak("Sistem başladılır. Kamera və süni intellekt hazırlanır.");
+            if(isRunning) return;
+            
+            mainBtn.innerText = "SİSTEM ÇALIŞIYOR...";
+            statusDiv.innerText = "Yükleniyor...";
+            speak("Merhaba dostum, gözlerini açıyorum. Lütfen bekle.");
 
-            // COCO-SSD Modelini yüklə (Obyekt tanıma üçün)
             model = await cocoSsd.load();
             
-            // Kamera icazəsi
             const stream = await navigator.mediaDevices.getUserMedia({
                 video: { facingMode: "environment" },
                 audio: false
             });
             video.srcObject = stream;
-
-            statusDiv.innerText = "Sistem AKTİVDİR";
-            speak("Sistem aktivdir. Ətrafı izləyirəm.");
+            
+            isRunning = true;
+            mainBtn.style.display = "none"; // Başladıktan sonra ekranı temizle
+            statusDiv.innerText = "Görüyorum...";
+            speak("Sistem aktif. Etrafı senin için izliyorum.");
             
             predict();
         }
 
-        // Obyektləri və Maneələri Tanıma
+        const tr_dict = {
+            "person": "Bir kişi", "car": "Araba geliyor", "chair": "Sandalye", 
+            "bottle": "Şişe", "cell phone": "Telefon", "laptop": "Bilgisayar",
+            "cup": "Bardak", "bed": "Yatak", "tv": "Televizyon", 
+            "backpack": "Çanta", "handbag": "El çantası", "bicycle": "Bisiklet"
+        };
+
         async function predict() {
-            const predictions = await model.detect(video);
+            if(!isRunning) return;
+
+            const predictions = await model.detect(video, 3, 0.5); // Sadece en yakın 3 objeyi al
             
             if (predictions.length > 0) {
-                let primaryObject = predictions[0].class;
-                let score = Math.round(predictions[0].score * 100);
+                let currentObj = predictions[0].class;
+                let turkishName = tr_dict[currentObj] || currentObj;
 
-                // Azərbaycan dilinə tərcümə lüğəti
-                const dictionary = {
-                    "person": "İnsan",
-                    "car": "Maşın gəlir, diqqətli olun",
-                    "chair": "Qarşınızda oturacaq var",
-                    "bottle": "Su qabı",
-                    "cell phone": "Telefon",
-                    "laptop": "Kompyuter",
-                    "door": "Qapı tapıldı"
-                };
-
-                let message = dictionary[primaryObject] || primaryObject;
-
-                if (message !== lastAnnounced) {
-                    statusDiv.innerText = "Görürəm: " + message;
-                    speak(message);
-                    lastAnnounced = message;
+                if (turkishName !== lastObject) {
+                    statusDiv.innerText = "Gördüğüm: " + turkishName;
+                    speak(turkishName);
+                    lastObject = turkishName;
                 }
             }
             
-            requestAnimationFrame(predict);
+            // Daha akıcı analiz için kısa gecikme ile sürekli döngü
+            setTimeout(() => {
+                requestAnimationFrame(predict);
+            }, 500); 
         }
-
-        // Virtual Zəng Simulyasiyası (Zəng gələndə bildirmək üçün)
-        // Qeyd: Brauzer birbaşa real GSM zənglərinə giriş icazəsi vermir (təhlükəsizlik üçün), 
-        // lakin bu funksiya API vasitəsilə inteqrasiya oluna bilər.
-        function simulateIncomingCall(contactName) {
-            speak("Zəng gəlir. Zəng edən şəxs: " + contactName + ". Cavab vermək üçün ekrana iki dəfə toxunun.");
-        }
-
-        // Ekran oxuma (OCR) üçün gələcəkdə Tesseract.js əlavə edilə bilər.
     </script>
 </body>
 </html>
