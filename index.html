@@ -2,52 +2,35 @@
 <html lang="az">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sham-Vision Pro | GPS AR</title>
-    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
-    <script src="https://unpkg.com/aframe-look-at-component@0.8.0/dist/aframe-look-at-component.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Sham-Vision Pro</title>
+    <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar-look-at-marker.js"></script>
     <style>
-        body { margin: 0; overflow: hidden; background: #000; font-family: 'Courier New', monospace; }
-        
-        /* MÜASİR ÜST İNTERFEYS (UI) */
+        body { margin: 0; overflow: hidden; background: #000; font-family: monospace; }
         #ui-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 100; pointer-events: none; /* Klikləri aşağıdakı AR səhnəsinə ötürür */
+            z-index: 100; pointer-events: none;
         }
-        
-        /* SKANER BUCAQLARI (Kadr) */
-        .corner {
-            position: absolute; width: 30px; height: 30px; border: 3px solid #00ff00;
-        }
+        .corner { position: absolute; width: 30px; height: 30px; border: 3px solid #0f0; }
         #top-left { top: 20px; left: 20px; border-right: none; border-bottom: none; }
         #top-right { top: 20px; right: 20px; border-left: none; border-bottom: none; }
         #bottom-left { bottom: 20px; left: 20px; border-right: none; border-top: none; }
         #bottom-right { bottom: 20px; right: 20px; border-left: none; border-top: none; }
 
-        /* STATUS VƏ KORDINAT GÖSTƏRİCİSİ */
         #data-panel {
-            position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.85); color: #00ff00;
-            padding: 15px 25px; border: 1px solid #00ff00; border-radius: 15px;
-            text-align: center; backdrop-filter: blur(5px); pointer-events: auto;
-            max-width: 80%;
+            position: absolute; bottom: 50px; left: 50%; transform: translateX(-50%);
+            background: rgba(0, 20, 0, 0.9); color: #0f0;
+            padding: 20px; border: 1px solid #0f0; border-radius: 15px;
+            text-align: center; pointer-events: auto; width: 250px;
         }
-        #status-icon {
-            display: inline-block; width: 10px; height: 10px;
-            background-color: #f00; border-radius: 50%; margin-right: 10px;
-            animation: pulse 1s infinite;
-        }
-        #target-coord { color: #f00; font-weight: bold; font-size: 0.9em; }
-        #debug { margin-top: 10px; font-size: 0.8em; color: #fff; }
-
-        @keyframes pulse { 0% { opacity: 0.2; } 50% { opacity: 1; } 100% { opacity: 0.2; } }
-        @keyframes scan-glow { 0% { filter: drop-shadow(0 0 5px #0f0); } 100% { filter: drop-shadow(0 0 20px #0f0); } }
+        #status-icon { display: inline-block; width: 10px; height: 10px; background: #f00; border-radius: 50%; margin-right: 8px; animation: pulse 1s infinite; }
+        button { background: #0f0; color: #000; border: none; padding: 10px; margin-top: 10px; font-weight: bold; cursor: pointer; width: 100%; border-radius: 5px; }
+        @keyframes pulse { 0% { opacity: 0.3; } 50% { opacity: 1; } 100% { opacity: 0.3; } }
     </style>
 </head>
 
 <body>
-
     <div id="ui-overlay">
         <div class="corner" id="top-left"></div>
         <div class="corner" id="top-right"></div>
@@ -55,74 +38,58 @@
         <div class="corner" id="bottom-right"></div>
         
         <div id="data-panel">
-            <div id="status-line">
-                <span id="status-icon"></span>
-                <span id="status-text">HƏDƏF KORDINAT AXTARILIR...</span>
-            </div>
-            <div id="target-coord">TGT: 40.353482, 49.965170</div>
-            <div id="debug">GPS Siqnalı gözlənilir...</div>
+            <div><span id="status-icon"></span><span id="status-text">SİSTEM HAZIRLANIR...</span></div>
+            <div style="font-size: 0.8em; margin: 10px 0;">TGT: 40.353482, 49.965170</div>
+            <button id="start-btn">KAMERANI VƏ SƏSİ AÇ</button>
         </div>
     </div>
 
     <a-scene
         vr-mode-ui="enabled: false"
         embedded
-        arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;">
+        arjs="sourceType: webcam; videoTexture: true; debugUIEnabled: false;">
 
         <a-assets>
-            <video id="ar-video" 
-                   src="https://www.w3schools.com/html/mov_bbb.mp4" 
-                   preload="auto" response-type="arraybuffer" 
-                   loop="true" crossorigin="anonymous" playsinline autoplay muted>
-            </video>
+            <video id="ar-video" src="https://www.w3schools.com/html/mov_bbb.mp4" 
+                   loop="true" crossorigin="anonymous" playsinline muted></video>
         </a-assets>
 
-        <a-entity
-            id="target-entity"
-            position="0 15 0"
-            scale="10 10 10"
-            look-at="[gps-camera]"
-            gps-entity-place="latitude: 40.353482; longitude: 49.965170;">
-            
-            <a-video
-                src="#ar-video"
-                width="1.6"
-                height="0.9"
-                rotation="0 0 0"
-                material="shader: standard; emissive: #0f0; emissiveIntensity: 0.2; wireframe: false;">
-            </a-video>
-            
-            <a-ring color="#00ff00" radius-inner="1.6" radius-outer="1.8" 
-                    position="0 0 -0.01" rotation="0 0 0" 
-                    material="shader: flat; opacity: 0.5; blending: additive; side: Double;"></a-ring>
-            
-            <a-text value="SHAM-VISION | XƏTAİ TGT" color="#00ff00" 
-                    width="4" position="0 -1.2 0" align="center"></a-text>
-        </a-entity>
+        <a-video
+            id="video-entity"
+            src="#ar-video"
+            width="16" height="9"
+            gps-entity-place="latitude: 40.353482; longitude: 49.965170;"
+            position="0 20 0"
+            scale="2 2 2">
+        </a-video>
 
         <a-camera gps-camera rotation-reader></a-camera>
     </a-scene>
 
     <script>
-        // İNTERFEYS FUNKSİONALLIĞI
-        const debugDisp = document.getElementById('debug');
-        const statusIcon = document.getElementById('status-icon');
+        const btn = document.getElementById('start-btn');
+        const video = document.getElementById('ar-video');
         const statusText = document.getElementById('status-text');
-        const entity = document.getElementById('target-entity');
+        const statusIcon = document.getElementById('status-icon');
 
-        // Məkan dəyişdikdə statusu yenilə
-        window.addEventListener('gps-camera-update-position', (e) => {
-            debugDisp.innerText = `GPS: ±${e.detail.originCoors.accuracy}m | LAT: ${e.detail.originCoors.latitude.toFixed(4)}`;
-            statusIcon.style.backgroundColor = "#00ff00"; // GPS yaşıl olur
-            statusText.innerText = "GPS SİQNALI AKTİVDİR";
+        btn.addEventListener('click', () => {
+            // Səsi və videonu aktivləşdir
+            video.muted = false;
+            video.play();
+            
+            // UI Yenilə
+            btn.style.display = 'none';
+            statusText.innerText = "SKANER AKTİVDİR";
+            statusIcon.style.background = "#0f0";
+            
+            // Kameranı yenidən başlatmağa məcbur et
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+            }
         });
 
-        // Videonu aktivləşdirmək
-        window.addEventListener('click', function () {
-            const v = document.querySelector('#ar-video');
-            v.muted = false;
-            v.play();
-            debugDisp.innerText = "Video Səsi Aktivdir.";
+        window.addEventListener('gps-camera-update-position', (e) => {
+            statusText.innerText = "GPS SİQNALI TUTULDU";
         });
     </script>
 </body>
