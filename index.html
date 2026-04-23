@@ -2,125 +2,79 @@
 <html lang="az">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Akustik Göz - Səs Vizualizatoru</title>
+    <title>Akustik Vizualizator - Səsdən Görüntüyə</title>
     <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: #050505;
-            color: #00ff00;
-            font-family: 'Courier New', Courier, monospace;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            overflow: hidden;
-        }
-
-        canvas {
-            width: 100vw;
-            height: 70vh;
-            border-bottom: 2px solid #00ff00;
-        }
-
-        .controls {
-            padding: 20px;
-            text-align: center;
-        }
-
-        button {
-            padding: 15px 30px;
-            font-size: 18px;
-            background: #00ff00;
-            color: #000;
-            border: none;
-            cursor: pointer;
-            font-weight: bold;
-            border-radius: 5px;
-        }
-
-        button:hover {
-            background: #008800;
-        }
-
-        .legend {
-            margin-top: 10px;
-            font-size: 14px;
-        }
+        body { margin: 0; background: #000; overflow: hidden; color: white; font-family: sans-serif; }
+        canvas { display: block; }
+        #info { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.7); padding: 10px; border-radius: 5px; pointer-events: none; }
+        button { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); padding: 20px 40px; font-size: 20px; cursor: pointer; background: #22ff22; border: none; border-radius: 10px; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <h2 style="margin-top: 10px;">AKUSTİK RADAR V1.0</h2>
-    <canvas id="visualizer"></canvas>
-
-    <div class="controls">
-        <button id="startBtn">SİSTEMİ AKTİV ET</button>
-        <div class="legend">
-            <p>Qırmızı/Sarı: Güclü Səs (Maşın, İt) | Yaşıl/Göy: Zəif Səs (İnsan səsi, Külək)</p>
-        </div>
-    </div>
+    <div id="info">Sistem: Hazırda ətrafı dinləyir...<br>Aşağı tezlik: Maşın/Ağır texnika<br>Yüksək tezlik: İnsan/İt/Küylər</div>
+    <button id="btn">SİSTEMİ BAŞLAT</button>
+    <canvas id="canvas"></canvas>
 
     <script>
-        const canvas = document.getElementById('visualizer');
+        const btn = document.getElementById('btn');
+        const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
-        const startBtn = document.getElementById('startBtn');
 
-        let audioCtx;
-        let analyser;
-        let dataArray;
-        let source;
+        btn.onclick = () => {
+            btn.style.display = 'none';
+            startListening();
+        };
 
-        startBtn.addEventListener('click', initAudio);
+        function startListening() {
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const analyser = audioCtx.createAnalyser();
+            analyser.fftSize = 256;
 
-        function initAudio() {
-            startBtn.style.display = 'none';
-            
-            // Audio Context yaradılır
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            analyser = audioCtx.createAnalyser();
-            analyser.fftSize = 2048; // Detallaşdırma səviyyəsi
+            navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+                const source = audioCtx.createMediaStreamSource(stream);
+                source.connect(analyser);
 
-            navigator.mediaDevices.getUserMedia({ audio: true })
-                .then(stream => {
-                    source = audioCtx.createMediaStreamSource(stream);
-                    source.connect(analyser);
-                    
-                    const bufferLength = analyser.frequencyBinCount;
-                    dataArray = new Uint8Array(bufferLength);
-                    
-                    draw();
-                })
-                .catch(err => {
-                    alert("Mikrofona icazə verilmədi: " + err);
-                });
-        }
-
-        function draw() {
-            const width = canvas.width = window.innerWidth;
-            const height = canvas.height = window.innerHeight * 0.7;
-
-            requestAnimationFrame(draw);
-            analyser.getByteFrequencyData(dataArray);
-
-            // Ekranı təmizləmək əvəzinə görüntünü sola sürüşdürək (şəlalə effekti)
-            const imageData = ctx.getImageData(1, 0, width - 1, height);
-            ctx.putImageData(imageData, 0, 0);
-
-            // Yeni səs məlumatını ən sağa çəkək
-            for (let i = 0; i < dataArray.length; i++) {
-                const value = dataArray[i];
-                const percent = value / 255;
-                const y = height - (i * (height / (dataArray.length / 4))); // Tezlik oxu
+                const dataArray = new Uint8Array(analyser.frequencyBinCount);
                 
-                // Rəng kodlaması: Güclü səslər qırmızı, zəif səslər göy
-                const hue = (1 - percent) * 240; 
-                ctx.fillStyle = `hsla(${hue}, 100%, 50%, 1)`;
-                
-                if (value > 10) { // Səs küyünü süzgəcdən keçir
-                    ctx.fillRect(width - 1, y, 1, 2);
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+
+                function draw() {
+                    requestAnimationFrame(draw);
+                    analyser.getByteFrequencyData(dataArray);
+
+                    // Ekranı yavaşca təmizləyirik (iz qalsın deyə)
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                    dataArray.forEach((value, i) => {
+                        if (value > 120) { // Müəyyən bir səs həddindən yuxarıdırsa görüntü yarat
+                            const x = Math.random() * canvas.width;
+                            const y = canvas.height - (i * (canvas.height / dataArray.length));
+                            const size = value / 5;
+                            
+                            // Səsin tezliyinə görə fərqli rəng və formalar
+                            if (i < 10) { // MAŞIN SƏSİ (Aşağı tezlik)
+                                ctx.fillStyle = `rgba(255, 50, 50, ${value/255})`;
+                                ctx.fillRect(x, y, size * 2, size); // Uzunsov bloklar
+                            } else if (i > 10 && i < 50) { // İNSAN VƏ YA İT (Orta tezlik)
+                                ctx.fillStyle = `rgba(50, 255, 50, ${value/255})`;
+                                ctx.beginPath();
+                                ctx.arc(x, y, size, 0, Math.PI * 2); // Dairələr
+                                ctx.fill();
+                            } else { // KÜÇƏ KÜYÜ (Yüksək tezlik)
+                                ctx.strokeStyle = `rgba(50, 50, 255, ${value/255})`;
+                                ctx.beginPath();
+                                ctx.moveTo(x, y);
+                                ctx.lineTo(x + size, y - size);
+                                ctx.stroke();
+                            }
+                        }
+                    });
                 }
-            }
+                draw();
+            });
         }
     </script>
 </body>
