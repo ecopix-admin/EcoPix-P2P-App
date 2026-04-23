@@ -1,74 +1,57 @@
 <!DOCTYPE html>
-<html lang="az">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Sham-Vision Pro 3D</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>Sham-Vision GPS AR</title>
+    <script src="https://aframe.io/releases/1.0.4/aframe.min.js"></script>
+    <script src="https://unpkg.com/aframe-look-at-component@0.8.0/dist/aframe-look-at-component.min.js"></script>
+    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar-look-at-marker.js"></script>
     <style>
-        body { margin: 0; background: #111; color: #0f0; font-family: monospace; }
-        #ui { position: absolute; top: 20px; left: 20px; z-index: 10; background: rgba(0,0,0,0.9); padding: 20px; border: 2px solid #0f0; border-radius: 10px; }
-        button { background: #0f0; color: #000; border: none; padding: 10px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; }
-        #canvas-container { width: 100vw; height: 100vh; }
+        body { margin: 0; overflow: hidden; }
+        #debug {
+            position: absolute; bottom: 10px; left: 10px;
+            background: rgba(0,0,0,0.8); color: #0f0;
+            padding: 10px; font-family: monospace; z-index: 10;
+        }
     </style>
 </head>
-<body>
 
-<div id="ui">
-    <h2>SHAM-VISION PRO</h2>
-    <input type="file" id="upload" accept="image/*" style="display:none">
-    <button onclick="document.getElementById('upload').click()">ŞƏKİL SEÇ / SKAN ET</button>
-    <div id="status">Hazırdır. Obyekti seçin.</div>
-</div>
+<body style="margin: 0; overflow: hidden;">
+    <div id="debug">GPS AR Aktivdir. Kordinata baxın.</div>
 
-<div id="canvas-container"></div>
+    <a-scene
+        vr-mode-ui="enabled: false"
+        embedded
+        arjs="sourceType: webcam; debugUIEnabled: false;">
 
-<script>
-    // 1. 3D SAHƏ QURULMASI
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    document.getElementById('canvas-container').appendChild(renderer.domElement);
+        <a-assets>
+            <video id="ar-video" 
+                   src="https://www.w3schools.com/html/mov_bbb.mp4" 
+                   preload="auto" response-type="arraybuffer" 
+                   loop="true" crossorigin="anonymous" playsinline autoplay muted>
+            </video>
+        </a-assets>
 
-    // İşıqlandırma
-    const light = new THREE.AmbientLight(0xffffff, 1);
-    scene.add(light);
-    const pointLight = new THREE.PointLight(0xffffff, 1);
-    pointLight.position.set(5, 5, 5);
-    scene.add(pointLight);
+        <a-video
+            src="#ar-video"
+            look-at="[gps-camera]"
+            gps-entity-place="latitude: 40.353482; longitude: 49.965170;"
+            scale="15 15 15"
+            position="0 10 0">
+            </a-video>
 
-    camera.position.z = 5;
+        <a-camera gps-camera rotation-reader></a-camera>
+    </a-scene>
 
-    // 2. KONTROLLER (Barmaqla fırlatma, yaxınlaşdırma)
-    const controls = new THREE.OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
-
-    // 3. API İLƏ 3D MODELİN GƏTİRİLMƏSİ (SİMULYASİYA)
-    document.getElementById('upload').onchange = function(e) {
-        document.getElementById('status').innerText = "AI 3D MODEL YARADIR... (Gözləyin)";
-        
-        // Burada normalda API-yə (məsələn Meshy.ai) sorğu gedir.
-        // İndi biz nümunə bir 3D modeli (GLB) yükləyirik:
-        const loader = new THREE.GLTFLoader();
-        
-        // NÜMUNƏ: Sənin serverində olan və ya API-dən gələn 3D fayl
-        // loader.load('https://model-url.glb', function(gltf) {
-        //    scene.add(gltf.scene);
-        //    document.getElementById('status').innerText = "3D SKAN TAMAMLANDI!";
-        // });
-
-        // QEYD: Həqiqi 3D model üçün sənə bir 'API KEY' lazımdır.
-        alert("Şəkil yükləndi! İndi Cloud AI (Luma/Meshy) bunu emal edir. Bu, həqiqi 3D (.glb) faylıdır.");
-    };
-
-    function animate() {
-        requestAnimationFrame(animate);
-        controls.update();
-        renderer.render(scene, camera);
-    }
-    animate();
-</script>
+    <script>
+        // Ekrana ilk toxunuşda səsi aktivləşdir və videonu başlat
+        window.addEventListener('click', function () {
+            const v = document.querySelector('#ar-video');
+            v.muted = false;
+            v.play();
+            document.getElementById('debug').innerText = "Video Oynayır...";
+        });
+    </script>
 </body>
 </html>
