@@ -2,67 +2,92 @@
 <html lang="az">
 <head>
     <meta charset="UTF-8">
-    <title>AI Akustik Radar - Emoji Versiyası</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/speech-commands"></script>
+    <title>Akustik Morfologiya - Səs Strukturlaşdırıcı</title>
     <style>
-        body { margin: 0; background: #000; color: #22ff22; font-family: 'Courier New', monospace; overflow: hidden; }
-        #status { position: absolute; top: 10px; width: 100%; text-align: center; font-size: 1.2rem; }
-        button { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); padding: 20px; font-size: 20px; cursor: pointer; background: #22ff22; border: none; font-weight: bold; }
-        canvas { display: block; }
+        body { margin: 0; background: #000; overflow: hidden; }
+        canvas { display: block; filter: blur(1px) contrast(1.2); }
+        #overlay { position: absolute; top: 10px; left: 10px; color: #0f0; font-family: monospace; pointer-events: none; }
+        button { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); padding: 15px 30px; font-size: 20px; background: none; border: 2px solid #0f0; color: #0f0; cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <div id="status">Sistem gözləmədə...</div>
-    <button id="btn">RADARI AKTİV ET</button>
+    <div id="overlay">SİSTEM: AKUSTİK SKANER AKTİVDİR...</div>
+    <button id="btn">GÖRÜNTÜNÜ FORMALAŞDIR</button>
     <canvas id="canvas"></canvas>
 
     <script>
         const btn = document.getElementById('btn');
-        const status = document.getElementById('status');
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
+        let particles = [];
 
-        btn.onclick = async () => {
+        btn.onclick = () => {
             btn.style.display = 'none';
-            status.innerText = "AI Beyni Yüklənir...";
-            
-            const recognizer = speechCommands.create("BROWSER_FFT");
-            await recognizer.ensureModelLoaded();
-            
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            status.innerText = "DİQQƏT: Divar arxası dinlənilir...";
-
-            recognizer.listen(result => {
-                const labels = recognizer.wordLabels();
-                const index = result.scores.indexOf(Math.max(...result.scores));
-                const word = labels[index];
-                const score = result.scores[index];
-
-                if (score > 0.7) {
-                    let emoji = "❓";
-                    if (word === "down" || word === "low") emoji = "🚗"; // Maşın (Aşağı tezlik)
-                    if (word === "up" || word === "high") emoji = "🏃"; // İnsan (Yüksək tezlik)
-                    if (word === "noise") emoji = "💨"; // Külək/Küy
-                    
-                    drawObject(emoji);
-                }
-            }, { probabilityThreshold: 0.75 });
+            setupAudio();
         };
 
-        function drawObject(emoji) {
-            const x = Math.random() * (canvas.width - 50);
-            const y = Math.random() * (canvas.height - 50);
-            ctx.font = "80px Arial";
-            ctx.fillText(emoji, x, y);
-            
-            // 2 saniyə sonra görüntünü yavaşca sil
-            setTimeout(() => {
-                ctx.fillStyle = "rgba(0,0,0,0.1)";
+        async function setupAudio() {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const analyser = audioCtx.createAnalyser();
+            const source = audioCtx.createMediaStreamSource(stream);
+            source.connect(analyser);
+            analyser.fftSize = 128;
+            const dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            function animate() {
+                requestAnimationFrame(animate);
+                analyser.getByteFrequencyData(dataArray);
+
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
-            }, 2000);
+
+                dataArray.forEach((v, i) => {
+                    if (v > 100) { // Səs həddi
+                        // Səsin gücünə görə "hüceyrə" yaratmaq
+                        for(let j = 0; j < 5; j++) {
+                            particles.push(new Particle(v, i));
+                        }
+                    }
+                });
+
+                particles.forEach((p, index) => {
+                    p.update();
+                    p.draw();
+                    if (p.life <= 0) particles.splice(index, 1);
+                });
+            }
+
+            class Particle {
+                constructor(v, i) {
+                    this.life = 100;
+                    this.size = v / 15;
+                    // Aşağı tezlik (maşın) aşağıda, yüksək (adam) yuxarıda formalaşır
+                    this.x = Math.random() * canvas.width;
+                    this.y = canvas.height - (i * (canvas.height / 64));
+                    this.speedX = (Math.random() - 0.5) * (v / 50);
+                    this.speedY = (Math.random() - 0.5) * (v / 50);
+                    this.color = `hsl(${i * 5}, 100%, ${v/2}%)`;
+                }
+                update() {
+                    this.x += this.speedX;
+                    this.y += this.speedY;
+                    this.life -= 2;
+                }
+                draw() {
+                    ctx.fillStyle = this.color;
+                    ctx.beginPath();
+                    // Səsin tipinə görə forma dəyişir: Maşın üçün kvadratik, insan üçün dairəvi
+                    if (this.size > 10) ctx.rect(this.x, this.y, this.size * 2, this.size);
+                    else ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+            animate();
         }
     </script>
 </body>
