@@ -2,79 +2,67 @@
 <html lang="az">
 <head>
     <meta charset="UTF-8">
-    <title>Akustik Vizualizator - Səsdən Görüntüyə</title>
+    <title>AI Akustik Radar - Emoji Versiyası</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/speech-commands"></script>
     <style>
-        body { margin: 0; background: #000; overflow: hidden; color: white; font-family: sans-serif; }
+        body { margin: 0; background: #000; color: #22ff22; font-family: 'Courier New', monospace; overflow: hidden; }
+        #status { position: absolute; top: 10px; width: 100%; text-align: center; font-size: 1.2rem; }
+        button { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); padding: 20px; font-size: 20px; cursor: pointer; background: #22ff22; border: none; font-weight: bold; }
         canvas { display: block; }
-        #info { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.7); padding: 10px; border-radius: 5px; pointer-events: none; }
-        button { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); padding: 20px 40px; font-size: 20px; cursor: pointer; background: #22ff22; border: none; border-radius: 10px; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <div id="info">Sistem: Hazırda ətrafı dinləyir...<br>Aşağı tezlik: Maşın/Ağır texnika<br>Yüksək tezlik: İnsan/İt/Küylər</div>
-    <button id="btn">SİSTEMİ BAŞLAT</button>
+    <div id="status">Sistem gözləmədə...</div>
+    <button id="btn">RADARI AKTİV ET</button>
     <canvas id="canvas"></canvas>
 
     <script>
         const btn = document.getElementById('btn');
+        const status = document.getElementById('status');
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
 
-        btn.onclick = () => {
+        btn.onclick = async () => {
             btn.style.display = 'none';
-            startListening();
+            status.innerText = "AI Beyni Yüklənir...";
+            
+            const recognizer = speechCommands.create("BROWSER_FFT");
+            await recognizer.ensureModelLoaded();
+            
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            status.innerText = "DİQQƏT: Divar arxası dinlənilir...";
+
+            recognizer.listen(result => {
+                const labels = recognizer.wordLabels();
+                const index = result.scores.indexOf(Math.max(...result.scores));
+                const word = labels[index];
+                const score = result.scores[index];
+
+                if (score > 0.7) {
+                    let emoji = "❓";
+                    if (word === "down" || word === "low") emoji = "🚗"; // Maşın (Aşağı tezlik)
+                    if (word === "up" || word === "high") emoji = "🏃"; // İnsan (Yüksək tezlik)
+                    if (word === "noise") emoji = "💨"; // Külək/Küy
+                    
+                    drawObject(emoji);
+                }
+            }, { probabilityThreshold: 0.75 });
         };
 
-        function startListening() {
-            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            const analyser = audioCtx.createAnalyser();
-            analyser.fftSize = 256;
-
-            navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
-                const source = audioCtx.createMediaStreamSource(stream);
-                source.connect(analyser);
-
-                const dataArray = new Uint8Array(analyser.frequencyBinCount);
-                
-                canvas.width = window.innerWidth;
-                canvas.height = window.innerHeight;
-
-                function draw() {
-                    requestAnimationFrame(draw);
-                    analyser.getByteFrequencyData(dataArray);
-
-                    // Ekranı yavaşca təmizləyirik (iz qalsın deyə)
-                    ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
-                    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-                    dataArray.forEach((value, i) => {
-                        if (value > 120) { // Müəyyən bir səs həddindən yuxarıdırsa görüntü yarat
-                            const x = Math.random() * canvas.width;
-                            const y = canvas.height - (i * (canvas.height / dataArray.length));
-                            const size = value / 5;
-                            
-                            // Səsin tezliyinə görə fərqli rəng və formalar
-                            if (i < 10) { // MAŞIN SƏSİ (Aşağı tezlik)
-                                ctx.fillStyle = `rgba(255, 50, 50, ${value/255})`;
-                                ctx.fillRect(x, y, size * 2, size); // Uzunsov bloklar
-                            } else if (i > 10 && i < 50) { // İNSAN VƏ YA İT (Orta tezlik)
-                                ctx.fillStyle = `rgba(50, 255, 50, ${value/255})`;
-                                ctx.beginPath();
-                                ctx.arc(x, y, size, 0, Math.PI * 2); // Dairələr
-                                ctx.fill();
-                            } else { // KÜÇƏ KÜYÜ (Yüksək tezlik)
-                                ctx.strokeStyle = `rgba(50, 50, 255, ${value/255})`;
-                                ctx.beginPath();
-                                ctx.moveTo(x, y);
-                                ctx.lineTo(x + size, y - size);
-                                ctx.stroke();
-                            }
-                        }
-                    });
-                }
-                draw();
-            });
+        function drawObject(emoji) {
+            const x = Math.random() * (canvas.width - 50);
+            const y = Math.random() * (canvas.height - 50);
+            ctx.font = "80px Arial";
+            ctx.fillText(emoji, x, y);
+            
+            // 2 saniyə sonra görüntünü yavaşca sil
+            setTimeout(() => {
+                ctx.fillStyle = "rgba(0,0,0,0.1)";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }, 2000);
         }
     </script>
 </body>
