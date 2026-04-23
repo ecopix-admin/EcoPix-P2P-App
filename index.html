@@ -1,29 +1,73 @@
 <!DOCTYPE html>
-<html>
+<html lang="az">
 <head>
-    <meta charset='utf-8'>
-    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
-    <title>Sham-Vision GPS AR</title>
-    <script src="https://aframe.io/releases/1.0.4/aframe.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sham-Vision Pro | GPS AR</title>
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="https://unpkg.com/aframe-look-at-component@0.8.0/dist/aframe-look-at-component.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar-look-at-marker.js"></script>
     <style>
-        body { margin: 0; overflow: hidden; }
-        #debug {
-            position: absolute; bottom: 10px; left: 10px;
-            background: rgba(0,0,0,0.8); color: #0f0;
-            padding: 10px; font-family: monospace; z-index: 10;
+        body { margin: 0; overflow: hidden; background: #000; font-family: 'Courier New', monospace; }
+        
+        /* MÜASİR ÜST İNTERFEYS (UI) */
+        #ui-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 100; pointer-events: none; /* Klikləri aşağıdakı AR səhnəsinə ötürür */
         }
+        
+        /* SKANER BUCAQLARI (Kadr) */
+        .corner {
+            position: absolute; width: 30px; height: 30px; border: 3px solid #00ff00;
+        }
+        #top-left { top: 20px; left: 20px; border-right: none; border-bottom: none; }
+        #top-right { top: 20px; right: 20px; border-left: none; border-bottom: none; }
+        #bottom-left { bottom: 20px; left: 20px; border-right: none; border-top: none; }
+        #bottom-right { bottom: 20px; right: 20px; border-left: none; border-top: none; }
+
+        /* STATUS VƏ KORDINAT GÖSTƏRİCİSİ */
+        #data-panel {
+            position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.85); color: #00ff00;
+            padding: 15px 25px; border: 1px solid #00ff00; border-radius: 15px;
+            text-align: center; backdrop-filter: blur(5px); pointer-events: auto;
+            max-width: 80%;
+        }
+        #status-icon {
+            display: inline-block; width: 10px; height: 10px;
+            background-color: #f00; border-radius: 50%; margin-right: 10px;
+            animation: pulse 1s infinite;
+        }
+        #target-coord { color: #f00; font-weight: bold; font-size: 0.9em; }
+        #debug { margin-top: 10px; font-size: 0.8em; color: #fff; }
+
+        @keyframes pulse { 0% { opacity: 0.2; } 50% { opacity: 1; } 100% { opacity: 0.2; } }
+        @keyframes scan-glow { 0% { filter: drop-shadow(0 0 5px #0f0); } 100% { filter: drop-shadow(0 0 20px #0f0); } }
     </style>
 </head>
 
-<body style="margin: 0; overflow: hidden;">
-    <div id="debug">GPS AR Aktivdir. Kordinata baxın.</div>
+<body>
+
+    <div id="ui-overlay">
+        <div class="corner" id="top-left"></div>
+        <div class="corner" id="top-right"></div>
+        <div class="corner" id="bottom-left"></div>
+        <div class="corner" id="bottom-right"></div>
+        
+        <div id="data-panel">
+            <div id="status-line">
+                <span id="status-icon"></span>
+                <span id="status-text">HƏDƏF KORDINAT AXTARILIR...</span>
+            </div>
+            <div id="target-coord">TGT: 40.353482, 49.965170</div>
+            <div id="debug">GPS Siqnalı gözlənilir...</div>
+        </div>
+    </div>
 
     <a-scene
         vr-mode-ui="enabled: false"
         embedded
-        arjs="sourceType: webcam; debugUIEnabled: false;">
+        arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;">
 
         <a-assets>
             <video id="ar-video" 
@@ -33,24 +77,52 @@
             </video>
         </a-assets>
 
-        <a-video
-            src="#ar-video"
+        <a-entity
+            id="target-entity"
+            position="0 15 0"
+            scale="10 10 10"
             look-at="[gps-camera]"
-            gps-entity-place="latitude: 40.353482; longitude: 49.965170;"
-            scale="15 15 15"
-            position="0 10 0">
+            gps-entity-place="latitude: 40.353482; longitude: 49.965170;">
+            
+            <a-video
+                src="#ar-video"
+                width="1.6"
+                height="0.9"
+                rotation="0 0 0"
+                material="shader: standard; emissive: #0f0; emissiveIntensity: 0.2; wireframe: false;">
             </a-video>
+            
+            <a-ring color="#00ff00" radius-inner="1.6" radius-outer="1.8" 
+                    position="0 0 -0.01" rotation="0 0 0" 
+                    material="shader: flat; opacity: 0.5; blending: additive; side: Double;"></a-ring>
+            
+            <a-text value="SHAM-VISION | XƏTAİ TGT" color="#00ff00" 
+                    width="4" position="0 -1.2 0" align="center"></a-text>
+        </a-entity>
 
         <a-camera gps-camera rotation-reader></a-camera>
     </a-scene>
 
     <script>
-        // Ekrana ilk toxunuşda səsi aktivləşdir və videonu başlat
+        // İNTERFEYS FUNKSİONALLIĞI
+        const debugDisp = document.getElementById('debug');
+        const statusIcon = document.getElementById('status-icon');
+        const statusText = document.getElementById('status-text');
+        const entity = document.getElementById('target-entity');
+
+        // Məkan dəyişdikdə statusu yenilə
+        window.addEventListener('gps-camera-update-position', (e) => {
+            debugDisp.innerText = `GPS: ±${e.detail.originCoors.accuracy}m | LAT: ${e.detail.originCoors.latitude.toFixed(4)}`;
+            statusIcon.style.backgroundColor = "#00ff00"; // GPS yaşıl olur
+            statusText.innerText = "GPS SİQNALI AKTİVDİR";
+        });
+
+        // Videonu aktivləşdirmək
         window.addEventListener('click', function () {
             const v = document.querySelector('#ar-video');
             v.muted = false;
             v.play();
-            document.getElementById('debug').innerText = "Video Oynayır...";
+            debugDisp.innerText = "Video Səsi Aktivdir.";
         });
     </script>
 </body>
