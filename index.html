@@ -3,136 +3,78 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sham-Vision 3D AR</title>
+    <title>Sham-Cell Real 3D Scan</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils"></script>
     <style>
-        body { margin: 0; overflow: hidden; background-color: #000; font-family: sans-serif; }
-        #info {
-            position: absolute; top: 10px; left: 10px; color: #00ff00;
-            background: rgba(0, 0, 0, 0.8); padding: 15px; border: 1px solid #00ff00;
-            z-index: 100; pointer-events: none;
-        }
-        canvas { display: block; }
-        video { display: none; }
+        body { margin: 0; overflow: hidden; background: #000; }
+        #ui { position: absolute; top: 20px; left: 20px; color: #0f0; z-index: 10; font-family: monospace; background: rgba(0,0,0,0.8); padding: 10px; border: 1px solid #0f0; }
     </style>
 </head>
 <body>
-
-    <div id="info">
-        <strong>SHAM-VISION 3D</strong><br>
-        Status: <span id="status">Sistem Yüklənir...</span><br>
-        <small>Ekranda barmağınla döndər və yaxınlaşdır</small>
+    <div id="ui">
+        <b>SHAM-CELL 3D DEPTH ENGINE</b><br>
+        <small>Həqiqi həcm simulyasiyası aktivdir</small>
     </div>
-
-    <video id="input_video"></video>
-
+    <video id="input_video" style="display:none;"></video>
     <script>
         const videoElement = document.getElementById('input_video');
-        const statusDisp = document.getElementById('status');
-
-        // 1. THREE.JS QURULUŞU (Səhnə, Kamera, Renderer)
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
-        // Kamera yerləşimi
-        camera.position.set(0, 0, 2);
-
-        // 2. 3D MESH (SƏTH) YARADILMASI
-        // 64x64-lük bir tor (grid) yaradırıq ki, görüntünü bura yapışdıraq
-        const geometry = new THREE.PlaneGeometry(3, 4, 63, 63);
-        
-        // Video teksturası (Kameradan gələn görüntünü 3D materiala çevirir)
+        // Həqiqi 3D tor (Mesh) - daha çox nöqtə (128x128)
+        const geometry = new THREE.PlaneGeometry(3, 4, 128, 128);
         const videoTexture = new THREE.VideoTexture(videoElement);
-        const material = new THREE.MeshBasicMaterial({ 
+        const material = new THREE.MeshStandardMaterial({ 
             map: videoTexture, 
-            side: THREE.DoubleSide,
-            wireframe: false 
+            displacementMap: videoTexture, // Şəklin rəngini dərinlik kimi istifadə edir
+            displacementScale: 0.5,        // Qabarıqlıq dərəcəsi
+            side: THREE.DoubleSide 
         });
 
         const mesh = new THREE.Mesh(geometry, material);
         scene.add(mesh);
 
-        // 3. BARMAQLA DÖNDƏRMƏ (ORBIT SİMULYASİYASI)
-        let isDragging = false;
-        let previousMousePosition = { x: 0, y: 0 };
+        // İşıqlandırma (Həcmi görmək üçün vacibdir)
+        const light = new THREE.DirectionalLight(0xffffff, 1);
+        light.position.set(0, 0, 2);
+        scene.add(light);
+        scene.add(new THREE.AmbientLight(0x404040));
 
-        window.addEventListener('mousedown', () => isDragging = true);
-        window.addEventListener('mouseup', () => isDragging = false);
-        window.addEventListener('mousemove', (e) => {
-            if (isDragging) {
-                const deltaMove = { x: e.offsetX - previousMousePosition.x, y: e.offsetY - previousMousePosition.y };
-                mesh.rotation.y += deltaMove.x * 0.01;
-                mesh.rotation.x += deltaMove.y * 0.01;
-            }
-            previousMousePosition = { x: e.offsetX, y: e.offsetY };
-        });
+        camera.position.z = 3;
 
-        // Toxunuş (Mobile Touch) dəstəyi
-        window.addEventListener('touchstart', (e) => { isDragging = true; });
-        window.addEventListener('touchend', () => { isDragging = false; });
+        // İnteraktiv fırlatma
+        let rot = 0;
+        function animate() {
+            requestAnimationFrame(animate);
+            // Sən toxunmasan da yavaşca fırlansın ki, 3D-liyi görəsən
+            mesh.rotation.y += 0.005; 
+            renderer.render(scene, camera);
+        }
+
+        // MAQNİTOMETR VƏ YA TOUCH İLƏ İDARƏ
         window.addEventListener('touchmove', (e) => {
-            if (isDragging && e.touches.length > 0) {
-                const touch = e.touches[0];
-                mesh.rotation.y += 0.05; // Sadələşdirilmiş mobil fırlatma
-            }
+            mesh.rotation.y = (e.touches[0].clientX / window.innerWidth - 0.5) * 2;
+            mesh.rotation.x = (e.touches[0].clientY / window.innerHeight - 0.5) * 2;
         });
 
-        // 4. AI DƏRİNLİK ANALİZİ (MEDIAPIPE)
-        const pose = new Pose({
-            locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`
-        });
-
-        pose.setOptions({
-            modelComplexity: 1,
-            smoothLandmarks: true,
-            minDetectionConfidence: 0.5,
-            minTrackingConfidence: 0.5
-        });
-
-        pose.onResults((results) => {
-            if (!results.poseLandmarks) {
-                statusDisp.innerText = "Obyekt axtarılır...";
-                return;
-            }
-            statusDisp.innerText = "CANLI 3D AKTİVDİR";
-
-            // Mesh-in hər bir nöqtəsini (Z oxunu) AI-dən gələn dərinliyə görə qabardırıq
-            const positions = geometry.attributes.position.array;
-            for (let i = 0; i < results.poseLandmarks.length; i++) {
-                const landmark = results.poseLandmarks[i];
-                // Yalnız mərkəz nöqtələri deyil, bütün toru "qabardırıq"
-                // Bu hissə görüntünü "canlı heykəl" halına gətirir
-                for (let j = 2; j < positions.length; j += 3) {
-                    positions[j] = -landmark.z * 1.5; // Dərinlik effekti
-                }
-            }
-            geometry.attributes.position.needsUpdate = true;
+        const selfieSegmentation = new SelfieSegmentation({locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/${file}`});
+        selfieSegmentation.setOptions({ modelSelection: 1 });
+        selfieSegmentation.onResults((results) => {
+            // Bu hissə hər kadrda dərinliyi yeniləyir
+            material.displacementMap.needsUpdate = true;
         });
 
         const cam = new Camera(videoElement, {
-            onFrame: async () => { await pose.send({image: videoElement}); },
+            onFrame: async () => { await selfieSegmentation.send({image: videoElement}); },
             width: 640, height: 480
         });
         cam.start();
-
-        // RENDER DÖVRÜ
-        function animate() {
-            requestAnimationFrame(animate);
-            renderer.render(scene, camera);
-        }
         animate();
-
-        // Ekran ölçüsünə uyğunlaşma
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
     </script>
 </body>
 </html>
