@@ -2,92 +2,91 @@
 <html lang="az">
 <head>
     <meta charset="UTF-8">
-    <title>Akustik Morfologiya - Səs Strukturlaşdırıcı</title>
+    <title>Səs-Görüntü Sintezi (Acoustic Vision)</title>
     <style>
-        body { margin: 0; background: #000; overflow: hidden; }
-        canvas { display: block; filter: blur(1px) contrast(1.2); }
-        #overlay { position: absolute; top: 10px; left: 10px; color: #0f0; font-family: monospace; pointer-events: none; }
-        button { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); padding: 15px 30px; font-size: 20px; background: none; border: 2px solid #0f0; color: #0f0; cursor: pointer; }
+        body { margin: 0; background: #000; color: #fff; overflow: hidden; font-family: monospace; }
+        canvas { display: block; filter: contrast(150%) brightness(120%); }
+        #ui { position: absolute; top: 10px; width: 100%; text-align: center; pointer-events: none; }
+        button { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); padding: 15px 30px; 
+                 background: transparent; border: 2px solid #fff; color: #fff; cursor: pointer; z-index: 10; }
     </style>
 </head>
 <body>
 
-    <div id="overlay">SİSTEM: AKUSTİK SKANER AKTİVDİR...</div>
-    <button id="btn">GÖRÜNTÜNÜ FORMALAŞDIR</button>
-    <canvas id="canvas"></canvas>
+    <div id="ui">SİSTEM: AKUSTİK GÖRÜNTÜ ÖTÜRÜCÜSÜ AKTİVDİR...</div>
+    <button id="start">GÖRÜNTÜNÜ AÇ</button>
+    <canvas id="screen"></canvas>
 
     <script>
-        const btn = document.getElementById('btn');
-        const canvas = document.getElementById('canvas');
+        const canvas = document.getElementById('screen');
         const ctx = canvas.getContext('2d');
-        let particles = [];
+        const btn = document.getElementById('start');
 
         btn.onclick = () => {
             btn.style.display = 'none';
-            setupAudio();
+            initVision();
         };
 
-        async function setupAudio() {
+        async function initVision() {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const audioCtx = new AudioContext();
             const analyser = audioCtx.createAnalyser();
             const source = audioCtx.createMediaStreamSource(stream);
             source.connect(analyser);
-            analyser.fftSize = 128;
+            
+            analyser.fftSize = 512;
             const dataArray = new Uint8Array(analyser.frequencyBinCount);
 
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
 
-            function animate() {
-                requestAnimationFrame(animate);
+            // Piksellərdən ibarət "tor" (mesh) yaradırıq
+            const cols = 40;
+            const rows = 40;
+            const cellW = canvas.width / cols;
+            const cellH = canvas.height / rows;
+
+            function render() {
+                requestAnimationFrame(render);
                 analyser.getByteFrequencyData(dataArray);
 
+                // Ekranı yavaş silərək "kamera kadrı" effekti veririk
                 ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-                dataArray.forEach((v, i) => {
-                    if (v > 100) { // Səs həddi
-                        // Səsin gücünə görə "hüceyrə" yaratmaq
-                        for(let j = 0; j < 5; j++) {
-                            particles.push(new Particle(v, i));
+                for (let i = 0; i < cols; i++) {
+                    for (let j = 0; j < rows; j++) {
+                        // Səs dalğasının müxtəlif tezlikləri hər bir pikselə təsir edir
+                        const freqIdx = (i + j) % dataArray.length;
+                        const v = dataArray[freqIdx];
+                        
+                        if (v > 50) {
+                            const opacity = v / 255;
+                            const size = (v / 255) * cellW * 1.5;
+                            
+                            // Rəng sxemi: İnsan səsi (yaşıl/mavi), ağır səslər (qırmızı/ağ)
+                            const r = v > 150 ? 255 : 50;
+                            const g = v > 100 ? v : 0;
+                            const b = 255 - v;
+
+                            ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${opacity})`;
+                            
+                            // "Kamera pikselləri" formasında görüntünü yığırıq
+                            ctx.beginPath();
+                            ctx.arc(i * cellW + cellW/2, j * cellH + cellH/2, size, 0, Math.PI * 2);
+                            ctx.fill();
+
+                            // Səs çox güclüdürsə (obyekt yaxındırsa), pikselləri birləşdir
+                            if (v > 180) {
+                                ctx.strokeStyle = `rgba(255, 255, 255, ${opacity})`;
+                                ctx.lineWidth = 0.5;
+                                ctx.strokeRect(i * cellW, j * cellH, cellW, cellH);
+                            }
                         }
                     }
-                });
-
-                particles.forEach((p, index) => {
-                    p.update();
-                    p.draw();
-                    if (p.life <= 0) particles.splice(index, 1);
-                });
-            }
-
-            class Particle {
-                constructor(v, i) {
-                    this.life = 100;
-                    this.size = v / 15;
-                    // Aşağı tezlik (maşın) aşağıda, yüksək (adam) yuxarıda formalaşır
-                    this.x = Math.random() * canvas.width;
-                    this.y = canvas.height - (i * (canvas.height / 64));
-                    this.speedX = (Math.random() - 0.5) * (v / 50);
-                    this.speedY = (Math.random() - 0.5) * (v / 50);
-                    this.color = `hsl(${i * 5}, 100%, ${v/2}%)`;
-                }
-                update() {
-                    this.x += this.speedX;
-                    this.y += this.speedY;
-                    this.life -= 2;
-                }
-                draw() {
-                    ctx.fillStyle = this.color;
-                    ctx.beginPath();
-                    // Səsin tipinə görə forma dəyişir: Maşın üçün kvadratik, insan üçün dairəvi
-                    if (this.size > 10) ctx.rect(this.x, this.y, this.size * 2, this.size);
-                    else ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                    ctx.fill();
                 }
             }
-            animate();
+            render();
         }
     </script>
 </body>
