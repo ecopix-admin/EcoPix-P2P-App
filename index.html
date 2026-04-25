@@ -2,196 +2,184 @@
 <html lang="az">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NEON DRIFT 2026</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CYBER ARENA 2026</title>
     <style>
-        body { margin: 0; overflow: hidden; background: #050505; font-family: 'Segoe UI', sans-serif; }
-        canvas { display: block; }
-        #overlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8); display: flex; flex-direction: column;
-            justify-content: center; align-items: center; z-index: 10;
+        body { margin: 0; overflow: hidden; background: #000; font-family: 'Courier New', Courier, monospace; }
+        #crosshair {
+            position: absolute; top: 50%; left: 50%;
+            width: 20px; height: 20px;
+            border: 2px solid #0f0; border-radius: 50%;
+            transform: translate(-50%, -50%); pointer-events: none;
+            box-shadow: 0 0 10px #0f0;
         }
         #ui {
-            position: absolute; top: 20px; left: 20px; color: #00f2ff;
-            font-size: 28px; font-weight: bold; text-shadow: 0 0 10px #00f2ff;
-            pointer-events: none;
+            position: absolute; bottom: 30px; left: 30px;
+            color: #0f0; font-size: 24px; text-shadow: 0 0 15px #0f0;
         }
-        .btn {
-            padding: 15px 40px; background: transparent; color: #ff0055;
-            border: 3px solid #ff0055; font-size: 24px; cursor: pointer;
-            transition: 0.3s; text-transform: uppercase; letter-spacing: 3px;
+        #hp-bar {
+            position: absolute; bottom: 30px; right: 30px;
+            width: 200px; height: 20px; border: 2px solid #f00;
         }
-        .btn:hover { background: #ff0055; color: #fff; box-shadow: 0 0 30px #ff0055; }
-        h1 { color: #00f2ff; font-size: 48px; margin-bottom: 10px; text-shadow: 0 0 20px #00f2ff; }
-        p { color: #888; margin-bottom: 30px; }
+        #hp-inner { width: 100%; height: 100%; background: #f00; transition: 0.3s; }
+        #menu {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); display: flex; flex-direction: column;
+            justify-content: center; align-items: center; z-index: 100;
+            color: #0f0; text-align: center;
+        }
+        button {
+            background: transparent; border: 2px solid #0f0; color: #0f0;
+            padding: 15px 40px; font-size: 20px; cursor: pointer; margin-top: 20px;
+            text-transform: uppercase; letter-spacing: 3px;
+        }
+        button:hover { background: #0f0; color: #000; box-shadow: 0 0 30px #0f0; }
     </style>
 </head>
 <body>
 
-<div id="ui">XAL: 0</div>
+    <div id="crosshair"></div>
+    <div id="ui">SCORE: 0</div>
+    <div id="hp-bar"><div id="hp-inner"></div></div>
 
-<div id="overlay">
-    <h1 id="title">NEON DRIFT</h1>
-    <p>MANEƏLƏRDƏN QAÇ VƏ SÜRƏTİ ARTIR</p>
-    <button class="btn" onclick="startGame()">SÜRÜŞƏ BAŞLA</button>
-</div>
+    <div id="menu">
+        <h1>CYBER ARENA: FPS</h1>
+        <p>W,A,S,D - HƏRƏKƏT | MOUSE - NİŞAN AL | CLICK - ATƏŞ</p>
+        <button onclick="start()">SAVAŞA BAŞLA</button>
+    </div>
 
-<script type="module">
-    import * as THREE from 'https://cdn.skypack.dev/three@0.136.0';
+    <script type="module">
+        import * as THREE from 'https://cdn.skypack.dev/three@0.136.0';
 
-    let scene, camera, renderer, car, score = 0, speed = 0.5, isPlaying = false;
-    let obstacles = [], particles = [], laneWidth = 4;
+        let scene, camera, renderer, isPlaying = false, score = 0, hp = 100;
+        let bullets = [], enemies = [], particles = [];
+        let moveF = false, moveB = false, moveL = false, moveR = false;
+        const velocity = new THREE.Vector3();
 
-    function init() {
-        scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x050508);
-        scene.fog = new THREE.Fog(0x050508, 10, 40);
+        function init() {
+            scene = new THREE.Scene();
+            scene.fog = new THREE.Fog(0x000000, 0, 40);
 
-        camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(0, 3, 8);
-        camera.lookAt(0, 0, 0);
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            document.body.appendChild(renderer.domElement);
 
-        renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(window.devicePixelRatio);
-        document.body.appendChild(renderer.domElement);
+            // Yer (Neon Grid)
+            const grid = new THREE.GridHelper(100, 40, 0x00ff00, 0x111111);
+            scene.add(grid);
 
-        // İşıqlandırma
-        const ambient = new THREE.AmbientLight(0xffffff, 0.4);
-        scene.add(ambient);
-        const blueLight = new THREE.PointLight(0x00f2ff, 2, 20);
-        blueLight.position.set(5, 5, 5);
-        scene.add(blueLight);
+            // İşıqlandırma
+            const amb = new THREE.AmbientLight(0x404040, 0.5);
+            scene.add(amb);
 
-        // Yol (Yüksək keyfiyyətli tekstura effektli)
-        const roadGeo = new THREE.PlaneGeometry(15, 1000);
-        const roadMat = new THREE.MeshStandardMaterial({ color: 0x111111 });
-        const road = new THREE.Mesh(roadGeo, roadMat);
-        road.rotation.x = -Math.PI / 2;
-        scene.add(road);
+            // Pointer Lock
+            document.addEventListener('click', () => {
+                if(isPlaying) document.body.requestPointerLock();
+            });
 
-        // Yol xətləri
-        const grid = new THREE.GridHelper(1000, 100, 0x00f2ff, 0x222222);
-        grid.position.y = 0.05;
-        scene.add(grid);
+            document.addEventListener('mousemove', (e) => {
+                if(document.pointerLockElement) {
+                    camera.rotation.y -= e.movementX * 0.002;
+                    const pitch = camera.rotation.x - e.movementY * 0.002;
+                    camera.rotation.x = Math.max(-Math.PI/2.5, Math.min(Math.PI/2.5, pitch));
+                }
+            });
 
-        createCar();
-        window.addEventListener('resize', onResize);
-        
-        // İdarəetmə
-        window.addEventListener('keydown', (e) => {
-            if(e.key === 'ArrowLeft' && car.position.x > -laneWidth) car.position.x -= laneWidth;
-            if(e.key === 'ArrowRight' && car.position.x < laneWidth) car.position.x += laneWidth;
-        });
+            window.addEventListener('keydown', (e) => {
+                if(e.code === 'KeyW') moveF = true; if(e.code === 'KeyS') moveB = true;
+                if(e.code === 'KeyA') moveL = true; if(e.code === 'KeyD') moveR = true;
+            });
+            window.addEventListener('keyup', (e) => {
+                if(e.code === 'KeyW') moveF = false; if(e.code === 'KeyS') moveB = false;
+                if(e.code === 'KeyA') moveL = false; if(e.code === 'KeyD') moveR = false;
+            });
+            window.addEventListener('mousedown', shoot);
+        }
 
-        // Mobil idarəetmə
-        window.addEventListener('touchstart', (e) => {
-            const x = e.touches[0].clientX;
-            if(x < window.innerWidth / 2) {
-                if(car.position.x > -laneWidth) car.position.x -= laneWidth;
-            } else {
-                if(car.position.x < laneWidth) car.position.x += laneWidth;
-            }
-        });
-    }
+        function shoot() {
+            if(!document.pointerLockElement || !isPlaying) return;
+            const bullet = new THREE.Mesh(
+                new THREE.SphereGeometry(0.05, 8, 8),
+                new THREE.MeshBasicMaterial({ color: 0x00ff00 })
+            );
+            bullet.position.copy(camera.position);
+            bullet.position.y -= 0.2;
+            const dir = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
+            bullet.userData.velocity = dir.multiplyScalar(1.2);
+            bullets.push(bullet);
+            scene.add(bullet);
+        }
 
-    function createCar() {
-        const group = new THREE.Group();
-        // Gövdə
-        const body = new THREE.Mesh(
-            new THREE.BoxGeometry(1.8, 0.6, 3.5),
-            new THREE.MeshStandardMaterial({ color: 0x00f2ff, metalness: 0.8, roughness: 0.2 })
-        );
-        body.position.y = 0.6;
-        group.add(body);
+        function spawnEnemy() {
+            if(!isPlaying) return;
+            const enemy = new THREE.Mesh(
+                new THREE.BoxGeometry(1, 2, 1),
+                new THREE.MeshStandardMaterial({ color: 0xff0000, emissive: 0xff0000, emissiveIntensity: 1 })
+            );
+            const a = Math.random() * Math.PI * 2;
+            const d = 25 + Math.random() * 5;
+            enemy.position.set(Math.cos(a)*d, 1, Math.sin(a)*d);
+            enemies.push(enemy);
+            scene.add(enemy);
+            setTimeout(spawnEnemy, 1500 - Math.min(score * 10, 1000));
+        }
 
-        // Kabina
-        const cabin = new THREE.Mesh(
-            new THREE.BoxGeometry(1.4, 0.5, 1.5),
-            new THREE.MeshStandardMaterial({ color: 0x000000 })
-        );
-        cabin.position.y = 1.1;
-        cabin.position.z = -0.2;
-        group.add(cabin);
+        function animate() {
+            if(!isPlaying) return;
+            requestAnimationFrame(animate);
 
-        // Neon Farlar
-        const lightGeo = new THREE.BoxGeometry(0.4, 0.1, 0.1);
-        const lightMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
-        const l1 = new THREE.Mesh(lightGeo, lightMat); l1.position.set(0.6, 0.6, 1.75);
-        const l2 = new THREE.Mesh(lightGeo, lightMat); l2.position.set(-0.6, 0.6, 1.75);
-        group.add(l1, l2);
+            // Hərəkət
+            const dir = new THREE.Vector3();
+            dir.z = Number(moveF) - Number(moveB);
+            dir.x = Number(moveR) - Number(moveL);
+            dir.normalize();
+            if(moveF || moveB) velocity.z -= dir.z * 0.015;
+            if(moveL || moveR) velocity.x -= dir.x * 0.015;
+            camera.translateX(-velocity.x);
+            camera.translateZ(-velocity.z);
+            velocity.multiplyScalar(0.9);
 
-        car = group;
-        scene.add(car);
-    }
+            // Güllə fizikası
+            bullets.forEach((b, i) => {
+                b.position.add(b.userData.velocity);
+                if(b.position.length() > 50) { scene.remove(b); bullets.splice(i, 1); }
+            });
 
-    function spawnObstacle() {
-        const obsGeo = new THREE.BoxGeometry(2, 2, 2);
-        const obsMat = new THREE.MeshStandardMaterial({ color: 0xff0055, emissive: 0xff0055 });
-        const obs = new THREE.Mesh(obsGeo, obsMat);
-        obs.position.x = (Math.floor(Math.random() * 3) - 1) * laneWidth;
-        obs.position.z = -50;
-        obs.position.y = 1;
-        obstacles.push(obs);
-        scene.add(obs);
-    }
+            // Düşmən AI
+            enemies.forEach((e, i) => {
+                const eDir = new THREE.Vector3().subVectors(camera.position, e.position).normalize();
+                e.position.x += eDir.x * 0.06;
+                e.position.z += eDir.z * 0.06;
 
-    function startGame() {
-        isPlaying = true;
-        score = 0;
-        speed = 0.5;
-        obstacles.forEach(o => scene.remove(o));
-        obstacles = [];
-        document.getElementById('overlay').style.display = 'none';
-        animate();
-    }
+                bullets.forEach((b, bi) => {
+                    if(b.position.distanceTo(e.position) < 1.2) {
+                        scene.remove(e); enemies.splice(i, 1);
+                        scene.remove(b); bullets.splice(bi, 1);
+                        score += 50;
+                        document.getElementById('ui').innerText = `SCORE: ${score}`;
+                    }
+                });
 
-    function onResize() {
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
-    }
+                if(e.position.distanceTo(camera.position) < 1.5) {
+                    hp -= 0.5;
+                    document.getElementById('hp-inner').style.width = hp + "%";
+                    if(hp <= 0) location.reload();
+                }
+            });
 
-    function animate() {
-        if(!isPlaying) return;
-        requestAnimationFrame(animate);
+            renderer.render(scene, camera);
+        }
 
-        score += 0.1;
-        document.getElementById('ui').innerText = `XAL: ${Math.floor(score)}`;
-        speed += 0.0002;
-
-        // Yolun hərəkəti (illüziya)
-        scene.children.forEach(child => {
-            if(child instanceof THREE.GridHelper) {
-                child.position.z += speed;
-                if(child.position.z > 10) child.position.z = 0;
-            }
-        });
-
-        // Maneələr
-        if(Math.random() < 0.03) spawnObstacle();
-        obstacles.forEach((obs, i) => {
-            obs.position.z += speed;
-            // Toqquşma
-            if(car.position.distanceTo(obs.position) < 2) {
-                isPlaying = false;
-                document.getElementById('overlay').style.display = 'flex';
-                document.getElementById('title').innerText = "QƏZA BAŞ VERDİ!";
-            }
-            if(obs.position.z > 10) {
-                scene.remove(obs);
-                obstacles.splice(i, 1);
-            }
-        });
-
-        // Avtomobilin titrəməsi (Motor effekti)
-        car.position.y = 0.05 * Math.sin(Date.now() * 0.01);
-
-        renderer.render(scene, camera);
-    }
-
-    init();
-</script>
+        window.start = () => {
+            document.getElementById('menu').style.display = 'none';
+            isPlaying = true;
+            init();
+            spawnEnemy();
+            animate();
+        };
+    </script>
 </body>
 </html>
