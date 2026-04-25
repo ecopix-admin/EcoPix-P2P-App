@@ -2,242 +2,181 @@
 <html lang="az">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Cyber-Dash: Neon Runner</title>
+    <title>Cyber Ops: 3D Shooter</title>
     <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background: #050505;
-            color: #fff;
-            font-family: 'Orbitron', sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            overflow: hidden;
-            touch-action: none;
+        body { margin: 0; overflow: hidden; background: #000; font-family: sans-serif; }
+        #crosshair {
+            position: absolute; top: 50%; left: 50%;
+            width: 20px; height: 20px;
+            border: 2px solid rgba(0, 255, 0, 0.5);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
         }
-
-        #game-wrapper {
-            position: relative;
-            width: 800px;
-            max-width: 100%;
-            height: 400px;
-            background: linear-gradient(180deg, #0b0b1a 0%, #000 100%);
-            border-bottom: 5px solid #00f2ff;
-            box-shadow: 0 10px 50px rgba(0, 242, 255, 0.2);
-            overflow: hidden;
+        #ui {
+            position: absolute; bottom: 20px; left: 20px;
+            color: #0f0; font-size: 24px; text-shadow: 0 0 10px #0f0;
         }
-
-        canvas { display: block; }
-
-        #overlay {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 10;
+        #instructions {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            color: white; text-align: center; background: rgba(0,0,0,0.8);
+            padding: 20px; border: 2px solid #0f0; cursor: pointer;
         }
-
-        h1 { color: #00f2ff; text-shadow: 0 0 20px #00f2ff; font-size: 3rem; margin: 0; }
-        p { color: #ff0055; letter-spacing: 2px; }
-
-        .btn {
-            margin-top: 20px;
-            padding: 15px 40px;
-            background: transparent;
-            color: #00f2ff;
-            border: 2px solid #00f2ff;
-            font-size: 1.5rem;
-            cursor: pointer;
-            transition: 0.3s;
-            font-family: inherit;
-        }
-
-        .btn:hover {
-            background: #00f2ff;
-            color: #000;
-            box-shadow: 0 0 30px #00f2ff;
-        }
-
-        #score-board {
-            position: absolute;
-            top: 20px;
-            right: 30px;
-            font-size: 1.5rem;
-            color: #00f2ff;
-            text-shadow: 0 0 10px #00f2ff;
-        }
-
-        .hidden { display: none !important; }
     </style>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet">
 </head>
 <body>
 
-<div id="game-wrapper">
-    <div id="score-board">XAL: 0</div>
-    <canvas id="gameCanvas"></canvas>
-    
-    <div id="overlay">
-        <h1 id="status-title">CYBER-DASH</h1>
-        <p id="status-msg">TULLANMAQ ÜÇÜN EKRANA TOXUN VEYA SPACE BAS</p>
-        <button class="btn" onclick="initGame()">BAŞLA</button>
+    <div id="crosshair"></div>
+    <div id="ui">XAL: 0</div>
+    <div id="instructions">
+        <h1>CYBER OPS</h1>
+        <p>Hərəkət: W, A, S, D | Atəş: KLİK</p>
+        <p>Oynamaq üçün klikləyin</p>
     </div>
-</div>
 
-<script>
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
-    const scoreBoard = document.getElementById('score-board');
-    const overlay = document.getElementById('overlay');
-    const statusTitle = document.getElementById('status-title');
-    const statusMsg = document.getElementById('status-msg');
+    <script type="module">
+        import * as THREE from 'https://cdn.skypack.dev/three@0.136.0';
 
-    canvas.width = 800;
-    canvas.height = 400;
+        let scene, camera, renderer, moveForward = false, moveBackward = false, moveLeft = false, moveRight = false;
+        let bullets = [], enemies = [], score = 0;
+        const velocity = new THREE.Vector3();
+        const direction = new THREE.Vector3();
 
-    let isPlaying = false;
-    let score = 0;
-    let gameSpeed = 5;
-    let frame = 0;
+        function init() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x020205);
+            scene.fog = new THREE.Fog(0x020205, 0, 50);
 
-    // Personaj (Cyber-Square)
-    const player = {
-        x: 80,
-        y: 320,
-        w: 40,
-        h: 40,
-        dy: 0,
-        jumpForce: 15,
-        gravity: 0.8,
-        grounded: false,
-        color: '#00f2ff',
-        particles: []
-    };
-
-    const obstacles = [];
-
-    // İdarəetmə
-    function jump() {
-        if (player.grounded && isPlaying) {
-            player.dy = -player.jumpForce;
-            player.grounded = false;
-        }
-    }
-
-    window.addEventListener('keydown', (e) => { if (e.code === 'Space') jump(); });
-    window.addEventListener('touchstart', (e) => { e.preventDefault(); jump(); });
-
-    function initGame() {
-        isPlaying = true;
-        score = 0;
-        gameSpeed = 6;
-        obstacles.length = 0;
-        player.y = 320;
-        player.dy = 0;
-        overlay.classList.add('hidden');
-        animate();
-    }
-
-    function spawnObstacle() {
-        let type = Math.random() > 0.5 ? 'tall' : 'wide';
-        obstacles.push({
-            x: canvas.width,
-            y: 320,
-            w: type === 'wide' ? 60 : 30,
-            h: type === 'tall' ? 60 : 40,
-            color: '#ff0055'
-        });
-    }
-
-    function createParticles(x, y, color) {
-        for(let i=0; i<10; i++) {
-            player.particles.push({
-                x: x, y: y,
-                dx: (Math.random() - 0.5) * 10,
-                dy: (Math.random() - 0.5) * 10,
-                life: 20,
-                color: color
-            });
-        }
-    }
-
-    function animate() {
-        if (!isPlaying) return;
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        // Fizika
-        player.dy += player.gravity;
-        player.y += player.dy;
-
-        if (player.y > 320) {
-            player.y = 320;
-            player.dy = 0;
-            player.grounded = true;
-        }
-
-        // Personajın çəkilməsi (Gözləri olan robot kvadrat)
-        ctx.shadowBlur = 20;
-        ctx.shadowColor = player.color;
-        ctx.fillStyle = player.color;
-        ctx.fillRect(player.x, player.y, player.w, player.h);
-        
-        // Gözlər (Trend dizayn)
-        ctx.fillStyle = "#000";
-        ctx.fillRect(player.x + 25, player.y + 10, 8, 8); // Sağ göz
-        
-        // Maneələr
-        if (frame % Math.floor(100 / (gameSpeed/5)) === 0) spawnObstacle();
-
-        obstacles.forEach((obs, index) => {
-            obs.x -= gameSpeed;
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
             
-            ctx.shadowBlur = 15;
-            ctx.shadowColor = obs.color;
-            ctx.fillStyle = obs.color;
-            ctx.fillRect(obs.x, obs.y - (obs.h - 40), obs.w, obs.h);
+            const light = new THREE.HemisphereLight(0xeeeeff, 0x777788, 0.75);
+            scene.add(light);
 
-            // Toqquşma
-            if (player.x < obs.x + obs.w &&
-                player.x + player.w > obs.x &&
-                player.y < obs.y + 40 &&
-                player.y + player.h > obs.y - (obs.h - 40)) {
-                endGame();
+            // Yer (Grid)
+            const grid = new THREE.GridHelper(100, 50, 0x00ff00, 0x222222);
+            scene.add(grid);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+            // Pointer Lock (Mouse ilə baxmaq)
+            const instructions = document.getElementById('instructions');
+            instructions.addEventListener('click', () => {
+                document.body.requestPointerLock();
+            });
+
+            document.addEventListener('pointerlockchange', () => {
+                instructions.style.display = document.pointerLockElement ? 'none' : 'block';
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (document.pointerLockElement) {
+                    camera.rotation.y -= e.movementX * 0.002;
+                }
+            });
+
+            window.addEventListener('keydown', (e) => {
+                if(e.code === 'KeyW') moveForward = true;
+                if(e.code === 'KeyS') moveBackward = true;
+                if(e.code === 'KeyA') moveLeft = true;
+                if(e.code === 'KeyD') moveRight = true;
+            });
+
+            window.addEventListener('keyup', (e) => {
+                if(e.code === 'KeyW') moveForward = false;
+                if(e.code === 'KeyS') moveBackward = false;
+                if(e.code === 'KeyA') moveLeft = false;
+                if(e.code === 'KeyD') moveRight = false;
+            });
+
+            window.addEventListener('mousedown', shoot);
+
+            spawnEnemy();
+            animate();
+        }
+
+        function shoot() {
+            if (!document.pointerLockElement) return;
+            const bullet = new THREE.Mesh(
+                new THREE.SphereGeometry(0.1, 8, 8),
+                new THREE.MeshBasicMaterial({ color: 0xffff00 })
+            );
+            bullet.position.copy(camera.position);
+            const dir = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
+            bullet.userData.velocity = dir.multiplyScalar(1.5);
+            bullets.push(bullet);
+            scene.add(bullet);
+        }
+
+        function spawnEnemy() {
+            const enemy = new THREE.Mesh(
+                new THREE.BoxGeometry(1, 2, 1),
+                new THREE.MeshStandardMaterial({ color: 0xff0000, emissive: 0xff0000, emissiveIntensity: 0.5 })
+            );
+            const angle = Math.random() * Math.PI * 2;
+            const dist = 20 + Math.random() * 10;
+            enemy.position.set(Math.cos(angle) * dist, 1, Math.sin(angle) * dist);
+            enemies.push(enemy);
+            scene.add(enemy);
+            setTimeout(spawnEnemy, 2000);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            if (document.pointerLockElement) {
+                // Hərəkət fizikası
+                direction.z = Number(moveForward) - Number(moveBackward);
+                direction.x = Number(moveRight) - Number(moveLeft);
+                direction.normalize();
+
+                if (moveForward || moveBackward) velocity.z -= direction.z * 0.01;
+                if (moveLeft || moveRight) velocity.x -= direction.x * 0.01;
+
+                camera.translateX(-velocity.x);
+                camera.translateZ(-velocity.z);
+                velocity.multiplyScalar(0.9);
             }
 
-            if (obs.x + obs.w < 0) {
-                obstacles.splice(index, 1);
-                score++;
-                gameSpeed += 0.1;
-                scoreBoard.innerText = `XAL: ${score}`;
-            }
-        });
+            // Güllələri yenilə
+            bullets.forEach((b, i) => {
+                b.position.add(b.userData.velocity);
+                if (b.position.distanceTo(camera.position) > 50) {
+                    scene.remove(b);
+                    bullets.splice(i, 1);
+                }
+            });
 
-        // Particle effect (Toz)
-        player.particles.forEach((p, i) => {
-            p.x += p.dx;
-            p.y += p.dy;
-            p.life--;
-            ctx.fillStyle = p.color;
-            ctx.fillRect(p.x, p.y, 4, 4);
-            if(p.life <= 0) player.particles.splice(i, 1);
-        });
+            // Düşmənləri yenilə
+            enemies.forEach((e, ei) => {
+                const dir = new THREE.Vector3().subVectors(camera.position, e.position).normalize();
+                e.position.x += dir.x * 0.05;
+                e.position.z += dir.z * 0.05;
 
-        frame++;
-        requestAnimationFrame(animate);
-    }
+                // Güllə ilə toqquşma
+                bullets.forEach((b, bi) => {
+                    if (b.position.distanceTo(e.position) < 1.5) {
+                        scene.remove(e);
+                        enemies.splice(ei, 1);
+                        scene.remove(b);
+                        bullets.splice(bi, 1);
+                        score += 10;
+                        document.getElementById('ui').innerText = `XAL: ${score}`;
+                    }
+                });
 
-    function endGame() {
-        isPlaying = false;
-        statusTitle.innerText = "SİSTEM ÇÖKDÜ!";
-        statusMsg.innerHTML = `MƏSAFƏ: ${score}M <br> ENERJİ TÜKƏNDİ.`;
-        overlay.classList.remove('hidden');
-    }
-</script>
+                if (e.position.distanceTo(camera.position) < 1) {
+                    alert("OYUN BİTDİ! XALINIZ: " + score);
+                    location.reload();
+                }
+            });
+
+            renderer.render(scene, camera);
+        }
+
+        init();
+    </script>
 </body>
 </html>
