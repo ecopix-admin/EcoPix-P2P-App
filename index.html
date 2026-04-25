@@ -3,100 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Smart Chat Widget</title>
+    <title>Shamxal QR - Ağıllı Menyu</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --primary: #0084ff; --bg: #f0f2f5; }
-        body { font-family: 'Segoe UI', sans-serif; background: #e5e5e5; }
-
-        /* Widget Button */
-        #chat-trigger {
-            position: fixed; bottom: 30px; right: 30px;
-            width: 60px; height: 60px; background: var(--primary);
-            border-radius: 50%; display: flex; align-items: center;
-            justify-content: center; color: white; font-size: 28px;
-            cursor: pointer; box-shadow: 0 5px 15px rgba(0,132,255,0.4);
-            transition: 0.3s; z-index: 1000;
-        }
-
-        /* Chat Window */
-        #chat-window {
-            position: fixed; bottom: 100px; right: 30px;
-            width: 350px; height: 500px; background: white;
-            border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            display: none; flex-direction: column; overflow: hidden;
-            z-index: 1000; animation: slideUp 0.4s ease;
-        }
-
-        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-
-        .chat-header { background: var(--primary); color: white; padding: 20px; display: flex; align-items: center; gap: 10px; }
-        .chat-body { flex: 1; padding: 20px; overflow-y: auto; background: var(--bg); display: flex; flex-direction: column; gap: 10px; }
+        :root { --main-dark: #1a1a1a; --accent: #ffcc00; --text: #333; }
+        body { font-family: 'Poppins', sans-serif; margin: 0; background: #f9f9f9; color: var(--text); }
         
-        .msg { padding: 10px 15px; border-radius: 15px; max-width: 80%; font-size: 14px; line-height: 1.4; }
-        .msg.bot { background: white; align-self: flex-start; color: #333; border-bottom-left-radius: 2px; }
-        .msg.user { background: var(--primary); color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
+        header { background: var(--main-dark); color: white; padding: 20px; text-align: center; border-radius: 0 0 25px 25px; }
+        .category-scroll { display: flex; overflow-x: auto; padding: 15px; gap: 10px; sticky: top; background: #f9f9f9; z-index: 10; }
+        .cat-btn { background: white; border: 1px solid #ddd; padding: 8px 20px; border-radius: 20px; white-space: nowrap; cursor: pointer; }
+        .cat-btn.active { background: var(--accent); border-color: var(--accent); font-weight: bold; }
 
-        .chat-footer { padding: 15px; background: white; display: flex; gap: 10px; }
-        input { flex: 1; border: 1px solid #ddd; padding: 10px; border-radius: 20px; outline: none; }
-        button#send { background: var(--primary); border: none; color: white; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; }
+        .menu-grid { padding: 15px; display: grid; gap: 15px; }
+        .item-card { background: white; border-radius: 15px; display: flex; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .item-img { width: 100px; height: 100px; background: #eee; object-fit: cover; }
+        .item-info { padding: 12px; flex: 1; display: flex; flex-direction: column; justify-content: center; }
+        .item-info h3 { margin: 0; font-size: 16px; }
+        .item-info p { margin: 5px 0; font-size: 13px; color: #777; }
+        .price-row { display: flex; justify-content: space-between; align-items: center; margin-top: 5px; }
+        .price { font-weight: bold; color: var(--main-dark); }
+        .add-btn { background: var(--accent); border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-weight: bold; }
+
+        .cart-bar { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; background: var(--main-dark); color: white; padding: 15px; border-radius: 15px; display: none; justify-content: space-between; align-items: center; box-shadow: 0 5px 20px rgba(0,0,0,0.3); z-index: 100; }
+        .order-btn { background: var(--accent); border: none; padding: 8px 20px; border-radius: 10px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
 
-<div id="chat-trigger" onclick="toggleChat()"><i class="fab fa-whatsapp"></i></div>
+<header>
+    <h1>Həsənovlar Lounge</h1>
+    <p><i class="fas fa-star" style="color:var(--accent)"></i> Ən dadlı təamlar</p>
+</header>
 
-<div id="chat-window">
-    <div class="chat-header">
-        <i class="fas fa-robot"></i>
-        <div>
-            <strong>AI Dəstək Merkezi</strong><br>
-            <small>Həmişə onlayn</small>
+<div class="category-scroll">
+    <div class="cat-btn active">Hamısı</div>
+    <div class="cat-btn">Kabablar</div>
+    <div class="cat-btn">İçkilər</div>
+    <div class="cat-btn">Şirniyyat</div>
+</div>
+
+<div class="menu-grid">
+    <div class="item-card">
+        <div class="item-info">
+            <h3>Quzu Kababı</h3>
+            <p>Təzə quzu əti, soğan, sumaq</p>
+            <div class="price-row">
+                <span class="price">12.00 AZN</span>
+                <button class="add-btn" onclick="addToCart('Quzu Kababı', 12)">+</button>
+            </div>
         </div>
     </div>
-    <div class="chat-body" id="chatBody">
-        <div class="msg bot">Salam! Mən ağıllı köməkçiyəm. Sizə necə kömək edə bilərəm?</div>
-    </div>
-    <div class="chat-footer">
-        <input type="text" id="userInput" placeholder="Mesajınızı yazın...">
-        <button id="send" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+    
+    <div class="item-card">
+        <div class="item-info">
+            <h3>Paytaxt Salatı</h3>
+            <p>Kartof, yerkökü, yaşıl noxud, mayonez</p>
+            <div class="price-row">
+                <span class="price">6.00 AZN</span>
+                <button class="add-btn" onclick="addToCart('Paytaxt Salatı', 6)">+</button>
+            </div>
+        </div>
     </div>
 </div>
 
+<div class="cart-bar" id="cartBar">
+    <span id="cartCount">0 məhsul</span>
+    <button class="order-btn" onclick="sendOrder()">Sifariş Et (<span id="totalPrice">0</span> AZN)</button>
+</div>
+
 <script>
-    function toggleChat() {
-        const win = document.getElementById('chat-window');
-        win.style.display = win.style.display === 'flex' ? 'none' : 'flex';
+    let cart = [];
+    let total = 0;
+
+    function addToCart(name, price) {
+        cart.push(name);
+        total += price;
+        updateCart();
     }
 
-    function sendMessage() {
-        const input = document.getElementById('userInput');
-        const body = document.getElementById('chatBody');
-        if(!input.value.trim()) return;
+    function updateCart() {
+        const bar = document.getElementById('cartBar');
+        if(cart.length > 0) {
+            bar.style.display = 'flex';
+            document.getElementById('cartCount').innerText = cart.length + " məhsul";
+            document.getElementById('totalPrice').innerText = total.toFixed(2);
+        }
+    }
 
-        // User Message
-        const userDiv = document.createElement('div');
-        userDiv.className = 'msg user';
-        userDiv.innerText = input.value;
-        body.appendChild(userDiv);
-
-        const text = input.value.toLowerCase();
-        input.value = '';
-        body.scrollTop = body.scrollHeight;
-
-        // Bot Logic (Simulyasiya)
-        setTimeout(() => {
-            const botDiv = document.createElement('div');
-            botDiv.className = 'msg bot';
-            
-            if(text.includes('qiymət')) botDiv.innerText = "Xidmət haqqımız aylıq 20 AZN-dən başlayır.";
-            else if(text.includes('ünvan')) botDiv.innerText = "Ofisimiz Bakı şəhəri, Nizami küçəsində yerləşir.";
-            else if(text.includes('əlaqə')) botDiv.innerText = "Sizi operatora bağlayıram: +994 50 123 45 67";
-            else botDiv.innerText = "Mən bunu hələ öyrənməmişəm. Amma rəhbərliyə xəbər verə bilərəm!";
-            
-            body.appendChild(botDiv);
-            body.scrollTop = body.scrollHeight;
-        }, 800);
+    function sendOrder() {
+        const phone = "99450XXXXXXX"; // Restoranın WhatsApp nömrəsi
+        let message = "Yeni Sifariş (Masa No: 5):\n\n";
+        cart.forEach((item, index) => {
+            message += `${index + 1}. ${item}\n`;
+        });
+        message += `\nCəmi: ${total.toFixed(2)} AZN`;
+        
+        window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`);
     }
 </script>
 
