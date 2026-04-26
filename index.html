@@ -3,77 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HoloOrchestra PRO | 3-Meter Air Drums</title>
+    <title>HoloOrchestra PRO v2.0</title>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background: #020617; overflow: hidden; touch-action: none; font-family: 'Inter', sans-serif; }
-        canvas { transform: scaleX(-1); border-radius: 30px; border: 4px solid #1e293b; }
-        .inst-zone { position: absolute; border: 2px dashed rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; color: rgba(255,255,255,0.3); transition: all 0.1s; }
-        .hit-effect { background: rgba(59, 130, 246, 0.4) !important; border-color: #3b82f6 !important; color: white !important; transform: scale(1.1); }
+        body { background: #010409; overflow: hidden; touch-action: none; font-family: 'Inter', sans-serif; }
+        /* Güzgü effektini həm vizual, həm də hesablama üçün düzəldirik */
+        #container { position: relative; width: 100vw; height: 100vh; display: flex; justify-content: center; align-items: center; }
+        canvas { transform: scaleX(-1); border-radius: 20px; border: 4px solid #1e293b; max-width: 95%; max-height: 80vh; }
+        video { display: none; }
+        
+        .instrument {
+            position: absolute;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            color: white;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            transition: all 0.1s ease;
+            pointer-events: none;
+            border: 4px solid rgba(255,255,255,0.4);
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(5px);
+        }
+        .hit { transform: scale(1.2); background: rgba(59, 130, 246, 0.6) !important; border-color: #3b82f6 !important; box-shadow: 0 0 50px #3b82f6; }
     </style>
 </head>
-<body class="flex flex-col items-center justify-center min-h-screen p-4">
+<body>
 
-    <div class="absolute top-8 text-center z-50">
-        <h1 class="text-4xl font-black text-white italic tracking-tighter">HOLO<span class="text-blue-500">ORCHESTRA</span></h1>
-        <p class="text-slate-400 text-xs mt-1 uppercase tracking-widest">3M Range Motion Engine</p>
+    <div id="container">
+        <div class="absolute top-10 flex items-center gap-3 bg-black/50 px-6 py-3 rounded-full border border-white/10 z-50">
+            <div id="status-dot" class="w-3 h-3 bg-red-500 rounded-full"></div>
+            <span id="status-text" class="text-white font-bold tracking-widest uppercase text-xs">SİSTEM GÖZLƏYİR</span>
+        </div>
+
+        <canvas id="output_canvas"></canvas>
+
+        <div id="drum-left" class="instrument w-40 h-40 left-[10%] top-[30%]">NAĞARA (SOL)</div>
+        <div id="drum-center" class="instrument w-48 h-48 left-[40%] bottom-[15%]">ANA NAĞARA</div>
+        <div id="drum-right" class="instrument w-40 h-40 right-[10%] top-[30%]">TARELKA</div>
+
+        <div id="overlay" class="absolute inset-0 bg-black/90 flex flex-col items-center justify-center z-[100]">
+            <h1 class="text-5xl font-black text-white mb-8">HOLO-DRUMS</h1>
+            <button id="startBtn" class="bg-blue-600 hover:bg-blue-500 text-white px-12 py-6 rounded-3xl font-black text-2xl shadow-2xl shadow-blue-500/50 transition-all active:scale-95">
+                SİSTEMİ BAŞLAT
+            </button>
+            <p class="text-slate-400 mt-6 italic text-sm">Səs və kamera icazəsi üçün basın</p>
+        </div>
     </div>
-
-    <div class="relative w-full max-w-5xl">
-        <canvas id="output_canvas" class="w-full h-auto bg-slate-950 shadow-2xl"></canvas>
-        <video id="input_video" class="hidden"></video>
-
-        <div id="zone-0" class="inst-zone w-32 h-32 top-[20%] left-[15%]">NAĞARA</div>
-        <div id="zone-1" class="inst-zone w-40 h-40 bottom-[25%] left-[35%]">QOŞA NAĞARA</div>
-        <div id="zone-2" class="inst-zone w-32 h-32 top-[20%] right-[15%]">TARELKA</div>
-    </div>
-
-    <button id="startBtn" class="mt-10 bg-blue-600 hover:bg-blue-500 text-white px-10 py-5 rounded-2xl font-black text-xl transition-all active:scale-90">ORKESTRİ BAŞLAT</button>
 
     <script>
-        const videoElement = document.getElementById('input_video');
+        const videoElement = document.createElement('video');
         const canvasElement = document.getElementById('output_canvas');
         const canvasCtx = canvasElement.getContext('2d');
         const startBtn = document.getElementById('startBtn');
+        const overlay = document.getElementById('overlay');
+        const statusDot = document.getElementById('status-dot');
+        const statusText = document.getElementById('status-text');
 
         let audioCtx;
-        let isReady = false;
-        let lastY = [0, 0]; // Hər iki əlin son Y koordinatı
-        let lastTime = Date.now();
+        let isStarted = false;
+        let lastPositions = [{y: 0}, {y: 0}];
 
-        // Alət zonalarının koordinatları (Faizlə)
-        const zones = [
-            { id: 'zone-0', x: 0.85, y: 0.25, freq: 100, type: 'sine' },  // Nağara (Bas)
-            { id: 'zone-1', x: 0.50, y: 0.75, freq: 200, type: 'triangle' }, // Qoşa Nağara
-            { id: 'zone-2', x: 0.15, y: 0.25, freq: 800, type: 'hi-hat' }  // Tarelka
+        // Zərb Alətləri Məlumatı
+        const instruments = [
+            { id: 'drum-left', xMin: 0.7, xMax: 1.0, yMin: 0.2, yMax: 0.5, freq: 120, type: 'sine' },
+            { id: 'drum-center', xMin: 0.35, xMax: 0.65, yMin: 0.6, yMax: 0.9, freq: 80, type: 'triangle' },
+            { id: 'drum-right', xMin: 0.0, xMax: 0.3, yMin: 0.2, yMax: 0.5, freq: 1000, type: 'square' }
         ];
 
-        startBtn.onclick = () => {
+        startBtn.onclick = async () => {
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            isReady = true;
-            startBtn.style.display = 'none';
+            isStarted = true;
+            overlay.style.display = 'none';
+            statusDot.classList.replace('bg-red-500', 'bg-green-500');
+            statusText.innerText = "CANLI İFA HAZIRDIR";
         };
 
-        function playDrum(freq, type, velocity) {
-            if (!isReady) return;
+        function playSound(freq, type, vol) {
+            if (!audioCtx) return;
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             
-            osc.type = type === 'hi-hat' ? 'square' : type;
+            osc.type = type;
             osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+            osc.frequency.exponentialRampToValueAtTime(1, audioCtx.currentTime + 0.1);
 
-            // Zərbə gücü (velocity) səsin yüksəkliyinə təsir edir
-            const vol = Math.min(velocity / 10, 1); 
-            gain.gain.setValueAtTime(vol, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+            gain.gain.setValueAtTime(vol * 0.5, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
 
             osc.connect(gain);
             gain.connect(audioCtx.destination);
             osc.start();
-            osc.stop(audioCtx.currentTime + 0.2);
+            osc.stop(audioCtx.currentTime + 0.15);
         }
 
         function onResults(results) {
@@ -82,37 +107,33 @@
             canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
 
             if (results.multiHandLandmarks) {
-                results.multiHandLandmarks.forEach((hand, index) => {
-                    const wrist = hand[0]; // Bilək (daha stabil izləmə üçün)
-                    const x = wrist.x;
-                    const y = wrist.y;
+                results.multiHandLandmarks.forEach((hand, i) => {
+                    const indexFinger = hand[8]; // Şəhadət barmağı
+                    const x = indexFinger.x;
+                    const y = indexFinger.y;
 
-                    // Sürəti hesablayırıq (Zərbə anını tutmaq üçün)
-                    const dy = y - lastY[index];
-                    const velocity = dy / (Date.now() - lastTime) * 1000;
-                    
-                    lastY[index] = y;
-                    lastTime = Date.now();
+                    // Sürət hesablama (Zərbəni tutmaq üçün)
+                    const velocity = y - lastPositions[i]?.y || 0;
+                    lastPositions[i] = {y: y};
 
-                    // Əgər sürətli bir "aşağı zərbə" hərəkəti varsa
-                    if (velocity > 1.5) { 
-                        zones.forEach(zone => {
-                            const dx = Math.abs(x - zone.x);
-                            const dy_zone = Math.abs(y - zone.y);
-                            
-                            if (dx < 0.15 && dy_zone < 0.15) {
-                                playDrum(zone.freq, zone.type, velocity);
-                                const el = document.getElementById(zone.id);
-                                el.classList.add('hit-effect');
-                                setTimeout(() => el.classList.remove('hit-effect'), 100);
+                    // Əgər barmaq aşağı sürətlə enirsə (Zərbə)
+                    if (velocity > 0.05) {
+                        instruments.forEach(inst => {
+                            if (x > inst.xMin && x < inst.xMax && y > inst.yMin && y < inst.yMax) {
+                                playSound(inst.freq, inst.type, velocity * 10);
+                                const el = document.getElementById(inst.id);
+                                el.classList.add('hit');
+                                setTimeout(() => el.classList.remove('hit'), 100);
                             }
                         });
                     }
 
-                    // Marker çək
+                    // Kursor (Gözəl neon dairə)
                     canvasCtx.fillStyle = "#3b82f6";
+                    canvasCtx.shadowBlur = 20;
+                    canvasCtx.shadowColor = "#3b82f6";
                     canvasCtx.beginPath();
-                    canvasCtx.arc((1-x) * canvasElement.width, y * canvasElement.height, 15, 0, 2*Math.PI);
+                    canvasCtx.arc(x * canvasElement.width, y * canvasElement.height, 12, 0, 2 * Math.PI);
                     canvasCtx.fill();
                 });
             }
@@ -120,7 +141,7 @@
         }
 
         const hands = new Hands({locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`});
-        hands.setOptions({ maxNumHands: 2, modelComplexity: 1, minDetectionConfidence: 0.7, minTrackingConfidence: 0.7 });
+        hands.setOptions({ maxNumHands: 2, modelComplexity: 1, minDetectionConfidence: 0.6, minTrackingConfidence: 0.6 });
         hands.onResults(onResults);
 
         const camera = new Camera(videoElement, {
