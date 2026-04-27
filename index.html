@@ -3,105 +3,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HoloStrings MASTER</title>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Green-Eye: Bitki Analizatoru</title>
     <style>
-        body { background: #000; margin: 0; overflow: hidden; }
-        canvas { transform: scaleX(-1); width: 100vw; height: 100vh; object-fit: cover; }
-        #startBtn { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 100; }
+        body { margin: 0; background: #121212; color: #4caf50; font-family: sans-serif; text-align: center; }
+        canvas { width: 90%; max-width: 500px; border-radius: 15px; border: 2px solid #4caf50; margin-top: 10px; }
+        .info-box { background: #1e1e1e; margin: 15px; padding: 15px; border-radius: 10px; border-left: 5px solid #4caf50; }
+        button { background: #4caf50; color: white; border: none; padding: 15px 30px; font-size: 18px; border-radius: 50px; cursor: pointer; margin: 10px; }
+        #status { font-weight: bold; font-size: 1.2rem; }
+        video { display: none; }
     </style>
 </head>
 <body>
 
-    <button id="startBtn" class="bg-blue-600 text-white px-10 py-5 rounded-full font-bold text-xl shadow-2xl shadow-blue-500">SİSTEMİ BAŞLAT</button>
-    <canvas id="output_canvas"></canvas>
+    <h1>🌿 GREEN-EYE v1.0</h1>
+    <p>Bitki yarpağını kameraya yaxınlaşdırın</p>
+
+    <video id="video" autoplay playsinline></video>
+    <canvas id="canvas"></canvas>
+
+    <div class="info-box">
+        <div id="status">Analiz gözlənilir...</div>
+        <div id="details">Sağlamlıq İndeksi: -</div>
+    </div>
+
+    <button onclick="analyzePlant()">ANALİZ ET</button>
 
     <script>
-        const canvasElement = document.getElementById('output_canvas');
-        const ctx = canvasElement.getContext('2d', { alpha: false }); // Renderi sürətləndirir
-        const startBtn = document.getElementById('startBtn');
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
 
-        let audioCtx, masterGain;
-        let lastFret = 0;
-        let prevY = 0;
-
-        // Tar/Gitar notları (Daha realistik)
-        const notes = [196.00, 220.00, 246.94, 293.66, 329.63, 392.00]; 
-
-        startBtn.onclick = () => {
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            masterGain = audioCtx.createGain();
-            masterGain.connect(audioCtx.destination);
-            startBtn.style.display = 'none';
-        };
-
-        function playSound(freq, vol) {
-            if (!audioCtx) return;
-            const osc = audioCtx.createOscillator();
-            const g = audioCtx.createGain();
-            osc.type = 'sawtooth'; // Tarın o kəsik səsi üçün
-            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-            g.gain.setValueAtTime(vol * 0.3, audioCtx.currentTime);
-            g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
-            osc.connect(g);
-            g.connect(masterGain);
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.5);
+        // Kameranı başlat
+        async function startCamera() {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+            video.srcObject = stream;
         }
 
-        function onResults(results) {
-            ctx.save();
-            ctx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
+        function analyzePlant() {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-            if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
-                results.multiHandLandmarks.forEach((landmarks, i) => {
-                    const label = results.multiHandedness[i].label; // Left/Right
-                    
-                    // SOL ƏL: NOT SEÇİMİ
-                    if (label === 'Left' || (results.multiHandLandmarks.length === 1)) {
-                        lastFret = Math.floor(landmarks[8].y * 6);
-                    }
+            const frame = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const data = frame.data;
+            let totalGreen = 0;
+            let totalRed = 0;
 
-                    // SAĞ ƏL: VURUŞ (MIZRAB)
-                    if (label === 'Right' || (results.multiHandLandmarks.length === 2)) {
-                        const currentY = landmarks[0].y;
-                        const speed = Math.abs(currentY - prevY);
-                        if (speed > 0.04) { // Dəqiq vuruş limiti
-                            playSound(notes[lastFret] || 196, speed * 10);
-                        }
-                        prevY = currentY;
-                    }
+            // Piksel analizi: NDVI (Basit versiya: (G-R)/(G+R))
+            for (let i = 0; i < data.length; i += 4) {
+                let r = data[i];
+                let g = data[i + 1];
+                let b = data[i + 2];
 
-                    // Barmaqları çək (Ultra-dəqiq nöqtələr)
-                    landmarks.forEach(p => {
-                        ctx.fillStyle = "#00ffcc";
-                        ctx.fillRect(p.x * canvasElement.width, p.y * canvasElement.height, 4, 4);
-                    });
-                });
+                totalGreen += g;
+                totalRed += r;
+
+                // Ekranda vizual olaraq sağlam olmayan hissələri işarələ (Sarımtıl hissələr)
+                if (r > g * 0.8) {
+                    data[i] = 255; // Qırmızı (Problem zonası)
+                    data[i + 1] = 0;
+                    data[i + 2] = 0;
+                }
             }
-            ctx.restore();
+
+            ctx.putImageData(frame, 0, 0);
+
+            const healthIndex = (totalGreen - totalRed) / (totalGreen + totalRed);
+            displayResult(healthIndex);
         }
 
-        const hands = new Hands({locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`});
-        hands.setOptions({ 
-            maxNumHands: 2, 
-            modelComplexity: 0, // DİQQƏT: Donmanı aradan qaldırmaq üçün 0-a endirdim (Sürət üçün)
-            minDetectionConfidence: 0.5, 
-            minTrackingConfidence: 0.5 
-        });
-        hands.onResults(onResults);
+        function displayResult(index) {
+            const statusDiv = document.getElementById('status');
+            const detailDiv = document.getElementById('details');
+            
+            let result = "";
+            let score = ((index + 1) * 50).toFixed(1); // 0-100 arası bal
 
-        const camera = new Camera(document.createElement('video'), {
-            onFrame: async () => {
-                canvasElement.width = window.innerWidth;
-                canvasElement.height = window.innerHeight;
-                await hands.send({image: canvasElement});
-            },
-            width: 640, height: 480 // A32 üçün optimal çözünürlük
-        });
-        camera.start();
+            if (index > 0.1) {
+                result = "✅ BİTKİ SAĞLAMDIR";
+                statusDiv.style.color = "#4caf50";
+            } else if (index > 0) {
+                result = "⚠️ DİQQƏT: STRES BAŞLAYIR";
+                statusDiv.style.color = "#ffeb3b";
+            } else {
+                result = "🚨 TƏHLÜKƏ: XƏSTƏLİK VƏ YA SUSUZLUQ";
+                statusDiv.style.color = "#f44336";
+            }
+
+            statusDiv.innerText = result;
+            detailDiv.innerText = "Sağlamlıq Balı: " + score + "%";
+        }
+
+        startCamera();
     </script>
 </body>
 </html>
