@@ -1,96 +1,205 @@
 <!DOCTYPE html>
-<html>
+<html lang="az">
 <head>
-    <meta charset='utf-8'>
-    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'>
-    <title>Sky-Ad Pro | Coca-Cola Edition</title>
-    <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
-    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar-nft.js"></script>
-    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sham-Cell | Yarasa Müdafiə Sistemi</title>
     <style>
-        body { margin: 0; overflow: hidden; }
-        #overlay {
-            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
-            background: rgba(0,0,0,0.8); color: white; padding: 15px;
-            border-radius: 12px; border: 2px solid #fe001a; z-index: 10;
-            text-align: center; width: 85%; font-family: sans-serif;
+        /* Enerji qənaəti və gecə göz yormaması üçün qara dizayn */
+        body {
+            background-color: #000;
+            color: #00ff00;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            text-align: center;
         }
-        .loader { color: #fe001a; font-weight: bold; animation: blink 1s infinite; }
-        @keyframes blink { 0% {opacity: 1;} 50% {opacity: 0.3;} 100% {opacity: 1;} }
+
+        .container {
+            border: 2px solid #1a1a1a;
+            padding: 30px;
+            border-radius: 20px;
+            background: linear-gradient(145deg, #050505, #111);
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.1);
+            width: 85%;
+            max-width: 400px;
+        }
+
+        h1 {
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+            margin-bottom: 5px;
+            color: #fbff00;
+        }
+
+        .sub-title {
+            font-size: 0.7rem;
+            color: #888;
+            margin-bottom: 25px;
+            text-transform: uppercase;
+        }
+
+        .freq-display {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 10px 0;
+            color: #fff;
+        }
+
+        .unit { font-size: 1rem; color: #00ff00; }
+
+        input[type=range] {
+            width: 100%;
+            margin: 25px 0;
+            cursor: pointer;
+            accent-color: #fbff00;
+        }
+
+        button {
+            background: transparent;
+            color: #0ff;
+            border: 2px solid #0ff;
+            padding: 15px 40px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 10px;
+            text-transform: uppercase;
+        }
+
+        button.active {
+            border-color: #fbff00;
+            color: #fbff00;
+            box-shadow: 0 0 15px rgba(251, 255, 0, 0.4);
+        }
+
+        .status-box {
+            margin-top: 25px;
+            font-size: 0.8rem;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #555;
+        }
+
+        .pulse-dot {
+            width: 10px;
+            height: 10px;
+            background-color: #fbff00;
+            border-radius: 50%;
+            margin-right: 10px;
+            display: none;
+            box-shadow: 0 0 10px #fbff00;
+        }
+
+        @keyframes blink {
+            0% { opacity: 1; }
+            50% { opacity: 0.3; }
+            100% { opacity: 1; }
+        }
     </style>
 </head>
-
 <body>
-    <div id="overlay">
-        <div style="font-size: 1.2em; color: #fe001a; font-weight: bold;">SKY-AD ENGINE v2.0</div>
-        <div id="status" class="loader">GPS və Səma skan edilir...</div>
+
+<div class="container">
+    <h1>SHAM-CELL SYSTEM</h1>
+    <div class="sub-title">Yarasa Exolokasiya Müdafiəsi</div>
+    
+    <div class="freq-display"><span id="freqVal">18000</span> <span class="unit">Hz</span></div>
+    
+    <input type="range" id="frequency" min="15000" max="22000" value="18000" step="100">
+    
+    <button id="startBtn">Sistemi Başlat</button>
+
+    <div class="status-box">
+        <div id="pulseDot" class="pulse-dot"></div>
+        <span id="statusText">Sistem Gözləmədədir...</span>
     </div>
+</div>
 
-    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;">
-        <a-assets>
-            <img id="cokeLogo" src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/ce/Coca-Cola_logo.svg/1024px-Coca-Cola_logo.svg.png">
-        </a-assets>
+<script>
+    let audioCtx;
+    let oscillator;
+    let gainNode;
+    let isRunning = false;
+    let pulseInterval;
 
-        <a-camera gps-camera="minDistance: 5; maxDistance: 100000;" rotation-reader></a-camera>
-    </a-scene>
+    const startBtn = document.getElementById('startBtn');
+    const freqInput = document.getElementById('frequency');
+    const freqVal = document.getElementById('freqVal');
+    const statusText = document.getElementById('statusText');
+    const pulseDot = document.getElementById('pulseDot');
 
-    <script>
-        const status = document.getElementById('status');
+    // Tezlik dəyişəndə ekranı yenilə
+    freqInput.oninput = function() {
+        freqVal.innerText = this.value;
+        if (oscillator) {
+            oscillator.frequency.setValueAtTime(this.value, audioCtx.currentTime);
+        }
+    };
 
-        window.onload = () => {
-            navigator.geolocation.getCurrentPosition((pos) => {
-                const lat = pos.coords.latitude;
-                const lon = pos.coords.longitude;
+    function triggerBatPulse() {
+        pulseInterval = setInterval(() => {
+            if (audioCtx && gainNode) {
+                const now = audioCtx.currentTime;
+                // Yarasa "click" siqnalı simulyasiyası
+                gainNode.gain.setValueAtTime(0.05, now); 
+                gainNode.gain.exponentialRampToValueAtTime(1, now + 0.02);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
                 
-                // OpenSky API-a qoşulmaq üçün alternativ və daha sürətli bir yol
-                // Ehtiyac olarsa CORS proxy əlavə edilə bilər
-                const url = `https://opensky-network.org/api/states/all?lamin=${lat-1}&lomin=${lon-1}&lamax=${lat+1}&lomax=${lon+1}`;
+                // Vizual impuls effekti
+                pulseDot.style.display = 'block';
+                setTimeout(() => { pulseDot.style.display = 'none'; }, 100);
+            }
+        }, 250); // Hər 0.25 saniyədən bir zərbə
+    }
 
-                fetch(url)
-                .then(res => res.json())
-                .then(data => {
-                    const scene = document.querySelector('a-scene');
-                    if (!data.states || data.states.length === 0) {
-                        status.innerText = "Hazırda səmada aktiv təyyarə tapılmadı.";
-                        return;
-                    }
+    startBtn.onclick = function() {
+        if (!isRunning) {
+            // Audio başlat
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            oscillator = audioCtx.createOscillator();
+            gainNode = audioCtx.createGain();
+            
+            oscillator.type = 'sine'; 
+            oscillator.frequency.setValueAtTime(freqInput.value, audioCtx.currentTime);
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            
+            oscillator.start();
+            triggerBatPulse();
+            
+            // İnterfeys yeniləmə
+            this.innerText = "Yarasa Modu Aktiv";
+            this.classList.add('active');
+            statusText.innerText = "Ultrasəs Dalğaları Yayılır";
+            statusText.style.color = "#fbff00";
+            isRunning = true;
+        } else {
+            // Sistemi dayandır
+            clearInterval(pulseInterval);
+            if(oscillator) oscillator.stop();
+            if(audioCtx) audioCtx.close();
+            
+            this.innerText = "Sistemi Başlat";
+            this.classList.remove('active');
+            statusText.innerText = "Sistem Gözləmədədir...";
+            statusText.style.color = "#555";
+            pulseDot.style.display = 'none';
+            isRunning = false;
+        }
+    };
+</script>
 
-                    status.innerText = `${data.states.length} Təyyarə üçün reklam aktivləşdirildi!`;
-
-                    data.states.forEach(plane => {
-                        const [icao, callsign, country, time, last, pLon, pLat, pAlt] = plane;
-                        
-                        const anchor = document.createElement('a-entity');
-                        anchor.setAttribute('gps-entity-place', `latitude: ${pLat}; longitude: ${pLon};`);
-
-                        // Reklam Banneri (Qırmızı Coca-Cola Lenti)
-                        const banner = document.createElement('a-plane');
-                        banner.setAttribute('width', '300');
-                        banner.setAttribute('height', '40');
-                        banner.setAttribute('position', '0 0 -150'); // Təyyarənin quyruq tərəfi
-                        banner.setAttribute('rotation', '-90 0 0');
-                        banner.setAttribute('material', 'color: #fe001a; opacity: 0.8; side: double; transparent: true');
-
-                        // Loqo
-                        const logo = document.createElement('a-image');
-                        logo.setAttribute('src', '#cokeLogo');
-                        logo.setAttribute('width', '120');
-                        logo.setAttribute('height', '40');
-                        logo.setAttribute('position', '0 0 0.2');
-
-                        banner.appendChild(logo);
-                        anchor.appendChild(banner);
-                        scene.appendChild(anchor);
-                    });
-                })
-                .catch(err => {
-                    status.innerText = "Bağlantı xətası. Səhifəni yeniləyin.";
-                    console.error(err);
-                });
-            }, (err) => {
-                status.innerText = "GPS icazəsi verilməyib!";
-            });
-        };
-    </script>
 </body>
 </html>
