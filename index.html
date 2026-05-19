@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sham-Cell | Yarasa Müdafiə Sistemi</title>
+    <title>Sham-Cell | Pro Müdafiə Qalxanı</title>
     <style>
-        /* Enerji qənaəti və gecə göz yormaması üçün qara dizayn */
         body {
             background-color: #000;
             color: #00ff00;
@@ -25,104 +24,89 @@
             padding: 30px;
             border-radius: 20px;
             background: linear-gradient(145deg, #050505, #111);
-            box-shadow: 0 0 20px rgba(0, 255, 0, 0.1);
+            box-shadow: 0 0 25px rgba(0, 255, 255, 0.15);
             width: 85%;
             max-width: 400px;
         }
 
         h1 {
-            font-size: 1.2rem;
+            font-size: 1.4rem;
             letter-spacing: 2px;
             margin-bottom: 5px;
-            color: #fbff00;
+            color: #00ffff;
         }
 
         .sub-title {
-            font-size: 0.7rem;
+            font-size: 0.75rem;
             color: #888;
             margin-bottom: 25px;
             text-transform: uppercase;
         }
 
-        .freq-display {
-            font-size: 2.5rem;
+        .status-box {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 10px;
+            background: #0a0a0a;
+            border: 1px solid #222;
+        }
+
+        .mode-text {
+            font-size: 1.1rem;
             font-weight: bold;
-            margin: 10px 0;
             color: #fff;
         }
 
-        .unit { font-size: 1rem; color: #00ff00; }
-
-        input[type=range] {
-            width: 100%;
-            margin: 25px 0;
-            cursor: pointer;
-            accent-color: #fbff00;
+        .freq-display {
+            font-size: 1.8rem;
+            color: #fbff00;
+            margin-top: 5px;
         }
 
         button {
             background: transparent;
-            color: #0ff;
-            border: 2px solid #0ff;
-            padding: 15px 40px;
-            font-size: 1.1rem;
+            color: #00ff00;
+            border: 2px solid #00ff00;
+            padding: 18px 40px;
+            font-size: 1.2rem;
             font-weight: bold;
             cursor: pointer;
             border-radius: 50px;
             transition: all 0.3s ease;
             width: 100%;
-            margin-top: 10px;
+            margin-top: 15px;
             text-transform: uppercase;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.1);
         }
 
         button.active {
-            border-color: #fbff00;
-            color: #fbff00;
-            box-shadow: 0 0 15px rgba(251, 255, 0, 0.4);
+            border-color: #ff3333;
+            color: #ff3333;
+            box-shadow: 0 0 20px rgba(255, 51, 51, 0.4);
         }
 
-        .status-box {
-            margin-top: 25px;
-            font-size: 0.8rem;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        .bg-note {
+            font-size: 0.7rem;
             color: #555;
-        }
-
-        .pulse-dot {
-            width: 10px;
-            height: 10px;
-            background-color: #fbff00;
-            border-radius: 50%;
-            margin-right: 10px;
-            display: none;
-            box-shadow: 0 0 10px #fbff00;
-        }
-
-        @keyframes blink {
-            0% { opacity: 1; }
-            50% { opacity: 0.3; }
-            100% { opacity: 1; }
+            margin-top: 15px;
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>SHAM-CELL SYSTEM</h1>
-    <div class="sub-title">Yarasa Exolokasiya Müdafiəsi</div>
+    <h1>SHAM-CELL BACKGROUND PRO</h1>
+    <div class="sub-title">Arxa Fon və Adaptasiya Əleyhinə Sistem</div>
     
-    <div class="freq-display"><span id="freqVal">18000</span> <span class="unit">Hz</span></div>
-    
-    <input type="range" id="frequency" min="15000" max="22000" value="18000" step="100">
-    
-    <button id="startBtn">Sistemi Başlat</button>
-
     <div class="status-box">
-        <div id="pulseDot" class="pulse-dot"></div>
-        <span id="statusText">Sistem Gözləmədədir...</span>
+        <div class="mode-text" id="modeStatus">SİSTEM DAYANDIRILIB</div>
+        <div class="freq-display"><span id="liveFreq">0</span> Hz</div>
+    </div>
+    
+    <button id="mainBtn">Qalxanı Aktiv Et</button>
+    
+    <div class="bg-note">
+        * Bu rejim tətbiq arxa fona keçəndə və ya ekran qapananda səs dalğasını kəsmir.
     </div>
 </div>
 
@@ -131,74 +115,99 @@
     let oscillator;
     let gainNode;
     let isRunning = false;
-    let pulseInterval;
+    let modulationInterval;
+    let wakeLock = null;
 
-    const startBtn = document.getElementById('startBtn');
-    const freqInput = document.getElementById('frequency');
-    const freqVal = document.getElementById('freqVal');
-    const statusText = document.getElementById('statusText');
-    const pulseDot = document.getElementById('pulseDot');
+    const mainBtn = document.getElementById('mainBtn');
+    const modeStatus = document.getElementById('modeStatus');
+    const liveFreq = document.getElementById('liveFreq');
 
-    // Tezlik dəyişəndə ekranı yenilə
-    freqInput.oninput = function() {
-        freqVal.innerText = this.value;
-        if (oscillator) {
-            oscillator.frequency.setValueAtTime(this.value, audioCtx.currentTime);
-        }
-    };
-
-    function triggerBatPulse() {
-        pulseInterval = setInterval(() => {
-            if (audioCtx && gainNode) {
-                const now = audioCtx.currentTime;
-                // Yarasa "click" siqnalı simulyasiyası
-                gainNode.gain.setValueAtTime(0.05, now); 
-                gainNode.gain.exponentialRampToValueAtTime(1, now + 0.02);
-                gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
-                
-                // Vizual impuls effekti
-                pulseDot.style.display = 'block';
-                setTimeout(() => { pulseDot.style.display = 'none'; }, 100);
+    // Ekranın kilidlənməsini əngəlləyən funksiya (Wake Lock)
+    async function requestWakeLock() {
+        try {
+            if ('wakeLock' in navigator) {
+                wakeLock = await navigator.wakeLock.request('screen');
             }
-        }, 250); // Hər 0.25 saniyədən bir zərbə
+        } catch (err) {
+            console.log(`${err.name}, ${err.message}`);
+        }
     }
 
-    startBtn.onclick = function() {
+    function startAntiAdaptationEngine() {
+        let baseFreq = 18000;
+        let direction = 1;
+
+        // Yarasa exolokasiyasını təqlid edən dinamik tezlik modulyasiyası
+        modulationInterval = setInterval(() => {
+            if (audioCtx && oscillator && gainNode) {
+                const now = audioCtx.currentTime;
+
+                // Tezliyi davamlı olaraq dəyişirik ki, ağcaqanadlar otağa girə bilməsin
+                baseFreq += (200 * direction);
+                if (baseFreq >= 21500) direction = -1;
+                if (baseFreq <= 17500) direction = 1;
+
+                oscillator.frequency.setValueAtTime(baseFreq, now);
+                liveFreq.innerText = baseFreq;
+
+                // Arxa fonda aktiv qalması üçün Gain (Səs gücü) impulsları
+                gainNode.gain.setValueAtTime(0.02, now);
+                gainNode.gain.exponentialRampToValueAtTime(0.8, now + 0.03);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+            }
+        }, 220); // Hər 220ms-dən bir dəyişir
+    }
+
+    mainBtn.onclick = async function() {
         if (!isRunning) {
-            // Audio başlat
+            // Audio kontexti başladırıq
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             oscillator = audioCtx.createOscillator();
             gainNode = audioCtx.createGain();
             
-            oscillator.type = 'sine'; 
-            oscillator.frequency.setValueAtTime(freqInput.value, audioCtx.currentTime);
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(18000, audioCtx.currentTime);
             
             oscillator.connect(gainNode);
             gainNode.connect(audioCtx.destination);
             
             oscillator.start();
-            triggerBatPulse();
             
-            // İnterfeys yeniləmə
-            this.innerText = "Yarasa Modu Aktiv";
+            // Funksiyaları aktivləşdiririk
+            startAntiAdaptationEngine();
+            await requestWakeLock();
+            
+            // İnterfeys vizual dəyişiklik
+            this.innerText = "Qalxanı Söndür";
             this.classList.add('active');
-            statusText.innerText = "Ultrasəs Dalğaları Yayılır";
-            statusText.style.color = "#fbff00";
+            modeStatus.innerText = "MÜDAFİƏ AKTİVDİR (ARXA FON)";
+            modeStatus.style.color = "#00ff00";
             isRunning = true;
         } else {
-            // Sistemi dayandır
-            clearInterval(pulseInterval);
-            if(oscillator) oscillator.stop();
-            if(audioCtx) audioCtx.close();
+            // Sistemi tamamilə dayandırırıq
+            clearInterval(modulationInterval);
+            if (oscillator) oscillator.stop();
+            if (audioCtx) audioCtx.close();
+            if (wakeLock !== null) {
+                wakeLock.release();
+                wakeLock = null;
+            }
             
-            this.innerText = "Sistemi Başlat";
+            this.innerText = "Qalxanı Aktiv Et";
             this.classList.remove('active');
-            statusText.innerText = "Sistem Gözləmədədir...";
-            statusText.style.color = "#555";
-            pulseDot.style.display = 'none';
+            modeStatus.innerText = "SİSTEM DAYANDIRILIB";
+            modeStatus.style.color = "#fff";
+            liveFreq.innerText = "0";
             isRunning = false;
         }
     };
+
+    // Brauzer arxa fona keçib yenidən qayıdanda kilidi bərpa etmək üçün
+    document.addEventListener('visibilitychange', async () => {
+        if (wakeLock !== null && document.visibilityState === 'visible') {
+            await requestWakeLock();
+        }
+    });
 </script>
 
 </body>
