@@ -3,42 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Eşitmə Dəstəyi və Canlı Mətn</title>
+    <title>Eşitmə Asistenti</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; 
             background-color: #121212; 
             color: #ffffff; 
-            padding: 20px; 
+            padding: 16px; 
             display: flex; 
             flex-direction: column; 
             min-height: 100vh;
         }
-        header { text-align: center; margin-bottom: 20px; }
-        h1 { font-size: 1.8rem; color: #4CAF50; margin-bottom: 8px; }
-        p.subtitle { color: #aaa; font-size: 0.95rem; }
+        header { text-align: center; margin-bottom: 15px; }
+        h1 { font-size: 1.6rem; color: #4CAF50; margin-bottom: 6px; }
+        p.subtitle { color: #aaa; font-size: 0.85rem; }
         
         .controls {
             display: flex;
-            gap: 10px;
+            gap: 8px;
             justify-content: center;
-            margin-bottom: 20px;
+            margin-bottom: 12px;
             flex-wrap: wrap;
         }
         
         button {
-            padding: 15px 25px;
-            font-size: 1.1rem;
+            padding: 12px 18px;
+            font-size: 1rem;
             font-weight: bold;
             border: none;
-            border-radius: 12px;
+            border-radius: 10px;
             cursor: pointer;
-            transition: all 0.2s ease;
         }
         
-        #startBtn { background-color: #2196F3; color: white; }
+        #startBtn { background-color: #2196F3; color: white; flex: 1; min-width: 140px; }
         #startBtn.active { background-color: #f44336; }
+        #audioToggleBtn { background-color: #9C27B0; color: white; }
+        #audioToggleBtn.active { background-color: #4CAF50; }
         #clearBtn { background-color: #333; color: #ccc; }
 
         .lang-select {
@@ -47,19 +48,22 @@
             background: #222;
             color: #fff;
             border: 1px solid #444;
-            font-size: 1rem;
+            font-size: 0.95rem;
+            width: 100%;
+            margin-bottom: 8px;
         }
 
         .text-box {
             flex: 1;
             background-color: #1e1e1e;
             border: 2px solid #333;
-            border-radius: 16px;
-            padding: 25px;
-            font-size: 2rem;
-            line-height: 1.5;
+            border-radius: 14px;
+            padding: 16px;
+            font-size: 1.6rem;
+            line-height: 1.4;
             overflow-y: auto;
-            max-height: 50vh;
+            min-height: 40vh;
+            max-height: 55vh;
             word-wrap: break-word;
         }
 
@@ -67,9 +71,9 @@
         .final { color: #ffffff; }
 
         .status-bar {
-            margin-top: 15px;
+            margin-top: 10px;
             text-align: center;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             color: #ff9800;
         }
     </style>
@@ -78,17 +82,19 @@
 
     <header>
         <h1>Eşitmə Asistenti</h1>
-        <p class="subtitle">Danışığı canlı mətnə çevirən və səs gücləndirən alət</p>
+        <p class="subtitle">Danışığı canlı mətnə çevirən alət</p>
     </header>
 
+    <select id="langSelect" class="lang-select">
+        <option value="az-AZ" selected>Azərbaycan dili</option>
+        <option value="tr-TR">Türkçe</option>
+        <option value="en-US">English</option>
+        <option value="ru-RU">Русский</option>
+    </select>
+
     <div class="controls">
-        <select id="langSelect" class="lang-select">
-            <option value="az-AZ" selected>Azərbaycan dili</option>
-            <option value="tr-TR">Türkçe</option>
-            <option value="en-US">English</option>
-            <option value="ru-RU">Русский</option>
-        </select>
         <button id="startBtn">Dinləməni Başlat</button>
+        <button id="audioToggleBtn">Səs Gücləndirici: Söndürülüb</button>
         <button id="clearBtn">Təmizlə</button>
     </div>
 
@@ -97,10 +103,11 @@
         <span class="interim" id="interimText"></span>
     </div>
 
-    <div class="status-bar" id="statusText">Sistemi başlatmaq üçün düyməyə sıxın...</div>
+    <div class="status-bar" id="statusText">Başlamaq üçün düyməyə sıxın...</div>
 
 <script>
     const startBtn = document.getElementById('startBtn');
+    const audioToggleBtn = document.getElementById('audioToggleBtn');
     const clearBtn = document.getElementById('clearBtn');
     const langSelect = document.getElementById('langSelect');
     const finalTextEl = document.getElementById('finalText');
@@ -110,33 +117,35 @@
 
     let recognition;
     let isListening = false;
-    let audioCtx, gainNode, filterNode, microphone;
+    let isAudioEnabled = false;
+    
+    let audioCtx, gainNode, lowFilter, highFilter, microphone, mediaStream;
 
-    // Web Speech API Dəstəyi Yoxlanılır
+    // Speech Recognition initialization
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
     if (!SpeechRecognition) {
-        statusText.innerText = "Xəbərdarlıq: Brauzeriniz Speech Recognition API-ni dəstəkləmir (Google Chrome tövsiyə olunur).";
+        statusText.innerText = "Xəbərdarlıq: Brauzeriniz Speech-to-Text dəstəkləmir (Google Chrome istifadə edin).";
         startBtn.disabled = true;
     } else {
         recognition = new SpeechRecognition();
         recognition.continuous = true;
         recognition.interimResults = true;
+        recognition.maxAlternatives = 1;
 
         recognition.onstart = () => {
-            statusText.innerText = "Dinlənilir... Mikrofon aktivdir.";
+            statusText.innerText = "Mikrofon aktivdir... Danışın.";
             statusText.style.color = "#4CAF50";
         };
 
         recognition.onerror = (event) => {
-            statusText.innerText = "Xəta baş verdi: " + event.error;
+            statusText.innerText = "Mətn xətası: " + event.error;
             statusText.style.color = "#f44336";
         };
 
         recognition.onend = () => {
             if (isListening) {
-                // Avtomatik dayanarsa yenidən başladırıq (fasiləsiz işləməsi üçün)
-                recognition.start();
+                try { recognition.start(); } catch(e){}
             } else {
                 statusText.innerText = "Dinləmə dayandırıldı.";
                 statusText.style.color = "#ff9800";
@@ -153,50 +162,81 @@
                 }
             }
             interimTextEl.innerText = interimTranscript;
-            textBox.scrollTop = textBox.scrollHeight; // Avtomatik aşağı skrol
+            textBox.scrollTop = textBox.scrollHeight;
         };
     }
 
-    // Audio Gücləndirici (Qulaqlıq üçün səs filtrasiyası)
+    // Anti-Feedback Cingiltisiz Audio Filtri
     async function startAudioAmplifier() {
         try {
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            const stream = await navigator.mediaDevices.getUserMedia({
-                audio: { echoCancellation: true, noiseSuppression: true }
+            mediaStream = await navigator.mediaDevices.getUserMedia({
+                audio: {
+                    echoCancellation: true,
+                    noiseSuppression: true,
+                    autoGainControl: true
+                }
             });
 
-            microphone = audioCtx.createMediaStreamSource(stream);
+            microphone = audioCtx.createMediaStreamSource(mediaStream);
+            
+            // Cingilti yaradan yüksək tezlikləri (külək, fit səsi) kəsir (Low-pass)
+            lowFilter = audioCtx.createBiquadFilter();
+            lowFilter.type = "lowpass";
+            lowFilter.frequency.value = 3200; // 3200Hz-dən yuxarı cingiltiləri kəsir
+
+            // Uğultu yaradan çox aşağı tezlikləri kəsir (High-pass)
+            highFilter = audioCtx.createBiquadFilter();
+            highFilter.type = "highpass";
+            highFilter.frequency.value = 300; // 300Hz-dən aşağı uğultunu kəsir
+
             gainNode = audioCtx.createGain();
-            gainNode.gain.value = 2.5; // Səsi 2.5 dəfə gücləndirir
+            gainNode.gain.value = 1.8; // Mülayim gücləndirmə
 
-            filterNode = audioCtx.createBiquadFilter();
-            filterNode.type = "peaking";
-            filterNode.frequency.value = 2500; // İnsan nitqi tezliyini qaldırır
-            filterNode.gain.value = 8;
-
-            microphone.connect(filterNode);
-            filterNode.connect(gainNode);
+            // Zəncir: Mic -> HighPass -> LowPass -> Gain -> Qulaqlıq
+            microphone.connect(highFilter);
+            highFilter.connect(lowFilter);
+            lowFilter.connect(gainNode);
             gainNode.connect(audioCtx.destination);
         } catch (e) {
-            console.log("Audio Amplifier aktiv olunmadı:", e.message);
+            console.log("Audio xətası:", e.message);
         }
     }
 
-    // Düymə idarələri
+    function stopAudioAmplifier() {
+        if (audioCtx) {
+            audioCtx.close();
+            audioCtx = null;
+        }
+    }
+
+    // Düymə İdarələri
     startBtn.addEventListener('click', () => {
         if (!isListening) {
             recognition.lang = langSelect.value;
-            recognition.start();
-            startAudioAmplifier();
+            try { recognition.start(); } catch(e){}
             isListening = true;
             startBtn.innerText = "Dayandır";
             startBtn.classList.add('active');
         } else {
             isListening = false;
-            recognition.stop();
-            if (audioCtx) audioCtx.close();
+            try { recognition.stop(); } catch(e){}
             startBtn.innerText = "Dinləməni Başlat";
             startBtn.classList.remove('active');
+        }
+    });
+
+    audioToggleBtn.addEventListener('click', () => {
+        if (!isAudioEnabled) {
+            startAudioAmplifier();
+            isAudioEnabled = true;
+            audioToggleBtn.innerText = "Səs Gücləndirici: AÇIQ";
+            audioToggleBtn.classList.add('active');
+        } else {
+            stopAudioAmplifier();
+            isAudioEnabled = false;
+            audioToggleBtn.innerText = "Səs Gücləndirici: Söndürülüb";
+            audioToggleBtn.classList.remove('active');
         }
     });
 
