@@ -3,212 +3,207 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sham-Cell | Pro Müdafiə Qalxanı</title>
+    <title>Eşitmə Dəstəyi və Canlı Mətn</title>
     <style>
-        body {
-            background-color: #000;
-            color: #00ff00;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: #121212; 
+            color: #ffffff; 
+            padding: 20px; 
+            display: flex; 
+            flex-direction: column; 
+            min-height: 100vh;
+        }
+        header { text-align: center; margin-bottom: 20px; }
+        h1 { font-size: 1.8rem; color: #4CAF50; margin-bottom: 8px; }
+        p.subtitle { color: #aaa; font-size: 0.95rem; }
+        
+        .controls {
             display: flex;
-            flex-direction: column;
-            align-items: center;
+            gap: 10px;
             justify-content: center;
-            height: 100vh;
-            margin: 0;
-            overflow: hidden;
-            text-align: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
         }
-
-        .container {
-            border: 2px solid #1a1a1a;
-            padding: 30px;
-            border-radius: 20px;
-            background: linear-gradient(145deg, #050505, #111);
-            box-shadow: 0 0 25px rgba(0, 255, 255, 0.15);
-            width: 85%;
-            max-width: 400px;
-        }
-
-        h1 {
-            font-size: 1.4rem;
-            letter-spacing: 2px;
-            margin-bottom: 5px;
-            color: #00ffff;
-        }
-
-        .sub-title {
-            font-size: 0.75rem;
-            color: #888;
-            margin-bottom: 25px;
-            text-transform: uppercase;
-        }
-
-        .status-box {
-            margin: 20px 0;
-            padding: 15px;
-            border-radius: 10px;
-            background: #0a0a0a;
-            border: 1px solid #222;
-        }
-
-        .mode-text {
+        
+        button {
+            padding: 15px 25px;
             font-size: 1.1rem;
             font-weight: bold;
-            color: #fff;
-        }
-
-        .freq-display {
-            font-size: 1.8rem;
-            color: #fbff00;
-            margin-top: 5px;
-        }
-
-        button {
-            background: transparent;
-            color: #00ff00;
-            border: 2px solid #00ff00;
-            padding: 18px 40px;
-            font-size: 1.2rem;
-            font-weight: bold;
+            border: none;
+            border-radius: 12px;
             cursor: pointer;
-            border-radius: 50px;
-            transition: all 0.3s ease;
-            width: 100%;
-            margin-top: 15px;
-            text-transform: uppercase;
-            box-shadow: 0 0 10px rgba(0, 255, 0, 0.1);
+            transition: all 0.2s ease;
+        }
+        
+        #startBtn { background-color: #2196F3; color: white; }
+        #startBtn.active { background-color: #f44336; }
+        #clearBtn { background-color: #333; color: #ccc; }
+
+        .lang-select {
+            padding: 10px;
+            border-radius: 8px;
+            background: #222;
+            color: #fff;
+            border: 1px solid #444;
+            font-size: 1rem;
         }
 
-        button.active {
-            border-color: #ff3333;
-            color: #ff3333;
-            box-shadow: 0 0 20px rgba(255, 51, 51, 0.4);
+        .text-box {
+            flex: 1;
+            background-color: #1e1e1e;
+            border: 2px solid #333;
+            border-radius: 16px;
+            padding: 25px;
+            font-size: 2rem;
+            line-height: 1.5;
+            overflow-y: auto;
+            max-height: 50vh;
+            word-wrap: break-word;
         }
 
-        .bg-note {
-            font-size: 0.7rem;
-            color: #555;
+        .interim { color: #888; font-style: italic; }
+        .final { color: #ffffff; }
+
+        .status-bar {
             margin-top: 15px;
+            text-align: center;
+            font-size: 0.9rem;
+            color: #ff9800;
         }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>SHAM-CELL BACKGROUND PRO</h1>
-    <div class="sub-title">Arxa Fon və Adaptasiya Əleyhinə Sistem</div>
-    
-    <div class="status-box">
-        <div class="mode-text" id="modeStatus">SİSTEM DAYANDIRILIB</div>
-        <div class="freq-display"><span id="liveFreq">0</span> Hz</div>
+    <header>
+        <h1>Eşitmə Asistenti</h1>
+        <p class="subtitle">Danışığı canlı mətnə çevirən və səs gücləndirən alət</p>
+    </header>
+
+    <div class="controls">
+        <select id="langSelect" class="lang-select">
+            <option value="az-AZ" selected>Azərbaycan dili</option>
+            <option value="tr-TR">Türkçe</option>
+            <option value="en-US">English</option>
+            <option value="ru-RU">Русский</option>
+        </select>
+        <button id="startBtn">Dinləməni Başlat</button>
+        <button id="clearBtn">Təmizlə</button>
     </div>
-    
-    <button id="mainBtn">Qalxanı Aktiv Et</button>
-    
-    <div class="bg-note">
-        * Bu rejim tətbiq arxa fona keçəndə və ya ekran qapananda səs dalğasını kəsmir.
+
+    <div class="text-box" id="textBox">
+        <span class="final" id="finalText"></span>
+        <span class="interim" id="interimText"></span>
     </div>
-</div>
+
+    <div class="status-bar" id="statusText">Sistemi başlatmaq üçün düyməyə sıxın...</div>
 
 <script>
-    let audioCtx;
-    let oscillator;
-    let gainNode;
-    let isRunning = false;
-    let modulationInterval;
-    let wakeLock = null;
+    const startBtn = document.getElementById('startBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const langSelect = document.getElementById('langSelect');
+    const finalTextEl = document.getElementById('finalText');
+    const interimTextEl = document.getElementById('interimText');
+    const statusText = document.getElementById('statusText');
+    const textBox = document.getElementById('textBox');
 
-    const mainBtn = document.getElementById('mainBtn');
-    const modeStatus = document.getElementById('modeStatus');
-    const liveFreq = document.getElementById('liveFreq');
+    let recognition;
+    let isListening = false;
+    let audioCtx, gainNode, filterNode, microphone;
 
-    // Ekranın kilidlənməsini əngəlləyən funksiya (Wake Lock)
-    async function requestWakeLock() {
+    // Web Speech API Dəstəyi Yoxlanılır
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+        statusText.innerText = "Xəbərdarlıq: Brauzeriniz Speech Recognition API-ni dəstəkləmir (Google Chrome tövsiyə olunur).";
+        startBtn.disabled = true;
+    } else {
+        recognition = new SpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = true;
+
+        recognition.onstart = () => {
+            statusText.innerText = "Dinlənilir... Mikrofon aktivdir.";
+            statusText.style.color = "#4CAF50";
+        };
+
+        recognition.onerror = (event) => {
+            statusText.innerText = "Xəta baş verdi: " + event.error;
+            statusText.style.color = "#f44336";
+        };
+
+        recognition.onend = () => {
+            if (isListening) {
+                // Avtomatik dayanarsa yenidən başladırıq (fasiləsiz işləməsi üçün)
+                recognition.start();
+            } else {
+                statusText.innerText = "Dinləmə dayandırıldı.";
+                statusText.style.color = "#ff9800";
+            }
+        };
+
+        recognition.onresult = (event) => {
+            let interimTranscript = '';
+            for (let i = event.resultIndex; i < event.results.length; ++i) {
+                if (event.results[i].isFinal) {
+                    finalTextEl.innerText += event.results[i][0].transcript + ' ';
+                } else {
+                    interimTranscript += event.results[i][0].transcript;
+                }
+            }
+            interimTextEl.innerText = interimTranscript;
+            textBox.scrollTop = textBox.scrollHeight; // Avtomatik aşağı skrol
+        };
+    }
+
+    // Audio Gücləndirici (Qulaqlıq üçün səs filtrasiyası)
+    async function startAudioAmplifier() {
         try {
-            if ('wakeLock' in navigator) {
-                wakeLock = await navigator.wakeLock.request('screen');
-            }
-        } catch (err) {
-            console.log(`${err.name}, ${err.message}`);
-        }
-    }
-
-    function startAntiAdaptationEngine() {
-        let baseFreq = 18000;
-        let direction = 1;
-
-        // Yarasa exolokasiyasını təqlid edən dinamik tezlik modulyasiyası
-        modulationInterval = setInterval(() => {
-            if (audioCtx && oscillator && gainNode) {
-                const now = audioCtx.currentTime;
-
-                // Tezliyi davamlı olaraq dəyişirik ki, ağcaqanadlar otağa girə bilməsin
-                baseFreq += (200 * direction);
-                if (baseFreq >= 21500) direction = -1;
-                if (baseFreq <= 17500) direction = 1;
-
-                oscillator.frequency.setValueAtTime(baseFreq, now);
-                liveFreq.innerText = baseFreq;
-
-                // Arxa fonda aktiv qalması üçün Gain (Səs gücü) impulsları
-                gainNode.gain.setValueAtTime(0.02, now);
-                gainNode.gain.exponentialRampToValueAtTime(0.8, now + 0.03);
-                gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
-            }
-        }, 220); // Hər 220ms-dən bir dəyişir
-    }
-
-    mainBtn.onclick = async function() {
-        if (!isRunning) {
-            // Audio kontexti başladırıq
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            oscillator = audioCtx.createOscillator();
-            gainNode = audioCtx.createGain();
-            
-            oscillator.type = 'sine';
-            oscillator.frequency.setValueAtTime(18000, audioCtx.currentTime);
-            
-            oscillator.connect(gainNode);
-            gainNode.connect(audioCtx.destination);
-            
-            oscillator.start();
-            
-            // Funksiyaları aktivləşdiririk
-            startAntiAdaptationEngine();
-            await requestWakeLock();
-            
-            // İnterfeys vizual dəyişiklik
-            this.innerText = "Qalxanı Söndür";
-            this.classList.add('active');
-            modeStatus.innerText = "MÜDAFİƏ AKTİVDİR (ARXA FON)";
-            modeStatus.style.color = "#00ff00";
-            isRunning = true;
-        } else {
-            // Sistemi tamamilə dayandırırıq
-            clearInterval(modulationInterval);
-            if (oscillator) oscillator.stop();
-            if (audioCtx) audioCtx.close();
-            if (wakeLock !== null) {
-                wakeLock.release();
-                wakeLock = null;
-            }
-            
-            this.innerText = "Qalxanı Aktiv Et";
-            this.classList.remove('active');
-            modeStatus.innerText = "SİSTEM DAYANDIRILIB";
-            modeStatus.style.color = "#fff";
-            liveFreq.innerText = "0";
-            isRunning = false;
-        }
-    };
+            const stream = await navigator.mediaDevices.getUserMedia({
+                audio: { echoCancellation: true, noiseSuppression: true }
+            });
 
-    // Brauzer arxa fona keçib yenidən qayıdanda kilidi bərpa etmək üçün
-    document.addEventListener('visibilitychange', async () => {
-        if (wakeLock !== null && document.visibilityState === 'visible') {
-            await requestWakeLock();
+            microphone = audioCtx.createMediaStreamSource(stream);
+            gainNode = audioCtx.createGain();
+            gainNode.gain.value = 2.5; // Səsi 2.5 dəfə gücləndirir
+
+            filterNode = audioCtx.createBiquadFilter();
+            filterNode.type = "peaking";
+            filterNode.frequency.value = 2500; // İnsan nitqi tezliyini qaldırır
+            filterNode.gain.value = 8;
+
+            microphone.connect(filterNode);
+            filterNode.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+        } catch (e) {
+            console.log("Audio Amplifier aktiv olunmadı:", e.message);
+        }
+    }
+
+    // Düymə idarələri
+    startBtn.addEventListener('click', () => {
+        if (!isListening) {
+            recognition.lang = langSelect.value;
+            recognition.start();
+            startAudioAmplifier();
+            isListening = true;
+            startBtn.innerText = "Dayandır";
+            startBtn.classList.add('active');
+        } else {
+            isListening = false;
+            recognition.stop();
+            if (audioCtx) audioCtx.close();
+            startBtn.innerText = "Dinləməni Başlat";
+            startBtn.classList.remove('active');
         }
     });
-</script>
 
+    clearBtn.addEventListener('click', () => {
+        finalTextEl.innerText = '';
+        interimTextEl.innerText = '';
+    });
+</script>
 </body>
 </html>
