@@ -3,243 +3,311 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Eşitmə Asistenti</title>
+    <title>Talk & Earn - Danış və Qazan</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { 
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; 
-            background-color: #121212; 
-            color: #ffffff; 
-            padding: 16px; 
-            display: flex; 
-            flex-direction: column; 
-            min-height: 100vh;
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --accent: #10b981;
+            --accent-hover: #059669;
+            --text: #f8fafc;
+            --danger: #ef4444;
         }
-        header { text-align: center; margin-bottom: 15px; }
-        h1 { font-size: 1.6rem; color: #4CAF50; margin-bottom: 6px; }
-        p.subtitle { color: #aaa; font-size: 0.85rem; }
-        
-        .controls {
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text);
             display: flex;
-            gap: 8px;
-            justify-content: center;
-            margin-bottom: 12px;
-            flex-wrap: wrap;
+            flex-direction: column;
+            min-height: 100vh;
+            align-items: center;
         }
-        
-        button {
-            padding: 12px 18px;
-            font-size: 1rem;
+
+        .container {
+            width: 100%;
+            max-width: 480px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            flex: 1;
+        }
+
+        header {
+            background: var(--card-bg);
+            padding: 16px;
+            border-radius: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .balance-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(16, 185, 129, 0.1);
+            padding: 8px 14px;
+            border-radius: 20px;
+            border: 1px solid var(--accent);
+            color: var(--accent);
             font-weight: bold;
+        }
+
+        .video-container {
+            position: relative;
+            width: 100%;
+            height: 380px;
+            background: #000;
+            border-radius: 20px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        #localVideo {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 100px;
+            height: 140px;
+            border-radius: 12px;
+            border: 2px solid var(--accent);
+            z-index: 10;
+        }
+
+        /* Arxa Fon Reklam Zonu */
+        .ad-banner {
+            position: absolute;
+            bottom: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            background: rgba(30, 41, 59, 0.85);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 8px 12px;
+            text-align: center;
+            z-index: 10;
+        }
+
+        .ad-banner span {
+            font-size: 10px;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: block;
+        }
+
+        .ad-banner p {
+            font-size: 13px;
+            color: #fff;
+            font-weight: 500;
+            margin-top: 2px;
+        }
+
+        .controls {
+            background: var(--card-bg);
+            padding: 16px;
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid #334155;
+            background: #0f172a;
+            color: #fff;
+            font-size: 14px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            flex: 1;
+            padding: 12px;
             border: none;
             border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
             cursor: pointer;
-        }
-        
-        #startBtn { background-color: #2196F3; color: white; flex: 1; min-width: 140px; }
-        #startBtn.active { background-color: #f44336; }
-        #audioToggleBtn { background-color: #9C27B0; color: white; }
-        #audioToggleBtn.active { background-color: #4CAF50; }
-        #clearBtn { background-color: #333; color: #ccc; }
-
-        .lang-select {
-            padding: 10px;
-            border-radius: 8px;
-            background: #222;
-            color: #fff;
-            border: 1px solid #444;
-            font-size: 0.95rem;
-            width: 100%;
-            margin-bottom: 8px;
+            transition: 0.2s;
         }
 
-        .text-box {
-            flex: 1;
-            background-color: #1e1e1e;
-            border: 2px solid #333;
-            border-radius: 14px;
-            padding: 16px;
-            font-size: 1.6rem;
-            line-height: 1.5;
-            overflow-y: auto;
-            min-height: 40vh;
-            max-height: 55vh;
-            word-wrap: break-word;
-        }
+        .btn-primary { background: var(--accent); color: #fff; }
+        .btn-primary:hover { background: var(--accent-hover); }
+        .btn-danger { background: var(--danger); color: #fff; }
 
-        .final-text { color: #ffffff; }
-        .interim-text { color: #4CAF50; font-style: italic; }
-
-        .status-bar {
-            margin-top: 10px;
+        .call-status {
             text-align: center;
-            font-size: 0.85rem;
-            color: #ff9800;
+            font-size: 13px;
+            color: #94a3b8;
         }
     </style>
 </head>
 <body>
 
+<div class="container">
     <header>
-        <h1>Eşitmə Asistenti</h1>
-        <p class="subtitle">Danışığı canlı mətnə çevirən alət</p>
+        <h2>Talk & Earn</h2>
+        <div class="balance-box">
+            <span>🪙</span>
+            <span id="coinCount">0.00</span> Coin
+        </div>
     </header>
 
-    <select id="langSelect" class="lang-select">
-        <option value="az-AZ" selected>Azərbaycan dili</option>
-        <option value="tr-TR">Türkçe</option>
-        <option value="en-US">English</option>
-        <option value="ru-RU">Русский</option>
-    </select>
+    <div class="video-container">
+        <video id="remoteVideo" autoplay playsinline></video>
+        <video id="localVideo" autoplay playsinline muted></video>
+        
+        <!-- Native Background Ad Zone -->
+        <div class="ad-banner" id="adBanner">
+            <span>Sponsorlu Reklam</span>
+            <p id="adText">☕ Kafemizə gəlin - Zəng edənlərə 15% Endirim!</p>
+        </div>
+    </div>
 
     <div class="controls">
-        <button id="startBtn">Dinləməni Başlat</button>
-        <button id="audioToggleBtn">Səs Gücləndirici: Söndürülüb</button>
-        <button id="clearBtn">Təmizlə</button>
+        <div class="call-status" id="callStatus">Zəng etmək üçün Otaq ID yaradın və ya daxil edin</div>
+        
+        <input type="text" id="roomIdInput" placeholder="Otaq ID daxil edin və ya yaradın">
+        
+        <div class="btn-group">
+            <button class="btn-primary" onclick="createRoom()">Otaq Yarat</button>
+            <button class="btn-primary" onclick="joinRoom()">Qoşul</button>
+            <button class="btn-danger" onclick="endCall()">Bitir</button>
+        </div>
     </div>
-
-    <div class="text-box" id="textBox">
-        <span class="final-text" id="finalSpan"></span>
-        <span class="interim-text" id="interimSpan"></span>
-    </div>
-
-    <div class="status-bar" id="statusText">Başlamaq üçün düyməyə sıxın...</div>
+</div>
 
 <script>
-    const startBtn = document.getElementById('startBtn');
-    const audioToggleBtn = document.getElementById('audioToggleBtn');
-    const clearBtn = document.getElementById('clearBtn');
-    const langSelect = document.getElementById('langSelect');
-    const textBox = document.getElementById('textBox');
-    const finalSpan = document.getElementById('finalSpan');
-    const interimSpan = document.getElementById('interimSpan');
-    const statusText = document.getElementById('statusText');
+    // Pulsuz Google STUN Serverləri (Zəng üçün)
+    const peerConfiguration = {
+        iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+    };
 
-    let recognition;
-    let isListening = false;
-    let isAudioEnabled = false;
+    let localStream;
+    let remoteStream;
+    let peerConnection;
+    let coinBalance = 0.00;
+    let coinInterval;
+    let adInterval;
 
-    let audioCtx, gainNode, lowFilter, highFilter, microphone, mediaStream;
+    const adsList = [
+        "☕ Kafemizə gəlin - Zəng edənlərə 15% Endirim!",
+        "🚗 Yağdəyişmə Mərkəzi: Təkərlərin pulsuz balansı!",
+        "📱 Yeni Smartfonlar ilkin ödənişsiz!",
+        "🍕 2 Böyük Pissa alana 1 L İki Pulsuz!"
+    ];
 
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const localVideo = document.getElementById('localVideo');
+    const remoteVideo = document.getElementById('remoteVideo');
+    const coinCountEl = document.getElementById('coinCount');
+    const callStatusEl = document.getElementById('callStatus');
+    const roomIdInput = document.getElementById('roomIdInput');
+    const adTextEl = document.getElementById('adText');
 
-    if (!SpeechRecognition) {
-        statusText.innerText = "Xəbərdarlıq: Brauzeriniz Speech-to-Text dəstəkləmir (Google Chrome istifadə edin).";
-        startBtn.disabled = true;
-    } else {
-        recognition = new SpeechRecognition();
-        recognition.continuous = true;
-        recognition.interimResults = true; 
-
-        recognition.onstart = () => {
-            statusText.innerText = "Mikrofon aktivdir... Danışın.";
-            statusText.style.color = "#4CAF50";
-        };
-
-        recognition.onerror = (event) => {
-            statusText.innerText = "Mətn xətası: " + event.error;
-            statusText.style.color = "#f44336";
-        };
-
-        recognition.onend = () => {
-            if (isListening) {
-                try { recognition.start(); } catch(e){}
-            } else {
-                statusText.innerText = "Dinləmə dayandırıldı.";
-                statusText.style.color = "#ff9800";
-            }
-        };
-
-        // TƏKRARLANMANI TAM ARADAN QALDIRAN DƏQİQ MƏTN EMALI
-        recognition.onresult = (event) => {
-            let finalTranscript = '';
-            let interimTranscript = '';
-
-            for (let i = 0; i < event.results.length; ++i) {
-                if (event.results[i].isFinal) {
-                    finalTranscript += event.results[i][0].transcript + ' ';
-                } else {
-                    interimTranscript += event.results[i][0].transcript;
-                }
-            }
-
-            finalSpan.innerText = finalTranscript;
-            interimSpan.innerText = interimTranscript;
-            textBox.scrollTop = textBox.scrollHeight;
-        };
-    }
-
-    // Audio Gücləndirici
-    async function startAudioAmplifier() {
+    // Kamera və Mikrofon icazəsi
+    async function initMedia() {
         try {
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            mediaStream = await navigator.mediaDevices.getUserMedia({
-                audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
+            localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            localVideo.srcObject = localStream;
+        } catch (error) {
+            alert("Kamera və mikrofona icazə verilmədi!");
+        }
+    }
+
+    initMedia();
+
+    // P2P Zəng Qurulması
+    function createPeerConnection() {
+        peerConnection = new RTCPeerConnection(peerConfiguration);
+        remoteStream = new MediaStream();
+        remoteVideo.srcObject = remoteStream;
+
+        localStream.getTracks().forEach(track => {
+            peerConnection.addTrack(track, localStream);
+        });
+
+        peerConnection.ontrack = event => {
+            event.streams[0].getTracks().forEach(track => {
+                remoteStream.addTrack(track);
             });
-
-            microphone = audioCtx.createMediaStreamSource(mediaStream);
-            
-            lowFilter = audioCtx.createBiquadFilter();
-            lowFilter.type = "lowpass";
-            lowFilter.frequency.value = 3200;
-
-            highFilter = audioCtx.createBiquadFilter();
-            highFilter.type = "highpass";
-            highFilter.frequency.value = 300;
-
-            gainNode = audioCtx.createGain();
-            gainNode.gain.value = 1.8;
-
-            microphone.connect(highFilter);
-            highFilter.connect(lowFilter);
-            lowFilter.connect(gainNode);
-            gainNode.connect(audioCtx.destination);
-        } catch (e) {
-            console.log("Audio xətası:", e.message);
-        }
+        };
     }
 
-    function stopAudioAmplifier() {
-        if (audioCtx) {
-            audioCtx.close();
-            audioCtx = null;
-        }
+    async function createRoom() {
+        createPeerConnection();
+        const offer = await peerConnection.createOffer();
+        await peerConnection.setLocalDescription(offer);
+        
+        const roomId = Math.floor(100000 + Math.random() * 900000);
+        roomIdInput.value = JSON.stringify(offer);
+        callStatusEl.innerText = "Otaq yaradıldı! Kod buferə kopyalandı, dostunuza göndərin.";
+        navigator.clipboard.writeText(JSON.stringify(offer));
+        startEarnings();
     }
 
-    // Düymə İdarələri
-    startBtn.addEventListener('click', () => {
-        if (!isListening) {
-            recognition.lang = langSelect.value;
-            try { recognition.start(); } catch(e){}
-            isListening = true;
-            startBtn.innerText = "Dayandır";
-            startBtn.classList.add('active');
-        } else {
-            isListening = false;
-            try { recognition.stop(); } catch(e){}
-            startBtn.innerText = "Dinləməni Başlat";
-            startBtn.classList.remove('active');
-        }
-    });
+    async function joinRoom() {
+        createPeerConnection();
+        const offer = JSON.parse(roomIdInput.value);
+        await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
+        
+        const answer = await peerConnection.createAnswer();
+        await peerConnection.setLocalDescription(answer);
+        
+        callStatusEl.innerText = "Zəngə qoşuldu!";
+        startEarnings();
+    }
 
-    audioToggleBtn.addEventListener('click', () => {
-        if (!isAudioEnabled) {
-            startAudioAmplifier();
-            isAudioEnabled = true;
-            audioToggleBtn.innerText = "Səs Gücləndirici: AÇIQ";
-            audioToggleBtn.classList.add('active');
-        } else {
-            stopAudioAmplifier();
-            isAudioEnabled = false;
-            audioToggleBtn.innerText = "Səs Gücləndirici: Söndürülüb";
-            audioToggleBtn.classList.remove('active');
-        }
-    });
+    // Keşbek və Arxa Fon Reklam Sistemi
+    function startEarnings() {
+        if (coinInterval) clearInterval(coinInterval);
+        if (adInterval) clearInterval(adInterval);
 
-    clearBtn.addEventListener('click', () => {
-        finalSpan.innerText = '';
-        interimSpan.innerText = '';
-    });
+        // Hər saniyə balans artır (Danışdıqca Qazan)
+        coinInterval = setInterval(() => {
+            coinBalance += 0.05;
+            coinCountEl.innerText = coinBalance.toFixed(2);
+        }, 1000);
+
+        // Hər 10 saniyədən bir arxa fon reklamı yenilənir
+        adInterval = setInterval(() => {
+            const randomIndex = Math.floor(Math.random() * adsList.length);
+            adTextEl.innerText = adsList[randomIndex];
+        }, 10000);
+    }
+
+    function endCall() {
+        if (peerConnection) peerConnection.close();
+        clearInterval(coinInterval);
+        clearInterval(adInterval);
+        callStatusEl.innerText = "Zəng bitdi. Qazanılan balans saxlanıldı.";
+    }
 </script>
+
 </body>
 </html>
