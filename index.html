@@ -129,7 +129,6 @@
     } else {
         recognition = new SpeechRecognition();
         recognition.continuous = true;
-        // Canlı reaksiya üçün interimResults rejimini AÇIRIQ
         recognition.interimResults = true; 
 
         recognition.onstart = () => {
@@ -151,16 +150,20 @@
             }
         };
 
-        // Gecikməsiz və təkrar olunmayan canlı mətn emalı
+        // TƏKRARLANMANI TAM ARADAN QALDIRAN DƏQİQ MƏTN EMALI
         recognition.onresult = (event) => {
+            let finalTranscript = '';
             let interimTranscript = '';
-            for (let i = event.resultIndex; i < event.results.length; ++i) {
+
+            for (let i = 0; i < event.results.length; ++i) {
                 if (event.results[i].isFinal) {
-                    finalSpan.innerText += event.results[i][0].transcript + '. ';
+                    finalTranscript += event.results[i][0].transcript + ' ';
                 } else {
                     interimTranscript += event.results[i][0].transcript;
                 }
             }
+
+            finalSpan.innerText = finalTranscript;
             interimSpan.innerText = interimTranscript;
             textBox.scrollTop = textBox.scrollHeight;
         };
