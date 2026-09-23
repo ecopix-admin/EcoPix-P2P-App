@@ -59,13 +59,16 @@
             border: 2px solid #333;
             border-radius: 14px;
             padding: 16px;
-            font-size: 1.5rem;
+            font-size: 1.6rem;
             line-height: 1.5;
             overflow-y: auto;
             min-height: 40vh;
             max-height: 55vh;
             word-wrap: break-word;
         }
+
+        .final-text { color: #ffffff; }
+        .interim-text { color: #4CAF50; font-style: italic; }
 
         .status-bar {
             margin-top: 10px;
@@ -95,7 +98,10 @@
         <button id="clearBtn">Təmizlə</button>
     </div>
 
-    <div class="text-box" id="textBox"></div>
+    <div class="text-box" id="textBox">
+        <span class="final-text" id="finalSpan"></span>
+        <span class="interim-text" id="interimSpan"></span>
+    </div>
 
     <div class="status-bar" id="statusText">Başlamaq üçün düyməyə sıxın...</div>
 
@@ -105,12 +111,13 @@
     const clearBtn = document.getElementById('clearBtn');
     const langSelect = document.getElementById('langSelect');
     const textBox = document.getElementById('textBox');
+    const finalSpan = document.getElementById('finalSpan');
+    const interimSpan = document.getElementById('interimSpan');
     const statusText = document.getElementById('statusText');
 
     let recognition;
     let isListening = false;
     let isAudioEnabled = false;
-    let fullTranscript = [];
 
     let audioCtx, gainNode, lowFilter, highFilter, microphone, mediaStream;
 
@@ -122,8 +129,8 @@
     } else {
         recognition = new SpeechRecognition();
         recognition.continuous = true;
-        // Təkrar cümlə yazmamaq üçün ara nəticələri söndürürük
-        recognition.interimResults = false; 
+        // Canlı reaksiya üçün interimResults rejimini AÇIRIQ
+        recognition.interimResults = true; 
 
         recognition.onstart = () => {
             statusText.innerText = "Mikrofon aktivdir... Danışın.";
@@ -144,17 +151,17 @@
             }
         };
 
-        // Düzgün mətn yazma məntiqi (Dövrə girmədən)
+        // Gecikməsiz və təkrar olunmayan canlı mətn emalı
         recognition.onresult = (event) => {
+            let interimTranscript = '';
             for (let i = event.resultIndex; i < event.results.length; ++i) {
                 if (event.results[i].isFinal) {
-                    const text = event.results[i][0].transcript.trim();
-                    if (text.length > 0) {
-                        fullTranscript.push(text);
-                    }
+                    finalSpan.innerText += event.results[i][0].transcript + '. ';
+                } else {
+                    interimTranscript += event.results[i][0].transcript;
                 }
             }
-            textBox.innerText = fullTranscript.join(". ") + ".";
+            interimSpan.innerText = interimTranscript;
             textBox.scrollTop = textBox.scrollHeight;
         };
     }
@@ -227,8 +234,8 @@
     });
 
     clearBtn.addEventListener('click', () => {
-        fullTranscript = [];
-        textBox.innerText = '';
+        finalSpan.innerText = '';
+        interimSpan.innerText = '';
     });
 </script>
 </body>
