@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AzSearch AI - Ağıllı Axtarış & Discover</title>
+    <title>AzSearch AI - Gündəlik Axtar & MB Qazan</title>
     <style>
         * {
             box-sizing: border-box;
@@ -20,12 +20,13 @@
             min-height: 100vh;
         }
 
-        /* Yuxarı Panel */
+        /* Yuxarı Header */
         header {
             background-color: #1e293b;
             padding: 12px 15px;
             display: flex;
             align-items: center;
+            justify-content: space-between;
             gap: 10px;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
             position: sticky;
@@ -34,7 +35,7 @@
         }
 
         .logo {
-            font-size: 1.3rem;
+            font-size: 1.2rem;
             font-weight: bold;
             color: #38bdf8;
             text-decoration: none;
@@ -46,7 +47,7 @@
         .search-container {
             position: relative;
             flex: 1;
-            max-width: 650px;
+            max-width: 500px;
         }
 
         .search-box {
@@ -56,20 +57,18 @@
 
         .search-box input {
             width: 100%;
-            padding: 10px 15px;
+            padding: 8px 12px;
             border-radius: 20px 0 0 20px;
             border: 2px solid #334155;
             border-right: none;
             background-color: #0f172a;
             color: #fff;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             outline: none;
         }
 
-        .search-box input:focus { border-color: #38bdf8; }
-
         .search-box button {
-            padding: 0 18px;
+            padding: 0 15px;
             border-radius: 0 20px 20px 0;
             border: 2px solid #38bdf8;
             background-color: #38bdf8;
@@ -78,311 +77,393 @@
             cursor: pointer;
         }
 
-        .suggestions-box {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            background-color: #1e293b;
-            border: 1px solid #334155;
-            border-radius: 0 0 12px 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-            display: none;
-            z-index: 1000;
-            overflow: hidden;
-            margin-top: 2px;
-        }
-
-        .suggestion-item {
-            padding: 10px 15px;
+        /* Sağ 3 Nöqtə Menyusu */
+        .menu-btn {
+            background: none;
+            border: none;
+            color: #f8fafc;
+            font-size: 1.5rem;
             cursor: pointer;
-            color: #cbd5e1;
-            font-size: 0.9rem;
-            border-bottom: 1px solid #334155;
+            padding: 0 8px;
         }
 
-        .suggestion-item:hover { background-color: #334155; color: #38bdf8; }
-
-        /* Əsas Konteyner */
-        main {
-            flex: 1;
+        /* Modal və Side Panel */
+        .side-menu {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 300px;
+            height: 100%;
+            background-color: #1e293b;
+            box-shadow: -5px 0 15px rgba(0,0,0,0.5);
+            transition: right 0.3s ease;
+            z-index: 1000;
+            padding: 20px;
             display: flex;
             flex-direction: column;
+            gap: 15px;
         }
 
-        /* Discover & Widget Sahəsi */
+        .side-menu.active { right: 0; }
+
+        .close-menu {
+            align-self: flex-end;
+            background: none;
+            border: none;
+            color: #f43f5e;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .user-stats {
+            background-color: #0f172a;
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid #334155;
+        }
+
+        .user-stats div {
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .btn-action {
+            background-color: #38bdf8;
+            color: #0f172a;
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: center;
+            width: 100%;
+            margin-top: 5px;
+        }
+
+        .btn-action:disabled {
+            background-color: #475569;
+            cursor: not-allowed;
+            color: #94a3b8;
+        }
+
+        /* Çarx Fırlatma Modalı */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: #1e293b;
+            padding: 20px;
+            border-radius: 16px;
+            text-align: center;
+            max-width: 350px;
+            width: 90%;
+            position: relative;
+        }
+
+        /* Bəxt Çarxı CSS */
+        .wheel-container {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            margin: 20px auto;
+        }
+
+        .wheel {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 5px solid #38bdf8;
+            position: relative;
+            transition: transform 3s cubic-bezier(0.17, 0.67, 0.12, 0.99);
+            overflow: hidden;
+            background: conic-gradient(
+                #f43f5e 0deg 90deg, 
+                #10b981 90deg 180deg, 
+                #f59e0b 180deg 270deg, 
+                #8b5cf6 270deg 360deg
+            );
+        }
+
+        .wheel-pointer {
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0; height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-top: 20px solid #fff;
+            z-index: 10;
+        }
+
+        /* Banner & Discover */
+        .slogan-banner {
+            background: linear-gradient(90deg, #4f46e5, #06b6d4);
+            color: white;
+            padding: 12px 15px;
+            text-align: center;
+            font-size: 0.85rem;
+            font-weight: bold;
+            border-radius: 10px;
+            margin: 15px;
+        }
+
         .discover-container {
             max-width: 600px;
             width: 100%;
             margin: 0 auto;
-            padding: 15px;
+            padding: 0 15px 15px 15px;
         }
 
-        /* Weather Vidcet Kartları */
-        .widgets-bar {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            overflow-x: auto;
-        }
-
-        .widget-card {
-            background: #1e293b;
-            border: 1px solid #334155;
-            padding: 10px 15px;
-            border-radius: 12px;
-            white-space: nowrap;
-            font-size: 0.85rem;
-            color: #38bdf8;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        /* Feed Kartları (Google Discover Stili) */
         .feed-card {
             background: #1e293b;
             border: 1px solid #334155;
             border-radius: 16px;
             overflow: hidden;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             text-decoration: none;
             color: inherit;
             display: block;
-            transition: transform 0.2s;
         }
 
-        .feed-card:active { transform: scale(0.98); }
+        .feed-card img { width: 100%; height: 180px; object-fit: cover; }
+        .feed-content { padding: 12px; }
+        .feed-title { font-size: 0.95rem; font-weight: 600; margin-bottom: 5px; }
+        .feed-meta { font-size: 0.75rem; color: #94a3b8; }
 
-        .feed-card img {
-            width: 100%;
-            height: 200px;
-            object-fit: cover;
-            background-color: #0f172a;
-        }
-
-        .feed-content {
-            padding: 12px 15px;
-        }
-
-        .feed-title {
-            font-size: 1rem;
-            font-weight: 600;
-            color: #f8fafc;
-            line-height: 1.4;
-            margin-bottom: 8px;
-        }
-
-        .feed-meta {
-            font-size: 0.78rem;
-            color: #94a3b8;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .feed-tag {
-            background: #f43f5e;
-            color: #fff;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 0.7rem;
-            font-weight: bold;
-        }
-
-        /* AI Cavab Bloku */
-        #aiSummaryCard {
-            display: none;
-            background: #1e293b;
-            border: 1px solid #38bdf8;
-            border-radius: 10px;
-            margin: 10px;
-            padding: 12px 15px;
-        }
-
-        .ai-header { color: #38bdf8; font-weight: bold; font-size: 0.85rem; margin-bottom: 6px; }
-        .ai-content { font-size: 0.9rem; line-height: 1.4; color: #e2e8f0; }
-
-        .iframe-wrapper {
-            display: none;
-            flex: 1;
-            width: 100%;
-            height: 80vh;
-            overflow: hidden;
-        }
-
-        iframe {
-            width: 100%;
-            height: calc(100% + 145px);
-            margin-top: -145px;
-            border: none;
-            background-color: #fff;
-        }
+        .iframe-wrapper { display: none; width: 100%; height: 80vh; }
+        iframe { width: 100%; height: calc(100% + 145px); margin-top: -145px; border: none; }
     </style>
 </head>
 <body>
 
     <header>
-        <a href="#" class="logo" onclick="resetPage()">Az<span>Search</span> AI</a>
+        <a href="#" class="logo" onclick="location.reload()">Az<span>Search</span></a>
         <div class="search-container">
             <form class="search-box" onsubmit="executeSearch(event)">
-                <input type="text" id="searchInput" placeholder="Axtarın və ya soruşun..." autocomplete="off" oninput="fetchSuggestions(this.value)">
+                <input type="text" id="searchInput" placeholder="Axtarış edin..." required>
                 <button type="submit">Axtar</button>
             </form>
-            <div id="suggestionsBox" class="suggestions-box"></div>
         </div>
+        <button class="menu-btn" onclick="toggleMenu()">⋮</button>
     </header>
 
-    <main>
-        <!-- AI Cavab Card -->
-        <div id="aiSummaryCard">
-            <div class="ai-header">🤖 AZSEARCH AI ANALİZİ</div>
-            <div class="ai-content" id="aiContent">Yüklənir...</div>
+    <!-- Yan Menyu (3 Nöqtəyə Basanda Açılan) -->
+    <div class="side-menu" id="sideMenu">
+        <button class="close-menu" onclick="toggleMenu()">✕</button>
+        <h3>Profil & Qazanc</h3>
+        
+        <div class="user-stats">
+            <div><span>Bugünkü Axtarış:</span> <strong id="statSearches">0 / 50</strong></div>
+            <div><span>Bonus Hüququ:</span> <strong id="statBonuses">0 Bonus</strong></div>
+            <hr style="border-color:#334155; margin: 8px 0;">
+            <div><span>MB Balansınız:</span> <strong id="statMB" style="color:#10b981;">0 MB</strong></div>
         </div>
 
-        <!-- Axtarış Nəticələri Frame -->
+        <button class="btn-action" id="spinBtn" onclick="openWheelModal()">🎡 Çarxı Fırlat (10 Bonus)</button>
+        <button class="btn-action" id="withdrawBtn" onclick="openWithdrawModal()" style="background-color:#10b981;" disabled>💸 Çıxarış Et</button>
+        
+        <div style="font-size: 0.75rem; color:#94a3b8; margin-top: auto;">
+            * Min. çıxarış həddi: 100 MB.<br>
+            * 50 axtarış = 1 Bonus.
+        </div>
+    </div>
+
+    <main>
+        <!-- Şüar Banneri -->
+        <div class="slogan-banner">
+            🚀 Günlük 50 axtarış et = 1 Bonus qazan! 10 Bonus topladıqda Çarxı fırladaraq 1000 MB-a qədər Hədiyyə qazan!
+        </div>
+
+        <!-- Axtarış Frame -->
         <div class="iframe-wrapper" id="iframeWrapper">
             <iframe id="resultsFrame"></iframe>
         </div>
 
-        <!-- Discover Lenti (Əsas Səhifə) -->
+        <!-- Discover Lenti -->
         <div class="discover-container" id="discoverView">
-            
-            <!-- Vidcetlər -->
-            <div class="widgets-bar">
-                <div class="widget-card">🌤️ Bakı: 24°C</div>
-                <div class="widget-card">🌅 Günəş: 06:30</div>
-                <div class="widget-card">🎁 Gündəlik Bonus: +10 Xal</div>
-            </div>
-
-            <!-- Avtomatik Doldurulan Xəbər / Elan Kartları -->
-            <div id="feedList">
-                <!-- Şəxsi / Sponsorlu Elan (Örnek) -->
-                <a href="#" class="feed-card">
-                    <div class="feed-content">
-                        <span class="feed-tag">XÜSUSİ TƏKLİF</span>
-                        <div class="feed-title" style="margin-top:5px;">AzSearch ilə hər gün axtarış et, pulsuz 500 MB İnternet paketi qazan!</div>
-                        <div class="feed-meta">AzSearch Reward • İndi Qatıl</div>
-                    </div>
-                </a>
-
-                <!-- JS ilə Avtomatik Xəbərlər Yüklənəcək -->
-            </div>
-
+            <div id="feedList"></div>
         </div>
     </main>
 
-    <script>
-        const searchInput = document.getElementById('searchInput');
-        const suggestionsBox = document.getElementById('suggestionsBox');
-
-        // Google Autocomplete
-        function fetchSuggestions(query) {
-            query = query.trim();
-            if (query.length < 2) {
-                suggestionsBox.style.display = 'none';
-                return;
-            }
-            const script = document.createElement('script');
-            script.src = `https://suggestqueries.google.com/complete/search?client=chrome&q=${encodeURIComponent(query)}&callback=showSuggestions`;
-            document.body.appendChild(script);
-        }
-
-        function showSuggestions(data) {
-            const results = data[1];
-            if (!results || results.length === 0) {
-                suggestionsBox.style.display = 'none';
-                return;
-            }
-            suggestionsBox.innerHTML = '';
-            results.slice(0, 5).forEach(item => {
-                const div = document.createElement('div');
-                div.className = 'suggestion-item';
-                div.innerText = item;
-                div.onclick = () => {
-                    searchInput.value = item;
-                    suggestionsBox.style.display = 'none';
-                    runSearch(item);
-                };
-                suggestionsBox.appendChild(div);
-            });
-            suggestionsBox.style.display = 'block';
-        }
-
-        function executeSearch(event) {
-            event.preventDefault();
-            suggestionsBox.style.display = 'none';
-            runSearch(searchInput.value.trim());
-        }
-
-        function runSearch(query) {
-            if (!query) return;
-
-            document.getElementById('discoverView').style.display = 'none';
-            const aiCard = document.getElementById('aiSummaryCard');
-            const aiContent = document.getElementById('aiContent');
-            const iframeWrapper = document.getElementById('iframeWrapper');
-            const resultsFrame = document.getElementById('resultsFrame');
-
-            aiCard.style.display = 'block';
-            aiContent.innerHTML = '<i>Süni intellekt məlumatları analiz edir...</i>';
-
-            fetch(`https://az.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(query)}`)
-                .then(res => res.json())
-                .then(data => {
-                    if (data.extract) {
-                        aiContent.innerHTML = `<strong>Ağıllı Xülasə:</strong> ${data.extract}`;
-                    } else {
-                        aiContent.innerHTML = `<strong>AI Təhlili:</strong> "${query}" haqqında əsas nəticələr aşağıda təqdim olundu.`;
-                    }
-                })
-                .catch(() => {
-                    aiContent.innerHTML = `<strong>AI Təhlili:</strong> "${query}" sorğusu üzrə nəticələr hazırlandı.`;
-                });
-
-            iframeWrapper.style.display = 'block';
-            resultsFrame.src = `https://www.bing.com/search?q=${encodeURIComponent(query)}`;
-        }
-
-        function resetPage() {
-            document.getElementById('discoverView').style.display = 'block';
-            document.getElementById('aiSummaryCard').style.display = 'none';
-            document.getElementById('iframeWrapper').style.display = 'none';
-            searchInput.value = '';
-        }
-
-        // Avtomatik Xəbərləri (RSS Feed) Yükləyən Funksiya
-        function loadDiscoverFeed() {
-            const feedList = document.getElementById('feedList');
+    <!-- Çarx Modalı -->
+    <div class="modal" id="wheelModal">
+        <div class="modal-content">
+            <h3>Bəxt Çarxı</h3>
+            <p style="font-size:0.8rem; color:#94a3b8;">10, 100, 500 və ya 1000 MB qazan!</p>
             
-            // Açıq xəbər API-si vasitəsilə son xəbərləri çəkirik
-            fetch('https://api.rss2json.com/v1/api.json?rss_url=https://oxu.az/rss')
-                .then(res => res.json())
-                .then(data => {
-                    if(data.items) {
-                        data.items.slice(0, 10).forEach(item => {
-                            const card = document.createElement('a');
-                            card.className = 'feed-card';
-                            card.href = item.link;
-                            card.target = '_blank';
+            <div class="wheel-container">
+                <div class="wheel-pointer"></div>
+                <div class="wheel" id="wheel"></div>
+            </div>
 
-                            const imgUrl = item.enclosure.link || 'https://via.placeholder.com/600x300';
+            <button class="btn-action" onclick="spinWheel()" id="startSpinBtn">Fırlat!</button>
+            <button class="btn-action" onclick="closeModal('wheelModal')" style="background:#f43f5e; margin-top:5px;">Bağla</button>
+        </div>
+    </div>
 
-                            card.innerHTML = `
-                                <img src="${imgUrl}" alt="xəbər">
+    <!-- Çıxarış Modalı -->
+    <div class="modal" id="withdrawModal">
+        <div class="modal-content">
+            <h3>MB Çıxarışı</h3>
+            <p style="font-size:0.85rem; margin-bottom:10px;">Balansınız: <strong id="withdrawMbAmount" style="color:#10b981">0 MB</strong></p>
+            
+            <input type="text" id="phoneNum" placeholder="Mobil Nömrəniz (050...)" style="width:100%; padding:10px; border-radius:8px; border:1px solid #334155; background:#0f172a; color:#fff; margin-bottom:10px;">
+            
+            <button class="btn-action" onclick="processWithdrawal()" style="background:#10b981;">Çıxart</button>
+            <button class="btn-action" onclick="closeModal('withdrawModal')" style="background:#f43f5e; margin-top:5px;">Ləğv et</button>
+            
+            <p id="withdrawStatus" style="font-size:0.8rem; color:#f59e0b; margin-top:10px; display:none;"></p>
+        </div>
+    </div>
+
+    <script>
+        // Məlumatların lokal saxlanması (Simulyasiya)
+        let userData = JSON.parse(localStorage.getItem('azsearch_user')) || {
+            searches: 0,
+            bonuses: 0,
+            mb: 0
+        };
+
+        function updateUI() {
+            document.getElementById('statSearches').innerText = `${userData.searches} / 50`;
+            document.getElementById('statBonuses').innerText = `${userData.bonuses} Bonus`;
+            document.getElementById('statMB').innerText = `${userData.mb} MB`;
+            document.getElementById('withdrawMbAmount').innerText = `${userData.mb} MB`;
+
+            // Çarx düyməsi aktivliyi (10 bonus olduqda)
+            document.getElementById('spinBtn').disabled = userData.bonuses < 10;
+            
+            // Çıxarış düyməsi aktivliyi (100 MB və ya 500 MB olduqda)
+            document.getElementById('withdrawBtn').disabled = userData.mb < 100;
+
+            localStorage.setItem('azsearch_user', JSON.stringify(userData));
+        }
+
+        function toggleMenu() {
+            document.getElementById('sideMenu').classList.toggle('active');
+        }
+
+        function executeSearch(e) {
+            e.preventDefault();
+            const query = document.getElementById('searchInput').value;
+            if(!query) return;
+
+            // Axtarış sayını artırırıq
+            userData.searches += 1;
+            if(userData.searches >= 50) {
+                userData.searches = 0;
+                userData.bonuses += 1;
+                alert("Təbriklər! Günlük 50 axtarışı tamamladınız və 1 Bonus qazandınız!");
+            }
+            updateUI();
+
+            // Axtarışı göstər
+            document.getElementById('discoverView').style.display = 'none';
+            document.getElementById('iframeWrapper').style.display = 'block';
+            document.getElementById('resultsFrame').src = `https://www.bing.com/search?q=${encodeURIComponent(query)}`;
+        }
+
+        // Modallar
+        function openWheelModal() {
+            if(userData.bonuses < 10) {
+                alert("Çarxı fırlatmaq üçün ən azı 10 Bonusunuz olmalıdır!");
+                return;
+            }
+            document.getElementById('wheelModal').style.style.display = 'flex';
+        }
+
+        function openWithdrawModal() {
+            document.getElementById('withdrawModal').style.display = 'flex';
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).style.display = 'none';
+        }
+
+        // Çarxı Fırlatma Məntiqi (Simulyasiya)
+        function spinWheel() {
+            if(userData.bonuses < 10) return;
+
+            const wheel = document.getElementById('wheel');
+            const startBtn = document.getElementById('startSpinBtn');
+            startBtn.disabled = true;
+
+            // Uduş variasiyaları: 10, 100, 500, 1000 MB
+            const prizes = [10, 100, 500, 1000];
+            const winningMB = prizes[Math.floor(Math.random() * prizes.length)];
+
+            // Təsadüfi fırlanma dərəcəsi
+            const randomDegree = 1440 + Math.floor(Math.random() * 360);
+            wheel.style.transform = `rotate(${randomDegree}deg)`;
+
+            setTimeout(() => {
+                userData.bonuses -= 10;
+                userData.mb += winningMB;
+                updateUI();
+
+                alert(`TƏBRİKLƏR! Siz Çarxdan ${winningMB} MB qazandınız! MB balansınıza əlavə olundu.`);
+                wheel.style.transform = `rotate(0deg)`;
+                startBtn.disabled = false;
+                closeModal('wheelModal');
+            }, 3200);
+        }
+
+        // Çıxarış Prosesi (Simulyasiya)
+        function processWithdrawal() {
+            const phone = document.getElementById('phoneNum').value;
+            const status = document.getElementById('withdrawStatus');
+
+            if(phone.length < 9) {
+                alert("Zəhmət olmasa düzgün mobil nömrə daxil edin!");
+                return;
+            }
+
+            status.style.display = 'block';
+            status.innerText = "Sorğu göndərilir...";
+
+            setTimeout(() => {
+                status.style.color = "#10b981";
+                status.innerText = "Sorğunuz qəbul edildi! 24 saat ərzində yoxlanılacaq və balansınıza köçürüləcək.";
+                
+                // Balansı sıfırla və ya çıxarış et
+                userData.mb = 0;
+                updateUI();
+            }, 1500);
+        }
+
+        // Avtomatik Xəbərlər (RSS)
+        fetch('https://api.rss2json.com/v1/api.json?rss_url=https://oxu.az/rss')
+            .then(res => res.json())
+            .then(data => {
+                if(data.items) {
+                    const list = document.getElementById('feedList');
+                    data.items.slice(0, 8).forEach(item => {
+                        const img = item.enclosure.link || 'https://via.placeholder.com/400x200';
+                        list.innerHTML += `
+                            <a href="${item.link}" target="_blank" class="feed-card">
+                                <img src="${img}">
                                 <div class="feed-content">
                                     <div class="feed-title">${item.title}</div>
-                                    <div class="feed-meta">📰 Oxu.az • ${item.pubDate.split(' ')[1]}</div>
+                                    <div class="feed-meta">📰 Oxu.az</div>
                                 </div>
-                            `;
-                            feedList.appendChild(card);
-                        });
-                    }
-                }).catch(e => console.log('Feed xətası'));
-        }
+                            </a>
+                        `;
+                    });
+                }
+            });
 
-        // Səhifə açılanda xəbərləri yüklə
-        loadDiscoverFeed();
+        // Başlanğıc Yükləmə
+        updateUI();
     </script>
 </body>
 </html>
