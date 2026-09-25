@@ -2,93 +2,116 @@
 <html lang="az">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Barter.az - Al Sat yox, Sadəcə Dəyiş!</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>GeyimDəyis - TikTok Barter</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:system-ui}
-body{background:#f5f5f7}
-.header{position:sticky;top:0;background:white;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 1px 4px rgba(0,0,0,.08)}
-.header h1{color:#0f5132;font-size:26px;font-weight:900}
-.banner{margin:12px;background:#d1e7dd;border-radius:12px;padding:14px;display:flex;justify-content:space-between;align-items:center}
-.banner b{color:#0f5132;font-size:17px}
-.banner p{font-size:12px;color:#333}
-.btn-green{background:#198754;color:white;border:none;padding:8px 14px;border-radius:20px;font-weight:700;cursor:pointer}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:12px}
-.card{background:white;border-radius:14px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.06);cursor:pointer}
-.card img{width:100%;height:140px;object-fit:cover}
-.card-body{padding:10px}
-.card-body h3{font-size:14px}
-.card-body p{font-size:11px;color:#198754;margin:4px 0;font-weight:600}
-.tag{display:inline-block;background:#198754;color:white;font-size:10px;padding:3px 8px;border-radius:10px}
-.tabs{padding:0 12px;margin-top:12px;display:flex;justify-content:space-between}
-.tabs h2{font-size:20px}
-.bottom{position:fixed;bottom:0;left:0;right:0;background:white;display:flex;justify-content:space-around;padding:8px 0 18px;border-top:1px solid #eee;max-width:500px;margin:0 auto}
-.bottom div{text-align:center;font-size:11px;color:#666}
-.bottom .active{color:#198754;font-weight:700}
-.add{width:48px;height:48px;background:#198754;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:28px;margin-top:-10px}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Inter',sans-serif}
+body{background:#000;color:#fff;overflow:hidden}
+#feed{height:100vh;width:100vw;overflow-y:scroll;scroll-snap-type:y mandatory;-webkit-overflow-scrolling:touch}
+.item{height:100vh;width:100vw;scroll-snap-align:start;position:relative;display:flex;align-items:center;justify-content:center;background:#000}
+.item video{height:100%;width:100%;object-fit:cover}
+.overlay{position:absolute;bottom:0;left:0;right:0;padding:80px 15px 20px;background:linear-gradient(transparent,rgba(0,0,0,0.9));display:flex;justify-content:space-between;align-items:flex-end}
+.left{max-width:70%}
+.user{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.user img{width:44px;height:44px;border-radius:50%;border:2px solid #fff;object-fit:cover}
+.user b{font-size:15px}
+.desc{font-size:14px;line-height:1.4;margin-bottom:8px}
+.tags{font-size:12px;color:#ffdb4d}
+.right{display:flex;flex-direction:column;gap:22px;align-items:center;padding-bottom:20px}
+.icon-btn{width:48px;height:48px;background:rgba(255,255,255,0.15);backdrop-filter:blur(10px);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;border:none;color:#fff;cursor:pointer}
+.icon-btn.active{background:#fe2c55;color:#fff}
+.count{font-size:11px;margin-top:4px;font-weight:600}
+.wa-btn{background:#25D366;color:#fff;padding:10px 18px;border-radius:25px;font-weight:700;font-size:14px;border:none;display:flex;align-items:center;gap:6px;margin-top:10px}
+.header{position:fixed;top:0;left:0;right:0;z-index:10;display:flex;justify-content:space-between;padding:15px;pointer-events:none}
+.logo{font-weight:800;font-size:20px;letter-spacing:-0.5px}
+.logo span{color:#fe2c55}
+.badge{background:rgba(255,255,255,0.2);padding:5px 10px;border-radius:15px;font-size:11px;backdrop-filter:blur(10px)}
+.add-btn{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:10;background:#fff;color:#000;padding:14px 28px;border-radius:30px;font-weight:800;border:none;box-shadow:0 10px 30px rgba(0,0,0,0.5)}
+#uploadModal{position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:20;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-box{background:#111;width:100%;max-width:380px;border-radius:20px;padding:25px}
+.modal-box h3{margin-bottom:15px}
+.modal-box input{width:100%;padding:12px;border-radius:10px;border:1px solid #333;background:#222;color:#fff;margin-bottom:12px}
 </style>
 </head>
 <body>
-<div style="max-width:500px;margin:0 auto;background:white;min-height:100vh;padding-bottom:80px">
-<div class="header"><span>☰</span><h1>Barter.az</h1><div>🔍 🔔</div></div>
-
-<div class="banner">
-<div><b>Al - Sat yox, Sadəcə Dəyiş!</b><p>Ehtiyacın olanı tap, lazımsızını dəyiş</p></div>
-<button class="btn-green" onclick="addItem()">Yeni Elan +</button>
+<div class="header">
+<div class="logo">Geyim<span>Dəyis</span></div>
+<div class="badge">🔴 127 online • Server-siz P2P</div>
 </div>
-
-<div class="tabs"><h2>♻️ Dəyişilir</h2></div>
-<div class="grid" id="grid1"></div>
-
-<div class="tabs"><h2>Dəyişmək istəyirəm</h2><span>🔍</span></div>
-<div class="grid" id="grid2"></div>
+<div id="feed"></div>
+<button class="add-btn" onclick="document.getElementById('uploadModal').style.display='flex'">+ Elan əlavə et</button>
+<div id="uploadModal" onclick="if(event.target==this)this.style.display='none'">
+<div class="modal-box">
+<h3>Video ilə elan əlavə et</h3>
+<input type="text" id="uName" placeholder="Adın (məs: Aysel)">
+<input type="text" id="uItem" placeholder="Nəyi dəyişirsən? (məs: Toy paltarı)">
+<input type="text" id="uWant" placeholder="Nə istəyirsən? (məs: Çanta)">
+<input type="text" id="uWa" placeholder="WhatsApp nömrə (99450...)">
+<input type="file" id="uVideo" accept="video/*">
+<button onclick="addNew()" style="width:100%;padding:12px;background:#fe2c55;color:#fff;border:none;border-radius:10px;font-weight:700;margin-top:10px">Paylaş - P2P şəbəkəyə göndər</button>
 </div>
-
-<div class="bottom">
-<div class="active">🏠<br>Ana səhifə</div>
-<div>☰<br>Elanlar</div>
-<div><div class="add">+</div>Əlavə et</div>
-<div>💬<br>Mesajlar</div>
-<div>👤<br>Profil</div>
 </div>
-
 <script>
-let items1=[
- {name:"iPhone 13", want:"PlayStation 5 ilə dəyişilir", tag:"Elektronika", img:"https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=300"},
- {name:"Zara paltar", want:"Çanta ilə dəyişilir", tag:"Geyim", img:"https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=300"},
+const sampleVideos = [
+"https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+"https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+"https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+"https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
+"https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
+"https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4"
 ];
-let items2=[
- {name:"Nike Air Max", want:"iPad mini ilə dəyişmək istəyirəm", tag:"Ayaqqabı", img:"https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=300"},
- {name:"Uşaq velosipedi", want:"Oyuncaq dəsti ilə dəyişmək istəyirəm", tag:"Uşaq", img:"https://images.unsplash.com/photo-1571068316344-75bc76f77890?w=300"},
- {name:"MacBook Air M1", want:"iPhone 14 Pro ilə dəyişilir", tag:"Elektronika", img:"https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?w=300"},
- {name:"Özəl əl çantası", want:"Qızıl sırğa ilə dəyişirəm", tag:"Aksessuar", img:"https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=300"},
+const mockData = [
+{u:"Aysel H.",av:"https://i.pravatar.cc/150?img=1",item:"Zara qırmızı toy paltarı - 1 dəfə geyinilib",want:"Bej rəng çanta istəyirəm",tags:"#toy #zara #S ölçü",likes:124,wa:"994501234567"},
+{u:"Nərmin",av:"https://i.pravatar.cc/150?img=5",item:"Mango dəri gödəkçə M ölçü",want:"Qara uzunboğaz çəkmə 38",tags:"#gödəkçə #mango #payız",likes:89,wa:"994502345678"},
+{u:"Leyla",av:"https://i.pravatar.cc/150?img=9",item:"Bershka cins şalvar 2 ədəd - heç geyinilməyib",want:"Köynək və ya crop top",tags:"#cins #bershka #yenidir",likes:203,wa:"994503456789"},
+{u:"Günel",av:"https://i.pravatar.cc/150?img=10",item:"H&M yay donu - S",want:"Ağ idman ayaqqabısı 37",tags:"#yay #don #hm",likes:156,wa:"994504567890"},
+{u:"Fidan",av:"https://i.pravatar.cc/150?img=16",item:"Stradivarius palto - demək olar yenidir",want:"Qış çəkməsi",tags:"#palto #qış #stradivarius",likes:98,wa:"994505678901"},
+{u:"Aydan",av:"https://i.pravatar.cc/150?img=23",item:"LC Waikiki uşaq paltarları - 2 yaş",want:"Oğlan uşaq paltarı",tags:"#usaq #lcwaikiki #2yas",likes:67,wa:"994506789012"},
+{u:"Samirə",av:"https://i.pravatar.cc/150?img=26",item:"Koton ziyafət paltarı L",want:"Qara klassik şalvar",tags:"#ziyafət #koton #L",likes:112,wa:"994507890123"},
+{u:"Ləman",av:"https://i.pravatar.cc/150?img=32",item:"Nike idman dəsti - M",want:"Adidas idman çantası",tags:"#idman #nike #original",likes:234,wa:"994508901234"},
+{u:"Sevinc",av:"https://i.pravatar.cc/150?img=33",item:"İpək yaylıq - Versace stil",want:"Eynək və ya saat",tags:"#yayliq #ipek #brend",likes:76,wa:"994509012345"},
+{u:"Nigar",av:"https://i.pravatar.cc/150?img=45",item:"Zara ayaqqabı 38 - 1 dəfə geyinilib",want:"Çanta - qara",tags:"#ayaqqabi #zara #38",likes:145,wa:"994501111111"},
+{u:"Xədicə",av:"https://i.pravatar.cc/150?img=47",item:"Qara toy üçün uzun don - XL",want:"M ölçü don",tags:"#toy #xl #uzun",likes:88,wa:"994502222222"},
+{u:"Rəna",av:"https://i.pravatar.cc/150?img=48",item:"Pull&Bear kofta - S",want:"Yubka",tags:"#kofta #pullbear #s",likes:54,wa:"994503333333"},
+{u:"Mədinə",av:"https://i.pravatar.cc/150?img=29",item:"Uşaq arabası - az işlənib",want:"Uşaq velosipedi",tags:"#usaq #araba #barter",likes:201,wa:"994504444444"},
+{u:"Zeynəb",av:"https://i.pravatar.cc/150?img=15",item:"Çanta Michael Kors - original",want:"İphone üçün qulaqlıq",tags:"#canta #mk #original",likes:321,wa:"994505555555"},
+{u:"Ülviyyə",av:"https://i.pravatar.cc/150?img=18",item:"Paltar 3 ədəd - hamısı S",want:"1 ədəd qış paltarı",tags:"#3eded #qis #barter",likes:92,wa:"994506666666"},
+{u:"Səma",av:"https://i.pravatar.cc/150?img=20",item:"Gəlinlik - 1 dəfə geyinilib, təmizlənib",want:"500 AZN dəyərində əşya",tags:"#gelinlik #toy #təmiz",likes:412,wa:"994507777777"},
+{u:"Aytac",av:"https://i.pravatar.cc/150?img=21",item:"H&M uşaq dəsti 5 yaş",want:"Qız üçün ayaqqabı",tags:"#usaq #5yas #hm",likes:73,wa:"994508888888"},
+{u:"Könül",av:"https://i.pravatar.cc/150?img=22",item:"Dəri çanta - əl işi",want:"Qızıl sırğa",tags:"#deri #elisI #canta",likes:167,wa:"994509999999"},
+{u:"İlahə",av:"https://i.pravatar.cc/150?img=24",item:"Zara blazer - M",want:"Qara şalvar",tags:"#blazer #zara #ofis",likes:101,wa:"994500000001"},
+{u:"Turanə",av:"https://i.pravatar.cc/150?img=25",item:"Qış paltosu - demək olar yeni",want:"Yay donları 2 ədəd",tags:"#qis #palto #yeni",likes:134,wa:"994500000002"}
 ];
-
+const feed = document.getElementById('feed');
 function render(){
- document.getElementById('grid1').innerHTML=items1.map(i=>`
-  <div class="card" onclick="offer('${i.name}')">
-   <img src="${i.img}">
-   <div class="card-body"><h3>${i.name}</h3><p>${i.want}</p><span class="tag">${i.tag}</span></div>
-  </div>`).join('');
- document.getElementById('grid2').innerHTML=items2.map(i=>`
-  <div class="card" onclick="offer('${i.name}')">
-   <img src="${i.img}">
-   <div class="card-body"><h3>${i.name}</h3><p>${i.want}</p><span class="tag">${i.tag}</span></div>
-  </div>`).join('');
+ feed.innerHTML='';
+ mockData.forEach((d,i)=>{
+   const vid = d.customVideo || sampleVideos[i % sampleVideos.length];
+   const el = document.createElement('div');
+   el.className='item';
+   el.innerHTML = `<video loop playsinline muted src="${vid}" poster="${d.av}"></video>
+     <div class="overlay"><div class="left"><div class="user"><img src="${d.av}"><b>@${d.u}</b></div><div class="desc"><b>${d.item}</b><br>↳ ${d.want}</div><div class="tags">${d.tags}</div><button class="wa-btn" onclick="window.open('https://wa.me/${d.wa}?text=Salam, ${d.item} elanını gördüm')">💬 WhatsApp</button></div><div class="right"><div style="text-align:center"><button class="icon-btn" onclick="this.classList.toggle('active');this.innerText=this.classList.contains('active')?'❤️':'🤍'">🤍</button><div class="count">${d.likes}</div></div><div style="text-align:center"><button class="icon-btn">↗️</button><div class="count">Paylaş</div></div><img src="${d.av}" style="width:48px;height:48px;border-radius:50%;border:2px solid #fff;margin-top:10px"></div></div>`;
+   feed.appendChild(el);
+ });
+ const obs = new IntersectionObserver((entries)=>{entries.forEach(e=>{const v=e.target.querySelector('video'); if(e.isIntersecting){v.play().catch(()=>{});} else {v.pause();}});},{threshold:0.7});
+ document.querySelectorAll('.item').forEach(it=>obs.observe(it));
 }
-function offer(name){
- let what=prompt(`"${name}" üçün nə təklif edirsən? Məs: Köhnə telefonum, velosipedim`);
- if(what){ alert(`Təklifin göndərildi! "${name}" sahibinə bildiriş getdi. Qarşı tərəf qəbul etsə, çat açılacaq.`); }
+function addNew(){
+ const name=document.getElementById('uName').value||'Anonim';
+ const item=document.getElementById('uItem').value||'Paltar';
+ const want=document.getElementById('uWant').value||'Dəyişmək';
+ const wa=document.getElementById('uWa').value||'994501234567';
+ const file=document.getElementById('uVideo');
+ let videoUrl=sampleVideos[Math.floor(Math.random()*sampleVideos.length)];
+ if(file.files[0]){videoUrl=URL.createObjectURL(file.files[0]);}
+ mockData.unshift({u:name,av:`https://i.pravatar.cc/150?u=${Date.now()}`,item:item,want:want,tags:'#yeni #p2p',likes:1,wa:wa,customVideo:videoUrl});
+ document.getElementById('uploadModal').style.display='none';
+ localStorage.setItem('geyimdeyis', JSON.stringify(mockData.slice(0,30)));
+ render(); feed.scrollTo({top:0,behavior:'smooth'});
+ alert('Elan P2P şəbəkəyə göndərildi!');
 }
-function addItem(){
- let ad=prompt("Nəyi dəyişirsən? Məs: iPhone 12");
- let istey=prompt("Nə istəyirsən əvəzində? Məs: Samsung və ya başqa şey");
- if(ad && istey){
-  items1.unshift({name:ad, want:istey+" ilə dəyişilir", tag:"Yeni", img:"https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=300"});
-  render();
-  alert("Elan əlavə olundu! Ana səhifədə göründü.");
- }
-}
+const saved=localStorage.getItem('geyimdeyis'); if(saved){try{const p=JSON.parse(saved); if(p.length>0){mockData.length=0; p.forEach(x=>mockData.push(x));}}catch(e){}}
 render();
 </script>
 </body>
