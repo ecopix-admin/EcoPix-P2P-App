@@ -1,469 +1,95 @@
 <!DOCTYPE html>
 <html lang="az">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AzSearch AI - Gündəlik Axtar & MB Qazan</title>
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Roboto, sans-serif;
-        }
-
-        body {
-            background-color: #0f172a;
-            color: #f8fafc;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-
-        /* Yuxarı Header */
-        header {
-            background-color: #1e293b;
-            padding: 12px 15px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 10px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .logo {
-            font-size: 1.2rem;
-            font-weight: bold;
-            color: #38bdf8;
-            text-decoration: none;
-            white-space: nowrap;
-        }
-
-        .logo span { color: #f43f5e; }
-
-        .search-container {
-            position: relative;
-            flex: 1;
-            max-width: 500px;
-        }
-
-        .search-box {
-            display: flex;
-            width: 100%;
-        }
-
-        .search-box input {
-            width: 100%;
-            padding: 8px 12px;
-            border-radius: 20px 0 0 20px;
-            border: 2px solid #334155;
-            border-right: none;
-            background-color: #0f172a;
-            color: #fff;
-            font-size: 0.9rem;
-            outline: none;
-        }
-
-        .search-box button {
-            padding: 0 15px;
-            border-radius: 0 20px 20px 0;
-            border: 2px solid #38bdf8;
-            background-color: #38bdf8;
-            color: #0f172a;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        /* Sağ 3 Nöqtə Menyusu */
-        .menu-btn {
-            background: none;
-            border: none;
-            color: #f8fafc;
-            font-size: 1.5rem;
-            cursor: pointer;
-            padding: 0 8px;
-        }
-
-        /* Modal və Side Panel */
-        .side-menu {
-            position: fixed;
-            top: 0;
-            right: -100%;
-            width: 300px;
-            height: 100%;
-            background-color: #1e293b;
-            box-shadow: -5px 0 15px rgba(0,0,0,0.5);
-            transition: right 0.3s ease;
-            z-index: 1000;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .side-menu.active { right: 0; }
-
-        .close-menu {
-            align-self: flex-end;
-            background: none;
-            border: none;
-            color: #f43f5e;
-            font-size: 1.5rem;
-            cursor: pointer;
-        }
-
-        .user-stats {
-            background-color: #0f172a;
-            padding: 15px;
-            border-radius: 12px;
-            border: 1px solid #334155;
-        }
-
-        .user-stats div {
-            margin-bottom: 8px;
-            font-size: 0.9rem;
-            display: flex;
-            justify-content: space-between;
-        }
-
-        .btn-action {
-            background-color: #38bdf8;
-            color: #0f172a;
-            border: none;
-            padding: 10px;
-            border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
-            text-align: center;
-            width: 100%;
-            margin-top: 5px;
-        }
-
-        .btn-action:disabled {
-            background-color: #475569;
-            cursor: not-allowed;
-            color: #94a3b8;
-        }
-
-        /* Çarx Fırlatma Modalı */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8);
-            z-index: 2000;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .modal-content {
-            background: #1e293b;
-            padding: 20px;
-            border-radius: 16px;
-            text-align: center;
-            max-width: 350px;
-            width: 90%;
-            position: relative;
-        }
-
-        /* Bəxt Çarxı CSS */
-        .wheel-container {
-            position: relative;
-            width: 200px;
-            height: 200px;
-            margin: 20px auto;
-        }
-
-        .wheel {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            border: 5px solid #38bdf8;
-            position: relative;
-            transition: transform 3s cubic-bezier(0.17, 0.67, 0.12, 0.99);
-            overflow: hidden;
-            background: conic-gradient(
-                #f43f5e 0deg 90deg, 
-                #10b981 90deg 180deg, 
-                #f59e0b 180deg 270deg, 
-                #8b5cf6 270deg 360deg
-            );
-        }
-
-        .wheel-pointer {
-            position: absolute;
-            top: -10px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 0; height: 0;
-            border-left: 10px solid transparent;
-            border-right: 10px solid transparent;
-            border-top: 20px solid #fff;
-            z-index: 10;
-        }
-
-        /* Banner & Discover */
-        .slogan-banner {
-            background: linear-gradient(90deg, #4f46e5, #06b6d4);
-            color: white;
-            padding: 12px 15px;
-            text-align: center;
-            font-size: 0.85rem;
-            font-weight: bold;
-            border-radius: 10px;
-            margin: 15px;
-        }
-
-        .discover-container {
-            max-width: 600px;
-            width: 100%;
-            margin: 0 auto;
-            padding: 0 15px 15px 15px;
-        }
-
-        .feed-card {
-            background: #1e293b;
-            border: 1px solid #334155;
-            border-radius: 16px;
-            overflow: hidden;
-            margin-bottom: 15px;
-            text-decoration: none;
-            color: inherit;
-            display: block;
-        }
-
-        .feed-card img { width: 100%; height: 180px; object-fit: cover; }
-        .feed-content { padding: 12px; }
-        .feed-title { font-size: 0.95rem; font-weight: 600; margin-bottom: 5px; }
-        .feed-meta { font-size: 0.75rem; color: #94a3b8; }
-
-        .iframe-wrapper { display: none; width: 100%; height: 80vh; }
-        iframe { width: 100%; height: calc(100% + 145px); margin-top: -145px; border: none; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Barter.az - Al Sat yox, Sadəcə Dəyiş!</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:system-ui}
+body{background:#f5f5f7}
+.header{position:sticky;top:0;background:white;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.header h1{color:#0f5132;font-size:26px;font-weight:900}
+.banner{margin:12px;background:#d1e7dd;border-radius:12px;padding:14px;display:flex;justify-content:space-between;align-items:center}
+.banner b{color:#0f5132;font-size:17px}
+.banner p{font-size:12px;color:#333}
+.btn-green{background:#198754;color:white;border:none;padding:8px 14px;border-radius:20px;font-weight:700;cursor:pointer}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:12px}
+.card{background:white;border-radius:14px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.06);cursor:pointer}
+.card img{width:100%;height:140px;object-fit:cover}
+.card-body{padding:10px}
+.card-body h3{font-size:14px}
+.card-body p{font-size:11px;color:#198754;margin:4px 0;font-weight:600}
+.tag{display:inline-block;background:#198754;color:white;font-size:10px;padding:3px 8px;border-radius:10px}
+.tabs{padding:0 12px;margin-top:12px;display:flex;justify-content:space-between}
+.tabs h2{font-size:20px}
+.bottom{position:fixed;bottom:0;left:0;right:0;background:white;display:flex;justify-content:space-around;padding:8px 0 18px;border-top:1px solid #eee;max-width:500px;margin:0 auto}
+.bottom div{text-align:center;font-size:11px;color:#666}
+.bottom .active{color:#198754;font-weight:700}
+.add{width:48px;height:48px;background:#198754;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:28px;margin-top:-10px}
+</style>
 </head>
 <body>
+<div style="max-width:500px;margin:0 auto;background:white;min-height:100vh;padding-bottom:80px">
+<div class="header"><span>☰</span><h1>Barter.az</h1><div>🔍 🔔</div></div>
 
-    <header>
-        <a href="#" class="logo" onclick="location.reload()">Az<span>Search</span></a>
-        <div class="search-container">
-            <form class="search-box" onsubmit="executeSearch(event)">
-                <input type="text" id="searchInput" placeholder="Axtarış edin..." required>
-                <button type="submit">Axtar</button>
-            </form>
-        </div>
-        <button class="menu-btn" onclick="toggleMenu()">⋮</button>
-    </header>
+<div class="banner">
+<div><b>Al - Sat yox, Sadəcə Dəyiş!</b><p>Ehtiyacın olanı tap, lazımsızını dəyiş</p></div>
+<button class="btn-green" onclick="addItem()">Yeni Elan +</button>
+</div>
 
-    <!-- Yan Menyu (3 Nöqtəyə Basanda Açılan) -->
-    <div class="side-menu" id="sideMenu">
-        <button class="close-menu" onclick="toggleMenu()">✕</button>
-        <h3>Profil & Qazanc</h3>
-        
-        <div class="user-stats">
-            <div><span>Bugünkü Axtarış:</span> <strong id="statSearches">0 / 50</strong></div>
-            <div><span>Bonus Hüququ:</span> <strong id="statBonuses">0 Bonus</strong></div>
-            <hr style="border-color:#334155; margin: 8px 0;">
-            <div><span>MB Balansınız:</span> <strong id="statMB" style="color:#10b981;">0 MB</strong></div>
-        </div>
+<div class="tabs"><h2>♻️ Dəyişilir</h2></div>
+<div class="grid" id="grid1"></div>
 
-        <button class="btn-action" id="spinBtn" onclick="openWheelModal()">🎡 Çarxı Fırlat (10 Bonus)</button>
-        <button class="btn-action" id="withdrawBtn" onclick="openWithdrawModal()" style="background-color:#10b981;" disabled>💸 Çıxarış Et</button>
-        
-        <div style="font-size: 0.75rem; color:#94a3b8; margin-top: auto;">
-            * Min. çıxarış həddi: 100 MB.<br>
-            * 50 axtarış = 1 Bonus.
-        </div>
-    </div>
+<div class="tabs"><h2>Dəyişmək istəyirəm</h2><span>🔍</span></div>
+<div class="grid" id="grid2"></div>
+</div>
 
-    <main>
-        <!-- Şüar Banneri -->
-        <div class="slogan-banner">
-            🚀 Günlük 50 axtarış et = 1 Bonus qazan! 10 Bonus topladıqda Çarxı fırladaraq 1000 MB-a qədər Hədiyyə qazan!
-        </div>
+<div class="bottom">
+<div class="active">🏠<br>Ana səhifə</div>
+<div>☰<br>Elanlar</div>
+<div><div class="add">+</div>Əlavə et</div>
+<div>💬<br>Mesajlar</div>
+<div>👤<br>Profil</div>
+</div>
 
-        <!-- Axtarış Frame -->
-        <div class="iframe-wrapper" id="iframeWrapper">
-            <iframe id="resultsFrame"></iframe>
-        </div>
+<script>
+let items1=[
+ {name:"iPhone 13", want:"PlayStation 5 ilə dəyişilir", tag:"Elektronika", img:"https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=300"},
+ {name:"Zara paltar", want:"Çanta ilə dəyişilir", tag:"Geyim", img:"https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=300"},
+];
+let items2=[
+ {name:"Nike Air Max", want:"iPad mini ilə dəyişmək istəyirəm", tag:"Ayaqqabı", img:"https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=300"},
+ {name:"Uşaq velosipedi", want:"Oyuncaq dəsti ilə dəyişmək istəyirəm", tag:"Uşaq", img:"https://images.unsplash.com/photo-1571068316344-75bc76f77890?w=300"},
+ {name:"MacBook Air M1", want:"iPhone 14 Pro ilə dəyişilir", tag:"Elektronika", img:"https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?w=300"},
+ {name:"Özəl əl çantası", want:"Qızıl sırğa ilə dəyişirəm", tag:"Aksessuar", img:"https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=300"},
+];
 
-        <!-- Discover Lenti -->
-        <div class="discover-container" id="discoverView">
-            <div id="feedList"></div>
-        </div>
-    </main>
-
-    <!-- Çarx Modalı -->
-    <div class="modal" id="wheelModal">
-        <div class="modal-content">
-            <h3>Bəxt Çarxı</h3>
-            <p style="font-size:0.8rem; color:#94a3b8;">10, 100, 500 və ya 1000 MB qazan!</p>
-            
-            <div class="wheel-container">
-                <div class="wheel-pointer"></div>
-                <div class="wheel" id="wheel"></div>
-            </div>
-
-            <button class="btn-action" onclick="spinWheel()" id="startSpinBtn">Fırlat!</button>
-            <button class="btn-action" onclick="closeModal('wheelModal')" style="background:#f43f5e; margin-top:5px;">Bağla</button>
-        </div>
-    </div>
-
-    <!-- Çıxarış Modalı -->
-    <div class="modal" id="withdrawModal">
-        <div class="modal-content">
-            <h3>MB Çıxarışı</h3>
-            <p style="font-size:0.85rem; margin-bottom:10px;">Balansınız: <strong id="withdrawMbAmount" style="color:#10b981">0 MB</strong></p>
-            
-            <input type="text" id="phoneNum" placeholder="Mobil Nömrəniz (050...)" style="width:100%; padding:10px; border-radius:8px; border:1px solid #334155; background:#0f172a; color:#fff; margin-bottom:10px;">
-            
-            <button class="btn-action" onclick="processWithdrawal()" style="background:#10b981;">Çıxart</button>
-            <button class="btn-action" onclick="closeModal('withdrawModal')" style="background:#f43f5e; margin-top:5px;">Ləğv et</button>
-            
-            <p id="withdrawStatus" style="font-size:0.8rem; color:#f59e0b; margin-top:10px; display:none;"></p>
-        </div>
-    </div>
-
-    <script>
-        // Məlumatların lokal saxlanması (Simulyasiya)
-        let userData = JSON.parse(localStorage.getItem('azsearch_user')) || {
-            searches: 0,
-            bonuses: 0,
-            mb: 0
-        };
-
-        function updateUI() {
-            document.getElementById('statSearches').innerText = `${userData.searches} / 50`;
-            document.getElementById('statBonuses').innerText = `${userData.bonuses} Bonus`;
-            document.getElementById('statMB').innerText = `${userData.mb} MB`;
-            document.getElementById('withdrawMbAmount').innerText = `${userData.mb} MB`;
-
-            // Çarx düyməsi aktivliyi (10 bonus olduqda)
-            document.getElementById('spinBtn').disabled = userData.bonuses < 10;
-            
-            // Çıxarış düyməsi aktivliyi (100 MB və ya 500 MB olduqda)
-            document.getElementById('withdrawBtn').disabled = userData.mb < 100;
-
-            localStorage.setItem('azsearch_user', JSON.stringify(userData));
-        }
-
-        function toggleMenu() {
-            document.getElementById('sideMenu').classList.toggle('active');
-        }
-
-        function executeSearch(e) {
-            e.preventDefault();
-            const query = document.getElementById('searchInput').value;
-            if(!query) return;
-
-            // Axtarış sayını artırırıq
-            userData.searches += 1;
-            if(userData.searches >= 50) {
-                userData.searches = 0;
-                userData.bonuses += 1;
-                alert("Təbriklər! Günlük 50 axtarışı tamamladınız və 1 Bonus qazandınız!");
-            }
-            updateUI();
-
-            // Axtarışı göstər
-            document.getElementById('discoverView').style.display = 'none';
-            document.getElementById('iframeWrapper').style.display = 'block';
-            document.getElementById('resultsFrame').src = `https://www.bing.com/search?q=${encodeURIComponent(query)}`;
-        }
-
-        // Modallar
-        function openWheelModal() {
-            if(userData.bonuses < 10) {
-                alert("Çarxı fırlatmaq üçün ən azı 10 Bonusunuz olmalıdır!");
-                return;
-            }
-            document.getElementById('wheelModal').style.style.display = 'flex';
-        }
-
-        function openWithdrawModal() {
-            document.getElementById('withdrawModal').style.display = 'flex';
-        }
-
-        function closeModal(id) {
-            document.getElementById(id).style.display = 'none';
-        }
-
-        // Çarxı Fırlatma Məntiqi (Simulyasiya)
-        function spinWheel() {
-            if(userData.bonuses < 10) return;
-
-            const wheel = document.getElementById('wheel');
-            const startBtn = document.getElementById('startSpinBtn');
-            startBtn.disabled = true;
-
-            // Uduş variasiyaları: 10, 100, 500, 1000 MB
-            const prizes = [10, 100, 500, 1000];
-            const winningMB = prizes[Math.floor(Math.random() * prizes.length)];
-
-            // Təsadüfi fırlanma dərəcəsi
-            const randomDegree = 1440 + Math.floor(Math.random() * 360);
-            wheel.style.transform = `rotate(${randomDegree}deg)`;
-
-            setTimeout(() => {
-                userData.bonuses -= 10;
-                userData.mb += winningMB;
-                updateUI();
-
-                alert(`TƏBRİKLƏR! Siz Çarxdan ${winningMB} MB qazandınız! MB balansınıza əlavə olundu.`);
-                wheel.style.transform = `rotate(0deg)`;
-                startBtn.disabled = false;
-                closeModal('wheelModal');
-            }, 3200);
-        }
-
-        // Çıxarış Prosesi (Simulyasiya)
-        function processWithdrawal() {
-            const phone = document.getElementById('phoneNum').value;
-            const status = document.getElementById('withdrawStatus');
-
-            if(phone.length < 9) {
-                alert("Zəhmət olmasa düzgün mobil nömrə daxil edin!");
-                return;
-            }
-
-            status.style.display = 'block';
-            status.innerText = "Sorğu göndərilir...";
-
-            setTimeout(() => {
-                status.style.color = "#10b981";
-                status.innerText = "Sorğunuz qəbul edildi! 24 saat ərzində yoxlanılacaq və balansınıza köçürüləcək.";
-                
-                // Balansı sıfırla və ya çıxarış et
-                userData.mb = 0;
-                updateUI();
-            }, 1500);
-        }
-
-        // Avtomatik Xəbərlər (RSS)
-        fetch('https://api.rss2json.com/v1/api.json?rss_url=https://oxu.az/rss')
-            .then(res => res.json())
-            .then(data => {
-                if(data.items) {
-                    const list = document.getElementById('feedList');
-                    data.items.slice(0, 8).forEach(item => {
-                        const img = item.enclosure.link || 'https://via.placeholder.com/400x200';
-                        list.innerHTML += `
-                            <a href="${item.link}" target="_blank" class="feed-card">
-                                <img src="${img}">
-                                <div class="feed-content">
-                                    <div class="feed-title">${item.title}</div>
-                                    <div class="feed-meta">📰 Oxu.az</div>
-                                </div>
-                            </a>
-                        `;
-                    });
-                }
-            });
-
-        // Başlanğıc Yükləmə
-        updateUI();
-    </script>
+function render(){
+ document.getElementById('grid1').innerHTML=items1.map(i=>`
+  <div class="card" onclick="offer('${i.name}')">
+   <img src="${i.img}">
+   <div class="card-body"><h3>${i.name}</h3><p>${i.want}</p><span class="tag">${i.tag}</span></div>
+  </div>`).join('');
+ document.getElementById('grid2').innerHTML=items2.map(i=>`
+  <div class="card" onclick="offer('${i.name}')">
+   <img src="${i.img}">
+   <div class="card-body"><h3>${i.name}</h3><p>${i.want}</p><span class="tag">${i.tag}</span></div>
+  </div>`).join('');
+}
+function offer(name){
+ let what=prompt(`"${name}" üçün nə təklif edirsən? Məs: Köhnə telefonum, velosipedim`);
+ if(what){ alert(`Təklifin göndərildi! "${name}" sahibinə bildiriş getdi. Qarşı tərəf qəbul etsə, çat açılacaq.`); }
+}
+function addItem(){
+ let ad=prompt("Nəyi dəyişirsən? Məs: iPhone 12");
+ let istey=prompt("Nə istəyirsən əvəzində? Məs: Samsung və ya başqa şey");
+ if(ad && istey){
+  items1.unshift({name:ad, want:istey+" ilə dəyişilir", tag:"Yeni", img:"https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=300"});
+  render();
+  alert("Elan əlavə olundu! Ana səhifədə göründü.");
+ }
+}
+render();
+</script>
 </body>
 </html>
