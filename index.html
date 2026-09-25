@@ -1,39 +1,2003 @@
 <!DOCTYPE html>
-<html lang="az">
+<html lang="az" data-theme="dark">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<meta name="description" content="GeyimDəyis P2P Pro — serverless P2P geyim barter platforması">
 <title>GeyimDəyis P2P Pro</title>
+
 <script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
 <script src="https://unpkg.com/lucide@latest"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
 <style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:'Inter',sans-serif}
-body{background:#000;color:#fff;overflow:hidden}
-.header{position:fixed;top:0;left:0;right:0;z-index:20;display:flex;align-items:center;gap:8px;padding:10px 12px;background:rgba(0,0,0,0.85);backdrop-filter:blur(12px);border-bottom:1px solid #1a1a1a}
-.logo{font-weight:800;font-size:19px;flex:0 0 auto}.logo span{color:#fe2c55}
-.search-wrap{flex:1;display:flex;align-items:center;background:#1a1a1a;border-radius:22px;padding:2px 4px 2px 14px;border:1px solid #2a2a2a}
-.search-wrap input{flex:1;background:transparent;border:none;color:#fff;outline:none;padding:7px 0;font-size:14px}
-.search-wrap button{width:32px;height:32px;border-radius:50%;background:#fff;color:#000;border:none;display:flex;align-items:center;justify-content:center}
-.icon-top{width:36px;height:36px;border-radius:50%;background:#1a1a1a;border:1px solid #2a2a2a;display:flex;align-items:center;justify-content:center;cursor:pointer}
-#feed{height:100vh;width:100vw;overflow-y:scroll;scroll-snap-type:y mandatory;padding-top:54px;padding-bottom:70px}
-.item{height:calc(100vh - 54px - 70px);min-height:600px;width:100vw;scroll-snap-align:start;position:relative;background:#0a0a0a;overflow:hidden;border-bottom:1px solid #111}
-.media-wrap{height:100%;width:100%;position:relative}
-.media-scroll{display:flex;overflow-x:scroll;scroll-snap-type:x mandatory;height:100%;width:100%}
-.media-cell{min-width:100vw;height:100%;scroll-snap-align:start;position:relative;background:#000;display:flex;align-items:center;justify-content:center}
-.media-cell img,.media-cell video{width:100%;height:100%;object-fit:cover}
-.wa-fixed{position:absolute;right:12px;bottom:88px;z-index:7;background:#25D366;color:#fff;border:none;border-radius:24px;padding:10px 16px;font-weight:700;font-size:13px;display:flex;align-items:center;gap:6px;box-shadow:0 4px 18px rgba(0,0,0,0.4);cursor:pointer}
-.bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:20;background:#0a0a0a;border-top:1px solid #1e1e1e;display:flex;justify-content:space-around;padding:6px 0 10px}
-.nav{opacity:0.5;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;cursor:pointer}.nav.active{opacity:1}
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+:root{
+  --bg:#000;
+  --surface:#0b0b0b;
+  --surface2:#111;
+  --border:#222;
+  --text:#fff;
+  --muted:#999;
+  --red:#fe2c55;
+  --green:#25D366;
+  --yellow:#ffdb4d;
+  --nav:68px;
+  --header:60px;
+}
+*{box-sizing:border-box}
+html,body{
+  margin:0;width:100%;height:100%;
+  background:#000;color:#fff;
+  font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  overflow:hidden;
+}
+button,input,textarea{font:inherit}
+button{border:0;cursor:pointer}
+button:active{transform:scale(.96)}
+.hidden{display:none!important}
+
+.app{height:100dvh;background:#000;position:relative}
+.header{
+  position:fixed;top:0;left:0;right:0;height:60px;
+  z-index:30;display:flex;align-items:center;
+  padding:8px 12px;gap:10px;
+  background:linear-gradient(#000,rgba(0,0,0,.85),transparent);
+}
+.icon-btn{
+  width:42px;height:42px;border-radius:50%;
+  display:grid;place-items:center;background:rgba(20,20,20,.8);
+  color:#fff;border:1px solid #222;flex:none;
+}
+.icon-btn svg{width:21px;height:21px}
+.logo{
+  font-weight:800;font-size:18px;white-space:nowrap;
+  letter-spacing:-.7px;flex:none;
+}
+.logo b{color:var(--red)}
+.search{
+  flex:1;display:flex;height:40px;min-width:0;
+  border:1px solid #292929;border-radius:22px;
+  background:rgba(20,20,20,.9);overflow:hidden;
+}
+.search input{
+  min-width:0;flex:1;border:0;outline:0;background:transparent;
+  color:#fff;padding:0 13px;font-size:13px;
+}
+.search button{
+  width:42px;background:transparent;color:#fff;display:grid;place-items:center;
+}
+.search svg{width:19px}
+
+.feed{
+  height:100dvh;overflow-y:auto;overflow-x:hidden;
+  scroll-snap-type:y mandatory;scroll-behavior:smooth;
+  scrollbar-width:none;
+}
+.feed::-webkit-scrollbar{display:none}
+
+.feed-item{
+  height:100dvh;min-height:100dvh;
+  position:relative;scroll-snap-align:start;
+  scroll-snap-stop:always;background:#050505;
+  overflow:hidden;
+}
+.media-scroll{
+  position:absolute;inset:0;display:flex;
+  overflow-x:auto;scroll-snap-type:x mandatory;
+  scrollbar-width:none;
+}
+.media-scroll::-webkit-scrollbar{display:none}
+.media-slide{
+  min-width:100%;height:100%;scroll-snap-align:center;
+  display:flex;align-items:center;justify-content:center;
+  background:#050505;
+}
+.media-slide img,.media-slide video{
+  width:100%;height:100%;object-fit:cover;display:block;
+}
+.media-placeholder{
+  width:100%;height:100%;display:grid;place-items:center;
+  color:#666;background:#111;
+}
+.media-placeholder svg{width:70px;height:70px}
+
+.media-dots{
+  position:absolute;top:68px;left:50%;transform:translateX(-50%);
+  display:flex;gap:4px;z-index:5;
+}
+.media-dot{
+  width:22px;height:3px;border-radius:4px;background:#555;
+}
+.media-dot.active{background:#fff}
+
+.sound-btn{
+  position:absolute;right:12px;top:72px;z-index:8;
+  border:1px solid #444;background:rgba(0,0,0,.58);
+  color:#fff;border-radius:22px;padding:8px 12px;
+  display:flex;align-items:center;gap:6px;font-size:12px;
+  backdrop-filter:blur(8px);
+}
+.sound-btn svg{width:17px;height:17px}
+
+.feed-gradient{
+  position:absolute;left:0;right:0;bottom:0;height:55%;
+  z-index:3;pointer-events:none;
+  background:linear-gradient(transparent,rgba(0,0,0,.92));
+}
+.overlay{
+  position:absolute;left:0;right:0;bottom:var(--nav);
+  z-index:6;padding:16px 76px 18px 14px;
+}
+.author{
+  display:flex;align-items:center;gap:9px;margin-bottom:8px;
+  cursor:pointer;width:max-content;max-width:100%;
+}
+.avatar{
+  width:38px;height:38px;border-radius:50%;object-fit:cover;
+  border:2px solid #fff;background:#222;display:grid;place-items:center;
+  flex:none;
+}
+.avatar svg{width:20px}
+.author-name{font-size:14px;font-weight:700}
+.author-wa{font-size:11px;color:#aaa;margin-top:2px}
+.description{
+  font-size:14px;line-height:1.42;max-width:560px;
+  margin-bottom:7px;white-space:pre-wrap;word-break:break-word;
+}
+.want{
+  font-size:13px;color:#ddd;margin-bottom:9px;
+}
+.want strong{color:#fff}
+.tags{display:flex;gap:5px;flex-wrap:wrap}
+.tag{
+  color:#111;background:var(--yellow);border-radius:5px;
+  padding:4px 7px;font-size:11px;font-weight:700;cursor:pointer;
+}
+
+.actions{
+  position:absolute;right:10px;bottom:122px;z-index:8;
+  display:flex;flex-direction:column;align-items:center;gap:13px;
+}
+.action{
+  width:47px;height:47px;border-radius:50%;
+  background:rgba(0,0,0,.58);border:1px solid #333;color:#fff;
+  display:grid;place-items:center;position:relative;
+  backdrop-filter:blur(8px);
+}
+.action svg{width:23px;height:23px}
+.action.liked{color:var(--red)}
+.action-count{font-size:10px;color:#fff;position:absolute;bottom:-13px}
+.action-label{font-size:9px;color:#aaa}
+
+.whatsapp{
+  position:absolute;right:12px;bottom:88px;z-index:20;
+  width:50px;height:50px;border-radius:50%;
+  background:var(--green);color:#fff;display:grid;place-items:center;
+  box-shadow:0 4px 20px rgba(0,0,0,.5);
+}
+.whatsapp svg{width:25px;height:25px}
+
+.empty{
+  height:100%;display:flex;align-items:center;justify-content:center;
+  flex-direction:column;gap:14px;color:#777;padding:40px;text-align:center;
+}
+.empty svg{width:55px;height:55px;color:#444}
+.empty strong{color:#fff;font-size:17px}
+.empty p{font-size:13px;max-width:320px;line-height:1.5}
+
+.bottom-nav{
+  position:fixed;left:0;right:0;bottom:0;height:68px;z-index:40;
+  display:grid;grid-template-columns:repeat(4,1fr);
+  background:rgba(0,0,0,.94);border-top:1px solid #222;
+  padding-bottom:env(safe-area-inset-bottom);
+}
+.nav-item{
+  background:transparent;color:#888;display:flex;
+  flex-direction:column;align-items:center;justify-content:center;
+  gap:3px;font-size:9px;opacity:.5;
+}
+.nav-item.active{opacity:1;color:#fff}
+.nav-item svg{width:22px;height:22px}
+.add-button{
+  width:48px;height:35px;border-radius:9px;
+  background:#fff;color:#000;display:grid;place-items:center;
+  border-left:3px solid var(--red);border-right:3px solid #27f;
+}
+.add-button svg{width:23px}
+
+.drawer{
+  position:fixed;inset:0;z-index:100;pointer-events:none;
+}
+.drawer-backdrop{
+  position:absolute;inset:0;background:rgba(0,0,0,.7);
+  opacity:0;transition:.3s;
+}
+.drawer-panel{
+  position:absolute;left:-100%;top:0;bottom:0;width:86%;max-width:380px;
+  background:#090909;border-right:1px solid #292929;
+  transition:.3s;padding:20px 16px;overflow:auto;
+}
+.drawer.open{pointer-events:auto}
+.drawer.open .drawer-backdrop{opacity:1}
+.drawer.open .drawer-panel{left:0}
+.drawer-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+.drawer-title{font-weight:800;font-size:20px}
+.menu-item{
+  width:100%;display:flex;align-items:center;gap:13px;
+  padding:15px 12px;background:transparent;color:#eee;
+  text-align:left;border-radius:12px;margin-bottom:5px;
+}
+.menu-item:hover{background:#151515}
+.menu-item svg{width:20px;color:#aaa}
+.status{
+  margin:15px 8px;padding:13px;border:1px solid #292929;
+  border-radius:12px;background:#111;font-size:12px;
+}
+.status-dot{
+  display:inline-block;width:8px;height:8px;border-radius:50%;
+  background:#666;margin-right:7px;
+}
+.status-dot.online{background:#25d366}
+
+.modal{
+  position:fixed;inset:0;z-index:90;display:none;
+  align-items:flex-end;justify-content:center;
+  background:rgba(0,0,0,.75);
+}
+.modal.open{display:flex}
+.modal-card{
+  width:100%;max-width:650px;max-height:94dvh;
+  background:#0a0a0a;border:1px solid #292929;
+  border-radius:22px 22px 0 0;overflow:auto;
+  padding:18px;
+}
+@media(min-width:700px){
+  .modal{align-items:center}
+  .modal-card{border-radius:20px;max-height:90dvh}
+}
+.modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:17px}
+.modal-title{font-size:18px;font-weight:800}
+.close{
+  width:38px;height:38px;border-radius:50%;
+  background:#181818;color:#fff;display:grid;place-items:center;
+}
+.close svg{width:19px}
+
+.form-grid{display:grid;gap:10px}
+.field label{
+  display:block;font-size:11px;color:#999;margin:0 0 5px 3px;
+}
+.field input,.field textarea{
+  width:100%;background:#111;border:1px solid #292929;
+  border-radius:10px;color:#fff;outline:0;padding:12px;
+}
+.field textarea{resize:vertical;min-height:75px}
+.field input:focus,.field textarea:focus{border-color:#555}
+
+.profile-upload{
+  display:flex;align-items:center;gap:12px;padding:10px;
+  border:1px dashed #333;border-radius:12px;
+}
+.profile-preview{width:48px;height:48px;border-radius:50%;object-fit:cover;background:#222}
+.file-btn{
+  display:inline-flex;align-items:center;gap:7px;
+  padding:10px 12px;background:#191919;border:1px solid #333;
+  border-radius:9px;color:#fff;font-size:12px;
+}
+.file-btn svg{width:17px}
+.media-buttons{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.selected-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,80px);gap:8px;
+  margin-top:10px;
+}
+.selected{
+  width:80px;height:80px;border-radius:8px;overflow:hidden;
+  position:relative;background:#151515;border:1px solid #292929;
+}
+.selected img,.selected video{width:100%;height:100%;object-fit:cover}
+.selected button{
+  position:absolute;top:3px;right:3px;width:22px;height:22px;
+  border-radius:50%;background:rgba(0,0,0,.75);color:#fff;
+}
+.primary{
+  width:100%;margin-top:15px;padding:13px;border-radius:11px;
+  background:var(--red);color:#fff;font-weight:800;
+}
+.secondary{
+  padding:11px 14px;border-radius:10px;background:#181818;
+  color:#fff;border:1px solid #303030;
+}
+
+.profile-center{text-align:center}
+.big-avatar{
+  width:96px;height:96px;border-radius:50%;object-fit:cover;
+  border:3px solid #fff;background:#222;
+}
+.profile-name{font-size:20px;font-weight:800;margin-top:10px}
+.profile-phone{font-size:12px;color:#999;margin-top:3px}
+.profile-count{font-size:12px;color:#bbb;margin:10px 0}
+.profile-wa{
+  display:inline-flex;align-items:center;gap:7px;
+  background:var(--green);color:#fff;padding:10px 17px;
+  border-radius:22px;font-size:12px;font-weight:700;
+}
+.profile-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:3px;margin-top:18px;
+}
+.profile-item{aspect-ratio:1;overflow:hidden;background:#151515}
+.profile-item img,.profile-item video{width:100%;height:100%;object-fit:cover}
+
+.comment-box{
+  position:absolute;left:0;right:0;bottom:var(--nav);z-index:18;
+  max-height:45%;background:#090909;border-top:1px solid #292929;
+  transform:translateY(100%);transition:.25s;display:flex;
+  flex-direction:column;
+}
+.comment-box.open{transform:translateY(0)}
+.comment-head{
+  padding:12px 14px;display:flex;justify-content:space-between;
+  align-items:center;border-bottom:1px solid #222;font-size:13px;font-weight:700;
+}
+.comments{
+  flex:1;overflow-y:auto;padding:8px 14px;
+}
+.comment{
+  padding:9px 0;border-bottom:1px solid #191919;
+}
+.comment-main{display:flex;gap:9px}
+.comment-avatar{width:30px;height:30px;border-radius:50%;object-fit:cover;background:#222}
+.comment-user{font-size:11px;font-weight:700}
+.comment-text{font-size:12px;line-height:1.4;margin-top:3px}
+.comment-actions{display:flex;gap:12px;margin-top:5px;margin-left:39px}
+.comment-actions button{background:none;color:#888;font-size:10px;padding:0}
+.reply{margin:7px 0 0 39px;padding-left:9px;border-left:1px solid #333}
+.comment-input{
+  display:flex;gap:7px;padding:10px;border-top:1px solid #222;
+  background:#0b0b0b;
+}
+.comment-input input{
+  flex:1;min-width:0;background:#161616;color:#fff;
+  border:1px solid #292929;border-radius:20px;padding:10px 13px;outline:0;
+}
+.comment-input button{
+  width:44px;border-radius:20px;background:var(--red);color:#fff;
+}
+
+.info-card{line-height:1.55;color:#ccc;font-size:13px}
+.info-card h3{color:#fff;font-size:15px;margin:18px 0 7px}
+.info-card p{margin:7px 0}
+.info-card ul{padding-left:20px}
+.info-card li{margin:5px 0}
+.warning{
+  border:1px solid #4a3030;background:#1a0e10;
+  border-radius:10px;padding:11px;color:#ddd;
+}
+.filter-bar{
+  position:fixed;top:61px;left:10px;right:10px;z-index:25;
+  display:none;background:#111;border:1px solid #292929;
+  border-radius:12px;padding:8px;
+}
+.filter-bar.show{display:block}
 </style>
 </head>
+
 <body>
-<div class="header"><div class="icon-top" onclick="toggleMenu()">☰</div><div class="logo">Geyim<span>Dəyis</span></div><div class="search-wrap"><input id="search" placeholder="Axtar..."><button onclick="doSearch()">🔍</button></div><div class="icon-top" onclick="showFavs()">❤️</div></div>
-<div id="feed"></div>
-<div class="bottom-nav"><div class="nav active" onclick="goHome()">Home</div><div class="nav" onclick="openUpload()">+</div><div class="nav" onclick="showFavs()">Seçilmiş</div><div class="nav" onclick="openMyProfile()">Profil</div></div>
-<div id="modal" style="position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:60;display:none"></div>
+<div class="app">
+
+<header class="header">
+  <button class="icon-btn" id="menuBtn" aria-label="Menyu">
+    <i data-lucide="menu"></i>
+  </button>
+
+  <div class="logo">Geyim<b>Dəyis</b></div>
+
+  <div class="search">
+    <input id="searchInput" type="search" autocomplete="off"
+           placeholder="marka, ölçü, tag, geyim...">
+    <button id="searchBtn" aria-label="Axtar">
+      <i data-lucide="search"></i>
+    </button>
+  </div>
+
+  <button class="icon-btn" id="favsHeader" aria-label="Seçilmişlər">
+    <i data-lucide="heart"></i>
+  </button>
+</header>
+
+<div class="feed" id="feed"></div>
+
+<div class="bottom-nav">
+  <button class="nav-item active" id="homeNav">
+    <i data-lucide="house"></i><span>Home</span>
+  </button>
+  <button class="nav-item" id="addNav">
+    <span class="add-button"><i data-lucide="plus"></i></span><span>Elan</span>
+  </button>
+  <button class="nav-item" id="favNav">
+    <i data-lucide="star"></i><span>Seçilmiş</span>
+  </button>
+  <button class="nav-item" id="profileNav">
+    <i data-lucide="user-round"></i><span>Profil</span>
+  </button>
+</div>
+
+<!-- MENU -->
+<div class="drawer" id="drawer">
+  <div class="drawer-backdrop" id="drawerBackdrop"></div>
+  <aside class="drawer-panel">
+    <div class="drawer-head">
+      <div class="drawer-title">GeyimDəyis</div>
+      <button class="close" id="drawerClose"><i data-lucide="x"></i></button>
+    </div>
+
+    <button class="menu-item" data-info="about">
+      <i data-lucide="info"></i><span>Platforma haqqında</span>
+    </button>
+    <button class="menu-item" data-info="how">
+      <i data-lucide="circle-help"></i><span>Necə istifadə olunur</span>
+    </button>
+    <button class="menu-item" data-info="privacy">
+      <i data-lucide="shield-check"></i><span>Məxfilik siyasəti & Qanunlar</span>
+    </button>
+    <button class="menu-item" data-info="terms">
+      <i data-lucide="file-text"></i><span>İstifadə şərtləri</span>
+    </button>
+
+    <div class="status">
+      <span class="status-dot" id="statusDot"></span>
+      <span id="statusText">P2P yoxlanılır...</span>
+    </div>
+  </aside>
+</div>
+
+<!-- UPLOAD -->
+<div class="modal" id="uploadModal">
+  <div class="modal-card">
+    <div class="modal-head">
+      <div class="modal-title">Yeni barter elanı</div>
+      <button class="close" data-close="uploadModal"><i data-lucide="x"></i></button>
+    </div>
+
+    <div class="form-grid">
+      <div class="profile-upload">
+        <img class="profile-preview" id="avatarPreview" alt="">
+        <div>
+          <div style="font-size:12px;font-weight:700;margin-bottom:6px">Profil şəkli</div>
+          <label class="file-btn">
+            <i data-lucide="image-plus"></i>
+            Seç
+            <input id="avIn" type="file" accept="image/*" hidden>
+          </label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Ad</label>
+        <input id="nameIn" placeholder="Adınız">
+      </div>
+
+      <div class="field">
+        <label>Nəyi dəyişirsən?</label>
+        <input id="itemIn" placeholder="Məs: Zara gödəkçə, M ölçü">
+      </div>
+
+      <div class="field">
+        <label>Nə istəyirəm?</label>
+        <input id="wantIn" placeholder="Məs: S ölçü palto və ya ayaqqabı">
+      </div>
+
+      <div class="field">
+        <label>WhatsApp</label>
+        <input id="waIn" inputmode="tel" placeholder="994501234567">
+      </div>
+
+      <div class="field">
+        <label>Marka</label>
+        <input id="brandIn" placeholder="Zara, Nike, LC Waikiki...">
+      </div>
+
+      <div class="field">
+        <label>Ölçü</label>
+        <input id="sizeIn" placeholder="XS / S / M / L / XL / 38...">
+      </div>
+
+      <div class="field">
+        <label>Elan təsviri</label>
+        <textarea id="descIn" placeholder="Vəziyyəti, materialı, əlavə məlumat..."></textarea>
+      </div>
+
+      <div class="field">
+        <label>Tags</label>
+        <input id="tagsIn" placeholder="#zara #gödəkçə #M #qadın">
+      </div>
+
+      <div class="media-buttons">
+        <label class="file-btn" style="justify-content:center">
+          <i data-lucide="images"></i>
+          Şəkil əlavə et
+          <input id="imgIn" type="file" accept="image/*" multiple hidden>
+        </label>
+        <label class="file-btn" style="justify-content:center">
+          <i data-lucide="video"></i>
+          Video əlavə et
+          <input id="vidIn" type="file" accept="video/*" multiple hidden>
+        </label>
+      </div>
+
+      <div>
+        <div style="font-size:11px;color:#999">Seçilən media — limitsiz</div>
+        <div class="selected-grid" id="selectedGrid"></div>
+      </div>
+
+      <button class="primary" id="publishBtn">
+        <i data-lucide="radio-tower" style="width:17px;vertical-align:-3px"></i>
+        P2P şəbəkəyə göndər
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- PROFILE -->
+<div class="modal" id="profileModal">
+  <div class="modal-card">
+    <div class="modal-head">
+      <div class="modal-title">Profil</div>
+      <button class="close" data-close="profileModal"><i data-lucide="x"></i></button>
+    </div>
+    <div id="profileContent"></div>
+  </div>
+</div>
+
+<!-- COMMENTS -->
+<div class="comment-box" id="commentBox">
+  <div class="comment-head">
+    <span id="commentTitle">Şərhlər</span>
+    <button class="close" id="commentClose"><i data-lucide="x"></i></button>
+  </div>
+  <div class="comments" id="commentsList"></div>
+  <div class="comment-input">
+    <input id="commentInput" placeholder="Şərh yaz...">
+    <button id="commentSend"><i data-lucide="send"></i></button>
+  </div>
+</div>
+
+<!-- INFO -->
+<div class="modal" id="infoModal">
+  <div class="modal-card">
+    <div class="modal-head">
+      <div class="modal-title" id="infoTitle"></div>
+      <button class="close" data-close="infoModal"><i data-lucide="x"></i></button>
+    </div>
+    <div class="info-card" id="infoContent"></div>
+  </div>
+</div>
+
+</div>
+
 <script>
-// TAM KOD yuxarıdakı faylda var - bu qısa versiyadır, tam versiya üçün faylı endir
+"use strict";
+
+/* ============================================================
+   GeyimDəyis P2P Pro
+   Client-side / Gun.js / IndexedDB / localStorage
+   ============================================================ */
+
+const APP_VERSION = "p2p-v4";
+const FEED_KEY = "p2p-feed-v4";
+const FAV_KEY = "p2p-favs-v4";
+const PROFILE_KEY = "myProfile";
+const COMMENTS_KEY = "comments-v4";
+
+let feedData = [];
+let currentFilter = "";
+let selectedMedia = [];
+let currentCommentsItem = null;
+let observer = null;
+let db = null;
+let gun = null;
+let connected = false;
+
+/* ---------- UTILITIES ---------- */
+
+const $ = id => document.getElementById(id);
+
+function uid(prefix="id"){
+  return prefix + "_" + Date.now().toString(36) + "_" +
+    Math.random().toString(36).slice(2,10);
+}
+
+function esc(value){
+  return String(value ?? "").replace(/[&<>"']/g, c => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+  }[c]));
+}
+
+function normalize(value){
+  return String(value ?? "").toLocaleLowerCase("az-AZ").trim();
+}
+
+function tagsArray(value){
+  return String(value ?? "")
+    .split(/[\s,]+/)
+    .map(x => x.trim().replace(/^#/,""))
+    .filter(Boolean)
+    .slice(0,50);
+}
+
+function formatNumber(n){
+  return Number(n || 0).toLocaleString("az-AZ");
+}
+
+function timeAgo(ts){
+  const diff = Math.max(0,Date.now()-Number(ts||Date.now()));
+  const m = Math.floor(diff/60000);
+  if(m<1) return "indi";
+  if(m<60) return m+" dəq";
+  const h = Math.floor(m/60);
+  if(h<24) return h+" saat";
+  const d = Math.floor(h/24);
+  return d+" gün";
+}
+
+function myProfile(){
+  try{
+    return JSON.parse(localStorage.getItem(PROFILE_KEY) || "{}");
+  }catch(e){return {}}
+}
+
+function saveProfile(profile){
+  localStorage.setItem(PROFILE_KEY,JSON.stringify(profile));
+}
+
+function getFavs(){
+  try{return JSON.parse(localStorage.getItem(FAV_KEY)||"[]")}catch(e){return []}
+}
+
+function setFavs(arr){
+  localStorage.setItem(FAV_KEY,JSON.stringify(arr));
+}
+
+function isFav(id){
+  return getFavs().includes(id);
+}
+
+function renderIcons(){
+  if(window.lucide && typeof lucide.createIcons==="function"){
+    lucide.createIcons();
+  }
+}
+
+/* ---------- GUN ---------- */
+
+try{
+  gun = Gun({
+    peers:["https://gun-manhattan.herokuapp.com/gun"],
+    localStorage:false
+  });
+  connected = true;
+}catch(e){
+  connected = false;
+}
+
+function updateP2PStatus(){
+  const dot = $("statusDot");
+  const text = $("statusText");
+  if(!dot || !text)return;
+  if(navigator.onLine && connected){
+    dot.classList.add("online");
+    text.textContent="P2P relay aktiv";
+  }else{
+    dot.classList.remove("online");
+    text.textContent="Offline — lokal seeder aktiv";
+  }
+}
+
+/* ---------- INDEXEDDB ---------- */
+
+function openDB(){
+  return new Promise((resolve,reject)=>{
+    if(db){resolve(db);return}
+    const request=indexedDB.open("geyimdeyis-p2p",1);
+
+    request.onupgradeneeded=e=>{
+      const database=e.target.result;
+      if(!database.objectStoreNames.contains("medias")){
+        database.createObjectStore("medias",{keyPath:"id"});
+      }
+    };
+    request.onsuccess=e=>{
+      db=e.target.result;
+      resolve(db);
+    };
+    request.onerror=()=>reject(request.error);
+  });
+}
+
+async function saveMediaBlob(id,file){
+  try{
+    const database=await openDB();
+    return new Promise((resolve,reject)=>{
+      const tx=database.transaction("medias","readwrite");
+      tx.objectStore("medias").put({
+        id,
+        blob:file,
+        type:file.type,
+        name:file.name || ""
+      });
+      tx.oncomplete=()=>resolve();
+      tx.onerror=()=>reject(tx.error);
+    });
+  }catch(e){
+    console.warn("IDB media save:",e);
+  }
+}
+
+async function getMediaBlob(id){
+  try{
+    const database=await openDB();
+    return new Promise(resolve=>{
+      const tx=database.transaction("medias","readonly");
+      const req=tx.objectStore("medias").get(id);
+      req.onsuccess=()=>resolve(req.result || null);
+      req.onerror=()=>resolve(null);
+    });
+  }catch(e){return null}
+}
+
+/* ---------- FILE -> DATA URL ---------- */
+
+function fileToDataURL(file){
+  return new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onload=()=>resolve(reader.result);
+    reader.onerror=reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+/*
+  Gun can gossip strings/objects, not arbitrary Blob objects.
+  Small/medium media are therefore serialized as data URLs so a
+  peer can reconstruct them. IndexedDB remains the local durable
+  media cache.
+*/
+async function mediaToRecord(file,ownerId){
+  const id=ownerId+"_"+uid("media");
+
+  await saveMediaBlob(id,file);
+
+  let dataUrl="";
+  try{
+    dataUrl=await fileToDataURL(file);
+  }catch(e){}
+
+  return {
+    id,
+    type:file.type.startsWith("video/") ? "video" : "image",
+    mime:file.type,
+    name:file.name || "",
+    src:dataUrl
+  };
+}
+
+/* ---------- LOCAL PERSISTENCE ---------- */
+
+function saveLocal(){
+  try{
+    localStorage.setItem(FEED_KEY,JSON.stringify(feedData));
+  }catch(e){
+    /*
+      Browsers have localStorage quotas. If large media cause quota
+      exhaustion, metadata is retained and IndexedDB remains the
+      local media cache.
+    */
+    try{
+      const lightweight=feedData.map(item=>({
+        ...item,
+        media:(item.media||[]).map(m=>({
+          id:m.id,type:m.type,mime:m.mime,name:m.name,src:""
+        }))
+      }));
+      localStorage.setItem(FEED_KEY,JSON.stringify(lightweight));
+    }catch(err){
+      console.warn("local persistence quota reached");
+    }
+  }
+}
+
+function loadLocal(){
+  try{
+    const raw=localStorage.getItem(FEED_KEY);
+    if(!raw)return [];
+    const parsed=JSON.parse(raw);
+    return Array.isArray(parsed)?parsed:[];
+  }catch(e){return []}
+}
+
+function persist(item){
+  saveLocal();
+
+  if(!gun || !item)return;
+
+  try{
+    /*
+      Each item is written under its stable ID.
+      Gun's graph propagation lets connected peers gossip it.
+    */
+    gun.get("geyimdeyis").get("feed").get(item.id).put({
+      id:item.id,
+      u:item.u,
+      av:item.av || "",
+      name:item.name || "",
+      item:item.item || "",
+      want:item.want || "",
+      wa:item.wa || "",
+      brand:item.brand || "",
+      size:item.size || "",
+      desc:item.desc || "",
+      tags:item.tags || [],
+      media:item.media || [],
+      ts:item.ts || Date.now(),
+      likes:item.likes || 0
+    });
+  }catch(e){
+    console.warn("Gun persist:",e);
+  }
+}
+
+function loadGun(){
+  if(!gun)return;
+
+  try{
+    gun.get("geyimdeyis").get("feed").map().once(data=>{
+      if(!data || !data.id)return;
+
+      const normalized={
+        ...data,
+        tags:Array.isArray(data.tags)
+          ?data.tags
+          :typeof data.tags==="object"
+            ?Object.values(data.tags)
+            :tagsArray(data.tags),
+        media:Array.isArray(data.media)
+          ?data.media
+          :typeof data.media==="object"
+            ?Object.values(data.media)
+            :[]
+      };
+
+      const index=feedData.findIndex(x=>x.id===normalized.id);
+
+      if(index===-1){
+        feedData.push(normalized);
+      }else{
+        feedData[index]={...feedData[index],...normalized};
+      }
+
+      feedData.sort((a,b)=>(b.ts||0)-(a.ts||0));
+      saveLocal();
+
+      if(!currentFilter) renderFeed();
+      else doSearch(currentFilter,false);
+    });
+  }catch(e){
+    console.warn("Gun load:",e);
+  }
+}
+
+/* ---------- COMMENTS ---------- */
+
+function getComments(){
+  try{return JSON.parse(localStorage.getItem(COMMENTS_KEY)||"{}")}
+  catch(e){return {}}
+}
+
+function saveComments(obj){
+  localStorage.setItem(COMMENTS_KEY,JSON.stringify(obj));
+}
+
+function commentData(itemId){
+  const all=getComments();
+  return Array.isArray(all[itemId])?all[itemId]:[];
+}
+
+function publishComment(itemId,comment){
+  const all=getComments();
+  if(!Array.isArray(all[itemId]))all[itemId]=[];
+  all[itemId].push(comment);
+  saveComments(all);
+
+  if(gun){
+    try{
+      gun.get("geyimdeyis").get("comments").get(itemId)
+        .get(comment.ts+"_"+comment.u).put(comment);
+    }catch(e){}
+  }
+}
+
+/* ---------- MEDIA PREVIEW ---------- */
+
+function resetSelectedMedia(){
+  selectedMedia.forEach(x=>{
+    if(x.previewUrl){
+      try{URL.revokeObjectURL(x.previewUrl)}catch(e){}
+    }
+  });
+  selectedMedia=[];
+  renderSelectedMedia();
+}
+
+function addFiles(files){
+  [...files].forEach(file=>{
+    if(!file.type.startsWith("image/") &&
+       !file.type.startsWith("video/"))return;
+
+    const previewUrl=URL.createObjectURL(file);
+    selectedMedia.push({
+      file,
+      previewUrl,
+      type:file.type.startsWith("video/")?"video":"image"
+    });
+  });
+  renderSelectedMedia();
+}
+
+function renderSelectedMedia(){
+  const grid=$("selectedGrid");
+  if(!grid)return;
+
+  grid.innerHTML="";
+
+  selectedMedia.forEach((m,i)=>{
+    const box=document.createElement("div");
+    box.className="selected";
+
+    if(m.type==="video"){
+      box.innerHTML=`
+        <video src="${m.previewUrl}" muted playsinline></video>
+        <button type="button" data-remove="${i}">
+          <i data-lucide="x"></i>
+        </button>`;
+    }else{
+      box.innerHTML=`
+        <img src="${m.previewUrl}" alt="">
+        <button type="button" data-remove="${i}">
+          <i data-lucide="x"></i>
+        </button>`;
+    }
+
+    grid.appendChild(box);
+  });
+
+  grid.querySelectorAll("[data-remove]").forEach(btn=>{
+    btn.onclick=()=>{
+      const i=Number(btn.dataset.remove);
+      const old=selectedMedia[i];
+      if(old?.previewUrl){
+        try{URL.revokeObjectURL(old.previewUrl)}catch(e){}
+      }
+      selectedMedia.splice(i,1);
+      renderSelectedMedia();
+    };
+  });
+
+  renderIcons();
+}
+
+/* ---------- UPLOAD ---------- */
+
+async function publishItem(){
+  const name=$("nameIn").value.trim();
+  const item=$("itemIn").value.trim();
+  const want=$("wantIn").value.trim();
+  const wa=$("waIn").value.replace(/[^\d+]/g,"");
+  const brand=$("brandIn").value.trim();
+  const size=$("sizeIn").value.trim();
+  const desc=$("descIn").value.trim();
+  const tags=tagsArray($("tagsIn").value);
+
+  if(!name){
+    alert("Adınızı daxil edin.");
+    $("nameIn").focus();
+    return;
+  }
+
+  if(!item){
+    alert("Nəyi dəyişdirdiyinizi yazın.");
+    $("itemIn").focus();
+    return;
+  }
+
+  if(!wa){
+    alert("WhatsApp nömrəsini daxil edin.");
+    $("waIn").focus();
+    return;
+  }
+
+  if(!selectedMedia.length){
+    alert("Ən azı bir şəkil və ya video əlavə edin.");
+    return;
+  }
+
+  const btn=$("publishBtn");
+  btn.disabled=true;
+  btn.textContent="Hazırlanır...";
+
+  try{
+    let profile=myProfile();
+
+    let avatar=profile.av || "";
+    const avFile=$("avIn").files[0];
+
+    if(avFile){
+      avatar=await fileToDataURL(avFile);
+    }
+
+    profile={
+      ...profile,
+      u:profile.u || uid("user"),
+      name,
+      wa,
+      av:avatar
+    };
+    saveProfile(profile);
+
+    const itemId=uid("item");
+
+    const media=[];
+    for(const selected of selectedMedia){
+      const rec=await mediaToRecord(selected.file,itemId);
+      media.push(rec);
+    }
+
+    const record={
+      id:itemId,
+      u:profile.u,
+      av:avatar,
+      name,
+      item,
+      want,
+      wa,
+      brand,
+      size,
+      desc,
+      tags,
+      media,
+      ts:Date.now(),
+      likes:0
+    };
+
+    feedData.unshift(record);
+    feedData.sort((a,b)=>b.ts-a.ts);
+
+    persist(record);
+    saveLocal();
+
+    closeModal("uploadModal");
+    resetUploadForm();
+
+    currentFilter="";
+    $("searchInput").value="";
+    renderFeed();
+    scrollTopFeed();
+
+  }catch(e){
+    console.error(e);
+    alert("Elan hazırlanarkən xəta baş verdi.");
+  }finally{
+    btn.disabled=false;
+    btn.innerHTML=`
+      <i data-lucide="radio-tower" style="width:17px;vertical-align:-3px"></i>
+      P2P şəbəkəyə göndər`;
+    renderIcons();
+  }
+}
+
+function resetUploadForm(){
+  [
+    "nameIn","itemIn","wantIn","waIn","brandIn",
+    "sizeIn","descIn","tagsIn"
+  ].forEach(id=>$(id).value="");
+
+  $("avIn").value="";
+  $("imgIn").value="";
+  $("vidIn").value="";
+  $("avatarPreview").src="";
+  resetSelectedMedia();
+}
+
+$("imgIn").addEventListener("change",e=>addFiles(e.target.files));
+$("vidIn").addEventListener("change",e=>addFiles(e.target.files));
+
+$("avIn").addEventListener("change",async e=>{
+  const file=e.target.files[0];
+  if(!file)return;
+  $("avatarPreview").src=URL.createObjectURL(file);
+});
+
+/* ---------- SEARCH ---------- */
+
+function searchableText(x){
+  return [
+    x.brand,x.size,x.tags,x.name,x.item,x.want,
+    x.desc,x.wa
+  ].join(" ");
+}
+
+function doSearch(value=$("searchInput").value,scroll=true){
+  currentFilter=normalize(value);
+
+  if(scroll){
+    renderFeed();
+    scrollTopFeed();
+  }else{
+    renderFeed();
+  }
+}
+
+function filteredFeed(){
+  let arr=[...feedData];
+
+  if(currentFilter){
+    arr=arr.filter(item=>{
+      const text=normalize(searchableText(item));
+      return text.includes(currentFilter);
+    });
+  }
+
+  return arr.sort((a,b)=>(b.ts||0)-(a.ts||0));
+}
+
+/* ---------- FEED RENDER ---------- */
+
+function mediaHtml(item){
+  const media=Array.isArray(item.media)?item.media:[];
+
+  if(!media.length){
+    return `<div class="media-slide">
+      <div class="media-placeholder"><i data-lucide="image-off"></i></div>
+    </div>`;
+  }
+
+  return media.map((m,i)=>{
+    if(m.type==="video"){
+      return `
+      <div class="media-slide">
+        <video
+          class="feed-video"
+          data-media-id="${esc(m.id)}"
+          src="${esc(m.src||"")}"
+          ${i===0?"autoplay":""}
+          muted
+          loop
+          playsinline
+          preload="metadata"
+          controlslist="nodownload">
+        </video>
+      </div>`;
+    }
+
+    return `
+      <div class="media-slide">
+        <img
+          loading="${i===0?"eager":"lazy"}"
+          src="${esc(m.src||"")}"
+          data-media-id="${esc(m.id)}"
+          alt="${esc(item.item||"Geyim")}">
+      </div>`;
+  }).join("");
+}
+
+function renderFeed(){
+  const feed=$("feed");
+  const arr=filteredFeed();
+
+  if(!arr.length){
+    feed.innerHTML=`
+      <section class="empty">
+        <i data-lucide="${currentFilter?"search-x":"shirt"}"></i>
+        <strong>${currentFilter?"Nəticə tapılmadı":"Hələ elan yoxdur"}</strong>
+        <p>${currentFilter
+          ?"Başqa söz, marka, ölçü və ya tag ilə axtarın."
+          :"İlk barter elanını yerləşdirin və P2P şəbəkəyə qoşulun."
+        }</p>
+        ${!currentFilter
+          ?`<button class="primary" style="max-width:250px" onclick="openModal('uploadModal')">
+              <i data-lucide="plus"></i> Elan yerləşdir
+            </button>`:""}
+      </section>`;
+    renderIcons();
+    return;
+  }
+
+  feed.innerHTML=arr.map(item=>{
+    const tags=Array.isArray(item.tags)?item.tags:tagsArray(item.tags);
+    const comments=commentData(item.id).length;
+    const liked=isFav(item.id);
+
+    return `
+    <section class="feed-item" data-id="${esc(item.id)}">
+      <div class="media-scroll">
+        ${mediaHtml(item)}
+      </div>
+
+      ${item.media?.length>1
+        ?`<div class="media-dots">
+          ${item.media.map((_,i)=>
+            `<span class="media-dot ${i===0?"active":""}"></span>`
+          ).join("")}
+        </div>`:""}
+
+      <button class="sound-btn" data-sound="${esc(item.id)}">
+        <i data-lucide="volume-x"></i><span>Səs</span>
+      </button>
+
+      <div class="feed-gradient"></div>
+
+      <div class="actions">
+        <button class="action ${liked?"liked":""}"
+          data-like="${esc(item.id)}" aria-label="Bəyən">
+          <i data-lucide="heart" ${liked?'fill="currentColor"':""}></i>
+          <span class="action-count">${formatNumber(item.likes||0)}</span>
+        </button>
+
+        <button class="action"
+          data-comment="${esc(item.id)}" aria-label="Şərhlər">
+          <i data-lucide="message-square"></i>
+          <span class="action-count">${formatNumber(comments)}</span>
+        </button>
+
+        <button class="action"
+          data-share="${esc(item.id)}" aria-label="Paylaş">
+          <i data-lucide="share-2"></i>
+        </button>
+      </div>
+
+      <div class="overlay">
+        <div class="author" data-profile="${esc(item.u)}">
+          <img class="avatar" src="${esc(item.av||"")}" alt=""
+               onerror="this.style.display='none'">
+          <div>
+            <div class="author-name">${esc(item.name||"İstifadəçi")}</div>
+            <div class="author-wa">${esc(item.wa||"")} · ${timeAgo(item.ts)}</div>
+          </div>
+        </div>
+
+        <div class="description">${esc(item.desc||item.item)}</div>
+
+        <div class="want">
+          <strong>Dəyişirəm:</strong> ${esc(item.item)}
+          ${item.want?`<br><strong>İstəyirəm:</strong> ${esc(item.want)}`:""}
+        </div>
+
+        <div class="tags">
+          ${tags.map(t=>
+            `<button class="tag" data-tag="${esc(t)}">#${esc(t)}</button>`
+          ).join("")}
+        </div>
+      </div>
+
+      <a class="whatsapp"
+         href="https://wa.me/${encodeURIComponent(String(item.wa||"").replace(/\D/g,""))}"
+         target="_blank"
+         rel="noopener noreferrer"
+         aria-label="WhatsApp">
+        <i data-lucide="message-circle"></i>
+      </a>
+    </section>`;
+  }).join("");
+
+  bindFeedEvents();
+  setupFeedObserver();
+  renderIcons();
+}
+
+function bindFeedEvents(){
+  $("feed").querySelectorAll("[data-like]").forEach(btn=>{
+    btn.onclick=()=>toggleFav(btn.dataset.like);
+  });
+
+  $("feed").querySelectorAll("[data-comment]").forEach(btn=>{
+    btn.onclick=()=>openComments(btn.dataset.comment);
+  });
+
+  $("feed").querySelectorAll("[data-share]").forEach(btn=>{
+    btn.onclick=()=>shareItem(btn.dataset.share);
+  });
+
+  $("feed").querySelectorAll("[data-profile]").forEach(el=>{
+    el.onclick=()=>openProfile(el.dataset.profile);
+  });
+
+  $("feed").querySelectorAll("[data-tag]").forEach(btn=>{
+    btn.onclick=()=>{
+      $("searchInput").value="#"+btn.dataset.tag;
+      doSearch(btn.dataset.tag);
+    };
+  });
+
+  $("feed").querySelectorAll("[data-sound]").forEach(btn=>{
+    btn.onclick=()=>{
+      const section=btn.closest(".feed-item");
+      const videos=section.querySelectorAll("video");
+      const anyMuted=[...videos].some(v=>v.muted);
+
+      videos.forEach(v=>{
+        v.muted=!anyMuted;
+        if(!v.muted){
+          v.volume=.8;
+          v.play().catch(()=>{});
+        }
+      });
+
+      btn.innerHTML=anyMuted
+        ?`<i data-lucide="volume-2"></i><span>Səs</span>`
+        :`<i data-lucide="volume-x"></i><span>Səs</span>`;
+      renderIcons();
+    };
+  });
+
+  $("feed").querySelectorAll(".media-scroll").forEach(scroller=>{
+    scroller.addEventListener("scroll",()=>{
+      const width=scroller.clientWidth;
+      const index=Math.round(scroller.scrollLeft/width);
+      const dots=scroller.parentElement.querySelectorAll(".media-dot");
+      dots.forEach((d,i)=>d.classList.toggle("active",i===index));
+    },{passive:true});
+  });
+}
+
+/* ---------- INTERSECTION / SEEDER ---------- */
+
+function setupFeedObserver(){
+  if(observer)observer.disconnect();
+
+  observer=new IntersectionObserver(entries=>{
+    entries.forEach(entry=>{
+      const section=entry.target;
+      const id=section.dataset.id;
+      const item=feedData.find(x=>x.id===id);
+
+      if(entry.isIntersecting && entry.intersectionRatio>=.65){
+        /*
+          Every viewer becomes a seeder by re-publishing the item
+          currently visible in the local Gun graph.
+        */
+        if(item){
+          persist(item);
+          seedVisibleMedia(item);
+        }
+
+        section.querySelectorAll("video").forEach(v=>{
+          v.muted=true;
+          v.play().catch(()=>{});
+        });
+      }else{
+        section.querySelectorAll("video").forEach(v=>v.pause());
+      }
+    });
+  },{threshold:[0,.65,.9]});
+
+  document.querySelectorAll(".feed-item").forEach(x=>observer.observe(x));
+}
+
+async function seedVisibleMedia(item){
+  /*
+    If a media source is missing locally, try IndexedDB.
+    This keeps the browser's own durable media cache usable
+    even after an object URL has expired.
+  */
+  if(!item.media)return;
+
+  for(const media of item.media){
+    if(media.src)continue;
+    const cached=await getMediaBlob(media.id);
+    if(cached?.blob){
+      try{
+        media.src=URL.createObjectURL(cached.blob);
+      }catch(e){}
+    }
+  }
+}
+
+/* ---------- LIKES / FAVORITES ---------- */
+
+function toggleFav(id){
+  const favs=getFavs();
+  const index=favs.indexOf(id);
+
+  if(index>=0)favs.splice(index,1);
+  else favs.push(id);
+
+  setFavs(favs);
+
+  const item=feedData.find(x=>x.id===id);
+  if(item){
+    item.likes=Math.max(0,Number(item.likes||0)+(index>=0?-1:1));
+    persist(item);
+  }
+
+  renderFeed();
+}
+
+function renderFavorites(){
+  const favs=getFavs();
+  if(!favs.length){
+    currentFilter="";
+    $("searchInput").value="";
+    renderFeed();
+    return;
+  }
+
+  const arr=feedData
+    .filter(x=>favs.includes(x.id))
+    .sort((a,b)=>b.ts-a.ts);
+
+  const old=currentFilter;
+  currentFilter="";
+
+  const original=filteredFeed;
+  const tempFeed=feedData;
+  feedData=arr;
+  renderFeed();
+  feedData=tempFeed;
+  currentFilter=old;
+}
+
+/* ---------- SHARE ---------- */
+
+async function shareItem(id){
+  const item=feedData.find(x=>x.id===id);
+  if(!item)return;
+
+  const url=location.href.split("#")[0]+"#item="+encodeURIComponent(id);
+  const text=
+    `GeyimDəyis barter elanı\n`+
+    `${item.name||"İstifadəçi"} — ${item.item||"Geyim"}\n`+
+    `İstəyir: ${item.want||"Barter"}\n`;
+
+  if(navigator.share){
+    try{
+      await navigator.share({
+        title:"GeyimDəyis — barter elanı",
+        text,
+        url
+      });
+      return;
+    }catch(e){
+      if(e?.name==="AbortError")return;
+    }
+  }
+
+  try{
+    await navigator.clipboard.writeText(text+url);
+    alert("Paylaşım linki kopyalandı.");
+  }catch(e){
+    prompt("Linki kopyalayın:",url);
+  }
+}
+
+/* ---------- COMMENTS ---------- */
+
+function openComments(itemId){
+  currentCommentsItem=itemId;
+  const item=feedData.find(x=>x.id===itemId);
+
+  $("commentTitle").textContent=
+    `Şərhlər · ${commentData(itemId).length}`;
+
+  renderComments(itemId);
+  $("commentBox").classList.add("open");
+  $("commentInput").focus();
+}
+
+function closeComments(){
+  $("commentBox").classList.remove("open");
+  currentCommentsItem=null;
+}
+
+function renderComments(itemId){
+  const list=$("commentsList");
+  const comments=commentData(itemId);
+
+  if(!comments.length){
+    list.innerHTML=`
+      <div style="text-align:center;color:#666;padding:30px 10px;font-size:12px">
+        Hələ şərh yoxdur. İlk şərhi siz yazın.
+      </div>`;
+    renderIcons();
+    return;
+  }
+
+  list.innerHTML=comments.map((c,i)=>`
+    <div class="comment">
+      <div class="comment-main">
+        <img class="comment-avatar" src="${esc(c.av||"")}" alt=""
+             onerror="this.style.display='none'">
+        <div>
+          <div class="comment-user">
+            ${esc(c.u||"İstifadəçi")}
+            <span style="color:#666;font-weight:400"> · ${timeAgo(c.ts)}</span>
+          </div>
+          <div class="comment-text">${esc(c.text)}</div>
+        </div>
+      </div>
+
+      <div class="comment-actions">
+        <button data-reply="${i}">Cavabla</button>
+      </div>
+
+      ${(c.replies||[]).map(r=>`
+        <div class="reply">
+          <div class="comment-user">${esc(r.u||"İstifadəçi")}</div>
+          <div class="comment-text">${esc(r.text)}</div>
+        </div>
+      `).join("")}
+    </div>
+  `).join("");
+
+  list.querySelectorAll("[data-reply]").forEach(btn=>{
+    btn.onclick=()=>replyToComment(itemId,Number(btn.dataset.reply));
+  });
+
+  renderIcons();
+}
+
+function sendComment(){
+  const text=$("commentInput").value.trim();
+  if(!text || !currentCommentsItem)return;
+
+  const profile=myProfile();
+
+  const comment={
+    u:profile.name||"İstifadəçi",
+    av:profile.av||"",
+    text,
+    ts:Date.now(),
+    replies:[]
+  };
+
+  publishComment(currentCommentsItem,comment);
+  $("commentInput").value="";
+  renderComments(currentCommentsItem);
+
+  const item=feedData.find(x=>x.id===currentCommentsItem);
+  if(item)renderFeed();
+}
+
+function replyToComment(itemId,index){
+  const answer=prompt("Rəyə cavabınız:");
+  if(!answer || !answer.trim())return;
+
+  const all=getComments();
+  const comments=all[itemId]||[];
+  if(!comments[index])return;
+
+  const profile=myProfile();
+
+  if(!Array.isArray(comments[index].replies)){
+    comments[index].replies=[];
+  }
+
+  comments[index].replies.push({
+    u:profile.name||"İstifadəçi",
+    text:answer.trim()
+  });
+
+  all[itemId]=comments;
+  saveComments(all);
+
+  if(gun){
+    try{
+      gun.get("geyimdeyis").get("comments")
+        .get(itemId).get(comments[index].ts+"_"+comments[index].u)
+        .put(comments[index]);
+    }catch(e){}
+  }
+
+  renderComments(itemId);
+}
+
+/* ---------- PROFILE ---------- */
+
+function openProfile(userId){
+  const profileItems=feedData.filter(x=>x.u===userId);
+  const first=profileItems[0] || {};
+  const profile=userId===myProfile().u ? myProfile() : first;
+
+  const avatar=profile.av||"";
+  const name=profile.name||first.name||"İstifadəçi";
+  const wa=profile.wa||first.wa||"";
+
+  $("profileContent").innerHTML=`
+    <div class="profile-center">
+      <img class="big-avatar" src="${esc(avatar)}" alt=""
+           onerror="this.style.display='none'">
+      <div class="profile-name">${esc(name)}</div>
+      <div class="profile-phone">${esc(wa)}</div>
+      <div class="profile-count">${profileItems.length} elan</div>
+
+      ${wa?`
+        <a class="profile-wa"
+           href="https://wa.me/${encodeURIComponent(String(wa).replace(/\D/g,""))}"
+           target="_blank" rel="noopener noreferrer">
+          <i data-lucide="message-circle"></i>
+          WhatsApp
+        </a>`:""}
+    </div>
+
+    <div class="profile-grid">
+      ${profileItems.map(item=>{
+        const m=item.media?.[0];
+        if(!m)return `<div class="profile-item"></div>`;
+        return m.type==="video"
+          ?`<div class="profile-item">
+              <video src="${esc(m.src||"")}" muted playsinline></video>
+            </div>`
+          :`<div class="profile-item">
+              <img src="${esc(m.src||"")}" loading="lazy" alt="">
+            </div>`;
+      }).join("")}
+    </div>
+  `;
+
+  openModal("profileModal");
+  renderIcons();
+}
+
+/* ---------- MODALS ---------- */
+
+function openModal(id){
+  $(id).classList.add("open");
+  renderIcons();
+}
+
+function closeModal(id){
+  $(id).classList.remove("open");
+}
+
+document.querySelectorAll("[data-close]").forEach(btn=>{
+  btn.onclick=()=>closeModal(btn.dataset.close);
+});
+
+document.querySelectorAll(".modal").forEach(modal=>{
+  modal.addEventListener("click",e=>{
+    if(e.target===modal)modal.classList.remove("open");
+  });
+});
+
+/* ---------- MENU / INFO ---------- */
+
+const infoContent={
+  about:{
+    title:"Platforma haqqında",
+    html:`
+      <p><b>GeyimDəyis P2P Pro</b> istifadəçilərin geyim və aksesuarlarını
+      birbaşa bir-biri ilə barter etməsi üçün hazırlanmış serverless/P2P
+      web tətbiqidir.</p>
+      <p>Platformanın əsas ideyası elan yerləşdirmək, qarşı tərəfin təklifini
+      görmək və WhatsApp vasitəsilə birbaşa əlaqə yaratmaqdır.</p>
+      <h3>P2P modeli</h3>
+      <p>Feed məlumatları brauzerdə saxlanır və Gun.js vasitəsilə uyğun
+      peer-lərə ötürülə bilər. Aktiv istifadəçi gördüyü məlumatın seeder-i
+      kimi iştirak edir.</p>
+    `
+  },
+  how:{
+    title:"Necə istifadə olunur",
+    html:`
+      <h3>1. Elan yerləşdir</h3>
+      <p>+ düyməsinə toxun, profil məlumatlarını, barter etdiyin əşyanı,
+      istədiyini və media fayllarını əlavə et.</p>
+      <h3>2. Feed-də bax</h3>
+      <p>Yuxarı/aşağı sürüşdürərək elanlara, sağa/sola sürüşdürərək
+      elanın digər şəkil və videolarına bax.</p>
+      <h3>3. Əlaqə saxla</h3>
+      <p>WhatsApp düyməsi ilə elan sahibinə birbaşa müraciət edə bilərsən.</p>
+      <h3>4. Seçilmişlər</h3>
+      <p>Ürək düyməsi elanı brauzerində Seçilmişlər siyahısına əlavə edir.</p>
+      <h3>5. Axtarış</h3>
+      <p>Marka, ölçü, tag, ad, dəyişdirilən əşya və istək üzrə axtarış edə bilərsən.</p>
+    `
+  },
+  privacy:{
+    title:"Məxfilik siyasəti & Qanunlar",
+    html:`
+      <div class="warning">
+        Bu mətn hüquqi məsləhət deyil. Platformanı istifadəyə verməzdən
+        əvvəl Azərbaycan hüququ üzrə ixtisaslaşmış hüquqşünas tərəfindən
+        yoxlanması tövsiyə olunur.
+      </div>
+
+      <h3>1. Məlumatların saxlanması</h3>
+      <p>GeyimDəyis P2P Pro klassik mərkəzləşdirilmiş tətbiq serverinə
+      əsaslanmır. İstifadəçinin yaratdığı məlumatlar brauzerin
+      localStorage/IndexedDB yaddaşında və Gun relay/peer şəbəkəsində
+      müvəqqəti və ya peer-lərin saxladığı formada qala bilər.</p>
+
+      <p>Platforma operatoru məlumatların bütün peer-lərdən silinəcəyinə,
+      həmişə əlçatan qalacağına və ya relay xidmətinin fasiləsiz işləyəcəyinə
+      zəmanət vermir.</p>
+
+      <h3>2. İstifadəçi məsuliyyəti</h3>
+      <p>İstifadəçi yerləşdirdiyi şəkil, video, mətn, telefon nömrəsi və
+      digər məlumatların qanuni əsasla paylaşılmasına görə özü məsuldur.</p>
+
+      <p>Saxta elanlar, oğurluq əşyalar, qanunsuz dövriyyəsi məhdudlaşdırılmış
+      əşyalar, başqasının hüquqlarını pozan məzmun və qanunla qadağan edilən
+      barterlər qadağandır.</p>
+
+      <p>Azərbaycan Respublikasının Mülki Məcəlləsinin 1096-cı maddəsi və
+      “İnformasiya əldə etmək haqqında” Qanunun müvafiq müddəaları daxil
+      olmaqla tətbiq olunan qanunvericilik istifadəçi fəaliyyətinə şamil
+      edilir. Konkret hüquqi vəziyyət üçün peşəkar hüquqi məsləhət alınmalıdır.</p>
+
+      <h3>3. WhatsApp məlumatı</h3>
+      <p>İstifadəçinin daxil etdiyi WhatsApp nömrəsi elanla birlikdə digər
+      istifadəçilərə görünə bilər və əlaqə yaratmaq məqsədilə istifadə olunur.
+      Platforma operatoru nömrəni satmağı və reklam məqsədilə paylaşmağı
+      nəzərdə tutmur.</p>
+
+      <p>İstifadəçi öz brauzerində saxlanmış məlumatları təmizləməklə
+      lokal profil və elan məlumatlarını silə bilər. P2P modelinə görə
+      əvvəlcədən başqa peer-lərə ötürülmüş nüsxələrin dərhal silinməsinə
+      zəmanət verilmir.</p>
+
+      <h3>4. GDPR</h3>
+      <p>GDPR-in tətbiq olunduğu hallarda şəxsin tətbiq olunan hüquqi əsaslara
+      uyğun olaraq məlumatlarına çıxış, düzəliş və silinmə kimi hüquqları
+      ola bilər. Texniki P2P arxitekturasına görə məlumatın bütün
+      şəbəkə nüsxələrinin dərhal silinməsi texniki olaraq təmin edilmir.</p>
+
+      <h3>5. Məsuliyyətin məhdudlaşdırılması</h3>
+      <p>Barter əməliyyatı istifadəçilər arasında baş verir. Platforma
+      əşyanın mülkiyyətinə, keyfiyyətinə, həqiqiliyinə, ödənişə, çatdırılmaya,
+      görüşə və ya qarşı tərəfin davranışına görə müqavilə tərəfi deyil.</p>
+
+      <p>Dələduzluq, oğurluq, təhdid və digər hüquq pozuntusu şübhəsi olduqda
+      istifadəçi müvafiq hüquq-mühafizə orqanlarına müraciət etməlidir.</p>
+
+      <h3>6. Müəllif hüquqları</h3>
+      <p>Yalnız paylaşmağa hüququnuz olan şəkil, video və mətnləri yükləyin.
+      Başqasının müəllif hüquqlarını pozan material yerləşdirmək qadağandır.</p>
+
+      <h3>7. Yaş həddi</h3>
+      <p>Platforma 16 yaşdan yuxarı şəxslər üçün nəzərdə tutulur. Yetkinlik
+      yaşına çatmayanların istifadəsi yerli qanunvericiliyin tətbiq olunan
+      tələblərinə uyğun olmalıdır.</p>
+    `
+  },
+  terms:{
+    title:"İstifadə şərtləri",
+    html:`
+      <h3>Qəbul</h3>
+      <p>Platformadan istifadə etməklə istifadəçi bu şərtlərə və tətbiq
+      olunan qanunvericiliyə əməl etməyi qəbul edir.</p>
+
+      <h3>Qadağan edilmiş fəaliyyətlər</h3>
+      <ul>
+        <li>Saxta və aldadıcı elanlar.</li>
+        <li>Oğurlanmış və ya qanunsuz əldə edilmiş əşyalar.</li>
+        <li>Qanunsuz əşyaların barter təklifi.</li>
+        <li>Başqasının şəxsi məlumatlarının icazəsiz paylaşılması.</li>
+        <li>Müəllif hüquqlarını pozan material.</li>
+        <li>Təhdid, təhqir, spam və fırıldaqçılıq.</li>
+      </ul>
+
+      <h3>Barter təhlükəsizliyi</h3>
+      <p>İstifadəçilər görüş yeri, əşyanın vəziyyəti və qarşı tərəfin
+      etibarlılığını özləri yoxlamalıdır. Platforma barterin nəticəsinə
+      zəmanət vermir.</p>
+
+      <h3>P2P məhdudiyyəti</h3>
+      <p>Şəbəkədəki məlumatların bütün cihazlarda eyni vaxtda görünməsi,
+      relay serverinin işləməsi və digər peer-lərin onlayn olması zəmanətli
+      deyil.</p>
+
+      <h3>Məzmunun silinməsi</h3>
+      <p>İstifadəçi öz brauzerindəki məlumatı silə bilər. Lakin artıq başqa
+      peer-lərə ötürülmüş məlumatların həmin peer-lərdə qalması mümkündür.</p>
+    `
+  }
+};
+
+document.querySelectorAll("[data-info]").forEach(btn=>{
+  btn.onclick=()=>{
+    const data=infoContent[btn.dataset.info];
+    $("infoTitle").textContent=data.title;
+    $("infoContent").innerHTML=data.html;
+    openModal("infoModal");
+    closeDrawer();
+  };
+});
+
+function openDrawer(){
+  $("drawer").classList.add("open");
+}
+
+function closeDrawer(){
+  $("drawer").classList.remove("open");
+}
+
+$("menuBtn").onclick=openDrawer;
+$("drawerClose").onclick=closeDrawer;
+$("drawerBackdrop").onclick=closeDrawer;
+
+/* ---------- NAV ---------- */
+
+$("addNav").onclick=()=>openModal("uploadModal");
+
+$("homeNav").onclick=()=>{
+  currentFilter="";
+  $("searchInput").value="";
+  renderFeed();
+  scrollTopFeed();
+  setActiveNav($("homeNav"));
+};
+
+$("favNav").onclick=()=>{
+  renderFavorites();
+  setActiveNav($("favNav"));
+};
+
+$("favsHeader").onclick=()=>{
+  renderFavorites();
+  setActiveNav($("favNav"));
+};
+
+$("profileNav").onclick=()=>{
+  const p=myProfile();
+
+  if(!p.u){
+    openModal("uploadModal");
+    return;
+  }
+
+  openProfile(p.u);
+  setActiveNav($("profileNav"));
+};
+
+function setActiveNav(el){
+  document.querySelectorAll(".nav-item").forEach(x=>x.classList.remove("active"));
+  el.classList.add("active");
+}
+
+function scrollTopFeed(){
+  $("feed").scrollTo({top:0,behavior:"smooth"});
+}
+
+/* ---------- SEARCH EVENTS ---------- */
+
+$("searchBtn").onclick=()=>doSearch();
+
+$("searchInput").addEventListener("keydown",e=>{
+  if(e.key==="Enter"){
+    e.preventDefault();
+    doSearch();
+  }
+});
+
+$("searchInput").addEventListener("search",()=>{
+  if(!$("searchInput").value)doSearch("");
+});
+
+/* ---------- COMMENTS EVENTS ---------- */
+
+$("commentClose").onclick=closeComments;
+$("commentSend").onclick=sendComment;
+
+$("commentInput").addEventListener("keydown",e=>{
+  if(e.key==="Enter"){
+    e.preventDefault();
+    sendComment();
+  }
+});
+
+/* ---------- HASH NAVIGATION ---------- */
+
+function handleHash(){
+  const hash=location.hash;
+  if(!hash.startsWith("#item="))return;
+
+  const id=decodeURIComponent(hash.substring(6));
+  const index=filteredFeed().findIndex(x=>x.id===id);
+
+  if(index>=0){
+    const node=$("feed").querySelectorAll(".feed-item")[index];
+    node?.scrollIntoView({behavior:"smooth"});
+  }
+}
+
+/* ---------- ONLINE/OFFLINE ---------- */
+
+window.addEventListener("online",()=>{
+  updateP2PStatus();
+  loadGun();
+});
+
+window.addEventListener("offline",updateP2PStatus);
+
+window.addEventListener("hashchange",handleHash);
+
+/* ---------- STARTUP ---------- */
+
+async function boot(){
+  try{await openDB()}catch(e){}
+
+  feedData=loadLocal();
+  feedData.sort((a,b)=>(b.ts||0)-(a.ts||0));
+
+  const profile=myProfile();
+
+  if(profile.av){
+    $("avatarPreview").src=profile.av;
+  }
+
+  renderFeed();
+  updateP2PStatus();
+  loadGun();
+  renderIcons();
+
+  setTimeout(handleHash,500);
+}
+
+boot();
+
+/* ---------- GLOBAL API FOR INLINE BUTTONS ---------- */
+
+window.openModal=openModal;
+window.closeModal=closeModal;
+window.doSearch=doSearch;
+window.toggleFav=toggleFav;
+window.shareItem=shareItem;
+window.openProfile=openProfile;
+
+/* ---------- PERIODIC P2P SEED ---------- */
+
+setInterval(()=>{
+  if(!navigator.onLine || !gun)return;
+
+  /*
+    Re-seed a bounded number of newest records so an active browser
+    participates in gossip without creating an uncontrolled write loop.
+  */
+  feedData.slice(0,20).forEach(item=>{
+    try{
+      gun.get("geyimdeyis").get("feed").get(item.id).put({
+        id:item.id,
+        u:item.u,
+        av:item.av||"",
+        name:item.name||"",
+        item:item.item||"",
+        want:item.want||"",
+        wa:item.wa||"",
+        brand:item.brand||"",
+        size:item.size||"",
+        desc:item.desc||"",
+        tags:item.tags||[],
+        media:item.media||[],
+        ts:item.ts||0,
+        likes:item.likes||0
+      });
+    }catch(e){}
+  });
+},30000);
+
+/* ---------- VISIBILITY MEDIA CONTROL ---------- */
+
+document.addEventListener("visibilitychange",()=>{
+  if(document.hidden){
+    document.querySelectorAll("video").forEach(v=>v.pause());
+  }
+});
+
+/* ---------- PREVENT ACCIDENTAL FORM SUBMIT ---------- */
+
+document.addEventListener("submit",e=>e.preventDefault());
+
 </script>
 </body>
-</html>
+      </html>
