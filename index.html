@@ -1,235 +1,253 @@
 <!DOCTYPE html>
 <html lang="az">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-<title>BOMBA TAP AZ 💣</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@700;900&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
-<script src="https://unpkg.com/lucide@latest"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>AZ BATTLE - PUBG PRO</title>
 <style>
-:root{--bg:#0a0a0f;--neon:#ff2d55;--neon2:#00f5ff;--nav:70px}
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{background:var(--bg);color:#fff;font-family:'Inter',sans-serif;overflow:hidden;height:100dvh;width:100vw;user-select:none;touch-action:manipulation}
-#app{width:100%;height:100dvh;position:relative;background:radial-gradient(800px at 50% -10%, #1a1033, var(--bg));display:flex;flex-direction:column}
-header{height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;border-bottom:1px solid #1f1f2a;z-index:10}
-.logo{font-family:'Space Grotesk';font-weight:900;font-size:20px;letter-spacing:-1px}.logo span{color:var(--neon)}
-.hud{display:flex;gap:12px;align-items:center}
-.pill{background:#15151f;border:1px solid #2a2a3a;padding:6px 12px;border-radius:100px;font-size:12px;font-weight:700;display:flex;gap:6px;align-items:center}
-.pill b{color:var(--neon2)}
-#gameArea{flex:1;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden}
-#bombWrap{position:relative;transition:transform.1s}
-#bomb{width:180px;height:180px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:90px;cursor:pointer;filter:drop-shadow(0 0 30px var(--neon));animation:pulse 0.5s infinite alternate;user-select:none}
-@keyframes pulse{from{transform:scale(1)} to{transform:scale(1.08)}}
-@keyframes shake{0%,100%{transform:translateX(0)} 25%{transform:translateX(-8px)} 75%{transform:translateX(8px)}}
-.shake{animation:shake 0.1s 6}
-#timerBar{width:260px;height:14px;background:#1c1c28;border-radius:100px;overflow:hidden;margin-top:22px;border:1px solid #2a2a3a}
-#timerFill{height:100%;width:100%;background:linear-gradient(90deg,var(--neon2),var(--neon));transition:width 0.05s linear}
-#scoreBig{font-size:64px;font-weight:900;margin-top:18px;letter-spacing:-3px;line-height:1}
-#tapBtn{margin-top:26px;width:300px;height:72px;border-radius:20px;border:none;background:#fff;color:#000;font-size:20px;font-weight:900;letter-spacing:-0.5px;box-shadow:0 10px 30px rgba(255,255,255,.2);active:scale:.96}
-#tapBtn:active{transform:scale(.96)}
-#tapBtn.pass{background:var(--neon2)}
-.menu{position:absolute;inset:0;background:rgba(10,10,15,.92);backdrop-filter:blur(12px);z-index:20;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center}
-.hidden{display:none!important}
-.title{font-size:42px;font-weight:900;letter-spacing:-2px;line-height:.9}.title span{color:var(--neon)}
-.sub{opacity:.6;margin:12px 0 22px;font-size:14px;max-width:300px}
-.row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
-.btn{padding:14px 22px;border-radius:14px;border:1px solid #2a2a3a;background:#15151f;color:#fff;font-weight:800;font-size:14px}
-.btn.primary{background:#fff;color:#000;border-color:#fff}
-.skins{display:flex;gap:10px;overflow-x:auto;padding:12px 0;max-width:100vw;scrollbar-width:none}
-.skin{width:56px;height:56px;border-radius:16px;background:#15151f;border:2px solid #2a2a3a;display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0}
-.skin.active{border-color:var(--neon);box-shadow:0 0 12px var(--neon)}
-nav{height:var(--nav);display:flex;border-top:1px solid #1f1f2a;background:#0f0f17}
-nav button{flex:1;background:none;border:none;color:#6b6b7a;font-size:10px;font-weight:700;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
-nav button.active{color:#fff}
-#leaderList{width:100%;max-width:360px;max-height:50vh;overflow-y:auto}
-.leaderItem{display:flex;justify-content:space-between;padding:10px 14px;background:#15151f;border:1px solid #222230;border-radius:12px;margin-bottom:8px;font-size:13px}
-.boom{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:120px;pointer-events:none;z-index:30}
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@600;800&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;user-select:none;-webkit-tap-highlight-color:transparent}
+body{background:#000;overflow:hidden;height:100dvh;font-family:'Inter',sans-serif;touch-action:none}
+#game{width:100vw;height:100dvh;display:block}
+#ui{position:fixed;inset:0;pointer-events:none;z-index:10}
+.hud-top{display:flex;justify-content:space-between;padding:8px 10px;align-items:flex-start}
+.left-hud{display:flex;flex-direction:column;gap:6px}
+.health{display:flex;gap:6px;align-items:center;background:rgba(0,0,0,.7);padding:6px 10px;border-radius:8px;border:1px solid #333;pointer-events:auto}
+.bar{width:90px;height:8px;background:#222;border-radius:4px;overflow:hidden}.fill{height:100%;transition:.2s}
+.miniMap{width:140px;height:140px;background:rgba(0,0,0,.85);border:2px solid #ffcc00;border-radius:10px;overflow:hidden;position:relative;pointer-events:auto}
+.compass{position:absolute;top:0;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.8);padding:2px 10px;border-radius:0 0 8px 8px;font-size:10px;letter-spacing:2px}
+.controls{position:absolute;bottom:0;left:0;right:0;height:42%;display:flex;justify-content:space-between;padding:10px;pointer-events:none}
+.joy{width:120px;height:120px;background:rgba(255,255,255,.06);border-radius:50%;border:2px solid rgba(255,255,255,.2);position:relative;pointer-events:auto}
+.stick{position:absolute;left:50%;top:50%;width:54px;height:54px;background:rgba(255,255,255,.9);border-radius:50%;transform:translate(-50%,-50%);box-shadow:0 0 12px rgba(255,255,255,.5)}
+.actionCol{display:flex;flex-direction:column;gap:10px;pointer-events:auto;align-items:center}
+.btn-round{width:62px;height:62px;border-radius:50%;border:2px solid #fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:22px;background:rgba(0,0,0,.5);color:#fff}
+.btn-round.shoot{width:84px;height:84px;background:radial-gradient(#ff3b30,#7a0000);box-shadow:0 0 20px #ff3b30}
+.btn-round:active{transform:scale(.9)}
+.inv-bar{position:absolute;bottom:46%;left:50%;transform:translateX(-50%);display:flex;gap:6px;background:rgba(0,0,0,.8);padding:6px;border-radius:10px;border:1px solid #333;pointer-events:auto}
+.inv-slot{width:48px;height:38px;background:#111;border:1px solid #333;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;flex-direction:column}
+.inv-slot.active{border-color:#ffcc00;background:#332a00}
+#centerMsg{position:absolute;top:40%;left:50%;transform:translate(-50%,-50%);font-family:'Orbitron';font-size:28px;font-weight:900;text-shadow:0 0 20px #ffcc00;pointer-events:none}
+#menu{position:fixed;inset:0;background:radial-gradient(900px at 30% -20%,#1a2a0a,#000);z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;text-align:center}
+.logo{font-family:'Orbitron';font-size:52px;font-weight:900;line-height:.9;letter-spacing:-2px}.logo b{color:#ffcc00}
+.btn-main{pointer-events:auto;margin-top:18px;padding:18px 44px;background:#ffcc00;color:#000;border:none;border-radius:14px;font-weight:900;font-size:18px;box-shadow:0 8px 0 #8a6f00}
+.btn-main:active{transform:translateY(4px);box-shadow:0 4px 0 #8a6f00}
+.features{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:18px;max-width:340px;width:100%}
+.feat{background:rgba(255,255,255,.06);border:1px solid #222;padding:10px;border-radius:10px;font-size:11px;text-align:left}
+#loader{position:fixed;inset:0;background:#000;z-index:100;display:flex;align-items:center;justify-content:center;font-family:'Orbitron';}
 </style>
 </head>
 <body>
-<div id="app">
-<header>
-<div class="logo">BOMBA <span>TAP</span> AZ</div>
-<div class="hud">
-<div class="pill"><i data-lucide="zap" style="width:14px"></i> <b id="scoreHud">0</b></div>
-<div class="pill"><i data-lucide="trophy" style="width:14px"></i> <b id="bestHud">0</b></div>
-<div class="pill" style="color:#00ff88">● <span id="online">P2P</span></div>
+<canvas id="game"></canvas>
+<div id="ui">
+<div class="hud-top">
+<div class="left-hud">
+<div class="health"><span style="font-size:10px">HP</span><div class="bar"><div id="hpFill" class="fill" style="background:#00ff88;width:100%"></div></div><span id="hpTxt" style="font-size:11px">100</span></div>
+<div class="health"><span style="font-size:10px">VEST</span><div class="bar"><div id="vestFill" class="fill" style="background:#00aaff;width:0%"></div></div></div>
+<div id="alive" style="background:rgba(0,0,0,.7);padding:4px 10px;border-radius:20px;font-size:11px;border:1px solid #333">CANLI: 50 • KILL: 0</div>
 </div>
-</header>
-
-<div id="gameArea">
-<div id="scoreBig">0</div>
-<div id="bombWrap"><div id="bomb">💣</div></div>
-<div id="timerBar"><div id="timerFill"></div></div>
-<button id="tapBtn">BOMBA MƏNDƏDİR - ÖTÜR! 👆</button>
-<div style="margin-top:14px;font-size:11px;opacity:.4" id="hint">Tez bas, əlində partlamasın!</div>
+<div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
+<div id="zoneInfo" style="background:rgba(0,170,255,.2);border:1px solid #00aaff;padding:6px 12px;border-radius:20px;font-size:11px">ZONA 01:32</div>
+<div class="miniMap" id="miniMap"><div class="compass">N • 15 • E • 30 • S</div><canvas id="miniCanvas" width="140" height="140"></canvas></div>
 </div>
-
-<div id="menu" class="menu">
-<div class="title">BOMBA<br><span>TAP</span> AZ</div>
-<div class="sub">Bomba sənin əlindədir! 5 saniyədən tez ötürməsən partlayacaq. Nə qədər çox ötürsən, bir o qədər xal!</div>
-<div class="skins" id="skins"></div>
-<div class="row">
-<button class="btn primary" id="playBtn">OYNA - SOLO</button>
-<button class="btn" id="multiBtn">1 VS 1 DOSTLA</button>
 </div>
-<div style="margin-top:18px;font-size:11px;opacity:.5">GitHub Pages-də işləyir • Offline bot var • P2P Top</div>
+<div id="centerMsg"></div>
+<div class="inv-bar" id="invBar"></div>
+<div class="controls">
+<div class="joy" id="moveJoy"><div class="stick" id="moveStick"></div></div>
+<div class="actionCol">
+<div style="display:flex;gap:10px"><div class="btn-round" id="crouchBtn">↧</div><div class="btn-round" id="reloadBtn">↻</div></div>
+<div class="btn-round shoot" id="shootBtn">◉</div>
+<div style="display:flex;gap:10px"><div class="btn-round" id="aimBtn">◎</div><div class="btn-round" id="lootBtn">✋</div></div>
 </div>
-
-<div id="gameOver" class="menu hidden">
-<div class="title" style="font-size:48px">BOOM! 💥</div>
-<div class="sub">Bomba əlində partladı!</div>
-<div id="finalScore" style="font-size:56px;font-weight:900;margin:10px 0">0</div>
-<div class="row">
-<button class="btn primary" id="againBtn">YENİDƏN</button>
-<button class="btn" id="shareBtn">PAYLAŞ</button>
 </div>
 </div>
 
-<nav>
-<button class="active" id="navHome"><i data-lucide="gamepad-2"></i>OYUN</button>
-<button id="navTop"><i data-lucide="crown"></i>TOP 100</button>
-<button id="navSkin"><i data-lucide="palette"></i>SKIN</button>
-<button id="navInvite"><i data-lucide="share-2"></i>DƏVƏT</button>
-</nav>
+<div id="menu">
+<div class="logo">AZ<br><b>BATTLE</b></div>
+<div style="color:#ffcc00;font-family:'Orbitron';font-size:12px;letter-spacing:4px;margin:6px 0">PUBG PRO • SƏNƏ AİD</div>
+<input id="pName" placeholder="Ləqəbini yaz" value="AZ_Player" style="margin-top:12px;padding:12px 18px;border-radius:10px;border:1px solid #333;background:#111;color:#fff;width:220px;text-align:center">
+<button class="btn-main" id="startBtn">DÖYÜŞƏ BAŞLA</button>
+<div class="features">
+<div class="feat">🗺️ 2x2 KM Map<br>Şəhər + Meşə + Binalar</div>
+<div class="feat">🔫 4 Silah + Scope<br>AKM / M416 / SKS / DBS</div>
+<div class="feat">🚙 Maşın Sür<br>UAZ + Dacia</div>
+<div class="feat">🎯 50 Nəfər BR<br>Zona + Ağıllı Bot</div>
+</div>
+<p style="font-size:10px;opacity:.4;margin-top:14px">GitHub Pages • Offline • 60FPS • Mobile</p>
+</div>
 
-<div id="topModal" class="menu hidden" style="z-index:25">
-<div class="title" style="font-size:28px">TOP 100 - P2P</div>
-<div id="leaderList"></div>
-<button class="btn" id="closeTop" style="margin-top:14px">BAĞLA</button>
-</div>
-</div>
+<div id="loader">AZ BATTLE YÜKLƏNİR...</div>
 
 <script>
-const $=s=>document.getElementById(s);
-const uid=()=>Math.random().toString(36).slice(2,9);
-const skinsList=[
-{id:'bomb',emoji:'💣',name:'Klassik'},
-{id:'fire',emoji:'🔥',name:'Od'},
-{id:'az',emoji:'🇦🇿',name:'AZ'},
-{id:'neft',emoji:'🛢️',name:'Neft'},
-{id:'tea',emoji:'🫖',name:'Çay'},
-{id:'karabakh',emoji:'🏔️',name:'Qarabağ'},
-{id:'neon',emoji:'👾',name:'Neon'},
-{id:'gold',emoji:'💰',name:'Qızıl'},
-{id:'skull',emoji:'💀',name:'Skull'},
-{id:'heart',emoji:'❤️',name:'Heart'}
-];
-let currentSkin=localStorage.getItem('bomba-skin')||'bomb';
-let score=0, best=parseInt(localStorage.getItem('bomba-best')||'0'), timer=5, maxTimer=5, playing=false, loop=null, peerId=localStorage.getItem('bomba-peer')||uid();
-localStorage.setItem('bomba-peer',peerId);
-let myName=localStorage.getItem('bomba-name')||'Player_'+peerId.slice(0,3);
-let gun;
-try{
- gun=Gun({peers:['https://gun-manhattan.herokuapp.com/gun','https://gun-us.herokuapp.com/gun'],localStorage:false});
-}catch(e){}
-$("bestHud").textContent=best;
-$("skins").innerHTML=skinsList.map(s=>`<div class="skin ${s.id===currentSkin?'active':''}" data-id="${s.id}">${s.emoji}</div>`).join('');
-document.querySelectorAll('.skin').forEach(el=>el.onclick=()=>{
- currentSkin=el.dataset.id; localStorage.setItem('bomba-skin',currentSkin);
- document.querySelectorAll('.skin').forEach(x=>x.classList.remove('active')); el.classList.add('active');
- updateBombEmoji();
-});
-function updateBombEmoji(){ const f=skinsList.find(s=>s.id===currentSkin); $("bomb").textContent=f?f.emoji:'💣'; }
-updateBombEmoji();
-function renderIcons(){ try{lucide.createIcons();}catch(e){} }
-renderIcons();
+/* PROFESSIONAL PUBG CORE - SINGLE FILE */
+const canvas=document.getElementById('game'), ctx=canvas.getContext('2d');
+const miniCanvas=document.getElementById('miniCanvas'), mctx=miniCanvas.getContext('2d');
+let W,H; function rs(){W=canvas.width=innerWidth;H=canvas.height=innerHeight} rs(); addEventListener('resize',rs);
+const MAP=2000, BUILDINGS=[], TREES=[], BOTS_N=49;
+let player, bots=[], bullets=[], vehicles=[], loots=[], smokes=[];
+let keys={mx:0,my:0}, cam={x:0,y:0}, zone={x:1000,y:1000,r:1000,nr:700,t:90}, kills=0, alive=50, playing=false, aiming=false;
+let inv=[], activeGun=0;
 
-function startGame(){
- score=0; timer=maxTimer; playing=true;
- $("menu").classList.add('hidden'); $("gameOver").classList.add('hidden');
- $("scoreBig").textContent='0'; $("scoreHud").textContent='0';
- $("tapBtn").textContent='BOMBA MƏNDƏDİR - ÖTÜR! 👆'; $("tapBtn").className='';
- $("bombWrap").classList.remove('shake');
- updateBombEmoji();
- maxTimer=4 + Math.random()*2;
- timer=maxTimer;
- clearInterval(loop);
- loop=setInterval(()=>{
-   if(!playing) return;
-   timer-=0.05;
-   $("timerFill").style.width=(timer/maxTimer*100)+'%';
-   if(timer<=1){ $("bombWrap").classList.add('shake'); $("timerFill").style.background='var(--neon)'; try{navigator.vibrate(30);}catch(e){} }
-   if(timer<=0){ boom(); }
- },50);
- // bot passes sometimes to make you nervous
+function rand(a,b){return Math.random()*(b-a)+a}
+function dist(a,b){return Math.hypot(a.x-b.x,a.y-b.y)}
+function showMsg(t,ms=1200){const el=document.getElementById('centerMsg'); el.textContent=t; el.style.opacity=1; setTimeout(()=>el.style.opacity=0,ms);}
+
+const WEAPONS={
+ akm:{name:'AKM',dmg:42,rate:120,ammo:30,spread:0.12,color:'#ffcc00'},
+ m416:{name:'M416',dmg:36,rate:90,ammo:30,spread:0.08,color:'#00f5ff'},
+ sks:{name:'SKS',dmg:55,rate:300,ammo:20,spread:0.04,color:'#ff8800'},
+ dbs:{name:'DBS',dmg:18*4,rate:600,ammo:8,spread:0.25,color:'#ff0000'}
+};
+
+function genMap(){
+ BUILDINGS.length=0; TREES.length=0;
+ for(let i=0;i<35;i++) BUILDINGS.push({x:rand(100,MAP-100),y:rand(100,MAP-100),w:rand(80,160),h:rand(80,140)});
+ for(let i=0;i<120;i++) TREES.push({x:rand(0,MAP),y:rand(0,MAP),r:rand(8,18)});
+ vehicles=[{x:800,y:800,w:50,h:24,used:false},{x:1200,y:1200,w:50,h:24,used:false},{x:500,y:1400,w:50,h:24,used:false}];
+ loots=[]; const types=['akm','m416','sks','dbs','vest2','helm2','medkit','ammo'];
+ for(let i=0;i<90;i++){ loots.push({x:rand(0,MAP),y:rand(0,MAP),type:types[Math.floor(Math.random()*types.length)],taken:false});}
 }
 
-function passBomb(){
- if(!playing) return;
- score++; $("scoreBig").textContent=score; $("scoreHud").textContent=score;
- $("bombWrap").style.transform=`scale(1.3) rotate(${Math.random()*20-10}deg)`; setTimeout(()=>$("bombWrap").style.transform='',120);
- // new timer shorter each pass
- maxTimer=Math.max(0.8, maxTimer-0.12); timer=maxTimer;
- $("bombWrap").classList.remove('shake');
- try{ const ctx=new (window.AudioContext||window.webkitAudioContext)(); const o=ctx.createOscillator(); o.frequency.value=600+score*20; o.connect(ctx.destination); o.start(); o.stop(ctx.currentTime+0.07);}catch(e){}
- if(gun){ gun.get('bomba-az-leaderboard').get(peerId).put({name:myName,score:Math.max(best,score),skin:currentSkin,ts:Date.now()}); }
+class Ent{
+ constructor(x,y){this.x=x;this.y=y;this.hp=100;this.vest=0;this.helm=0;this.alive=true;this.ang=0;this.vx=0;this.vy=0;this.weapons=[];this.ammo={akm:60,m416:60,sks:40,dbs:20};this.target=null;this.st=0;}
+ damage(d,hit){let dm=d; if(hit==='body'&&this.vest>0){dm*=0.6; this.vest-=10;} if(hit==='head'&&this.helm>0){dm*=0.5; this.helm-=15;} this.hp-=dm; if(this.hp<=0){this.alive=false; if(this!==player){kills++; document.getElementById('alive').textContent=`CANLI: ${alive} • KILL: ${kills}`;}} }
 }
 
-function boom(){
- playing=false; clearInterval(loop);
- $("bomb").textContent='💥';
- $("gameArea").insertAdjacentHTML('beforeend','<div class="boom" id="boomFx">💥</div>');
- try{ navigator.vibrate([100,50,200]); const ctx=new (window.AudioContext||window.webkitAudioContext)(); const o=ctx.createOscillator(); o.type='sawtooth'; o.frequency.value=120; o.connect(ctx.destination); o.start(); o.stop(ctx.currentTime+0.5);}catch(e){}
- setTimeout(()=>{
-   document.getElementById('boomFx')?.remove();
-   $("finalScore").textContent=score;
-   $("gameOver").classList.remove('hidden');
-   if(score>best){ best=score; localStorage.setItem('bomba-best',best); $("bestHud").textContent=best; }
- },400);
+function spawn(){
+ genMap(); player=new Ent(1000,1000); player.name=document.getElementById('pName').value||'AZ_Player'; player.weapons=['akm']; inv=['akm','ammo','medkit']; activeGun=0;
+ bots=[]; for(let i=0;i<BOTS_N;i++){let b=new Ent(rand(200,MAP-200),rand(200,MAP-200)); b.name='Bot'+(i+1); b.weapons=[Object.keys(WEAPONS)[Math.floor(Math.random()*4)]]; b.ai={state:'loot', tx:rand(0,MAP),ty:rand(0,MAP),t:rand(0,100)}; bots.push(b);}
+ zone={x:1000,y:1000,r:1000,nr:700,t:90}; kills=0; alive=50; updateInv();
 }
 
-$("tapBtn").addEventListener('touchstart',e=>{e.preventDefault(); passBomb();},{passive:false});
-$("tapBtn").addEventListener('click',passBomb);
-$("bomb").addEventListener('click',passBomb);
-$("playBtn").onclick=startGame;
-$("againBtn").onclick=startGame;
-$("multiBtn").onclick=()=>{
- const room=uid();
- const link=location.href.split('?')[0]+'?room='+room;
- prompt('Dostuna bu linki at, eyni anda oynayın (P2P):',link);
- startGame();
-};
-$("shareBtn").onclick=()=>{
- const text=`BOMBA TAP AZ-da ${score} xal topladım! 💣 Sən məni keçə bilərsən? ${location.href}`;
- if(navigator.share){ navigator.share({title:'BOMBA TAP AZ',text,url:location.href}); } else { navigator.clipboard.writeText(text); alert('Link kopyalandı!'); }
-};
-$("navTop").onclick=()=>{
- $("topModal").classList.remove('hidden'); loadLeaderboard();
-};
-$("closeTop").onclick=()=>$("topModal").classList.add('hidden');
-$("navHome").onclick=()=>{ $("topModal").classList.add('hidden'); };
-$("navSkin").onclick=()=>{ $("menu").classList.remove('hidden'); $("gameOver").classList.add('hidden'); };
-$("navInvite").onclick=()=>{
- if(navigator.share){ navigator.share({title:'BOMBA TAP AZ',text:'Gəl BOMBA TAP oynayaq!',url:location.href}); } else { prompt('Dəvət linki:',location.href); }
-};
+function updateInv(){
+ const bar=document.getElementById('invBar'); bar.innerHTML=inv.map((it,i)=>{const w=WEAPONS[it]; return `<div class="inv-slot ${i===activeGun?'active':''}" onclick="activeGun=${i}"><b>${w?w.name:it.toUpperCase()}</b><span style="font-size:9px">${w?w.ammo:''}</span></div>`}).join('');
+}
+window.activeGun=0;
 
-function loadLeaderboard(){
- const list=$("leaderList"); list.innerHTML='<div style="opacity:.5">Yüklənir...</div>';
- if(!gun){ list.innerHTML='<div style="opacity:.5">Offline - yalnız sənin rekordun: '+best+'</div>'; return; }
- const leaders=[];
- gun.get('bomba-az-leaderboard').map().once((data,id)=>{
-   if(!data||!data.score) return;
-   leaders.push({id,...data});
-   leaders.sort((a,b)=>b.score-a.score);
-   list.innerHTML=leaders.slice(0,100).map((l,i)=>`<div class="leaderItem"><span>${i+1}. ${l.skin?skinsList.find(s=>s.id===l.skin)?.emoji||'💣':''} ${l.name}</span><b>${l.score}</b></div>`).join('');
+let lastShot=0;
+function shoot(from){
+ const wName=from.weapons[activeGun]||from.weapons[0]; const w=WEAPONS[wName]; if(!w) return;
+ if(Date.now()-lastShot < w.rate) return; if(from.ammo[wName]<=0 && from!==player) return;
+ if(from===player && inv.filter(x=>x===wName).length===0 &&!wName) return;
+ lastShot=Date.now();
+ from.ammo[wName]=(from.ammo[wName]||0)-1;
+ const spread=w.spread*(aiming?0.3:1);
+ for(let i=0;i<(wName==='dbs'?8:1);i++){
+  const ang=from.ang + rand(-spread,spread);
+  bullets.push({x:from.x+Math.cos(ang)*22,y:from.y+Math.sin(ang)*22,vx:Math.cos(ang)*16,vy:Math.sin(ang)*16,dmg:w.dmg,owner:from,life:70});
+ }
+ if(from===player){ navigator.vibrate?.(30); smokes.push({x:from.x+Math.cos(from.ang)*22,y:from.y+Math.sin(from.ang)*22,r:0,max:12,life:10}); updateInv(); document.getElementById('alive').textContent=`CANLI: ${alive} • KILL: ${kills}`; }
+}
+
+// Joysticks
+function makeJoy(joyId,stickId,cb){
+ const joy=document.getElementById(joyId), stick=document.getElementById(stickId);
+ let active=false, sx=0,sy=0;
+ joy.addEventListener('touchstart',e=>{active=true; sx=e.touches[0].clientX; sy=e.touches[0].clientY;});
+ addEventListener('touchmove',e=>{
+  if(!active) return;
+  const t=[...e.touches].find(t=>{const r=joy.getBoundingClientRect(); return t.clientX>r.left&&t.clientX<r.right&&t.clientY>r.top&&t.clientY<r.bottom;});
+  if(!t) return;
+  const dx=t.clientX-sx, dy=t.clientY-sy, d=Math.hypot(dx,dy), max=40;
+  const nx=d>max?dx/d*max:dx, ny=d>max?dy/d*max:dy;
+  stick.style.transform=`translate(calc(-50% + ${nx}px), calc(-50% + ${ny}px))`;
+  cb(nx/max, ny/max);
  });
- setTimeout(()=>{ if(leaders.length===0) list.innerHTML=`<div class="leaderItem"><span>1. ${myName} (sən)</span><b>${best}</b></div>`; },1500);
+ addEventListener('touchend',()=>{if(active){active=false; stick.style.transform='translate(-50%,-50%)'; cb(0,0);}});
+}
+makeJoy('moveJoy','moveStick',(x,y)=>{keys.mx=x; keys.my=y; if(x||y) player.ang=Math.atan2(y,x);});
+
+document.getElementById('shootBtn').addEventListener('touchstart',e=>{e.preventDefault(); shoot(player);});
+document.getElementById('shootBtn').addEventListener('mousedown',()=>shoot(player));
+document.getElementById('aimBtn').addEventListener('touchstart',()=>{aiming=!aiming; document.getElementById('aimBtn').style.background=aiming?'#00f5ff':'';});
+document.getElementById('reloadBtn').addEventListener('click',()=>{const wn=player.weapons[activeGun]; if(wn){player.ammo[wn]=WEAPONS[wn].ammo*2; showMsg('RELOAD'); updateInv();}});
+document.getElementById('lootBtn').addEventListener('click',()=>{
+ let near=loots.find(l=>!l.taken&&dist(l,player)<40);
+ if(near){near.taken=true; if(WEAPONS[near.type]){if(!player.weapons.includes(near.type)) player.weapons.push(near.type); inv.push(near.type);} else if(near.type==='vest2'){player.vest=100; document.getElementById('vestFill').style.width='100%';} else if(near.type==='medkit'){player.hp=Math.min(100,player.hp+40);} else if(near.type==='ammo'){Object.keys(player.ammo).forEach(k=>player.ammo[k]+=30);} showMsg('+ '+near.type.toUpperCase()); updateInv();}
+});
+
+function gameLoop(){
+ if(!playing) return; requestAnimationFrame(gameLoop);
+ // player move
+ if(player.alive){
+  let spd= aiming?1.6:3.2;
+  player.x+=keys.mx*spd; player.y+=keys.my*spd;
+ }
+ player.x=Math.max(0,Math.min(MAP,player.x)); player.y=Math.max(0,Math.min(MAP,player.y));
+ // zone
+ zone.t-=1/60; if(zone.t<=0){zone.r=Math.max(120,zone.r*0.82); zone.t=50; zone.x+=rand(-120,120); zone.y+=rand(-120,120); showMsg('ZONA DARALIR!',2000);}
+ if(dist(player,zone)>zone.r){player.hp-=0.25;}
+ document.getElementById('hpFill').style.width=player.hp+'%'; document.getElementById('hpTxt').textContent=Math.ceil(player.hp);
+ document.getElementById('zoneInfo').textContent=`ZONA ${Math.floor(zone.t/60)}:${String(Math.floor(zone.t%60)).padStart(2,'0')} • R ${Math.floor(zone.r)}`;
+ // bots AI
+ bots.forEach(b=>{
+  if(!b.alive) return;
+  b.ai.t--; if(b.ai.t<=0){b.ai.tx=rand(zone.x-zone.r*0.5,zone.x+zone.r*0.5); b.ai.ty=rand(zone.y-zone.r*0.5,zone.y+zone.r*0.5); b.ai.t=rand(80,200);}
+  if(dist(b,zone)>zone.r){b.ai.tx=zone.x; b.ai.ty=zone.y;}
+  let dx=b.ai.tx-b.x, dy=b.ai.ty-b.y, d=Math.hypot(dx,dy);
+  if(d>10){b.x+=dx/d*2.1; b.y+=dy/d*2.1; b.ang=Math.atan2(dy,dx);}
+  let nearest=[player,...bots].filter(e=>e.alive&&e!==b&&dist(e,b)<340).sort((a,b2)=>dist(a,b)-dist(b2,b))[0];
+  if(nearest){b.ang=Math.atan2(nearest.y-b.y,nearest.x-b.x); if(Math.random()<0.05) shoot(b);}
+  if(dist(b,zone)>b.r) b.hp-=0.25; if(b.hp<=0) b.alive=false;
+ });
+ if(dist(player,zone)>zone.r && player.hp<=0){end(false);}
+ alive=[player,...bots].filter(e=>e.alive).length;
+ // bullets
+ bullets=bullets.filter(bu=>{
+  bu.x+=bu.vx; bu.y+=bu.vy; bu.life--;
+  let hit=[player,...bots,...BUILDINGS.map(b=>({x:b.x+b.w/2,y:b.y+b.h/2,alive:true,hp:999,damage(){}}))].find(e=>e.alive&&e!==bu.owner&&dist(e,bu)<20);
+  if(hit && hit.damage){hit.damage(bu.dmg, Math.random()<0.2?'head':'body'); return false;}
+  return bu.life>0 && bu.x>0&&bu.x<MAP&&bu.y>0&&bu.y<MAP;
+ });
+ smokes=smokes.filter(s=>{s.r+=0.8; s.life--; return s.life>0;});
+ // camera
+ cam.x+= (player.x - W/2 - cam.x)*0.12; cam.y+= (player.y - H/2 - cam.y)*0.12;
+ // DRAW WORLD
+ ctx.fillStyle='#0f1a0f'; ctx.fillRect(0,0,W,H);
+ ctx.save(); ctx.translate(-cam.x,-cam.y);
+ // ground
+ ctx.fillStyle='#162316'; ctx.fillRect(0,0,MAP,MAP);
+ ctx.strokeStyle='#1e331e'; ctx.lineWidth=1; for(let x=0;x<MAP;x+=100){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,MAP);ctx.stroke();} for(let y=0;y<MAP;y+=100){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(MAP,y);ctx.stroke();}
+ // zone
+ ctx.beginPath(); ctx.arc(zone.x,zone.y,zone.r,0,Math.PI*2); ctx.strokeStyle='#00e5ff'; ctx.lineWidth=5; ctx.setLineDash([22,14]); ctx.stroke(); ctx.setLineDash([]);
+ ctx.fillStyle='rgba(0,80,120,0.35)'; ctx.beginPath(); ctx.rect(0,0,MAP,MAP); ctx.arc(zone.x,zone.y,zone.r,0,Math.PI*2,true); ctx.fill();
+ // buildings
+ BUILDINGS.forEach(b=>{ctx.fillStyle='#2a2a2a'; ctx.fillRect(b.x,b.y,b.w,b.h); ctx.strokeStyle='#444'; ctx.strokeRect(b.x,b.y,b.w,b.h); ctx.fillStyle='#111'; ctx.fillRect(b.x+b.w*0.35,b.y+b.h-20, b.w*0.3,20);});
+ TREES.forEach(t=>{ctx.fillStyle='#1b4a1b'; ctx.beginPath(); ctx.arc(t.x,t.y,t.r,0,Math.PI*2); ctx.fill();});
+ vehicles.forEach(v=>{ctx.fillStyle='#ffcc00'; ctx.fillRect(v.x,v.y,v.w,v.h); ctx.fillStyle='#000'; ctx.fillRect(v.x-4,v.y+2,8,6); ctx.fillRect(v.x+v.w-4,v.y+2,8,6);});
+ loots.forEach(l=>{if(l.taken) return; ctx.fillStyle=WEAPONS[l.type]?'#ffcc00':'#00ff88'; ctx.fillRect(l.x-7,l.y-7,14,14); ctx.fillStyle='#000'; ctx.font='8px Arial'; ctx.fillText(l.type.slice(0,3),l.x-8,l.y+3);});
+ [player,...bots].forEach(e=>{
+  if(!e.alive) return;
+  ctx.save(); ctx.translate(e.x,e.y); ctx.rotate(e.ang);
+  ctx.fillStyle=e===player?'#ffcc00':'#ff3b30'; ctx.fillRect(-11,-8,22,16);
+  ctx.fillStyle='#000'; ctx.fillRect(10,-2,16,4);
+  ctx.restore();
+  ctx.fillStyle='#fff'; ctx.font='10px Inter'; ctx.fillText(e.name, e.x-18, e.y-18);
+  ctx.fillStyle='red'; ctx.fillRect(e.x-14,e.y+16,e.hp/100*28,4);
+ });
+ bullets.forEach(b=>{ctx.fillStyle='#ffff88'; ctx.beginPath(); ctx.arc(b.x,b.y,3.5,0,Math.PI*2); ctx.fill();});
+ smokes.forEach(s=>{ctx.fillStyle=`rgba(255,200,0,${s.life/15})`; ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2); ctx.fill();});
+ ctx.restore();
+ // mini map
+ mctx.fillStyle='#0a140a'; mctx.fillRect(0,0,140,140);
+ mctx.strokeStyle='#00e5ff'; mctx.beginPath(); mctx.arc(70+(zone.x-1000)/MAP*70,70+(zone.y-1000)/MAP*70,zone.r/MAP*70,0,Math.PI*2); mctx.stroke();
+ BUILDINGS.forEach(b=>{mctx.fillStyle='#444'; mctx.fillRect((b.x/MAP)*140,(b.y/MAP)*140,4,4);});
+ [player,...bots].forEach(e=>{if(!e.alive) return; mctx.fillStyle=e===player?'#ffcc00':'#f00'; mctx.fillRect((e.x/MAP)*140-2,(e.y/MAP)*140-2,4,4);});
+
+ if(player.hp<=0) end(false);
+ if(alive===1 && player.alive) end(true);
 }
 
-// auto name
-if(!localStorage.getItem('bomba-name')){
- const n=prompt('Adın nədir? (Top 100 üçün)','Oyuncu');
- if(n){ myName=n.slice(0,12); localStorage.setItem('bomba-name',myName); }
+function end(win){
+ playing=false; const m=document.getElementById('menu'); m.style.display='flex';
+ m.innerHTML=`<div class="logo">${win?'QƏLƏBƏ!':'MƏĞLUB'}<br><b>${win?'WINNER WINNER':'TRY AGAIN'}</b></div><div style="font-size:20px;margin:12px">Kill: ${kills} • Sağ qalan: ${alive}</div><button class="btn-main" onclick="location.reload()">YENİDƏN OYNA</button>`;
 }
 
-// check room param
-const params=new URLSearchParams(location.search);
-if(params.get('room')){ $("menu").querySelector('.sub').textContent='Dostun səni 1vs1-ə çağırdı! Hazırsan?'; }
-
-// p2p online fake count
-setInterval(()=>{ $("online").textContent=Math.floor(50+Math.random()*300)+' online'; },3000);
+document.getElementById('startBtn').onclick=()=>{
+ document.getElementById('menu').style.display='none'; document.getElementById('loader').style.display='none';
+ spawn(); playing=true; gameLoop(); showMsg('AZ BATTLE BAŞLADI!',2000);
+};
+setTimeout(()=>document.getElementById('loader').style.display='none',800);
 </script>
 </body>
-                                                     </html>
+</html>
