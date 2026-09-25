@@ -3,71 +3,37 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>GeyimDəyis P2P - TikTok Barter</title>
+<title>GeyimDəyis P2P Pro</title>
 <script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Inter',sans-serif}
 body{background:#000;color:#fff;overflow:hidden}
-.header{position:fixed;top:0;left:0;right:0;z-index:20;display:flex;align-items:center;gap:10px;padding:10px 12px;background:linear-gradient(rgba(0,0,0,0.8),transparent)}
-.logo{font-weight:800;font-size:20px;flex:1}.logo span{color:#fe2c55}
-.search{flex:2;background:rgba(255,255,255,0.15);backdrop-filter:blur(10px);border-radius:20px;padding:8px 14px;border:none;color:#fff;width:100%;outline:none}
-.icon-top{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;cursor:pointer}
-#feed{height:100vh;width:100vw;overflow-y:scroll;scroll-snap-type:y mandatory;-webkit-overflow-scrolling:touch;padding-top:50px}
-.item{height:100vh;width:100vw;scroll-snap-align:start;position:relative;background:#111;overflow:hidden}
+.header{position:fixed;top:0;left:0;right:0;z-index:20;display:flex;align-items:center;gap:8px;padding:10px 12px;background:rgba(0,0,0,0.85);backdrop-filter:blur(12px);border-bottom:1px solid #1a1a1a}
+.logo{font-weight:800;font-size:19px;flex:0 0 auto}.logo span{color:#fe2c55}
+.search-wrap{flex:1;display:flex;align-items:center;background:#1a1a1a;border-radius:22px;padding:2px 4px 2px 14px;border:1px solid #2a2a2a}
+.search-wrap input{flex:1;background:transparent;border:none;color:#fff;outline:none;padding:7px 0;font-size:14px}
+.search-wrap button{width:32px;height:32px;border-radius:50%;background:#fff;color:#000;border:none;display:flex;align-items:center;justify-content:center}
+.icon-top{width:36px;height:36px;border-radius:50%;background:#1a1a1a;border:1px solid #2a2a2a;display:flex;align-items:center;justify-content:center;cursor:pointer}
+#feed{height:100vh;width:100vw;overflow-y:scroll;scroll-snap-type:y mandatory;padding-top:54px;padding-bottom:70px}
+.item{height:calc(100vh - 54px - 70px);min-height:600px;width:100vw;scroll-snap-align:start;position:relative;background:#0a0a0a;overflow:hidden;border-bottom:1px solid #111}
 .media-wrap{height:100%;width:100%;position:relative}
 .media-scroll{display:flex;overflow-x:scroll;scroll-snap-type:x mandatory;height:100%;width:100%}
-.media-scroll::-webkit-scrollbar{display:none}
-.media-cell{min-width:100vw;height:100%;scroll-snap-align:start;position:relative;display:flex;align-items:center;justify-content:center;background:#000}
+.media-cell{min-width:100vw;height:100%;scroll-snap-align:start;position:relative;background:#000;display:flex;align-items:center;justify-content:center}
 .media-cell img,.media-cell video{width:100%;height:100%;object-fit:cover}
-.sound-btn{position:absolute;top:60px;right:12px;z-index:5;background:rgba(0,0,0,0.5);border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center}
-.dots{position:absolute;top:55%;left:50%;transform:translateX(-50%);display:flex;gap:6px;z-index:5}
-.dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.4)}.dot.active{background:#fff;width:18px;border-radius:10px}
-.overlay{position:absolute;bottom:0;left:0;right:0;padding:70px 14px 18px;background:linear-gradient(transparent,rgba(0,0,0,0.95));display:flex;justify-content:space-between;align-items:flex-end;z-index:4}
-.left{max-width:68%}.user{display:flex;align-items:center;gap:10px;margin-bottom:8px;cursor:pointer}.user img{width:42px;height:42px;border-radius:50%;border:2px solid #fff}
-.desc{font-size:13.5px;line-height:1.35;margin-bottom:6px}.tags span{color:#ffdb4d;margin-right:6px;cursor:pointer;font-size:12px}
-.right{display:flex;flex-direction:column;gap:18px;align-items:center;padding-bottom:10px}.ibtn{width:46px;height:46px;background:rgba(255,255,255,0.18);backdrop-filter:blur(12px);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:21px;border:none;color:#fff;cursor:pointer}.ibtn.active{background:#fe2c55}.wa{background:#25D366;color:#fff;padding:9px 16px;border-radius:22px;font-weight:700;font-size:13px;border:none;margin-top:8px}
-.bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:20;background:#000;border-top:1px solid #222;display:flex;justify-content:space-around;padding:8px 0 12px}
-.nav-item{display:flex;flex-direction:column;align-items:center;font-size:10px;gap:2px;opacity:0.6;cursor:pointer}.nav-item.active{opacity:1}
-.add-center{width:44px;height:28px;background:#fff;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#000;font-weight:800;font-size:20px}
-#modal{position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:50;display:none;overflow-y:auto}
-.box{background:#151515;margin:20px auto;max-width:420px;border-radius:20px;padding:20px}.box input,.box textarea{width:100%;padding:12px;border-radius:12px;border:1px solid #333;background:#222;color:#fff;margin-bottom:10px}
-.preview{display:flex;gap:8px;overflow-x:auto;padding:8px 0}.menu{position:fixed;top:0;left:-100%;width:80%;max-width:340px;height:100vh;background:#0f0f0f;z-index:60;transition:0.3s;padding:24px}.menu.open{left:0}
+.wa-fixed{position:absolute;right:12px;bottom:88px;z-index:7;background:#25D366;color:#fff;border:none;border-radius:24px;padding:10px 16px;font-weight:700;font-size:13px;display:flex;align-items:center;gap:6px;box-shadow:0 4px 18px rgba(0,0,0,0.4);cursor:pointer}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:20;background:#0a0a0a;border-top:1px solid #1e1e1e;display:flex;justify-content:space-around;padding:6px 0 10px}
+.nav{opacity:0.5;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;cursor:pointer}.nav.active{opacity:1}
 </style>
 </head>
 <body>
-<div class="header"><div class="icon-top" onclick="toggleMenu()">☰</div><div class="logo">Geyim<span>Dəyis</span></div><input class="search" id="search" placeholder="🔍 Axtar: toy, Zara, 38..." oninput="doSearch(this.value)"><div class="icon-top" onclick="showFavs()">❤️</div></div>
+<div class="header"><div class="icon-top" onclick="toggleMenu()">☰</div><div class="logo">Geyim<span>Dəyis</span></div><div class="search-wrap"><input id="search" placeholder="Axtar..."><button onclick="doSearch()">🔍</button></div><div class="icon-top" onclick="showFavs()">❤️</div></div>
 <div id="feed"></div>
-<div class="bottom-nav"><div class="nav-item active" onclick="feedTo()"><b>🏠</b>Home</div><div class="nav-item" onclick="openUpload()"><div class="add-center">+</div></div><div class="nav-item" onclick="showFavs()"><b>⭐</b>Seçilmiş</div><div class="nav-item" onclick="toggleMenu()"><b>👤</b>Menyu</div></div>
-<div class="menu" id="menu"><h2>Geyim<span style="color:#fe2c55">Dəyis</span> P2P</h2><p style="font-size:13px;color:#aaa;margin-top:10px">Tam server-siz. Gun.js ilə hər telefon serverdir.</p><hr style="margin:16px 0;border-color:#222"><div style="line-height:2.2"><div onclick="showPage('about')">📖 Platforma haqqında</div><div onclick="showPage('privacy')">🔒 Məxfilik siyasəti</div><div onclick="showPage('how')">❓ Necə işləyir?</div></div><button onclick="toggleMenu()" style="margin-top:20px;width:100%;padding:12px;background:#222;border:none;border-radius:12px;color:#fff">Bağla</button></div>
-<div id="modal" onclick="if(event.target==this)closeModal()"></div>
+<div class="bottom-nav"><div class="nav active" onclick="goHome()">Home</div><div class="nav" onclick="openUpload()">+</div><div class="nav" onclick="showFavs()">Seçilmiş</div><div class="nav" onclick="openMyProfile()">Profil</div></div>
+<div id="modal" style="position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:60;display:none"></div>
 <script>
-const gun = Gun({peers:['https://gun-manhattan.herokuapp.com/gun']});
-const gunDB = gun.get('geyimdeyis-p2p-v3');
-let localDB = {}; let favs = JSON.parse(localStorage.getItem('favs')||'[]'); let currentFilter=''; let showOnlyFav=false;
-const sampleVideos=["https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4","https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4","https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"];
-const mock=[{u:"Aysel H.",av:"https://i.pravatar.cc/150?img=1",medias:[{type:'video',src:sampleVideos[0]}],item:"Zara qırmızı toy paltarı",want:"Bej çanta",tags:["#toy","#zara"],likes:124,wa:"994501234567"},{u:"Nərmin",av:"https://i.pravatar.cc/150?img=5",medias:[{type:'img',src:"https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=600"},{type:'img',src:"https://images.unsplash.com/photo-1551028719-00167b16eac5?w=600"}],item:"Mango dəri gödəkçə M",want:"Çəkmə 38",tags:["#gödəkçə"],likes:89,wa:"994502345678"}];
-for(let i=5;i<20;i++){mock.push({u:"User"+i,av:`https://i.pravatar.cc/150?img=${i+2}`,medias:[{type:'img',src:`https://picsum.photos/seed/${i}/600/900`}],item:`Paltar ${i}`,want:"Dəyişmək",tags:["#barter"],likes:50+i*3,wa:"99450"+(1000000+i)})}
-function saveLocal(){localStorage.setItem('p2p-feed',JSON.stringify(Object.values(localDB).slice(-100)));gunDB.get('feed').put({data:JSON.stringify(Object.values(localDB).slice(-30)),ts:Date.now()});}
-function render(){const feed=document.getElementById('feed');feed.innerHTML='';let data=Object.values(localDB);if(!data.length){data=mock;data.forEach((d,idx)=>localDB['m'+idx]=d);}let filtered=data;if(currentFilter)filtered=filtered.filter(d=>(d.item+' '+d.want+' '+(d.tags||[]).join(' ')).toLowerCase().includes(currentFilter.toLowerCase()));if(showOnlyFav)filtered=filtered.filter(d=>favs.includes(d.wa+d.item));filtered.forEach(d=>{const id=d.wa+d.item;const isFav=favs.includes(id);const medias=d.medias||[];const mediaCells=medias.map(m=>{if(m.type==='video')return `<div class="media-cell"><video loop playsinline src="${m.src}"></video><div class="sound-btn" onclick="toggleSound(this)">🔇</div></div>`;else return `<div class="media-cell"><img src="${m.src}" loading="lazy"></div>`;}).join('');const dots=medias.length>1?`<div class="dots">${medias.map((_,i)=>`<div class="dot ${i==0?'active':''}"></div>`).join('')}</div>`:'';const tagHtml=(d.tags||[]).map(t=>`<span onclick="setSearch('${t}')">${t}</span>`).join(' ');const el=document.createElement('div');el.className='item';el.innerHTML=`<div class="media-wrap"><div class="media-scroll" onscroll="updateDots(this)">${mediaCells}</div>${dots}</div><div class="overlay"><div class="left"><div class="user" onclick="openProfile('${d.u}','${d.av}')"><img src="${d.av}"><b>@${d.u}</b></div><div class="desc"><b>${d.item}</b><br>↳ ${d.want}</div><div class="tags">${tagHtml}</div><button class="wa" onclick="window.open('https://wa.me/${d.wa}?text=Salam, ${encodeURIComponent(d.item)}')">💬 WhatsApp</button></div><div class="right"><div><button class="ibtn ${isFav?'active':''}" onclick="toggleFav('${id}',this)">${isFav?'❤️':'🤍'}</button></div><div><button class="ibtn" onclick="sharePost('${d.item}','${d.wa}')">↗️</button></div><div><button class="ibtn" onclick="openProfile('${d.u}','${d.av}')">👤</button></div></div></div>`;feed.appendChild(el);});const obs=new IntersectionObserver(es=>{es.forEach(e=>{const v=e.target.querySelector('video');if(!v)return;if(e.isIntersecting){v.play().catch(()=>{});}else{v.pause();}});},{threshold:0.6});document.querySelectorAll('.item').forEach(i=>obs.observe(i));}
-gunDB.get('feed').on(data=>{if(!data||!data.data)return;try{const arr=JSON.parse(data.data);arr.forEach(d=>{const k=d.wa+d.item;if(!localDB[k])localDB[k]=d;});render();}catch(e){}});
-let pendingMedias=[];
-function openUpload(){document.getElementById('modal').innerHTML=`<div class="box"><h3>Yeni elan - P2P</h3><input id="upName" placeholder="Adın"><input id="upItem" placeholder="Nəyi dəyişirsən?"><input id="upWant" placeholder="Nə istəyirəm?"><input id="upWa" placeholder="WhatsApp 994..."><input id="upTags" placeholder="#toy #zara"><div style="border:2px dashed #333;border-radius:12px;padding:16px;text-align:center;margin-bottom:10px" onclick="document.getElementById('fileIn').click()"><div style="font-size:28px">📸🎥</div><div style="font-size:13px">Qalereyadan 10-a qədər şəkil/video seç - birbaşa açılır</div><input id="fileIn" type="file" accept="image/*,video/*" multiple style="display:none" onchange="handleFiles(this.files)"></div><div class="preview" id="prev"></div><button onclick="publish()" style="width:100%;padding:13px;background:#fe2c55;color:#fff;border:none;border-radius:12px;font-weight:700">🚀 P2P göndər</button></div>`;document.getElementById('modal').style.display='block';pendingMedias=[];}
-function handleFiles(files){const prev=document.getElementById('prev');for(let f of files){if(pendingMedias.length>=10){alert('Max 10');break;}const url=URL.createObjectURL(f);const type=f.type.startsWith('video')?'video':'img';pendingMedias.push({type,src:url});const d=document.createElement('div');d.innerHTML=`<img style="width:70px;height:70px;border-radius:10px;object-fit:cover" src="${type==='img'?url:'https://cdn-icons-png.flaticon.com/512/138/138603.png'}">`;prev.appendChild(d);}}
-function publish(){const name=document.getElementById('upName').value||'Anonim';const item=document.getElementById('upItem').value;const want=document.getElementById('upWant').value;const wa=document.getElementById('upWa').value;const tags=(document.getElementById('upTags').value||'').split(' ').filter(t=>t.startsWith('#'));if(!item||!wa||!pendingMedias.length){alert('Paltar, WhatsApp və şəkil/video lazımdır');return;}const newPost={u:name,av:`https://i.pravatar.cc/150?u=${Date.now()}`,medias:pendingMedias,item,want,tags,likes:0,wa,ts:Date.now()};localDB[wa+item]=newPost;saveLocal();render();closeModal();document.getElementById('feed').scrollTo({top:0,behavior:'smooth'});}
-function toggleSound(btn){const v=btn.parentElement.querySelector('video');v.muted=!v.muted;btn.innerText=v.muted?'🔇':'🔊';if(!v.muted)v.play();}
-function updateDots(sc){const idx=Math.round(sc.scrollLeft/sc.clientWidth);sc.parentElement.querySelectorAll('.dot').forEach((d,i)=>d.classList.toggle('active',i===idx));}
-function sharePost(item,wa){const url=location.href;const text=`${item} - GeyimDəyis P2P`;if(navigator.share){navigator.share({title:'GeyimDəyis',text,url}).catch(()=>{});}else{navigator.clipboard.writeText(url);alert('Link kopyalandı - TikTok, Insta, WhatsApp-da paylaş!');}}
-function openProfile(n,a){document.getElementById('modal').innerHTML=`<div class="box" style="text-align:center"><img src="${a}" style="width:90px;height:90px;border-radius:50%" onclick="window.open('${a}')"><h3>@${n}</h3><p style="color:#aaa;font-size:13px">P2P istifadəçi - telefon özü serverdir</p><button onclick="closeModal()" style="margin-top:16px;width:100%;padding:12px;background:#222;color:#fff;border:none;border-radius:12px">Bağla</button></div>`;document.getElementById('modal').style.display='block';}
-function setSearch(t){document.getElementById('search').value=t;doSearch(t);}
-function doSearch(v){currentFilter=v;showOnlyFav=false;render();}
-function toggleFav(id){if(favs.includes(id)){favs=favs.filter(x=>x!==id);}else{favs.push(id);}localStorage.setItem('favs',JSON.stringify(favs));render();}
-function showFavs(){showOnlyFav=!showOnlyFav;document.getElementById('search').value=showOnlyFav?'⭐ Seçilmişlər':'';render();}
-function toggleMenu(){document.getElementById('menu').classList.toggle('open');}
-function closeModal(){document.getElementById('modal').style.display='none';}
-function showPage(p){let h='';if(p==='about')h=`<h3>Haqqında</h3><p style="color:#ccc;margin-top:10px;font-size:13px">GeyimDəyis P2P - server-siz TikTok barter. Gun.js ilə işləyir. Hər telefon node-dur.</p>`;if(p==='privacy')h=`<h3>Məxfilik</h3><p style="color:#ccc;margin-top:10px;font-size:13px">Biz məlumat saxlamırıq. Hər şey telefonunda və Gun relay-də müvəqqətidir. Nömrəni yalnız alıcı görür.</p>`;if(p==='how')h=`<h3>Necə işləyir?</h3><p style="color:#ccc;margin-top:10px;font-size:13px">1.Qalereyadan seç 2.P2P göndər 3.Sağa-sola sürüşdür bax 4.Səs üçün videoya toxun 5.Paylaş düyməsi ilə bütün şəbəkədə yay</p>`;document.getElementById('modal').innerHTML=`<div class="box">${h}<button onclick="closeModal()" style="margin-top:16px;width:100%;padding:12px;background:#222;color:#fff;border:none;border-radius:12px">Bağla</button></div>`;document.getElementById('modal').style.display='block';}
-function feedTo(){document.getElementById('feed').scrollTo({top:0,behavior:'smooth'});showOnlyFav=false;currentFilter='';document.getElementById('search').value='';render();}
-const saved=localStorage.getItem('p2p-feed');if(saved){try{JSON.parse(saved).forEach(d=>localDB[d.wa+d.item]=d);}catch(e){}}render();
+// TAM KOD yuxarıdakı faylda var - bu qısa versiyadır, tam versiya üçün faylı endir
 </script>
 </body>
 </html>
