@@ -1,75 +1,85 @@
 <!DOCTYPE html>
-<html lang="az">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>GeyimDəyis P2P Pro</title>
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- Gun.js for P2P Sync -->
+    <!-- 
+      // FIXED BLACK SCREEN BUG: blob URL for local, compressed dataURL for Gun, IDB fallback, publishBtn bound, i18n auto-detect, TikTok-first, Explore grid, P2P persistent.
+    -->
     <script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         :root {
-            --nav: 68px;
-            --header: 60px;
-            --bg: #09090b;
-            --surface: #18181b;
-            --surface-hover: #27272a;
-            --border: #27272a;
-            --accent: #f59e0b;
-            --accent-hover: #d97706;
-            --text: #fafafa;
-            --text-muted: #a1a1aa;
-            --wa-green: #25D366;
-            --wa-green-hover: #1eae53;
-            --danger: #ef4444;
+            --bg: #000000;
+            --surface: #121212;
+            --surface-2: #1e1e1e;
+            --surface-3: #2a2a2a;
+            --text: #ffffff;
+            --text-sub: #aaaaaa;
+            --primary: #fe2c55;
+            --primary-hover: #e02649;
+            --whatsapp: #25D366;
+            --nav-h: 68px;
+            --header-h: 60px;
+            --border: #222222;
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            -webkit-tap-highlight-color: transparent;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             user-select: none;
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
             background-color: var(--bg);
             color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             overflow: hidden;
+            height: 100vh;
             height: 100dvh;
             width: 100vw;
-            position: fixed;
         }
 
-        /* Top Header */
+        /* App Container & Header */
+        #app {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            height: 100dvh;
+            width: 100vw;
+            position: relative;
+        }
+
         header {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
-            height: var(--header);
+            height: var(--header-h);
+            background: linear-gradient(180deg, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%);
             display: flex;
             align-items: center;
             justify-content: space-between;
             padding: 0 16px;
-            z-index: 50;
-            background: linear-gradient(180deg, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%);
+            z-index: 100;
             pointer-events: none;
         }
 
-        header * {
-            pointer-events: auto;
-        }
+        header * { pointer-events: auto; }
 
-        .brand-title {
-            font-size: 1.25rem;
+        .logo {
             font-weight: 800;
+            font-size: 1.25rem;
             letter-spacing: -0.5px;
-            background: linear-gradient(135deg, #fff 0%, var(--accent) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            color: #fff;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
         .header-actions {
@@ -79,10 +89,9 @@
         }
 
         .icon-btn {
-            background: rgba(24, 24, 27, 0.6);
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: var(--text);
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #fff;
             width: 40px;
             height: 40px;
             border-radius: 50%;
@@ -90,77 +99,89 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: all 0.2s;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
         }
 
-        .icon-btn:active {
-            transform: scale(0.92);
-        }
-
-        .p2p-badge {
+        .p2p-status {
             display: flex;
             align-items: center;
             gap: 6px;
             font-size: 0.75rem;
             padding: 4px 10px;
-            border-radius: 20px;
-            background: rgba(24, 24, 27, 0.7);
-            backdrop-filter: blur(8px);
+            border-radius: 12px;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
             border: 1px solid rgba(255,255,255,0.1);
-            color: var(--text-muted);
         }
 
         .p2p-dot {
             width: 8px;
             height: 8px;
             border-radius: 50%;
-            background: var(--danger);
+            background-color: #ff4d4d;
         }
 
-        .p2p-dot.online {
-            background: var(--wa-green);
-            box-shadow: 0 0 8px var(--wa-green);
+        .p2p-dot.online { background-color: #25D366; }
+
+        /* Main Content Views */
+        main {
+            flex: 1;
+            position: relative;
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
         }
 
-        /* Fullscreen TikTok Feed */
-        #feed {
-            height: 100dvh;
-            width: 100vw;
+        .view-section {
+            position: absolute;
+            inset: 0;
+            display: none;
+            width: 100%;
+            height: 100%;
+        }
+
+        .view-section.active { display: block; }
+
+        /* Feed TikTok Style */
+        #feedContainer {
+            height: 100%;
+            width: 100%;
             overflow-y: scroll;
             scroll-snap-type: y mandatory;
             scrollbar-width: none;
         }
 
-        #feed::-webkit-scrollbar {
-            display: none;
-        }
+        #feedContainer::-webkit-scrollbar { display: none; }
 
         .feed-item {
+            height: 100vh;
             height: 100dvh;
-            width: 100vw;
+            width: 100%;
             scroll-snap-align: start;
+            scroll-snap-stop: always;
             position: relative;
-            background: #000;
-            overflow: hidden;
+            background: #050505;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        /* Horizontal Media Carousel inside Item */
-        .media-carousel {
-            height: 100%;
+        /* Carousel inside feed item */
+        .media-slider {
             width: 100%;
+            height: 100%;
             display: flex;
             overflow-x: scroll;
             scroll-snap-type: x mandatory;
             scrollbar-width: none;
         }
 
-        .media-carousel::-webkit-scrollbar {
-            display: none;
-        }
+        .media-slider::-webkit-scrollbar { display: none; }
 
         .media-slide {
-            min-width: 100vw;
-            height: 100dvh;
+            min-width: 100%;
+            height: 100%;
             scroll-snap-align: start;
             position: relative;
             display: flex;
@@ -175,14 +196,23 @@
             object-fit: cover;
         }
 
-        .carousel-dots {
+        .media-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-sub);
+        }
+
+        /* Dots overlay */
+        .slider-dots {
             position: absolute;
-            top: calc(var(--header) + 10px);
+            top: calc(var(--header-h) + 10px);
             left: 50%;
             transform: translateX(-50%);
             display: flex;
             gap: 6px;
-            z-index: 25;
+            z-index: 10;
         }
 
         .dot {
@@ -190,115 +220,108 @@
             height: 6px;
             border-radius: 50%;
             background: rgba(255,255,255,0.4);
-            transition: all 0.3s;
+            transition: all 0.2s;
         }
 
         .dot.active {
             background: #fff;
-            width: 16px;
+            width: 14px;
             border-radius: 4px;
         }
 
-        /* Overlay & Info */
-        .item-overlay {
+        /* Sound Button */
+        .sound-btn {
             position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            padding: 80px 16px calc(var(--nav) + 16px) 16px;
-            background: linear-gradient(0deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.4) 60%, rgba(0,0,0,0) 100%);
-            z-index: 20;
-            pointer-events: none;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
+            top: calc(var(--header-h) + 10px);
+            right: 16px;
+            z-index: 10;
         }
 
-        .item-overlay * {
-            pointer-events: auto;
+        /* Overlay Text & Controls */
+        .item-overlay-bottom {
+            position: absolute;
+            bottom: var(--nav-h);
+            left: 0;
+            right: 0;
+            padding: 40px 80px 16px 16px;
+            background: linear-gradient(0deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.4) 60%, rgba(0,0,0,0) 100%);
+            z-index: 15;
+            pointer-events: none;
         }
+
+        .item-overlay-bottom * { pointer-events: auto; }
 
         .author-info {
             display: flex;
             align-items: center;
             gap: 10px;
+            margin-bottom: 8px;
             cursor: pointer;
         }
 
-        .avatar {
-            width: 44px;
-            height: 44px;
+        .author-avatar {
+            width: 38px;
+            height: 38px;
             border-radius: 50%;
             object-fit: cover;
-            border: 2px solid var(--accent);
-            background: var(--surface);
+            border: 1.5px solid #fff;
         }
 
         .author-name {
             font-weight: 700;
             font-size: 1rem;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.8);
         }
 
-        .time-ago {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-        }
-
-        .item-title {
-            font-size: 0.95rem;
-            font-weight: 500;
-            line-height: 1.4;
-        }
-
-        .item-want {
-            background: rgba(245, 158, 11, 0.15);
-            border: 1px solid rgba(245, 158, 11, 0.3);
-            color: var(--accent);
-            padding: 6px 10px;
-            border-radius: 8px;
-            font-size: 0.85rem;
+        .trade-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(254, 44, 85, 0.2);
+            border: 1px solid var(--primary);
+            color: #fff;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.8rem;
             font-weight: 600;
-            display: inline-block;
-            margin-top: 4px;
+            margin-bottom: 6px;
         }
 
-        .item-tags {
+        .item-desc {
+            font-size: 0.9rem;
+            line-height: 1.3;
+            color: #eee;
+            margin-bottom: 6px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .item-meta {
             display: flex;
             flex-wrap: wrap;
             gap: 6px;
-            margin-top: 4px;
-        }
-
-        .tag {
             font-size: 0.75rem;
-            color: var(--accent);
-            font-weight: 600;
+            color: #ccc;
         }
 
-        .item-meta-pills {
-            display: flex;
-            gap: 8px;
-            margin-top: 2px;
-        }
-
-        .pill {
-            font-size: 0.75rem;
+        .meta-tag {
             background: rgba(255,255,255,0.15);
-            padding: 2px 8px;
+            padding: 2px 6px;
             border-radius: 4px;
-            backdrop-filter: blur(4px);
         }
 
-        /* Right Floating Actions */
-        .right-actions {
+        /* Right Actions Bar */
+        .actions-bar {
             position: absolute;
+            bottom: calc(var(--nav-h) + 10px);
             right: 12px;
-            bottom: calc(var(--nav) + 120px);
             display: flex;
             flex-direction: column;
-            gap: 18px;
-            z-index: 25;
             align-items: center;
+            gap: 16px;
+            z-index: 20;
         }
 
         .action-btn {
@@ -310,86 +333,126 @@
             border: none;
             color: #fff;
             cursor: pointer;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
         }
 
-        .action-btn .btn-circle {
-            width: 48px;
-            height: 48px;
+        .action-btn-circle {
+            width: 46px;
+            height: 46px;
             border-radius: 50%;
-            background: rgba(24, 24, 27, 0.6);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.15);
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.15);
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.2s;
+            backdrop-filter: blur(8px);
         }
 
-        .action-btn:active .btn-circle {
-            transform: scale(0.88);
+        .action-btn.liked .action-btn-circle {
+            background: rgba(254, 44, 85, 0.3);
+            border-color: var(--primary);
+            color: var(--primary);
         }
 
-        .action-btn.liked .btn-circle {
-            color: #ef4444;
-            background: rgba(239, 68, 68, 0.2);
-            border-color: rgba(239, 68, 68, 0.4);
+        .action-btn span {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.8);
         }
 
-        /* WhatsApp Fixed Floating Direct Button */
-        .wa-floating-btn {
-            position: absolute;
-            right: 12px;
-            bottom: calc(var(--nav) + 30px);
+        .whatsapp-float-btn {
             width: 50px;
             height: 50px;
             border-radius: 50%;
-            background: var(--wa-green);
+            background: var(--whatsapp);
             color: #fff;
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 25;
             box-shadow: 0 4px 12px rgba(37, 211, 102, 0.4);
-            cursor: pointer;
-            border: none;
             text-decoration: none;
+            cursor: pointer;
         }
 
-        /* Sound Control Overlay */
-        .sound-toggle-btn {
-            position: absolute;
-            top: calc(var(--header) + 12px);
-            right: 16px;
-            z-index: 25;
+        /* Bottom Navigation */
+        nav.bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: var(--nav-h);
+            background: #000;
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            z-index: 100;
+            padding-bottom: env(safe-area-inset-bottom);
         }
 
-        /* Explore / Grid View */
-        #exploreGrid {
-            display: none;
-            height: 100dvh;
-            width: 100vw;
-            padding-top: var(--header);
-            padding-bottom: var(--nav);
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+            background: none;
+            border: none;
+            color: var(--text-sub);
+            font-size: 0.68rem;
+            font-weight: 500;
+            cursor: pointer;
+            width: 20%;
+        }
+
+        .nav-item.active { color: #fff; }
+
+        .nav-item-add {
+            width: 44px;
+            height: 32px;
+            background: #fff;
+            color: #000;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        /* Explore View */
+        .explore-container {
+            padding: calc(var(--header-h) + 10px) 10px calc(var(--nav-h) + 10px) 10px;
+            height: 100%;
             overflow-y: auto;
-            background: var(--bg);
         }
 
-        .grid-container {
+        .search-bar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .search-input {
+            flex: 1;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            color: #fff;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            outline: none;
+        }
+
+        .explore-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 2px;
-            padding: 2px;
+            gap: 3px;
         }
 
         .grid-item {
             aspect-ratio: 1;
             position: relative;
-            background: var(--surface);
-            overflow: hidden;
+            background: var(--surface-2);
             cursor: pointer;
+            overflow: hidden;
         }
 
         .grid-item img, .grid-item video {
@@ -398,7 +461,7 @@
             object-fit: cover;
         }
 
-        .grid-item-badge {
+        .grid-type-icon {
             position: absolute;
             top: 6px;
             right: 6px;
@@ -406,201 +469,80 @@
             filter: drop-shadow(0 1px 2px rgba(0,0,0,0.8));
         }
 
-        /* Bottom Navigation */
-        nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: var(--nav);
-            background: rgba(9, 9, 11, 0.95);
-            backdrop-filter: blur(12px);
-            border-top: 1px solid var(--border);
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            z-index: 50;
-            padding-bottom: env(safe-area-inset-bottom);
-        }
-
-        .nav-tab {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 4px;
-            color: var(--text-muted);
-            background: none;
-            border: none;
-            cursor: pointer;
-            width: 20%;
+        /* Profile View */
+        .profile-container {
+            padding: calc(var(--header-h) + 10px) 16px calc(var(--nav-h) + 10px) 16px;
             height: 100%;
-            opacity: 0.6;
-            transition: all 0.2s;
+            overflow-y: auto;
         }
 
-        .nav-tab.active {
-            opacity: 1;
-            color: #fff;
-        }
-
-        .nav-tab.active i {
-            color: var(--accent);
-        }
-
-        .nav-tab-publish {
-            opacity: 1;
-        }
-
-        .publish-circle {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-hover) 100%);
-            color: #000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
-            margin-top: -12px;
-        }
-
-        /* Modals & Drawers */
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.8);
-            backdrop-filter: blur(8px);
-            z-index: 100;
-            display: none;
-            align-items: flex-end;
-            justify-content: center;
-        }
-
-        .modal.active {
-            display: flex;
-        }
-
-        .modal-content {
-            background: var(--surface);
-            width: 100%;
-            max-width: 600px;
-            border-radius: 20px 20px 0 0;
-            max-height: 85dvh;
+        .profile-header {
             display: flex;
             flex-direction: column;
-            overflow: hidden;
-            animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            align-items: center;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .profile-avatar-large {
+            width: 96px;
+            height: 96px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--primary);
+            margin-bottom: 10px;
+        }
+
+        /* Modal Sheets */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 200;
+            display: none;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-overlay.active { display: block; }
+
+        .modal-sheet {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            max-height: 85vh;
+            background: var(--surface);
+            border-top-left-radius: 20px;
+            border-top-right-radius: 20px;
+            z-index: 201;
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.1, 0.9, 0.2, 1);
+            display: flex;
+            flex-direction: column;
             border-top: 1px solid var(--border);
         }
 
-        @keyframes slideUp {
-            from { transform: translateY(100%); }
-            to { transform: translateY(0); }
-        }
+        .modal-sheet.active { transform: translateY(0); }
 
         .modal-header {
             padding: 16px;
             border-bottom: 1px solid var(--border);
             display: flex;
-            align-items: center;
             justify-content: space-between;
-        }
-
-        .modal-title {
-            font-size: 1.1rem;
+            align-items: center;
             font-weight: 700;
         }
 
         .modal-body {
             padding: 16px;
             overflow-y: auto;
+            flex: 1;
             display: flex;
             flex-direction: column;
-            gap: 14px;
-        }
-
-        .drawer {
-            position: fixed;
-            top: 0;
-            left: -100%;
-            width: 80%;
-            max-width: 320px;
-            height: 100dvh;
-            background: var(--surface);
-            z-index: 120;
-            transition: left 0.3s ease;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            border-right: 1px solid var(--border);
-        }
-
-        .drawer.active {
-            left: 0;
-        }
-
-        .drawer-backdrop {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.6);
-            z-index: 110;
-            display: none;
-        }
-
-        .drawer-backdrop.active {
-            display: block;
-        }
-
-        .drawer-menu-item {
-            display: flex;
-            align-items: center;
             gap: 12px;
-            padding: 12px;
-            border-radius: 10px;
-            color: var(--text);
-            cursor: pointer;
-            transition: background 0.2s;
         }
 
-        .drawer-menu-item:hover, .drawer-menu-item.active {
-            background: var(--surface-hover);
-        }
-
-        .lang-options {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            margin-left: 12px;
-        }
-
-        .lang-btn {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 12px;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            background: var(--bg);
-            color: var(--text);
-            cursor: pointer;
-            font-size: 0.9rem;
-        }
-
-        .lang-btn.active {
-            border-color: var(--accent);
-            color: var(--accent);
-            background: rgba(245, 158, 11, 0.1);
-        }
-
-        /* Form Inputs */
+        /* Form Controls */
         .form-group {
             display: flex;
             flex-direction: column;
@@ -608,79 +550,68 @@
         }
 
         .form-group label {
-            font-size: 0.85rem;
-            color: var(--text-muted);
+            font-size: 0.8rem;
+            color: var(--text-sub);
             font-weight: 600;
         }
 
-        .input-field {
-            background: var(--bg);
+        .form-control {
+            background: var(--surface-2);
             border: 1px solid var(--border);
-            color: var(--text);
+            color: #fff;
             padding: 12px;
             border-radius: 10px;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             outline: none;
-            transition: border-color 0.2s;
         }
 
-        .input-field:focus {
-            border-color: var(--accent);
-        }
-
-        textarea.input-field {
-            min-height: 80px;
-            resize: vertical;
-        }
+        textarea.form-control { resize: none; min-height: 70px; }
 
         .media-picker-btns {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
+            display: flex;
             gap: 10px;
         }
 
-        .upload-btn-label {
+        .picker-btn {
+            flex: 1;
+            padding: 12px;
+            background: var(--surface-3);
+            border: 1px dashed #555;
+            border-radius: 10px;
+            color: #fff;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
-            padding: 12px;
-            background: var(--surface-hover);
-            border: 1px dashed var(--border);
-            border-radius: 10px;
-            cursor: pointer;
             font-size: 0.85rem;
-            font-weight: 600;
+            cursor: pointer;
         }
 
-        .media-previews {
-            display: flex;
+        .selected-media-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
             gap: 8px;
-            overflow-x: auto;
-            padding: 4px 0;
         }
 
-        .preview-thumb {
-            width: 70px;
-            height: 70px;
-            border-radius: 8px;
+        .selected-media-item {
+            height: 80px;
             position: relative;
-            flex-shrink: 0;
+            border-radius: 8px;
+            overflow: hidden;
             background: #000;
         }
 
-        .preview-thumb img, .preview-thumb video {
+        .selected-media-item img, .selected-media-item video {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            border-radius: 8px;
         }
 
-        .remove-thumb {
+        .media-remove-btn {
             position: absolute;
-            top: -4px;
-            right: -4px;
-            background: var(--danger);
+            top: 4px;
+            right: 4px;
+            background: rgba(0,0,0,0.7);
             color: #fff;
             border-radius: 50%;
             width: 20px;
@@ -688,1177 +619,1300 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 12px;
             cursor: pointer;
+            border: none;
         }
 
-        .submit-btn {
-            background: var(--accent);
-            color: #000;
+        .btn-primary {
+            background: var(--primary);
+            color: #fff;
             border: none;
             padding: 14px;
             border-radius: 10px;
             font-weight: 700;
             font-size: 1rem;
             cursor: pointer;
-            margin-top: 10px;
-            transition: background 0.2s;
+            width: 100%;
+            text-align: center;
         }
 
-        .submit-btn:hover {
-            background: var(--accent-hover);
+        /* Drawer Left */
+        .drawer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: 280px;
+            background: var(--surface);
+            z-index: 300;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid var(--border);
         }
 
-        /* Comments Modal Sheet */
+        .drawer.active { transform: translateX(0); }
+
+        .drawer-header {
+            padding: 20px 16px;
+            border-bottom: 1px solid var(--border);
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .drawer-menu {
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .drawer-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            border-radius: 8px;
+            color: #fff;
+            text-decoration: none;
+            background: none;
+            border: none;
+            width: 100%;
+            text-align: left;
+            font-size: 0.95rem;
+            cursor: pointer;
+        }
+
+        .drawer-item:hover { background: var(--surface-2); }
+
+        .lang-switch {
+            display: flex;
+            gap: 4px;
+            margin-top: 8px;
+            background: var(--surface-2);
+            padding: 4px;
+            border-radius: 8px;
+        }
+
+        .lang-btn {
+            flex: 1;
+            background: none;
+            border: none;
+            color: var(--text-sub);
+            padding: 6px 0;
+            font-size: 0.75rem;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .lang-btn.active {
+            background: var(--primary);
+            color: #fff;
+        }
+
+        /* Comments List */
         .comments-list {
             display: flex;
             flex-direction: column;
             gap: 12px;
-            max-height: 350px;
+            max-height: 300px;
             overflow-y: auto;
         }
 
         .comment-item {
             display: flex;
             gap: 10px;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
         }
 
-        .comment-body {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-            background: var(--bg);
-            padding: 8px 12px;
-            border-radius: 10px;
-            flex-grow: 1;
-        }
-
-        .comment-author {
-            font-weight: 700;
-            font-size: 0.8rem;
-            color: var(--text-muted);
-        }
-
-        .comment-text {
-            font-size: 0.9rem;
-            word-break: break-word;
-        }
-
-        .comment-actions {
-            display: flex;
-            gap: 12px;
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            margin-top: 4px;
-        }
-
-        .comment-reply-btn {
-            cursor: pointer;
-            color: var(--accent);
-        }
-
-        .comment-input-area {
-            display: flex;
-            gap: 8px;
-            padding-top: 12px;
-            border-top: 1px solid var(--border);
-        }
-
-        /* Search Overlay Modal */
-        .search-header {
-            display: flex;
-            gap: 8px;
-            padding: 12px;
-            background: var(--surface);
-            border-bottom: 1px solid var(--border);
-        }
-
-        /* Profile View */
-        #profileView {
-            display: none;
-            height: 100dvh;
-            width: 100vw;
-            padding-top: var(--header);
-            padding-bottom: var(--nav);
-            overflow-y: auto;
-            background: var(--bg);
-        }
-
-        .profile-header {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px;
-            gap: 10px;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .profile-avatar-big {
-            width: 96px;
-            height: 96px;
+        .comment-avatar {
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
             object-fit: cover;
-            border: 3px solid var(--accent);
         }
 
-        .empty-state {
+        .comment-content { flex: 1; }
+        .comment-user { font-weight: 700; margin-bottom: 2px; }
+        .comment-text { color: #ddd; margin-bottom: 4px; }
+        .comment-meta { font-size: 0.7rem; color: var(--text-sub); display: flex; gap: 10px; }
+
+        .reply-box {
+            margin-left: 40px;
+            margin-top: 8px;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 60vh;
-            gap: 12px;
-            color: var(--text-muted);
-            text-align: center;
-            padding: 20px;
+            gap: 8px;
+            border-left: 2px solid var(--surface-3);
+            padding-left: 8px;
         }
 
-        /* Hidden File Inputs */
-        input[type="file"] {
-            display: none;
+        .legal-text {
+            font-size: 0.8rem;
+            color: var(--text-sub);
+            line-height: 1.5;
+            white-space: pre-wrap;
         }
     </style>
 </head>
 <body>
 
-    <!-- Header -->
-    <header>
-        <div class="brand-title">GeyimDəyis P2P</div>
-        <div class="header-actions">
-            <div class="p2p-badge">
-                <div id="p2pDot" class="p2p-dot"></div>
-                <span id="p2pStatusText">P2P</span>
+    <div id="app">
+        <!-- Header -->
+        <header>
+            <div class="logo">
+                <i data-lucide="repeat"></i>
+                <span>GeyimDəyis</span>
             </div>
-            <button class="icon-btn" id="searchBtn"><i data-lucide="search"></i></button>
-            <button class="icon-btn" id="menuBtn"><i data-lucide="menu"></i></button>
-        </div>
-    </header>
+            <div class="header-actions">
+                <div class="p2p-status">
+                    <div id="p2pDot" class="p2p-dot"></div>
+                    <span id="p2pStatusText">P2P</span>
+                </div>
+                <button class="icon-btn" onclick="toggleDrawer()">
+                    <i data-lucide="menu"></i>
+                </button>
+            </div>
+        </header>
 
-    <!-- Home TikTok Fullscreen Feed -->
-    <main id="feed"></main>
+        <!-- Main View Area -->
+        <main>
+            <!-- 1. Home TikTok Feed -->
+            <section id="viewHome" class="view-section active">
+                <div id="feedContainer"></div>
+            </section>
 
-    <!-- Explore Grid View -->
-    <div id="exploreGrid">
-        <div class="grid-container" id="gridContainer"></div>
+            <!-- 2. Explore Grid View -->
+            <section id="viewExplore" class="view-section">
+                <div class="explore-container">
+                    <div class="search-bar">
+                        <input type="text" id="searchInput" class="search-input" placeholder="Search...">
+                        <button class="icon-btn" onclick="executeSearch()"><i data-lucide="search"></i></button>
+                    </div>
+                    <div id="exploreGrid" class="explore-grid"></div>
+                </div>
+            </section>
+
+            <!-- 3. Favorites View -->
+            <section id="viewFavorites" class="view-section">
+                <div class="explore-container">
+                    <h3 style="margin-bottom:12px;" data-i18n="favorites">Favorites</h3>
+                    <div id="favoritesGrid" class="explore-grid"></div>
+                </div>
+            </section>
+
+            <!-- 4. Profile View -->
+            <section id="viewProfile" class="view-section">
+                <div class="profile-container">
+                    <div id="profileHeader" class="profile-header"></div>
+                    <div id="profileGrid" class="explore-grid"></div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Bottom Navigation Bar -->
+        <nav class="bottom-nav">
+            <button class="nav-item active" onclick="switchTab('home')">
+                <i data-lucide="house"></i>
+                <span data-i18n="home">Home</span>
+            </button>
+            <button class="nav-item" onclick="switchTab('explore')">
+                <i data-lucide="layout-grid"></i>
+                <span data-i18n="explore">Explore</span>
+            </button>
+            <button class="nav-item" onclick="openPublishModal()">
+                <div class="nav-item-add"><i data-lucide="plus"></i></div>
+            </button>
+            <button class="nav-item" onclick="switchTab('favorites')">
+                <i data-lucide="star"></i>
+                <span data-i18n="favorites">Favorites</span>
+            </button>
+            <button class="nav-item" onclick="switchTab('profile')">
+                <i data-lucide="user-round"></i>
+                <span data-i18n="profile">Profile</span>
+            </button>
+        </nav>
     </div>
 
-    <!-- Profile View View -->
-    <div id="profileView">
-        <div class="profile-header" id="profileHeaderContent"></div>
-        <div class="grid-container" id="profileGridContainer"></div>
-    </div>
-
-    <!-- Bottom Navigation -->
-    <nav>
-        <button class="nav-tab active" id="navHome"><i data-lucide="house"></i><span id="labelHome">Ana səhifə</span></button>
-        <button class="nav-tab" id="navExplore"><i data-lucide="layout-grid"></i><span id="labelExplore">Kəşf et</span></button>
-        <button class="nav-tab nav-tab-publish" id="navPublish">
-            <div class="publish-circle"><i data-lucide="plus"></i></div>
-        </button>
-        <button class="nav-tab" id="navFavs"><i data-lucide="star"></i><span id="labelFavs">Bəyəndiklərim</span></button>
-        <button class="nav-tab" id="navProfile"><i data-lucide="user"></i><span id="labelProfile">Profil</span></button>
-    </nav>
-
-    <!-- Side Drawer -->
-    <div class="drawer-backdrop" id="drawerBackdrop"></div>
-    <div class="drawer" id="drawer">
-        <h2 style="margin-bottom: 10px;" id="menuTitle">Menyu</h2>
-        <div class="drawer-menu-item" id="btnAbout"><i data-lucide="info"></i><span id="labelAbout">Haqqımızda</span></div>
-        <div class="drawer-menu-item" id="btnHowTo"><i data-lucide="help-circle"></i><span id="labelHowTo">Necə istifadə etməli?</span></div>
-        <div class="drawer-menu-item" id="btnPrivacy"><i data-lucide="shield-check"></i><span id="labelPrivacy">Məxfilik Siyasəti</span></div>
-        <div class="drawer-menu-item" id="btnTerms"><i data-lucide="file-text"></i><span id="labelTerms">İstifadə Şərtləri</span></div>
-        
-        <div style="margin-top: 10px; font-weight: bold; font-size: 0.9rem;" id="labelLang">Dil seçimi</div>
-        <div class="lang-options">
-            <button class="lang-btn" data-lang="az">🇦🇿 Azərbaycan</button>
-            <button class="lang-btn" data-lang="en">🇬🇧 English</button>
-            <button class="lang-btn" data-lang="ru">🇷🇺 Русский</button>
-            <button class="lang-btn" data-lang="tr">🇹🇷 Türkçe</button>
-            <button class="lang-btn" data-lang="ka">🇬🇪 ქართული</button>
-            <button class="lang-btn" data-lang="fa">🇮🇷 فارسی</button>
-        </div>
-    </div>
-
-    <!-- Upload/Publish Modal -->
-    <div class="modal" id="publishModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-title" id="modalPublishTitle">Elan Yerləşdir</div>
-                <button class="icon-btn" id="closePublishModal"><i data-lucide="x"></i></button>
-            </div>
-            <div class="modal-body">
-                <form id="publishForm" onsubmit="return false;">
-                    <div class="form-group">
-                        <label id="lblMyName">Adınız</label>
-                        <input type="text" id="inAuthorName" class="input-field" required>
-                    </div>
-                    <div class="form-group">
-                        <label id="lblMyWA">WhatsApp Nömrəsi (məs: 994501234567)</label>
-                        <input type="tel" id="inAuthorWA" class="input-field" placeholder="994..." required>
-                    </div>
-                    <div class="form-group">
-                        <label id="lblWhatChanging">Nəyi dəyişirsiniz? (Geyim ad/təsviri)</label>
-                        <input type="text" id="inTitle" class="input-field" placeholder="məs: Zara Qara Kurtka" required>
-                    </div>
-                    <div class="form-group">
-                        <label id="lblWhatIWant">Əvəzində nə istəyirsiniz?</label>
-                        <input type="text" id="inWant" class="input-field" placeholder="məs: M razmer Hudi və ya İdman ayaqqabısı" required>
-                    </div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                        <div class="form-group">
-                            <label id="lblBrand">Marka/Brend</label>
-                            <input type="text" id="inBrand" class="input-field" placeholder="Zara, Nike...">
-                        </div>
-                        <div class="form-group">
-                            <label id="lblSize">Ölçü (Size)</label>
-                            <input type="text" id="inSize" class="input-field" placeholder="S, M, L, 42...">
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label id="lblDescription">Ətraflı Təsvir</label>
-                        <textarea id="inDesc" class="input-field" placeholder="Geyimin vəziyyəti, geyinilmə dərəcəsi..."></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label id="lblTags">Teqlər (vergüllə ayırın)</label>
-                        <input type="text" id="inTags" class="input-field" placeholder="kurtka, qış, zara">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label id="lblMedia">Şəkil və ya Videolar (Limitsiz)</label>
-                        <div class="media-picker-btns">
-                            <label class="upload-btn-label">
-                                <i data-lucide="image"></i> <span id="lblAddImg">Şəkil əlavə et</span>
-                                <input type="file" id="imgInput" accept="image/*" multiple>
-                            </label>
-                            <label class="upload-btn-label">
-                                <i data-lucide="video"></i> <span id="lblAddVid">Video əlavə et</span>
-                                <input type="file" id="vidInput" accept="video/*" multiple>
-                            </label>
-                        </div>
-                        <div class="media-previews" id="mediaPreviews"></div>
-                    </div>
-
-                    <button type="button" id="publishBtn" class="submit-btn">Elanı Göndər (P2P Network)</button>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- Search Modal Sheet -->
-    <div class="modal" id="searchModal">
-        <div class="modal-content" style="max-height: 90dvh;">
-            <div class="search-header">
-                <input type="text" id="searchInput" class="input-field" style="flex-grow: 1;" placeholder="Axtarış (brend, ölçü, təsvir)...">
-                <button class="submit-btn" id="doSearchBtn" style="margin: 0; padding: 0 16px;">Axtar</button>
-                <button class="icon-btn" id="closeSearchModal"><i data-lucide="x"></i></button>
-            </div>
-            <div class="modal-body">
-                <div class="grid-container" id="searchResultsGrid"></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Comments Sheet Modal -->
-    <div class="modal" id="commentsModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-title" id="lblCommentsTitle">Şərhlər</div>
-                <button class="icon-btn" id="closeCommentsModal"><i data-lucide="x"></i></button>
-            </div>
-            <div class="modal-body">
-                <div class="comments-list" id="commentsList"></div>
-                <div class="comment-input-area">
-                    <input type="text" id="inCommentText" class="input-field" style="flex-grow: 1;" placeholder="Şərhinizi yazın...">
-                    <button class="submit-btn" id="sendCommentBtn" style="margin: 0; padding: 0 16px;"><i data-lucide="send"></i></button>
+    <!-- Drawer Left Side Menu -->
+    <div id="drawerOverlay" class="modal-overlay" onclick="toggleDrawer(false)"></div>
+    <div id="drawer" class="drawer">
+        <div class="drawer-header" data-i18n="brand">GeyimDəyis P2P</div>
+        <div class="drawer-menu">
+            <div class="form-group">
+                <label data-i18n="language">Language</label>
+                <div class="lang-switch">
+                    <button class="lang-btn" onclick="setLanguage('az')">AZ</button>
+                    <button class="lang-btn" onclick="setLanguage('en')">EN</button>
+                    <button class="lang-btn" onclick="setLanguage('ru')">RU</button>
+                    <button class="lang-btn" onclick="setLanguage('tr')">TR</button>
+                    <button class="lang-btn" onclick="setLanguage('ka')">GE</button>
                 </div>
             </div>
+            <button class="drawer-item" onclick="openLegalModal('about')">
+                <i data-lucide="info"></i> <span data-i18n="about">About</span>
+            </button>
+            <button class="drawer-item" onclick="openLegalModal('how')">
+                <i data-lucide="help-circle"></i> <span data-i18n="how_to_use">How to Use</span>
+            </button>
+            <button class="drawer-item" onclick="openLegalModal('privacy')">
+                <i data-lucide="shield-check"></i> <span data-i18n="privacy">Privacy Policy</span>
+            </button>
+            <button class="drawer-item" onclick="openLegalModal('terms')">
+                <i data-lucide="file-text"></i> <span data-i18n="terms">Terms of Service</span>
+            </button>
         </div>
     </div>
 
-    <!-- Text Content View Modal (Info, Privacy, Terms) -->
-    <div class="modal" id="textModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-title" id="textModalTitle">Məlumat</div>
-                <button class="icon-btn" id="closeTextModal"><i data-lucide="x"></i></button>
+    <!-- Modal: Upload / Publish Item -->
+    <div id="uploadModalOverlay" class="modal-overlay" onclick="closeModal('uploadModal')"></div>
+    <div id="uploadModal" class="modal-sheet">
+        <div class="modal-header">
+            <span data-i18n="publish">Publish Listing</span>
+            <i data-lucide="x" style="cursor:pointer;" onclick="closeModal('uploadModal')"></i>
+        </div>
+        <div class="modal-body">
+            <!-- Profile Info Setup (If not exists) -->
+            <div id="profileSetupFields" class="form-group" style="display:none; border-bottom:1px solid var(--border); padding-bottom:12px;">
+                <label data-i18n="enter_name">Your Name</label>
+                <input type="text" id="upAuthorName" class="form-control" placeholder="Name">
+                <label style="margin-top:8px;">Avatar</label>
+                <input type="file" id="upAvatarFile" accept="image/*" class="form-control">
             </div>
-            <div class="modal-body" id="textModalBody" style="line-height: 1.6; font-size: 0.95rem;"></div>
+
+            <div class="form-group">
+                <label data-i18n="what_changing">What are you offering?</label>
+                <input type="text" id="upItem" class="form-control" placeholder="e.g. Leather Jacket">
+            </div>
+            <div class="form-group">
+                <label data-i18n="what_want">What do you want in exchange?</label>
+                <input type="text" id="upWant" class="form-control" placeholder="e.g. Denim Jacket / Sneakers">
+            </div>
+            <div class="form-group">
+                <label data-i18n="whatsapp">WhatsApp Phone Number</label>
+                <input type="tel" id="upWa" class="form-control" placeholder="+994501234567">
+            </div>
+
+            <div style="display:flex; gap:10px;">
+                <div class="form-group" style="flex:1;">
+                    <label data-i18n="brand">Brand</label>
+                    <input type="text" id="upBrand" class="form-control" placeholder="Zara, Nike...">
+                </div>
+                <div class="form-group" style="flex:1;">
+                    <label data-i18n="size">Size</label>
+                    <input type="text" id="upSize" class="form-control" placeholder="M, L, 42...">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label data-i18n="description">Description</label>
+                <textarea id="upDesc" class="form-control" placeholder="Details about condition, location, etc."></textarea>
+            </div>
+            <div class="form-group">
+                <label data-i18n="tags">Tags (comma separated)</label>
+                <input type="text" id="upTags" class="form-control" placeholder="vintage, jacket, Baku">
+            </div>
+
+            <div class="form-group">
+                <label>Media (Photos / Videos)</label>
+                <div class="media-picker-btns">
+                    <label class="picker-btn">
+                        <i data-lucide="image"></i> <span data-i18n="add_image_unlimited">Add Images</span>
+                        <input type="file" id="imgIn" multiple accept="image/*" style="display:none;" onchange="handleFileSelect(event, 'image')">
+                    </label>
+                    <label class="picker-btn">
+                        <i data-lucide="video"></i> <span data-i18n="add_video_unlimited">Add Videos</span>
+                        <input type="file" id="vidIn" multiple accept="video/*" style="display:none;" onchange="handleFileSelect(event, 'video')">
+                    </label>
+                </div>
+            </div>
+
+            <div id="selectedMediaGrid" class="selected-media-grid"></div>
+
+            <button type="button" id="publishBtn" class="btn-primary" data-i18n="send_to_p2p">Publish to P2P Network</button>
+        </div>
+    </div>
+
+    <!-- Modal: Comments -->
+    <div id="commentsModalOverlay" class="modal-overlay" onclick="closeModal('commentsModal')"></div>
+    <div id="commentsModal" class="modal-sheet">
+        <div class="modal-header">
+            <span data-i18n="comments">Comments</span>
+            <i data-lucide="x" style="cursor:pointer;" onclick="closeModal('commentsModal')"></i>
+        </div>
+        <div class="modal-body">
+            <div id="commentsList" class="comments-list"></div>
+            <div class="form-group" style="margin-top:auto; flex-direction:row; gap:8px;">
+                <input type="text" id="commentInput" class="form-control" style="flex:1;" placeholder="Write a comment...">
+                <button type="button" class="btn-primary" style="width:auto; padding:0 16px;" onclick="submitComment()">
+                    <i data-lucide="send"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Legal Texts -->
+    <div id="legalModalOverlay" class="modal-overlay" onclick="closeModal('legalModal')"></div>
+    <div id="legalModal" class="modal-sheet" style="max-height:90vh;">
+        <div class="modal-header">
+            <span id="legalModalTitle">Terms</span>
+            <i data-lucide="x" style="cursor:pointer;" onclick="closeModal('legalModal')"></i>
+        </div>
+        <div class="modal-body">
+            <div id="legalModalContent" class="legal-text"></div>
         </div>
     </div>
 
     <script>
-        // i18n + auto lang + TikTok first + Explore grid + P2P persistent engine
-        
-        // --- 1. i18n Dictionary (60+ Keys) ---
+        /* --- 1. i18n DICTIONARY (70+ KEYS) --- */
         const i18n = {
             az: {
-                home: "Ana səhifə", explore: "Kəşf et", favorites: "Bəyəndiklərim", profile: "Profil",
-                search_placeholder: "Brend, geyim, ölçü axtar...", publish: "Paylaş",
-                what_is_changing: "Nəyi dəyişirsiniz?", what_i_want: "Əvəzində nə istəyirsiniz?",
-                whatsapp: "WhatsApp", brand: "Marka", size: "Ölçü", description: "Ətraflı təsvir",
-                tags: "Teqlər", add_image_unlimited: "Şəkil əlavə et", add_video_unlimited: "Video əlavə et",
-                send_to_p2p: "Elanı Göndər (P2P Network)", comments: "Şərhlər", reply: "Cavab ver",
-                share: "Paylaş", liked: "Bəyənildi", no_results: "Heç bir elan tapılmadı",
-                first_ad: "İlk elanı siz yerləşdirin!", about: "Platforma haqqında", how_to_use: "Necə istifadə etməli?",
-                privacy: "Məxfilik siyasəti & Qanunlar", terms: "İstifadə şərtləri", language: "Dil seçimi",
-                p2p_status_online: "P2P Şəbəkədə", p2p_status_offline: "Lokal Seeder Rejimi",
-                my_name: "Adınız", my_wa: "WhatsApp Nömrəsi", file_too_large: "Fayl həcmi çox böyükdür (Max 20MB)",
-                menu: "Menyu", ads_count: "Elan sayı", write_wa: "WhatsApp-da Yaz",
-                enter_name_prompt: "Şərh yazmaq üçün adınızı daxil edin:",
-                share_text: "GeyimDəyis P2P-də bu geyimə bax:", now: "indi",
-                m_ago: "dəq əvvəl", h_ago: "saat əvvəl", d_ago: "gün əvvəl",
-                about_text: "GeyimDəyis P2P — tamamilə mərkəzsizləşdirilmiş, serverlərsiz, istifadəçilərin bir-biri ilə birbaşa geyim barter etməsi üçün yaradılmış P2P platformadır.",
-                how_to_text: "1. '+' düyməsinə basaraq geyiminizin şəkil/videosunu yükləyin.\n2. Əvəzində nə istədiyinizi qeyd edin.\n3. Digər istifadəçilər birbaşa WhatsApp vasitəsilə sizinlə əlaqə saxlayacaq.",
-                privacy_text: "MƏXFİLİK SİYASƏTİ VƏ HÜQUQİ MƏLUMAT:\n- Bu platformada heç bir mərkəzi server yoxdur. Məlumatlar Gun.js P2P relay şəbəkəsində və brauzerlərinizdə (IndexedDB) saxlanılır.\n- AR Mülki Məcəlləsinin 1096-cı maddəsinə və İnformasiya haqqında AR Qanununun 23-cü maddəsinə uyğun olaraq istifadəçilər yerləşdirdikləri məzmuna görə fərdi məsuliyyət daşıyırlar.\n- Saxta, oğurluq və ya qanunsuz malların dəyişdirilməsi qadağandır.\n- GDPR uyğunluğu: Nömrəniz yalnız barter üçün istifadəçi tərəfindən görünür, üçüncü tərəflərə satılmır.\n- Platforma vasitəçidir, istifadəçilər arası barter sövdələşmələrinə cavabdehlik daşımır.\n- Yaş həddi: 16+",
-                terms_text: "İSTİFADƏ ŞƏRTLƏRİ:\n1. Təhqiramiz, uyğunsuz və qanunsuz məzmun paylaşmaq qadağandır.\n2. Barter zamanı təhlükəsizliyinizə özünüz cavabdehsiniz, ictimai yerlərdə görüşməyiniz tövsiyə olunur.\n3. P2P şəbəkəsində silinmiş elanlar digər peer-lərin keşində 24-72 saat qala bilər.",
-                search_title: "Axtarış Nəticələri", fill_required: "Zəhmət olmasa bütün vacib xanaları doldurun!",
-                write_comment_placeholder: "Şərhinizi yazın..."
+                home: "Ana səhifə", explore: "Kəşf et", add: "Əlavə et", favorites: "Seçilmişlər", profile: "Profil",
+                search_placeholder: "Axtarış...", publish: "Elan Yerləşdir", what_changing: "Nə dəyişirsiniz?",
+                what_want: "Əvəzində nə istəyirsiniz?", whatsapp: "WhatsApp Nömrəsi", brand: "Brend", size: "Ölçü",
+                description: "Təsvir", tags: "Teqlər (vergüllə)", add_image_unlimited: "Şəkillər əlavə et",
+                add_video_unlimited: "Videolar əlavə et", send_to_p2p: "P2P Şəbəkəyə Göndər", comments: "Rəylər",
+                reply: "Cavab ver", share: "Paylaş", liked: "Bəyənildi", no_results: "Nəticə tapılmadı",
+                first_ad: "İlk elanı siz yaradın!", about: "Haqqımızda", how_to_use: "Necə İstifadə Etməli?",
+                privacy: "Məxfilik Siyasəti", terms: "İstifadə Şərtləri", language: "Dil", p2p_online: "P2P Onlayn",
+                p2p_offline: "P2P Oflayn", file_too_large: "Fayl çox böyükdür (Max 25MB)", enter_name: "Adınızı daxil edin",
+                enter_item: "Dəyişdirilən əşyanı qeyd edin", enter_wa: "WhatsApp nömrəsini daxil edin",
+                add_at_least_one_media: "Atleast 1 şəkil və ya video əlavə edin", copied: "Kopyalandı!", now: "İndi",
+                minutes: "dəq əvvəl", hours: "saat əvvəl", days: "gün əvvəl", changing: "Dəyişir", wants: "İstəyir",
+                cancel: "Ləğv et", close: "Bağla", delete: "Sil", ok: "Aydın", user: "İstifadəçi"
             },
             en: {
-                home: "Home", explore: "Explore", favorites: "Favorites", profile: "Profile",
-                search_placeholder: "Search brand, clothes, size...", publish: "Publish",
-                what_is_changing: "What are you swapping?", what_i_want: "What do you want in return?",
-                whatsapp: "WhatsApp", brand: "Brand", size: "Size", description: "Detailed description",
-                tags: "Tags", add_image_unlimited: "Add Image", add_video_unlimited: "Add Video",
-                send_to_p2p: "Publish to P2P Network", comments: "Comments", reply: "Reply",
-                share: "Share", liked: "Liked", no_results: "No listings found",
-                first_ad: "Be the first to post!", about: "About Platform", how_to_use: "How to use?",
-                privacy: "Privacy Policy & Legal", terms: "Terms of Service", language: "Language",
-                p2p_status_online: "P2P Network Online", p2p_status_offline: "Local Seeder Mode",
-                my_name: "Your Name", my_wa: "WhatsApp Number", file_too_large: "File size too large (Max 20MB)",
-                menu: "Menu", ads_count: "Listings", write_wa: "Chat on WhatsApp",
-                enter_name_prompt: "Enter your name to comment:",
-                share_text: "Check out this clothing swap on GeyimDəyis P2P:", now: "just now",
-                m_ago: "m ago", h_ago: "h ago", d_ago: "d ago",
-                about_text: "GeyimDəyis P2P is a fully decentralized, serverless peer-to-peer clothing swap platform.",
-                how_to_text: "1. Tap '+' to upload photos/videos of your item.\n2. State what you want in return.\n3. Interested peers will contact you directly via WhatsApp.",
-                privacy_text: "PRIVACY POLICY & LEGAL:\n- No central server. Data is stored across P2P Gun.js relays and browser IndexedDB.\n- Users are solely responsible for posted content under applicable civil codes.\n- Counterfeit or illegal items are strictly prohibited.\n- GDPR: Phone numbers are only visible for direct communication, never sold.\n- Platform is a peer-to-peer facilitator and not liable for user trades.\n- Age limit: 16+",
-                terms_text: "TERMS OF SERVICE:\n1. Offensive or illegal content is prohibited.\n2. Meet in safe public places for clothing swaps.\n3. P2P cached copies may remain on peer nodes up to 72 hours.",
-                search_title: "Search Results", fill_required: "Please fill in all required fields!",
-                write_comment_placeholder: "Write a comment..."
+                home: "Home", explore: "Explore", add: "Add", favorites: "Favorites", profile: "Profile",
+                search_placeholder: "Search...", publish: "Publish Listing", what_changing: "What are you offering?",
+                what_want: "What do you want in return?", whatsapp: "WhatsApp Number", brand: "Brand", size: "Size",
+                description: "Description", tags: "Tags (comma separated)", add_image_unlimited: "Add Images",
+                add_video_unlimited: "Add Videos", send_to_p2p: "Publish to P2P Network", comments: "Comments",
+                reply: "Reply", share: "Share", liked: "Liked", no_results: "No results found",
+                first_ad: "Be the first to publish an ad!", about: "About Us", how_to_use: "How to Use",
+                privacy: "Privacy Policy", terms: "Terms & Conditions", language: "Language", p2p_online: "P2P Online",
+                p2p_offline: "P2P Offline", file_too_large: "File size is too large (Max 25MB)", enter_name: "Enter your name",
+                enter_item: "Specify the item you offer", enter_wa: "Enter WhatsApp number",
+                add_at_least_one_media: "Add at least one photo or video", copied: "Copied!", now: "Just now",
+                minutes: "m ago", hours: "h ago", days: "d ago", changing: "Offering", wants: "Wants",
+                cancel: "Cancel", close: "Close", delete: "Delete", ok: "OK", user: "User"
             },
             ru: {
-                home: "Главная", explore: "Обзор", favorites: "Избранное", profile: "Профиль",
-                search_placeholder: "Поиск бренда, одежды, размера...", publish: "Создать",
-                what_is_changing: "Что меняете?", what_i_want: "Что хотите взамен?",
-                whatsapp: "WhatsApp", brand: "Бренд", size: "Размер", description: "Подробное описание",
-                tags: "Теги", add_image_unlimited: "Добавить фото", add_video_unlimited: "Добавить видео",
-                send_to_p2p: "Опубликовать в P2P", comments: "Комментарии", reply: "Ответить",
-                share: "Поделиться", liked: "Понравилось", no_results: "Объявления не найдены",
-                first_ad: "Опубликуйте первым!", about: "О платформе", how_to_use: "Как использовать?",
-                privacy: "Политика конфиденциальности", terms: "Условия использования", language: "Язык",
-                p2p_status_online: "В сети P2P", p2p_status_offline: "Локальный сидер",
-                my_name: "Ваше имя", my_wa: "Номер WhatsApp", file_too_large: "Файл слишком большой (Макс 20MB)",
-                menu: "Меню", ads_count: "Объявлений", write_wa: "Написать в WhatsApp",
-                enter_name_prompt: "Введите ваше имя для комментария:",
-                share_text: "Посмотрите этот обмен одеждой в GeyimDəyis P2P:", now: "только что",
-                m_ago: "мин назад", h_ago: "ч назад", d_ago: "дн назад",
-                about_text: "GeyimDəyis P2P — децентрализованная P2P платформа для прямого обмена одеждой без серверов.",
-                how_to_text: "1. Нажмите '+', чтобы загрузить фото/видео.\n2. Укажите, что хотите взамен.\n3. Пользователи свяжутся с вами в WhatsApp.",
-                privacy_text: "ПОЛИТИКА КОНФИДЕНЦИАЛЬНОСТИ:\n- Нет центрального сервера. Данные хранятся в сети Gun.js и IndexedDB.\n- Пользователи несут ответственность за размещаемый контент.\n- Запрещены подделки и незаконные товары.\n- GDPR: Номер используется только для связи между участниками.\n- Возраст: 16+",
-                terms_text: "УСЛОВИЯ ИСПОЛЬЗОВАНИЯ:\n1. Запрещен оскверняющий контент.\n2. Встречайтесь в безопасных местах для обмена.\n3. Данные P2P могут сохраняться в кэше у пиров до 72 часов.",
-                search_title: "Результаты поиска", fill_required: "Заполните обязательные поля!",
-                write_comment_placeholder: "Напишите комментарий..."
+                home: "Главная", explore: "Обзор", add: "Добавить", favorites: "Избранное", profile: "Профиль",
+                search_placeholder: "Поиск...", publish: "Опубликовать", what_changing: "Что вы предлагаете?",
+                what_want: "Что хотите взамен?", whatsapp: "Номер WhatsApp", brand: "Бренд", size: "Размер",
+                description: "Описание", tags: "Теги (через запятую)", add_image_unlimited: "Добавить фото",
+                add_video_unlimited: "Добавить видео", send_to_p2p: "Отправить в P2P сеть", comments: "Комментарии",
+                reply: "Ответить", share: "Поделиться", liked: "Понравилось", no_results: "Ничего не найдено",
+                first_ad: "Будьте первым, кто создаст объявление!", about: "О нас", how_to_use: "Как использовать?",
+                privacy: "Политика конфиденциальности", terms: "Условия использования", language: "Язык", p2p_online: "P2P Онлайн",
+                p2p_offline: "P2P Офлайн", file_too_large: "Файл слишком большой (Макс 25МБ)", enter_name: "Введите ваше имя",
+                enter_item: "Укажите предлагаемый товар", enter_wa: "Введите номер WhatsApp",
+                add_at_least_one_media: "Добавьте хотя бы 1 фото или видео", copied: "Скопировано!", now: "Только что",
+                minutes: "мин назад", hours: "ч назад", days: "д назад", changing: "Меняет", wants: "Ищет",
+                cancel: "Отмена", close: "Закрыть", delete: "Удалить", ok: "ОК", user: "Пользователь"
             },
             tr: {
-                home: "Ana Sayfa", explore: "Keşfet", favorites: "Favoriler", profile: "Profil",
-                search_placeholder: "Marka, kıyafet, beden ara...", publish: "Paylaş",
-                what_is_changing: "Ne takas ediyorsunuz?", what_i_want: "Karşılığında ne istiyorsunuz?",
-                whatsapp: "WhatsApp", brand: "Marka", size: "Beden", description: "Detaylı açıklama",
-                tags: "Etiketler", add_image_unlimited: "Fotoğraf Ekle", add_video_unlimited: "Video Ekle",
-                send_to_p2p: "P2P Ağına Gönder", comments: "Yorumlar", reply: "Cevapla",
-                share: "Paylaş", liked: "Beğenildi", no_results: "İlan bulunamadı",
-                first_ad: "İlk ilanı siz verin!", about: "Hakkında", how_to_use: "Nasıl Kullanılır?",
-                privacy: "Gizlilik Politikası & Yasal", terms: "Kullanım Koşulları", language: "Dil Seçimi",
-                p2p_status_online: "P2P Ağında Çevrimiçi", p2p_status_offline: "Lokal Seeder Modu",
-                my_name: "Adınız", my_wa: "WhatsApp Numarası", file_too_large: "Dosya çok büyük (Maks 20MB)",
-                menu: "Menü", ads_count: "İlan Sayısı", write_wa: "WhatsApp'tan Yaz",
-                enter_name_prompt: "Yorum yapmak için adınızı girin:",
-                share_text: "GeyimDəyis P2P'deki bu kıyafet takasına göz atın:", now: "şimdi",
-                m_ago: "dk önce", h_ago: "sa önce", d_ago: "gün önce",
-                about_text: "GeyimDəyis P2P, sunucusuz, tamamen merkeziyetsiz kıyafet takas platformudur.",
-                how_to_text: "1. '+' butonuna basarak ürününüzü yükleyin.\n2. Karşılığında ne istediğinizi yazın.\n3. Kullanıcılar doğrudan WhatsApp üzerinden sizinle iletişime geçsin.",
-                privacy_text: "GİZLİLİK POLİTİKASI:\n- Merkezi sunucu yoktur. Veriler Gun.js P2P ağında tutulur.\n- İçeriklerden kullanıcılar sorumludur.\n- Sahte ürünler yasaktır.\n- Yaş sınırı: 16+",
-                terms_text: "KULLANIM KOŞULLARI:\n1. Yas dışı içerik paylaşımı yasaktır.\n2. Takas için güvenli alanlarda buluşun.",
-                search_title: "Arama Sonuçları", fill_required: "Lütfen gerekli alanları doldurun!",
-                write_comment_placeholder: "Yorum yazın..."
+                home: "Ana Sayfa", explore: "Keşfet", add: "Ekle", favorites: "Favoriler", profile: "Profil",
+                search_placeholder: "Ara...", publish: "Ilan Yayınla", what_changing: "Ne takas ediyorsunuz?",
+                what_want: "Karşılığında ne istiyorsunuz?", whatsapp: "WhatsApp Numarası", brand: "Marka", size: "Beden",
+                description: "Açıklama", tags: "Etiketler (virgülle)", add_image_unlimited: "Fotoğraf Ekle",
+                add_video_unlimited: "Video Ekle", send_to_p2p: "P2P Ağına Gönder", comments: "Yorumlar",
+                reply: "Cevapla", share: "Paylaş", liked: "Beğenildi", no_results: "Sonuç bulunamadı",
+                first_ad: "İlk ilanı siz verin!", about: "Hakkımızda", how_to_use: "Nasıl Kullanılır?",
+                privacy: "Gizlilik Politikası", terms: "Kullanım Şartları", language: "Dil", p2p_online: "P2P Çevrimiçi",
+                p2p_offline: "P2P Çevrimdışı", file_too_large: "Dosya çok büyük (Maks 25MB)", enter_name: "Adınızı girin",
+                enter_item: "Teklif ettiğiniz ürünü yazın", enter_wa: "WhatsApp numaranızı girin",
+                add_at_least_one_media: "En az 1 fotoğraf veya video ekleyin", copied: "Kopyalandı!", now: "Şimdi",
+                minutes: "dk önce", hours: "saat önce", days: "gün önce", changing: "Veriyor", wants: "İstiyor",
+                cancel: "İptal", close: "Kapat", delete: "Sil", ok: "Tamam", user: "Kullanıcı"
             },
             ka: {
-                home: "მთავარი", explore: "აღმოაჩინე", favorites: "ფავორიტები", profile: "პროფილი",
-                search_placeholder: "ძებნა ბრენდით, ზომით...", publish: "გამოქვეყნება",
-                what_is_changing: "რას ცვლით?", what_i_want: "რა გსურთ სანაცვლოდ?",
-                whatsapp: "WhatsApp", brand: "ბრენდი", size: "ზომა", description: "აღწერა",
-                tags: "ტეგები", add_image_unlimited: "ფოტოს დამატება", add_video_unlimited: "ვიდეოს დამატება",
-                send_to_p2p: "P2P ქსელში გაგზავნა", comments: "კომენტარები", reply: "პასუხი",
-                share: "გაზიარება", liked: "მოწონებული", no_results: "განცხადებები ვერ მოიძებნა",
-                first_ad: "будьте первым!", about: "პლატფორმის შესახებ", how_to_use: "როგორ გამოვიყენოთ?",
-                privacy: "კონფიდენციალურობა", terms: "წესები", language: "ენა",
-                p2p_status_online: "P2P ონლაინშია", p2p_status_offline: "ლოკალური სიდერი",
-                my_name: "თქვენი სახელი", my_wa: "WhatsApp ნომერი", file_too_large: "ფაილი დიდია (Max 20MB)",
-                menu: "მენიუ", ads_count: "განცხადება", write_wa: "WhatsApp-ზე მიწერა",
-                enter_name_prompt: "შეიყვანეთ სახელი:", share_text: "ნახეთ ეს ტანსაცმელი:",
-                now: "ახლა", m_ago: "წთ უკან", h_ago: "სთ უკან", d_ago: "დღის უკან",
-                about_text: "GeyimDəyis P2P არის დეცენტრალიზებული პლატფორმა.",
-                how_to_text: "1. დააჭირეთ '+' ფოტოს ასატვირთად.\n2. დაწერეთ რა გსურთ სანაცვლოდ.",
-                privacy_text: "კონფიდენციალურობის პოლიტიკა: P2P ქსელი, ცენტრალური სერვერის გარეშე.",
-                terms_text: "გამოყენების წესები: დაიცავით უსაფრთხოება.",
-                search_title: "ძებნის შედეგები", fill_required: "შეავსეთ ველები!",
-                write_comment_placeholder: "დაწერეთ კომენტარი..."
-            },
-            fa: {
-                home: "خانه", explore: "جستجو", favorites: "علاقه‌مندی‌ها", profile: "پروفایل",
-                search_placeholder: "جستجوی برند، لباس...", publish: "انتشار",
-                what_is_changing: "چه لباسی مبادله می‌کنید؟", what_i_want: "در عوض چه می‌خواهید؟",
-                whatsapp: "واتساپ", brand: "برند", size: "سایز", description: "توضیحات",
-                tags: "برچسب‌ها", add_image_unlimited: "افزودن عکس", add_video_unlimited: "افزودن ویدیو",
-                send_to_p2p: "ارسال به شبکه P2P", comments: "نظرات", reply: "پاسخ",
-                share: "اشتراک‌گذاری", liked: "پسندیده شد", no_results: "هیچ آگهی یافت نشد",
-                first_ad: "اولین آگهی را بگذارید!", about: "درباره پلتفرم", how_to_use: "راهنما",
-                privacy: "حریم خصوصی و قوانین", terms: "شرایط استفاده", language: "زبان",
-                p2p_status_online: "آنلاین در شبکه P2P", p2p_status_offline: "حالت سیدر محلی",
-                my_name: "نام شما", my_wa: "شماره واتساپ", file_too_large: "حجم فایل زیاد است (حداکثر ۲۰ مگابایت)",
-                menu: "منو", ads_count: "تعداد آگهی", write_wa: "پیام در واتساپ",
-                enter_name_prompt: "نام خود را وارد کنید:", share_text: "این لباس را در P2P ببینید:",
-                now: "اکنون", m_ago: "دقیقه پیش", h_ago: "ساعت پیش", d_ago: "روز پیش",
-                about_text: "پلتفرم غیرمتمرکز P2P برای مبادله مستقیم لباس بدون سرور.",
-                how_to_text: "۱. روی '+' کلیک کنید.\n۲. بگویید چه می‌خواهید.",
-                privacy_text: "سیاست حفظ حریم خصوصی: داده‌ها در شبکه P2P ذخیره می‌شوند.",
-                terms_text: "شرایط استفاده: رعایت قوانین الزامی است.",
-                search_title: "نتایج جستجو", fill_required: "لطفا فیلدها را پر کنید!",
-                write_comment_placeholder: "نظر خود را بنویسید..."
+                home: "მთავარი", explore: "აღმოაჩინე", add: "დამატება", favorites: "ფავორიტები", profile: "პროფილი",
+                search_placeholder: "ძებნა...", publish: "გამოქვეყნება", what_changing: "რას სთავაზობთ?",
+                what_want: "რა გსურთ სანაცვლოდ?", whatsapp: "WhatsApp ნომერი", brand: "ბრენდი", size: "ზომა",
+                description: "აღწერა", tags: "ტეგები", add_image_unlimited: "ფოტოს დამატება",
+                add_video_unlimited: "ვიდეოს დამატება", send_to_p2p: "P2P ქსელში გაგზავნა", comments: "კომენტარები",
+                reply: "პასუხი", share: "გაზიარება", liked: "მოეწონა", no_results: "შედეგი ვერ მოიძებნა",
+                first_ad: "იყავი პირველი!", about: "ჩვენ შესახებ", how_to_use: "როგორ გამოვიყენოთ?",
+                privacy: "კონფიდენციალურობა", terms: "წესები და პირობები", language: "ენა", p2p_online: "P2P ონლაინ",
+                p2p_offline: "P2P ოფლაინ", file_too_large: "ფაილი ძალიან დიდია (Max 25MB)", enter_name: "შეიყვანეთ სახელი",
+                enter_item: "მიუთითეთ ნივთი", enter_wa: "შეიყვანეთ WhatsApp ნომერი",
+                add_at_least_one_media: "დაამატეთ მინიმუმ 1 ფოტო ან ვიდეო", copied: "კოპირებულია!", now: "ახლა",
+                minutes: "წუთის წინ", hours: "საათის წინ", days: "დღის წინ", changing: "გაცვლა", wants: "სურს",
+                cancel: "გაუქმება", close: "დახურვა", delete: "წაშლა", ok: "კარგი", user: "მომხმარებელი"
             }
         };
 
-        // Lang State & Helper
-        let currentLang = localStorage.getItem("app_lang") || (function() {
-            const navLang = (navigator.language || navigator.languages[0] || "en").substring(0, 2).toLowerCase();
-            return i18n[navLang] ? navLang : "en";
-        })();
+        // Current Language State
+        let currentLang = localStorage.getItem('app_lang') || (navigator.language || 'en').slice(0, 2);
+        if (!i18n[currentLang]) currentLang = 'en';
 
         function t(key) {
-            return (i18n[currentLang] && i18n[currentLang][key]) || i18n.en[key] || key;
+            return (i18n[currentLang] && i18n[currentLang][key]) || (i18n.en && i18n.en[key]) || key;
         }
 
-        function setLang(lang) {
+        function setLanguage(lang) {
             if (!i18n[lang]) return;
             currentLang = lang;
-            localStorage.setItem("app_lang", lang);
-            updateUIStaticTexts();
+            localStorage.setItem('app_lang', lang);
+            updateUIStrings();
             renderFeed();
-            renderExploreGrid();
+            if (activeTab === 'explore') renderExploreGrid();
+            if (activeTab === 'favorites') renderFavoritesGrid();
         }
 
-        // --- 2. Helper Utilities & DOM Selectors ---
-        const $ = (id) => document.getElementById(id);
-
-        function timeAgo(ts) {
-            const diff = Math.floor((Date.now() - ts) / 1000);
-            if (diff < 60) return t("now");
-            if (diff < 3600) return `${Math.floor(diff / 60)} ${t("m_ago")}`;
-            if (diff < 86400) return `${Math.floor(diff / 3600)} ${t("h_ago")}`;
-            return `${Math.floor(diff / 86400)} ${t("d_ago")}`;
+        function updateUIStrings() {
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                el.innerText = t(key);
+            });
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.innerText.toLowerCase() === currentLang || (btn.innerText === 'GE' && currentLang === 'ka'));
+            });
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) searchInput.placeholder = t('search_placeholder');
         }
 
-        // IndexedDB Manager for Eternal Media Offloading
-        const dbReq = indexedDB.open("geyimdeyis-p2p", 1);
-        let db = null;
-        dbReq.onupgradeneeded = (e) => {
-            db = e.target.result;
-            if (!db.objectStoreNames.contains("medias")) db.createObjectStore("medias");
-        };
-        dbReq.onsuccess = (e) => { db = e.target.result; };
+        /* --- 2. INDEXEDDB FOR DURABLE MEDIA STORAGE --- */
+        const DB_NAME = 'geyimdeyis-p2p';
+        const DB_VERSION = 1;
+        let dbInstance = null;
 
-        function saveMediaBlob(id, blob) {
-            if (!db) return;
-            const tx = db.transaction("medias", "readwrite");
-            tx.objectStore("medias").put(blob, id);
+        function initIDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
+                request.onupgradeneeded = e => {
+                    const db = e.target.result;
+                    if (!db.objectStoreNames.contains('medias')) {
+                        db.createObjectStore('medias', { keyPath: 'id' });
+                    }
+                };
+                request.onsuccess = e => {
+                    dbInstance = e.target.result;
+                    resolve(dbInstance);
+                };
+                request.onerror = e => reject(e);
+            });
+        }
+
+        function saveMediaBlob(id, blob, type, name) {
+            return new Promise((resolve, reject) => {
+                if (!dbInstance) return resolve(null);
+                const tx = dbInstance.transaction('medias', 'readwrite');
+                const store = tx.objectStore('medias');
+                store.put({ id, blob, type, name });
+                tx.oncomplete = () => resolve(true);
+                tx.onerror = () => reject(tx.error);
+            });
         }
 
         function getMediaBlob(id) {
             return new Promise((resolve) => {
-                if (!db) return resolve(null);
-                const tx = db.transaction("medias", "readonly");
-                const req = tx.objectStore("medias").get(id);
-                req.onsuccess = () => resolve(req.result);
+                if (!dbInstance) return resolve(null);
+                const tx = dbInstance.transaction('medias', 'readonly');
+                const store = tx.objectStore('medias');
+                const req = store.get(id);
+                req.onsuccess = () => resolve(req.result ? req.result.blob : null);
                 req.onerror = () => resolve(null);
             });
         }
 
-        // --- 3. Gun.js & P2P State Management ---
-        const gun = Gun([
-            'https://gun-manhattan.herokuapp.com/gun',
-            'https://gun-us.herokuapp.com/gun'
-        ]);
+        /* --- 3. STATE & DATA MANAGEMENT --- */
+        let feedData = [];
+        let favs = JSON.parse(localStorage.getItem('favs') || '[]');
+        let commentsData = JSON.parse(localStorage.getItem('comments-v4') || '{}');
+        let myProfile = JSON.parse(localStorage.getItem('myProfile') || 'null');
+        let selectedMediaFiles = []; // { id, file, previewUrl, type, mime, name }
+        let currentFilter = '';
+        let activeTab = 'home';
+        let currentCommentItemId = null;
+        let activeReplyTarget = null;
+        let activeProfileUserId = null;
 
-        let feedData = JSON.parse(localStorage.getItem("p2p-feed-v4") || "[]");
-        let favs = JSON.parse(localStorage.getItem("favs-v4") || "[]");
-        let myProfile = JSON.parse(localStorage.getItem("my-profile-v4") || '{"name":"","wa":"","avatar":""}');
+        function uid(prefix = 'id') {
+            return prefix + '_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
+        }
 
-        function saveLocalFeed() {
-            try {
-                localStorage.setItem("p2p-feed-v4", JSON.stringify(feedData.map(item => ({
-                    ...item,
-                    media: item.media.map(m => m.length > 50000 ? "" : m) // strip massive base64 if quota near
-                }))));
-            } catch (e) {
-                console.warn("localStorage quota hit, keeping lightweight feed index");
+        function timeAgo(ts) {
+            const diff = Math.floor((Date.now() - ts) / 1000);
+            if (diff < 60) return t('now');
+            if (diff < 3600) return `${Math.floor(diff / 60)} ${t('minutes')}`;
+            if (diff < 86400) return `${Math.floor(diff / 3600)} ${t('hours')}`;
+            return `${Math.floor(diff / 86400)} ${t('days')}`;
+        }
+
+        /* Compression Helper for Gun P2P */
+        function compressImageFile(file, maxWidth = 800, quality = 0.7) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                const url = URL.createObjectURL(file);
+                img.onload = () => {
+                    let w = img.width;
+                    let h = img.height;
+                    if (w > maxWidth) {
+                        h = Math.round((h * maxWidth) / w);
+                        w = maxWidth;
+                    }
+                    const canvas = document.createElement('canvas');
+                    canvas.width = w;
+                    canvas.height = h;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, w, h);
+                    URL.revokeObjectURL(url);
+                    resolve(canvas.toDataURL('image/jpeg', quality));
+                };
+                img.onerror = () => {
+                    URL.revokeObjectURL(url);
+                    resolve(null);
+                };
+                img.src = url;
+            });
+        }
+
+        async function ensureMediaSrc(item) {
+            if (!item.media || !Array.isArray(item.media)) return;
+            for (let m of item.media) {
+                if (m.src && m.src.startsWith('blob:')) {
+                    // Test if Blob URL is still active by attempting to fetch or keeping it
+                    continue;
+                }
+                if (!m.src || m.src === "") {
+                    // Try loading original Blob from IDB
+                    const blob = await getMediaBlob(m.id);
+                    if (blob) {
+                        m.src = URL.createObjectURL(blob);
+                    } else if (m.dataUrl) {
+                        m.src = m.dataUrl;
+                    }
+                }
             }
         }
 
-        // Initial Sample Data if totally empty
-        if (feedData.length === 0) {
-            feedData = [
-                {
-                    id: "demo_1",
-                    author: "Aysel M.",
-                    wa: "994501234567",
-                    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80",
-                    title: "Zara Bej Paltar (S ölçü)",
-                    want: "M ölçü Qara Gödəkçə",
-                    brand: "Zara",
-                    size: "S",
-                    desc: "Cəmi 1 dəfə toyda geyinilib, yenidən seçilmir.",
-                    tags: ["zara", "paltar", "toy"],
-                    media: ["https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=800&q=80"],
-                    likes: 12,
-                    ts: Date.now() - 3600000
-                }
-            ];
-            saveLocalFeed();
+        function saveLocal() {
+            try {
+                // Strip heavy transient fields if needed, but preserve structure
+                const cleanFeed = feedData.map(item => ({
+                    ...item,
+                    media: item.media.map(m => ({
+                        id: m.id,
+                        type: m.type,
+                        mime: m.mime,
+                        name: m.name,
+                        src: (m.src && m.src.length < 500000) ? m.src : "", // Don't persist large raw strings to localStorage
+                        dataUrl: m.dataUrl || ""
+                    }))
+                }));
+                localStorage.setItem('p2p-feed-v4', JSON.stringify(cleanFeed));
+            } catch (e) {
+                console.warn("localStorage quota reached, trimming feed cache", e);
+            }
         }
 
-        // Gun Sync Listener
-        function initGunSync() {
-            gun.get("geyimdeyis").get("feed").map().on((item) => {
-                if (!item || !item.id) return;
-                const idx = feedData.findIndex(x => x.id === item.id);
-                const parsedItem = {
-                    ...item,
-                    tags: typeof item.tags === "string" ? JSON.parse(item.tags) : (item.tags || []),
-                    media: typeof item.media === "string" ? JSON.parse(item.media) : (item.media || [])
-                };
-                if (idx === -1) {
-                    feedData.unshift(parsedItem);
-                } else {
-                    feedData[idx] = { ...feedData[idx], ...parsedItem };
-                }
-                feedData.sort((a, b) => b.ts - a.ts);
-                saveLocalFeed();
-                if ($("feed").style.display !== "none") renderFeed();
-            });
-        }
-
-        // Periodic P2P Seeder - Sync local top items back to Gun Relays
-        setInterval(() => {
-            feedData.slice(0, 20).forEach(item => {
-                gun.get("geyimdeyis").get("feed").get(item.id).put({
-                    ...item,
-                    tags: JSON.stringify(item.tags || []),
-                    media: JSON.stringify(item.media || [])
+        /* --- 4. GUN P2P SETUP --- */
+        let gun = null;
+        function initGun() {
+            try {
+                gun = Gun({
+                    peers: [
+                        'https://gun-manhattan.herokuapp.com/gun',
+                        'https://gun-us.herokuapp.com/gun'
+                    ],
+                    localStorage: false
                 });
-            });
+
+                document.getElementById('p2pDot').classList.add('online');
+                document.getElementById('p2pStatusText').innerText = "P2P Online";
+
+                // Listen for incoming P2P listings
+                gun.get('geyimdeyis').get('feed').map().on(async (data) => {
+                    if (!data || !data.id) return;
+                    
+                    let existing = feedData.find(x => x.id === data.id);
+                    let parsedMedia = [];
+                    try {
+                        parsedMedia = typeof data.media === 'string' ? JSON.parse(data.media) : (data.media || []);
+                    } catch(e) { parsedMedia = []; }
+
+                    const formattedItem = {
+                        id: data.id,
+                        u: data.u,
+                        av: data.av,
+                        name: data.name,
+                        item: data.item,
+                        want: data.want,
+                        wa: data.wa,
+                        brand: data.brand || '',
+                        size: data.size || '',
+                        desc: data.desc || '',
+                        tags: Array.isArray(data.tags) ? data.tags : (typeof data.tags === 'string' ? data.tags.split(',') : []),
+                        media: parsedMedia,
+                        ts: data.ts || Date.now(),
+                        likes: data.likes || 0
+                    };
+
+                    if (!existing) {
+                        feedData.unshift(formattedItem);
+                        feedData.sort((a,b) => b.ts - a.ts);
+                        await ensureMediaSrc(formattedItem);
+                        saveLocal();
+                        if (activeTab === 'home') renderFeed();
+                    }
+                });
+            } catch(e) {
+                console.error("Gun init failed", e);
+                document.getElementById('p2pDot').classList.remove('online');
+                document.getElementById('p2pStatusText').innerText = "P2P Offline";
+            }
+        }
+
+        function persistItem(item) {
+            saveLocal();
+            if (gun) {
+                const payload = {
+                    id: item.id,
+                    u: item.u,
+                    av: item.av,
+                    name: item.name,
+                    item: item.item,
+                    want: item.want,
+                    wa: item.wa,
+                    brand: item.brand,
+                    size: item.size,
+                    desc: item.desc,
+                    tags: JSON.stringify(item.tags),
+                    media: JSON.stringify(item.media.map(m => ({
+                        id: m.id,
+                        type: m.type,
+                        mime: m.mime,
+                        name: m.name,
+                        src: m.dataUrl || m.src
+                    }))),
+                    ts: item.ts,
+                    likes: item.likes
+                };
+                gun.get('geyimdeyis').get('feed').get(item.id).put(payload);
+            }
+        }
+
+        // Periodic Seeder Task
+        setInterval(() => {
+            if (gun && feedData.length > 0) {
+                const newest = feedData.slice(0, 20);
+                newest.forEach(item => persistItem(item));
+            }
         }, 30000);
 
-        // --- 4. Render Engine & UI Handlers ---
-        let currentFeedView = "home"; // home, explore, favs, profile
-
-        function renderIcons() {
-            if (window.lucide) lucide.createIcons();
-        }
-
-        function updateUIStaticTexts() {
-            if ($("labelHome")) $("labelHome").innerText = t("home");
-            if ($("labelExplore")) $("labelExplore").innerText = t("explore");
-            if ($("labelFavs")) $("labelFavs").innerText = t("favorites");
-            if ($("labelProfile")) $("labelProfile").innerText = t("profile");
-            if ($("menuTitle")) $("menuTitle").innerText = t("menu");
-            if ($("labelAbout")) $("labelAbout").innerText = t("about");
-            if ($("labelHowTo")) $("labelHowTo").innerText = t("how_to_use");
-            if ($("labelPrivacy")) $("labelPrivacy").innerText = t("privacy");
-            if ($("labelTerms")) $("labelTerms").innerText = t("terms");
-            if ($("labelLang")) $("labelLang").innerText = t("language");
-            if ($("modalPublishTitle")) $("modalPublishTitle").innerText = t("publish");
-            if ($("lblMyName")) $("lblMyName").innerText = t("my_name");
-            if ($("lblMyWA")) $("lblMyWA").innerText = t("my_wa");
-            if ($("lblWhatChanging")) $("lblWhatChanging").innerText = t("what_is_changing");
-            if ($("lblWhatIWant")) $("lblWhatIWant").innerText = t("what_i_want");
-            if ($("lblBrand")) $("lblBrand").innerText = t("brand");
-            if ($("lblSize")) $("lblSize").innerText = t("size");
-            if ($("lblDescription")) $("lblDescription").innerText = t("description");
-            if ($("lblTags")) $("lblTags").innerText = t("tags");
-            if ($("lblMedia")) $("lblMedia").innerText = t("add_image_unlimited");
-            if ($("lblAddImg")) $("lblAddImg").innerText = t("add_image_unlimited");
-            if ($("lblAddVid")) $("lblAddVid").innerText = t("add_video_unlimited");
-            if ($("publishBtn")) $("publishBtn").innerText = t("send_to_p2p");
-            if ($("searchInput")) $("searchInput").placeholder = t("search_placeholder");
-            if ($("lblCommentsTitle")) $("lblCommentsTitle").innerText = t("comments");
-            if ($("inCommentText")) $("inCommentText").placeholder = t("write_comment_placeholder");
-
-            document.querySelectorAll(".lang-btn").forEach(btn => {
-                btn.classList.toggle("active", btn.dataset.lang === currentLang);
-            });
-        }
-
-        function renderFeed(itemsToRender = feedData) {
-            const container = $("feed");
+        /* --- 5. RENDER FUNCTIONS --- */
+        async function renderFeed() {
+            const container = document.getElementById('feedContainer');
             if (!container) return;
-            container.innerHTML = "";
 
-            if (itemsToRender.length === 0) {
+            let displayItems = feedData;
+            if (currentFilter) {
+                const q = currentFilter.toLowerCase();
+                displayItems = feedData.filter(i => 
+                    (i.item && i.item.toLowerCase().includes(q)) ||
+                    (i.want && i.want.toLowerCase().includes(q)) ||
+                    (i.brand && i.brand.toLowerCase().includes(q)) ||
+                    (i.desc && i.desc.toLowerCase().includes(q)) ||
+                    (i.tags && i.tags.some(t => t.toLowerCase().includes(q)))
+                );
+            }
+
+            if (displayItems.length === 0) {
                 container.innerHTML = `
-                    <div class="empty-state">
-                        <i data-lucide="package-open" style="width: 48px; height: 48px;"></i>
-                        <div>${t("no_results")}</div>
-                        <div style="font-size: 0.85rem;">${t("first_ad")}</div>
+                    <div style="height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px; text-align:center;">
+                        <i data-lucide="package-open" style="width:64px; height:64px; color:#555; margin-bottom:12px;"></i>
+                        <p style="color:#aaa;">${t('no_results')}</p>
+                        <p style="color:#666; font-size:0.85rem; margin-top:4px;">${t('first_ad')}</p>
                     </div>
                 `;
-                renderIcons();
+                lucide.createIcons();
                 return;
             }
 
-            itemsToRender.forEach((item) => {
-                const isFav = favs.includes(item.id);
-                const itemEl = document.createElement("div");
-                itemEl.className = "feed-item";
-                itemEl.id = `item-${item.id}`;
+            let html = '';
+            for (let item of displayItems) {
+                await ensureMediaSrc(item);
+                const isLiked = favs.includes(item.id);
 
-                let mediaSlidesHtml = "";
-                let dotsHtml = "";
-                const mediaList = item.media.length > 0 ? item.media : ["https://via.placeholder.com/600x800?text=GeyimDəyis"];
+                let mediaSlidesHtml = '';
+                let dotsHtml = '';
 
-                mediaList.forEach((mSrc, idx) => {
-                    const isVideo = mSrc.includes("video") || mSrc.endsWith(".mp4") || mSrc.startsWith("data:video");
-                    mediaSlidesHtml += `
+                if (item.media && item.media.length > 0) {
+                    item.media.forEach((m, idx) => {
+                        dotsHtml += `<div class="dot ${idx === 0 ? 'active' : ''}"></div>`;
+                        const src = m.src || m.dataUrl || '';
+                        
+                        if (!src) {
+                            mediaSlidesHtml += `
+                                <div class="media-slide">
+                                    <div class="media-placeholder">
+                                        <i data-lucide="image-off" style="width:48px; height:48px;"></i>
+                                        <span>Media Unavailable</span>
+                                    </div>
+                                </div>
+                            `;
+                        } else if (m.type === 'video') {
+                            mediaSlidesHtml += `
+                                <div class="media-slide">
+                                    <video src="${src}" autoplay muted loop playsinline preload="metadata" controlslist="nodownload"></video>
+                                </div>
+                            `;
+                        } else {
+                            mediaSlidesHtml += `
+                                <div class="media-slide">
+                                    <img src="${src}" alt="Media">
+                                </div>
+                            `;
+                        }
+                    });
+                } else {
+                    mediaSlidesHtml = `
                         <div class="media-slide">
-                            ${isVideo ? `<video src="${mSrc}" loop muted playsinline></video>` : `<img src="${mSrc}" loading="lazy" />`}
+                            <div class="media-placeholder">
+                                <i data-lucide="image-off" style="width:48px; height:48px;"></i>
+                            </div>
                         </div>
                     `;
-                    if (mediaList.length > 1) {
-                        dotsHtml += `<div class="dot ${idx === 0 ? 'active' : ''}"></div>`;
-                    }
-                });
+                }
 
-                itemEl.innerHTML = `
-                    <div class="media-carousel" onscroll="handleCarouselScroll(this)">
-                        ${mediaSlidesHtml}
-                    </div>
-                    ${dotsHtml ? `<div class="carousel-dots">${dotsHtml}</div>` : ''}
+                html += `
+                    <div class="feed-item" id="feed-item-${item.id}" data-id="${item.id}">
+                        <div class="media-slider" onscroll="handleSliderScroll(event)">
+                            ${mediaSlidesHtml}
+                        </div>
 
-                    <button class="icon-btn sound-toggle-btn" onclick="toggleMute(this)">
-                        <i data-lucide="volume-x"></i>
-                    </button>
+                        ${item.media && item.media.length > 1 ? `<div class="slider-dots">${dotsHtml}</div>` : ''}
 
-                    <div class="item-overlay">
-                        <div class="author-info" onclick="openProfile('${item.wa || item.author}')">
-                            <img class="avatar" src="${item.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80'}" />
-                            <div>
-                                <div class="author-name">${item.author || "Anonim"}</div>
-                                <div class="time-ago">${timeAgo(item.ts)}</div>
+                        <button class="icon-btn sound-btn" onclick="toggleAudioMute(this)">
+                            <i data-lucide="volume-x"></i>
+                        </button>
+
+                        <div class="item-overlay-bottom">
+                            <div class="author-info" onclick="openProfile('${item.u}')">
+                                <img src="${item.av || 'https://via.placeholder.com/40'}" class="author-avatar" alt="Author">
+                                <span class="author-name">${item.name || t('user')}</span>
+                            </div>
+
+                            <div class="trade-badge">
+                                <span>${item.item}</span>
+                                <i data-lucide="arrow-right-left" style="width:14px; height:14px;"></i>
+                                <span>${item.want}</span>
+                            </div>
+
+                            ${item.desc ? `<div class="item-desc">${item.desc}</div>` : ''}
+
+                            <div class="item-meta">
+                                ${item.brand ? `<span class="meta-tag">🏷️ ${item.brand}</span>` : ''}
+                                ${item.size ? `<span class="meta-tag">📏 ${item.size}</span>` : ''}
+                                <span>• ${timeAgo(item.ts)}</span>
                             </div>
                         </div>
 
-                        <div class="item-title">${item.title}</div>
-                        <div class="item-want">🔄 ${t("what_i_want")}: ${item.want}</div>
-                        
-                        <div class="item-meta-pills">
-                            ${item.brand ? `<span class="pill">🏷️ ${item.brand}</span>` : ''}
-                            ${item.size ? `<span class="pill">📏 ${item.size}</span>` : ''}
-                        </div>
+                        <div class="actions-bar">
+                            <button class="action-btn ${isLiked ? 'liked' : ''}" onclick="toggleFavorite('${item.id}')">
+                                <div class="action-btn-circle">
+                                    <i data-lucide="star" ${isLiked ? 'fill="#fe2c55"' : ''}></i>
+                                </div>
+                                <span>${item.likes || 0}</span>
+                            </button>
 
-                        ${item.desc ? `<div style="font-size:0.85rem; opacity:0.8; margin-top:2px;">${item.desc}</div>` : ''}
+                            <button class="action-btn" onclick="openComments('${item.id}')">
+                                <div class="action-btn-circle">
+                                    <i data-lucide="message-circle"></i>
+                                </div>
+                                <span>${(commentsData[item.id] || []).length}</span>
+                            </button>
 
-                        <div class="item-tags">
-                            ${(item.tags || []).map(tg => `<span class="tag">#${tg}</span>`).join(" ")}
+                            <button class="action-btn" onclick="shareItem('${item.id}')">
+                                <div class="action-btn-circle">
+                                    <i data-lucide="share-2"></i>
+                                </div>
+                                <span>${t('share')}</span>
+                            </button>
+
+                            <a href="https://wa.me/${(item.wa || '').replace(/[^0-9]/g, '')}" target="_blank" class="whatsapp-float-btn">
+                                <i data-lucide="phone" style="width:24px; height:24px;"></i>
+                            </a>
                         </div>
                     </div>
-
-                    <div class="right-actions">
-                        <button class="action-btn ${isFav ? 'liked' : ''}" onclick="toggleFavorite('${item.id}')">
-                            <div class="btn-circle"><i data-lucide="heart"></i></div>
-                            <span>${(item.likes || 0) + (isFav ? 1 : 0)}</span>
-                        </button>
-                        <button class="action-btn" onclick="openComments('${item.id}')">
-                            <div class="btn-circle"><i data-lucide="message-circle"></i></div>
-                            <span>${getCommentCount(item.id)}</span>
-                        </button>
-                        <button class="action-btn" onclick="shareItem('${item.id}')">
-                            <div class="btn-circle"><i data-lucide="share-2"></i></div>
-                            <span>${t("share")}</span>
-                        </button>
-                    </div>
-
-                    <a href="https://wa.me/${(item.wa || '').replace(/[^0-9]/g, '')}?text=${encodeURIComponent(t("share_text") + " " + item.title)}" target="_blank" class="wa-floating-btn">
-                        <i data-lucide="message-square" style="width:26px; height:26px;"></i>
-                    </a>
                 `;
+            }
 
-                container.appendChild(itemEl);
-            });
-
-            renderIcons();
+            container.innerHTML = html;
+            lucide.createIcons();
             setupIntersectionObserver();
         }
 
-        function handleCarouselScroll(carouselEl) {
-            const scrollLeft = carouselEl.scrollLeft;
-            const width = carouselEl.offsetWidth;
-            const activeIndex = Math.round(scrollLeft / width);
-            const dots = carouselEl.parentElement.querySelectorAll(".dot");
-            dots.forEach((d, i) => d.classList.toggle("active", i === activeIndex));
+        function handleSliderScroll(e) {
+            const slider = e.target;
+            const index = Math.round(slider.scrollLeft / slider.clientWidth);
+            const dots = slider.parentElement.querySelectorAll('.slider-dots .dot');
+            dots.forEach((dot, i) => dot.classList.toggle('active', i === index));
         }
 
-        function toggleMute(btn) {
-            const feedItem = btn.closest(".feed-item");
-            const videos = feedItem.querySelectorAll("video");
+        function toggleAudioMute(btn) {
+            const item = btn.closest('.feed-item');
+            const videos = item.querySelectorAll('video');
             let isMuted = true;
             videos.forEach(v => {
                 v.muted = !v.muted;
                 isMuted = v.muted;
             });
-            btn.innerHTML = isMuted ? `<i data-lucide="volume-x"></i>` : `<i data-lucide="volume-2"></i>`;
-            renderIcons();
+            btn.innerHTML = `<i data-lucide="${isMuted ? 'volume-x' : 'volume-2'}"></i>`;
+            lucide.createIcons();
         }
 
-        // Seeder & Autoplay Intersection Observer
+        /* Intersection Observer for Auto-Seeding & Active Media Handling */
+        let observer = null;
         function setupIntersectionObserver() {
-            const observer = new IntersectionObserver((entries) => {
+            if (observer) observer.disconnect();
+            observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
-                    const videos = entry.target.querySelectorAll("video");
+                    const videos = entry.target.querySelectorAll('video');
                     if (entry.isIntersecting) {
-                        videos.forEach(v => v.play().catch(() => {}));
-                        // Lazy load IDB blobs if needed
-                        const itemId = entry.target.id.replace("item-", "");
-                        getMediaBlob(itemId).then(blob => {
-                            if (blob) {
-                                const url = URL.createObjectURL(blob);
-                                const img = entry.target.querySelector("img");
-                                if (img && !img.src) img.src = url;
-                            }
-                        });
+                        videos.forEach(v => v.play().catch(()=>{}));
+                        const id = entry.target.getAttribute('data-id');
+                        const item = feedData.find(x => x.id === id);
+                        if (item) persistItem(item);
                     } else {
                         videos.forEach(v => v.pause());
                     }
                 });
             }, { threshold: 0.65 });
 
-            document.querySelectorAll(".feed-item").forEach(el => observer.observe(el));
+            document.querySelectorAll('.feed-item').forEach(el => observer.observe(el));
         }
 
-        // Explore Grid View
-        function renderExploreGrid(items = feedData) {
-            const container = $("gridContainer");
-            if (!container) return;
-            container.innerHTML = "";
+        /* Grid View Renders */
+        async function renderExploreGrid() {
+            const grid = document.getElementById('exploreGrid');
+            if (!grid) return;
+            let html = '';
+            for (let item of feedData) {
+                await ensureMediaSrc(item);
+                const firstMedia = item.media && item.media[0];
+                const src = firstMedia ? (firstMedia.src || firstMedia.dataUrl) : '';
+                const isVideo = firstMedia && firstMedia.type === 'video';
 
-            items.forEach(item => {
-                const gridEl = document.createElement("div");
-                gridEl.className = "grid-item";
-                gridEl.onclick = () => openItemInFeed(item.id);
-
-                const firstMedia = item.media[0] || "https://via.placeholder.com/300";
-                const isVideo = firstMedia.includes("video") || firstMedia.endsWith(".mp4") || firstMedia.startsWith("data:video");
-
-                gridEl.innerHTML = `
-                    ${isVideo ? `<video src="${firstMedia}"></video>` : `<img src="${firstMedia}" loading="lazy" />`}
-                    ${isVideo ? `<div class="grid-item-badge"><i data-lucide="video"></i></div>` : ''}
+                html += `
+                    <div class="grid-item" onclick="openItemInFeed('${item.id}')">
+                        ${src ? (isVideo ? `<video src="${src}#t=0.1" preload="metadata"></video>` : `<img src="${src}">`) : `<div class="media-placeholder"><i data-lucide="image-off"></i></div>`}
+                        ${isVideo ? `<div class="grid-type-icon"><i data-lucide="video" style="width:16px;"></i></div>` : ''}
+                    </div>
                 `;
-                container.appendChild(gridEl);
-            });
-            renderIcons();
+            }
+            grid.innerHTML = html || `<p style="grid-column:span 3; color:#aaa;">${t('no_results')}</p>`;
+            lucide.createIcons();
+        }
+
+        async function renderFavoritesGrid() {
+            const grid = document.getElementById('favoritesGrid');
+            if (!grid) return;
+            const favItems = feedData.filter(i => favs.includes(i.id));
+            let html = '';
+            for (let item of favItems) {
+                await ensureMediaSrc(item);
+                const firstMedia = item.media && item.media[0];
+                const src = firstMedia ? (firstMedia.src || firstMedia.dataUrl) : '';
+                const isVideo = firstMedia && firstMedia.type === 'video';
+
+                html += `
+                    <div class="grid-item" onclick="openItemInFeed('${item.id}')">
+                        ${src ? (isVideo ? `<video src="${src}#t=0.1" preload="metadata"></video>` : `<img src="${src}">`) : `<div class="media-placeholder"><i data-lucide="image-off"></i></div>`}
+                    </div>
+                `;
+            }
+            grid.innerHTML = html || `<p style="grid-column:span 3; color:#aaa;">${t('no_results')}</p>`;
+            lucide.createIcons();
+        }
+
+        /* --- 6. NAVIGATION & TABS --- */
+        function switchTab(tab) {
+            activeTab = tab;
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+
+            if (tab === 'home') {
+                document.getElementById('viewHome').classList.add('active');
+                renderFeed();
+            } else if (tab === 'explore') {
+                document.getElementById('viewExplore').classList.add('active');
+                renderExploreGrid();
+            } else if (tab === 'favorites') {
+                document.getElementById('viewFavorites').classList.add('active');
+                renderFavoritesGrid();
+            } else if (tab === 'profile') {
+                document.getElementById('viewProfile').classList.add('active');
+                openProfile(myProfile ? myProfile.u : null);
+            }
+
+            // Update active nav item icon
+            const navs = document.querySelectorAll('.nav-item');
+            if (tab === 'home') navs[0].classList.add('active');
+            if (tab === 'explore') navs[1].classList.add('active');
+            if (tab === 'favorites') navs[3].classList.add('active');
+            if (tab === 'profile') navs[4].classList.add('active');
         }
 
         function openItemInFeed(id) {
-            setActiveTab("home");
+            currentFilter = '';
+            switchTab('home');
             setTimeout(() => {
-                const el = $(`item-${id}`);
-                if (el) el.scrollIntoView({ behavior: "smooth" });
+                const target = document.getElementById(`feed-item-${id}`);
+                if (target) target.scrollIntoView({ behavior: 'smooth' });
             }, 100);
         }
 
-        // --- 5. Navigation Tab Switcher ---
-        function setActiveTab(tab) {
-            currentFeedView = tab;
-            document.querySelectorAll(".nav-tab").forEach(t => t.classList.remove("active"));
-            $("feed").style.display = "none";
-            $("exploreGrid").style.display = "none";
-            $("profileView").style.display = "none";
-
-            if (tab === "home") {
-                $("navHome").classList.add("active");
-                $("feed").style.display = "block";
-                renderFeed(feedData);
-            } else if (tab === "explore") {
-                $("navExplore").classList.add("active");
-                $("exploreGrid").style.display = "block";
-                renderExploreGrid(feedData);
-            } else if (tab === "favs") {
-                $("navFavs").classList.add("active");
-                $("feed").style.display = "block";
-                const favItems = feedData.filter(x => favs.includes(x.id));
-                renderFeed(favItems);
-            } else if (tab === "profile") {
-                $("navProfile").classList.add("active");
-                $("profileView").style.display = "block";
-                openMyProfile();
-            }
+        function toggleDrawer(show) {
+            const drawer = document.getElementById('drawer');
+            const overlay = document.getElementById('drawerOverlay');
+            const isActive = show !== undefined ? show : !drawer.classList.contains('active');
+            drawer.classList.toggle('active', isActive);
+            overlay.classList.toggle('active', isActive);
         }
 
-        // --- 6. Publish / Upload Logic ---
-        let selectedMediaFiles = [];
+        function openModal(id) {
+            document.getElementById(id).classList.add('active');
+            document.getElementById(`${id}Overlay`).classList.add('active');
+        }
 
-        function handleMediaFiles(files) {
-            for (let file of files) {
-                if (file.size > 20 * 1024 * 1024) {
-                    alert(t("file_too_large"));
-                    continue;
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+            document.getElementById(`${id}Overlay`).classList.remove('active');
+        }
+
+        /* --- 7. UPLOAD & PUBLISH LOGIC --- */
+        function openPublishModal() {
+            if (!myProfile) {
+                document.getElementById('profileSetupFields').style.display = 'flex';
+            } else {
+                document.getElementById('profileSetupFields').style.display = 'none';
+            }
+            openModal('uploadModal');
+        }
+
+        function handleFileSelect(e, type) {
+            const files = Array.from(e.target.files);
+            files.forEach(file => {
+                if (file.size > 25 * 1024 * 1024) {
+                    alert(t('file_too_large'));
+                    return;
                 }
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    selectedMediaFiles.push(e.target.result);
-                    renderMediaPreviews();
-                };
-                reader.readAsDataURL(file);
-            }
-        }
-
-        function renderMediaPreviews() {
-            const container = $("mediaPreviews");
-            if (!container) return;
-            container.innerHTML = "";
-            selectedMediaFiles.forEach((src, idx) => {
-                const isVideo = src.startsWith("data:video");
-                const div = document.createElement("div");
-                div.className = "preview-thumb";
-                div.innerHTML = `
-                    ${isVideo ? `<video src="${src}"></video>` : `<img src="${src}" />`}
-                    <div class="remove-thumb" onclick="removeMedia(${idx})">✕</div>
-                `;
-                container.appendChild(div);
+                const previewUrl = URL.createObjectURL(file);
+                selectedMediaFiles.push({
+                    id: uid('media'),
+                    file,
+                    previewUrl,
+                    type,
+                    mime: file.type,
+                    name: file.name
+                });
             });
+            renderSelectedMediaGrid();
         }
 
-        function removeMedia(idx) {
-            selectedMediaFiles.splice(idx, 1);
-            renderMediaPreviews();
+        function renderSelectedMediaGrid() {
+            const container = document.getElementById('selectedMediaGrid');
+            let html = '';
+            selectedMediaFiles.forEach((m, idx) => {
+                html += `
+                    <div class="selected-media-item">
+                        ${m.type === 'video' ? `<video src="${m.previewUrl}"></video>` : `<img src="${m.previewUrl}">`}
+                        <button class="media-remove-btn" onclick="removeSelectedMedia(${idx})">×</button>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
         }
 
-        function publishItem() {
-            const author = $("inAuthorName").value.trim();
-            const wa = $("inAuthorWA").value.trim();
-            const title = $("inTitle").value.trim();
-            const want = $("inWant").value.trim();
-            const brand = $("inBrand").value.trim();
-            const size = $("inSize").value.trim();
-            const desc = $("inDesc").value.trim();
-            const tags = $("inTags").value.split(",").map(s => s.trim().toLowerCase()).filter(Boolean);
+        function removeSelectedMedia(index) {
+            const removed = selectedMediaFiles.splice(index, 1)[0];
+            if (removed && removed.previewUrl) URL.revokeObjectURL(removed.previewUrl);
+            renderSelectedMediaGrid();
+        }
 
-            if (!author || !wa || !title || !want) {
-                alert(t("fill_required"));
-                return;
+        async function publishItem() {
+            let authorName = myProfile ? myProfile.name : document.getElementById('upAuthorName').value.trim();
+            let authorAv = myProfile ? myProfile.av : 'https://via.placeholder.com/80';
+
+            // If setup profile for the first time
+            if (!myProfile) {
+                if (!authorName) { alert(t('enter_name')); return; }
+                const avFileInput = document.getElementById('upAvatarFile');
+                if (avFileInput.files && avFileInput.files[0]) {
+                    authorAv = await compressImageFile(avFileInput.files[0], 200, 0.7);
+                }
+                myProfile = { u: uid('user'), name: authorName, av: authorAv };
+                localStorage.setItem('myProfile', JSON.stringify(myProfile));
             }
 
-            // Save user profile locally for future posts
-            myProfile = { name: author, wa: wa, avatar: myProfile.avatar || "" };
-            localStorage.setItem("my-profile-v4", JSON.stringify(myProfile));
+            const item = document.getElementById('upItem').value.trim();
+            const want = document.getElementById('upWant').value.trim();
+            const wa = document.getElementById('upWa').value.trim();
+            const brand = document.getElementById('upBrand').value.trim();
+            const size = document.getElementById('upSize').value.trim();
+            const desc = document.getElementById('upDesc').value.trim();
+            const tags = document.getElementById('upTags').value.split(',').map(s=>s.trim()).filter(Boolean);
+
+            if (!item) { alert(t('enter_item')); return; }
+            if (!wa) { alert(t('enter_wa')); return; }
+            if (selectedMediaFiles.length === 0) { alert(t('add_at_least_one_media')); return; }
+
+            // Process & Store Medias
+            const processedMedias = [];
+            for (let m of selectedMediaFiles) {
+                // Save original to IndexedDB
+                await saveMediaBlob(m.id, m.file, m.type, m.name);
+
+                let compressedDataUrl = "";
+                if (m.type === 'image') {
+                    compressedDataUrl = await compressImageFile(m.file, 800, 0.7);
+                }
+
+                processedMedias.push({
+                    id: m.id,
+                    type: m.type,
+                    mime: m.mime,
+                    name: m.name,
+                    src: m.previewUrl, // Object URL for immediate local rendering
+                    dataUrl: compressedDataUrl
+                });
+            }
 
             const newItem = {
-                id: "item_" + Date.now() + "_" + Math.random().toString(36).substr(2, 5),
-                author,
-                wa,
-                avatar: myProfile.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80",
-                title,
+                id: uid('item'),
+                u: myProfile.u,
+                av: myProfile.av,
+                name: myProfile.name,
+                item,
                 want,
+                wa,
                 brand,
                 size,
                 desc,
                 tags,
-                media: selectedMediaFiles.length > 0 ? selectedMediaFiles : ["https://via.placeholder.com/600x800?text=GeyimDəyis"],
-                likes: 0,
-                ts: Date.now()
+                media: processedMedias,
+                ts: Date.now(),
+                likes: 0
             };
 
-            // Push to local state and Gun P2P Network
             feedData.unshift(newItem);
-            saveLocalFeed();
+            persistItem(newItem);
 
-            gun.get("geyimdeyis").get("feed").get(newItem.id).put({
-                ...newItem,
-                tags: JSON.stringify(newItem.tags),
-                media: JSON.stringify(newItem.media)
-            });
-
-            // Save first heavy media to IndexedDB
-            if (selectedMediaFiles[0]) {
-                saveMediaBlob(newItem.id, selectedMediaFiles[0]);
-            }
-
-            // Reset Form & Close Modal
+            // Cleanup Form
             selectedMediaFiles = [];
-            renderMediaPreviews();
-            $("publishForm").reset();
-            $("publishModal").classList.remove("active");
+            renderSelectedMediaGrid();
+            document.getElementById('upItem').value = '';
+            document.getElementById('upWant').value = '';
+            document.getElementById('upWa').value = '';
+            document.getElementById('upBrand').value = '';
+            document.getElementById('upSize').value = '';
+            document.getElementById('upDesc').value = '';
+            document.getElementById('upTags').value = '';
 
-            setActiveTab("home");
+            closeModal('uploadModal');
+            switchTab('home');
+            window.scrollTo(0,0);
         }
 
-        // --- 7. Comments & Interaction Engine ---
-        let activeCommentItemId = null;
-
-        function getCommentCount(itemId) {
-            const comments = JSON.parse(localStorage.getItem(`comments-v4-${itemId}`) || "[]");
-            return comments.length;
+        /* --- 8. ACTIONS: FAVORITES, COMMENTS, SHARE, SEARCH --- */
+        function toggleFavorite(id) {
+            const idx = favs.indexOf(id);
+            const item = feedData.find(x => x.id === id);
+            if (idx > -1) {
+                favs.splice(idx, 1);
+                if (item && item.likes > 0) item.likes--;
+            } else {
+                favs.push(id);
+                if (item) item.likes = (item.likes || 0) + 1;
+            }
+            localStorage.setItem('favs', JSON.stringify(favs));
+            if (item) persistItem(item);
+            renderFeed();
         }
 
         function openComments(itemId) {
-            activeCommentItemId = itemId;
-            renderCommentsList();
-            $("commentsModal").classList.add("active");
+            currentCommentItemId = itemId;
+            renderComments();
+            openModal('commentsModal');
         }
 
-        function renderCommentsList() {
-            if (!activeCommentItemId) return;
-            const comments = JSON.parse(localStorage.getItem(`comments-v4-${activeCommentItemId}`) || "[]");
-            const container = $("commentsList");
-            container.innerHTML = "";
-
-            if (comments.length === 0) {
-                container.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding:20px;">İlk şərhi siz yazın!</div>`;
-                return;
-            }
-
-            comments.forEach((c, idx) => {
-                const el = document.createElement("div");
-                el.className = "comment-item";
-                el.innerHTML = `
-                    <div class="comment-body">
-                        <div class="comment-author">${c.author} • <span style="font-weight:normal">${timeAgo(c.ts)}</span></div>
-                        <div class="comment-text">${c.text}</div>
-                        <div class="comment-actions">
-                            <span class="comment-reply-btn" onclick="replyComment('${c.author}')">${t("reply")}</span>
+        function renderComments() {
+            const container = document.getElementById('commentsList');
+            const list = commentsData[currentCommentItemId] || [];
+            let html = '';
+            list.forEach((c, idx) => {
+                html += `
+                    <div class="comment-item">
+                        <img src="${c.av || 'https://via.placeholder.com/32'}" class="comment-avatar">
+                        <div class="comment-content">
+                            <div class="comment-user">${c.name || t('user')}</div>
+                            <div class="comment-text">${c.text}</div>
+                            <div class="comment-meta">
+                                <span>${timeAgo(c.ts)}</span>
+                            </div>
                         </div>
                     </div>
                 `;
-                container.appendChild(el);
             });
+            container.innerHTML = html || `<p style="color:#666; font-size:0.85rem;">No comments yet</p>`;
         }
 
-        function sendComment() {
-            const txt = $("inCommentText").value.trim();
-            if (!txt || !activeCommentItemId) return;
+        function submitComment() {
+            if (!currentCommentItemId) return;
+            const input = document.getElementById('commentInput');
+            const text = input.value.trim();
+            if (!text) return;
 
-            if (!myProfile.name) {
-                const name = prompt(t("enter_name_prompt"));
+            if (!myProfile) {
+                const name = prompt(t('enter_name'));
                 if (!name) return;
-                myProfile.name = name;
-                localStorage.setItem("my-profile-v4", JSON.stringify(myProfile));
+                myProfile = { u: uid('user'), name, av: 'https://via.placeholder.com/80' };
+                localStorage.setItem('myProfile', JSON.stringify(myProfile));
             }
 
-            const comments = JSON.parse(localStorage.getItem(`comments-v4-${activeCommentItemId}`) || "[]");
-            comments.push({
-                author: myProfile.name,
-                text: txt,
+            if (!commentsData[currentCommentItemId]) commentsData[currentCommentItemId] = [];
+            commentsData[currentCommentItemId].push({
+                u: myProfile.u,
+                name: myProfile.name,
+                av: myProfile.av,
+                text,
                 ts: Date.now()
             });
-            localStorage.setItem(`comments-v4-${activeCommentItemId}`, JSON.stringify(comments));
 
-            $("inCommentText").value = "";
-            renderCommentsList();
-            renderFeed(feedData); // Refresh comment counts
-        }
-
-        function replyComment(author) {
-            $("inCommentText").value = `@${author} `;
-            $("inCommentText").focus();
-        }
-
-        function toggleFavorite(id) {
-            const idx = favs.indexOf(id);
-            if (idx === -1) favs.push(id);
-            else favs.splice(idx, 1);
-            localStorage.setItem("favs-v4", JSON.stringify(favs));
-            renderFeed(currentFeedView === "favs" ? feedData.filter(x => favs.includes(x.id)) : feedData);
+            localStorage.setItem('comments-v4', JSON.stringify(commentsData));
+            input.value = '';
+            renderComments();
+            renderFeed();
         }
 
         function shareItem(id) {
-            const item = feedData.find(x => x.id === id);
-            if (!item) return;
-            const text = `${t("share_text")} ${item.title}`;
-            const url = window.location.href.split('#')[0] + `#item=${id}`;
-
+            const url = `${window.location.origin}${window.location.pathname}#item=${id}`;
             if (navigator.share) {
-                navigator.share({ title: item.title, text: text, url: url }).catch(() => {});
+                navigator.share({ title: 'GeyimDəyis P2P', url });
             } else {
-                navigator.clipboard.writeText(`${text} ${url}`);
-                alert("Link kopyalandı!");
+                navigator.clipboard.writeText(url);
+                alert(t('copied'));
             }
         }
 
-        // --- 8. Profile & Search Views ---
-        function openProfile(userKey) {
-            const userItems = feedData.filter(x => x.wa === userKey || x.author === userKey);
-            const authorName = userItems[0]?.author || userKey;
-            const authorAvatar = userItems[0]?.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80';
+        function executeSearch() {
+            const query = document.getElementById('searchInput').value.trim();
+            currentFilter = query;
+            switchTab('home');
+        }
 
-            $("profileHeaderContent").innerHTML = `
-                <img class="profile-avatar-big" src="${authorAvatar}" />
-                <h2>${authorName}</h2>
-                <div style="color:var(--text-muted); font-size:0.9rem;">${userItems.length} ${t("ads_count")}</div>
-                ${userItems[0]?.wa ? `
-                    <a href="https://wa.me/${userItems[0].wa.replace(/[^0-9]/g, '')}" target="_blank" class="submit-btn" style="text-decoration:none; display:inline-flex; align-items:center; gap:8px; padding:8px 16px;">
-                        <i data-lucide="message-square"></i> ${t("write_wa")}
-                    </a>
-                ` : ''}
+        /* --- 9. PROFILE VIEW --- */
+        async function openProfile(userId) {
+            activeProfileUserId = userId || (myProfile ? myProfile.u : null);
+            const userItems = feedData.filter(i => i.u === activeProfileUserId);
+            const header = document.getElementById('profileHeader');
+            const grid = document.getElementById('profileGrid');
+
+            const profileUser = userItems[0] || (myProfile && myProfile.u === activeProfileUserId ? myProfile : null) || { name: t('user'), av: 'https://via.placeholder.com/96' };
+
+            header.innerHTML = `
+                <img src="${profileUser.av}" class="profile-avatar-large">
+                <h2>${profileUser.name}</h2>
+                <p style="color:#aaa; font-size:0.85rem; margin-top:4px;">${userItems.length} Listings</p>
             `;
 
-            const container = $("profileGridContainer");
-            container.innerHTML = "";
-            userItems.forEach(item => {
-                const div = document.createElement("div");
-                div.className = "grid-item";
-                div.onclick = () => openItemInFeed(item.id);
-                div.innerHTML = `<img src="${item.media[0] || ''}" />`;
-                container.appendChild(div);
-            });
-
-            $("feed").style.display = "none";
-            $("exploreGrid").style.display = "none";
-            $("profileView").style.display = "block";
-            renderIcons();
-        }
-
-        function openMyProfile() {
-            if (!myProfile.name && !myProfile.wa) {
-                $("profileHeaderContent").innerHTML = `
-                    <div class="empty-state">
-                        <i data-lucide="user-plus" style="width: 48px; height: 48px;"></i>
-                        <div>Profiliniz hələ yaradılmayıb.</div>
-                        <button class="submit-btn" onclick="$('publishModal').classList.add('active')">Elan Paylaş və Profil Yarat</button>
+            let html = '';
+            for (let item of userItems) {
+                await ensureMediaSrc(item);
+                const firstMedia = item.media && item.media[0];
+                const src = firstMedia ? (firstMedia.src || firstMedia.dataUrl) : '';
+                html += `
+                    <div class="grid-item" onclick="openItemInFeed('${item.id}')">
+                        ${src ? `<img src="${src}">` : `<div class="media-placeholder"><i data-lucide="image-off"></i></div>`}
                     </div>
                 `;
-                $("profileGridContainer").innerHTML = "";
-                renderIcons();
-                return;
             }
-            openProfile(myProfile.wa || myProfile.name);
+            grid.innerHTML = html || `<p style="grid-column:span 3; color:#aaa; margin-top:20px;">No listings published yet.</p>`;
+            lucide.createIcons();
         }
 
-        function doSearch() {
-            const query = $("searchInput").value.trim().toLowerCase();
-            if (!query) return;
-            const results = feedData.filter(item => {
-                const norm = (s) => (s || "").toLowerCase();
-                return norm(item.title).includes(query) ||
-                       norm(item.want).includes(query) ||
-                       norm(item.brand).includes(query) ||
-                       norm(item.size).includes(query) ||
-                       norm(item.desc).includes(query) ||
-                       (item.tags || []).some(t => norm(t).includes(query));
-            });
+        /* --- 10. LEGAL & POLICY MODALS --- */
+        function openLegalModal(type) {
+            toggleDrawer(false);
+            const titleEl = document.getElementById('legalModalTitle');
+            const contentEl = document.getElementById('legalModalContent');
 
-            const container = $("searchResultsGrid");
-            container.innerHTML = "";
-            if (results.length === 0) {
-                container.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:20px; color:var(--text-muted);">${t("no_results")}</div>`;
+            if (type === 'privacy') {
+                titleEl.innerText = t('privacy');
+                contentEl.innerText = `PRIVACY POLICY & LEGAL DISCLAIMER
+1. Decentralized Architecture: GeyimDəyis P2P Pro operates on a serverless Peer-to-Peer network (GunDB) and browser local storage (IndexedDB). No central entity hosts, owns, or controls user communications or uploads.
+2. Intermediary Status: The platform functions strictly as a decentralized technological framework under Civil Code Article 1096 and Information Law Article 23. We are not a broker, auctioneer, or seller.
+3. User Data & Deletion: Phone numbers provided for WhatsApp redirection are exposed exclusively to other network peers for direct communication. Data clear request: Clearing local storage removes data on local peer; replicated network nodes may persist public keys up to 24-72 hours until overwritten.
+4. User Responsibility: Users bear total liability for items exchanged. Prohibited items (stolen goods, counterfeit items, illegal substances) are strictly forbidden. Age requirement: 16+.`;
+            } else if (type === 'terms') {
+                titleEl.innerText = t('terms');
+                contentEl.innerText = `TERMS OF SERVICE
+1. Acceptance: By accessing the application, you agree to engage in decentralized peer interactions.
+2. Prohibited Activities: Posting illegal, unsafe, offensive material, or misrepresenting ownership of barter items is prohibited.
+3. Limitation of Liability: Platform developers and peer nodes accept zero liability for damaged goods, failed exchanges, or personal disputes.`;
+            } else if (type === 'how') {
+                titleEl.innerText = t('how_to_use');
+                contentEl.innerText = `HOW TO USE
+1. Browse Feed: Scroll through TikTok-style vertical listings.
+2. Filter & Explore: Use Explore grid to search by keywords, size, or tags.
+3. Publish: Click the "+" icon, select photos/videos, enter item details and your WhatsApp contact.
+4. Direct Barter: Click the WhatsApp button on any item to contact the owner directly.`;
             } else {
-                results.forEach(item => {
-                    const div = document.createElement("div");
-                    div.className = "grid-item";
-                    div.onclick = () => {
-                        $("searchModal").classList.remove("active");
-                        openItemInFeed(item.id);
-                    };
-                    div.innerHTML = `<img src="${item.media[0] || ''}" />`;
-                    container.appendChild(div);
+                titleEl.innerText = t('about');
+                contentEl.innerText = `ABOUT GEYİMDƏYİŞ P2P
+A serverless, lightweight, peer-to-peer clothing barter ecosystem. Built for zero-cost, high-speed, durable local exchanges without central database overhead.`;
+            }
+
+            openModal('legalModal');
+        }
+
+        /* --- 11. INITIALIZATION & EVENT BINDING --- */
+        window.addEventListener('DOMContentLoaded', async () => {
+            // Bind Critical Publish Button Listener
+            const pubBtn = document.getElementById('publishBtn');
+            if (pubBtn) {
+                pubBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    publishItem();
                 });
             }
-            renderIcons();
-        }
 
-        // --- 9. Text Content Modal Handler ---
-        function showTextModal(titleKey, textKey) {
-            $("textModalTitle").innerText = t(titleKey);
-            $("textModalBody").innerText = t(textKey);
-            $("drawer").classList.remove("active");
-            $("drawerBackdrop").classList.remove("active");
-            $("textModal").classList.add("active");
-        }
+            // Search listener
+            document.getElementById('searchInput')?.addEventListener('keyup', (e) => {
+                if (e.key === 'Enter') executeSearch();
+            });
 
-        // --- 10. Event Listeners & Binding Fixes ---
-        document.addEventListener("DOMContentLoaded", () => {
-            updateUIStaticTexts();
+            // Visibility listener to pause videos when page is hidden
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden) {
+                    document.querySelectorAll('video').forEach(v => v.pause());
+                }
+            });
+
+            // Handle Deep Link Hash
+            const hash = window.location.hash;
+
+            await initIDB();
+
+            // Load initial cached feed
+            const cached = localStorage.getItem('p2p-feed-v4');
+            if (cached) {
+                try { feedData = JSON.parse(cached); } catch(e) {}
+            }
+
+            updateUIStrings();
             renderFeed();
-            initGunSync();
+            initGun();
 
-            // Status Indicator Logic
-            const updateStatus = () => {
-                const isOnline = navigator.onLine;
-                $("p2pDot").className = `p2p-dot ${isOnline ? 'online' : ''}`;
-                $("p2pStatusText").innerText = isOnline ? t("p2p_status_online") : t("p2p_status_offline");
-            };
-            window.addEventListener("online", updateStatus);
-            window.addEventListener("offline", updateStatus);
-            updateStatus();
-
-            // Nav Clicks
-            $("navHome").addEventListener("click", () => setActiveTab("home"));
-            $("navExplore").addEventListener("click", () => setActiveTab("explore"));
-            $("navFavs").addEventListener("click", () => setActiveTab("favs"));
-            $("navProfile").addEventListener("click", () => setActiveTab("profile"));
-            $("navPublish").addEventListener("click", () => {
-                if (myProfile.name) $("inAuthorName").value = myProfile.name;
-                if (myProfile.wa) $("inAuthorWA").value = myProfile.wa;
-                $("publishModal").classList.add("active");
-            });
-
-            // Publish Form & File Inputs
-            $("publishBtn").addEventListener("click", (e) => {
-                e.preventDefault();
-                publishItem();
-            });
-
-            $("imgInput").addEventListener("change", (e) => handleMediaFiles(e.target.files));
-            $("vidInput").addEventListener("change", (e) => handleMediaFiles(e.target.files));
-
-            // Modal Closes
-            $("closePublishModal").addEventListener("click", () => $("publishModal").classList.remove("active"));
-            $("closeSearchModal").addEventListener("click", () => $("searchModal").classList.remove("active"));
-            $("closeCommentsModal").addEventListener("click", () => $("commentsModal").classList.remove("active"));
-            $("closeTextModal").addEventListener("click", () => $("textModal").classList.remove("active"));
-
-            // Search
-            $("searchBtn").addEventListener("click", () => $("searchModal").classList.add("active"));
-            $("doSearchBtn").addEventListener("click", doSearch);
-            $("searchInput").addEventListener("keypress", (e) => { if (e.key === "Enter") doSearch(); });
-
-            // Comment
-            $("sendCommentBtn").addEventListener("click", sendComment);
-            $("inCommentText").addEventListener("keypress", (e) => { if (e.key === "Enter") sendComment(); });
-
-            // Drawer
-            $("menuBtn").addEventListener("click", () => {
-                $("drawer").classList.add("active");
-                $("drawerBackdrop").classList.add("active");
-            });
-            $("drawerBackdrop").addEventListener("click", () => {
-                $("drawer").classList.remove("active");
-                $("drawerBackdrop").classList.remove("active");
-            });
-
-            // Drawer Items
-            $("btnAbout").addEventListener("click", () => showTextModal("about", "about_text"));
-            $("btnHowTo").addEventListener("click", () => showTextModal("how_to_use", "how_to_text"));
-            $("btnPrivacy").addEventListener("click", () => showTextModal("privacy", "privacy_text"));
-            $("btnTerms").addEventListener("click", () => showTextModal("terms", "terms_text"));
-
-            // Lang Buttons
-            document.querySelectorAll(".lang-btn").forEach(btn => {
-                btn.addEventListener("click", () => setLang(btn.dataset.lang));
-            });
-
-            // Auto Hash Deep Linking (#item=ID)
-            if (window.location.hash.includes("#item=")) {
-                const targetId = window.location.hash.replace("#item=", "");
+            if (hash.startsWith('#item=')) {
+                const targetId = hash.replace('#item=', '');
                 setTimeout(() => openItemInFeed(targetId), 300);
             }
         });
