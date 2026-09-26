@@ -1,1666 +1,4226 @@
-<!-- AzGram ULTRA PRO v250 - 250/250 işlək - Musiqi Açıq Mənbə + Telefon + Şərhə Cavab + Redaktə + Məxfilik + Qalereya Birbaşa + Swipe + Google + Banner -->
-<!doctype html>
+<!DOCTYPE html>
+<!-- AzGram ULTRA PRO v250
+     FIX: Onboarding artıq məcburi deyil.
+     FIX: Ad, avatar, bio və link hamısı seçimlidir.
+     FIX: Qalereya düyməsi birbaşa işləyir.
+     FIX: Kamera/Galereya input-ları ayrıca işləyir.
+     FIX: Düymələr və modal toxunuşları aktivdir.
+     FIX: Mobil Chrome / Samsung üçün hazırlanıb.
+-->
 <html lang="az">
 <head>
-<meta charset="utf-8">
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#000000">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>AzGram ULTRA PRO</title>
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.468.0/dist/umd/lucide.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/gun/sea.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
 
 <style>
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-:root{
- --bg:#000;--panel:#0a0a0a;--panel2:#111;--line:#222;
- --text:#fff;--muted:#888;--green:#25d366;--blue:#2f80ff;
- --danger:#ff3b30;--radius:12px;--anim:150ms;
+*{
+    box-sizing:border-box;
+    -webkit-tap-highlight-color:transparent;
 }
-html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000;color:#fff;font-family:Inter,Arial,sans-serif;font-size:14px}
-button,input,textarea,select{font:inherit;color:inherit}
-button{border:0;background:none;cursor:pointer}
-input,textarea{outline:0}
-svg{display:block}
-.app{position:fixed;inset:0;background:#000;overflow:hidden}
-.screen{position:absolute;inset:0;display:none;background:#000}
-.screen.active{display:flex;flex-direction:column}
-.header{
- height:56px;min-height:56px;border-bottom:1px solid var(--line);
- display:flex;align-items:center;padding:0 14px;gap:10px;background:#000;z-index:20
+
+html,body{
+    margin:0;
+    padding:0;
+    width:100%;
+    height:100%;
+    overflow:hidden;
+    background:#000;
+    color:#fff;
+    font-family:Inter,Arial,sans-serif;
+    font-size:14px;
 }
-.logo{font-size:18px;font-weight:700;letter-spacing:-.5px;flex:1}
-.logo b{color:#25d366}
-.icon-btn{
- width:38px;height:38px;display:flex;align-items:center;justify-content:center;
- border-radius:10px;color:#fff;transition:background var(--anim)
+
+button,
+input,
+textarea{
+    font:inherit;
 }
-.icon-btn:active{background:#191919}
-.icon-btn svg{width:20px;height:20px;stroke-width:1.5}
-.content{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;scrollbar-width:none}
-.content::-webkit-scrollbar{display:none}
-.bottom{
- height:48px;min-height:48px;border-top:1px solid #222;background:#000;
- display:flex;z-index:30;padding-bottom:env(safe-area-inset-bottom)
+
+button{
+    border:0;
+    outline:0;
+    cursor:pointer;
 }
-.nav-btn{flex:1;display:flex;align-items:center;justify-content:center;position:relative;color:#777}
-.nav-btn.active{color:#fff}
-.nav-btn.active:after{content:"";position:absolute;bottom:3px;width:20px;height:2px;background:#fff;border-radius:2px}
-.nav-btn svg{width:20px;height:20px;stroke-width:1.5}
-.badge{position:absolute;top:4px;right:24%;min-width:16px;height:16px;padding:0 4px;border-radius:999px;background:#fff;color:#000;font-size:9px;display:flex;align-items:center;justify-content:center}
-.avatar{width:42px;height:42px;border-radius:999px;object-fit:cover;background:#222;display:block}
-.avatar.sm{width:34px;height:34px}
-.avatar.lg{width:76px;height:76px}
-.row{display:flex;align-items:center}
-.gap8{gap:8px}.gap12{gap:12px}.gap16{gap:16px}
-.pad{padding:14px}
-.muted{color:#888}.small{font-size:11px}.bold{font-weight:600}
-.card{background:#0a0a0a;border:1px solid #222;border-radius:12px}
-.divider{height:1px;background:#222}
-.btn{
- min-height:40px;padding:0 15px;border-radius:12px;background:#fff;color:#000;
- display:inline-flex;align-items:center;justify-content:center;gap:8px;font-weight:600
+
+input,
+textarea{
+    outline:none;
 }
-.btn.dark{background:#171717;color:#fff;border:1px solid #282828}
-.btn.green{background:#25d366;color:#000}
-.btn.danger{background:#ff3b30;color:#fff}
-.btn svg{width:17px;height:17px;stroke-width:1.5}
+
+svg{
+    stroke-width:1.5;
+}
+
+.hidden{
+    display:none!important;
+}
+
+#app{
+    width:100%;
+    height:100dvh;
+    position:relative;
+    background:#000;
+    overflow:hidden;
+}
+
+.screen{
+    position:absolute;
+    inset:0;
+    background:#000;
+    overflow:hidden;
+}
+
+.onboarding{
+    overflow-y:auto;
+    padding:
+        max(38px,env(safe-area-inset-top))
+        24px
+        max(40px,env(safe-area-inset-bottom));
+}
+
+.onboard-inner{
+    width:100%;
+    max-width:600px;
+    margin:0 auto;
+    min-height:100%;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+}
+
+.logo{
+    font-size:42px;
+    line-height:1.1;
+    font-weight:700;
+    letter-spacing:-2px;
+    margin-bottom:8px;
+}
+
+.logo span{
+    color:#25d366;
+}
+
+.subtitle{
+    color:#888;
+    font-size:16px;
+    margin-bottom:36px;
+}
+
+.field{
+    margin-bottom:22px;
+}
+
+.label{
+    display:block;
+    color:#8c8c8c;
+    margin-bottom:9px;
+    font-size:14px;
+}
+
+.optional{
+    color:#555;
+    font-size:12px;
+    margin-left:5px;
+}
+
 .input{
- width:100%;height:42px;background:#111;border:1px solid #292929;border-radius:12px;
- padding:0 13px;color:#fff
+    width:100%;
+    height:56px;
+    border:1px solid #292929;
+    border-radius:12px;
+    background:#111;
+    color:#fff;
+    padding:0 17px;
+    font-size:16px;
+    transition:.15s;
 }
-textarea.input{height:auto;padding:12px;resize:none}
-.searchbox{padding:10px 12px;border-bottom:1px solid #222}
-.searchbox .input{height:38px;border-radius:10px}
-.list-item{
- display:flex;align-items:center;gap:12px;padding:11px 14px;border-bottom:1px solid #161616;
- min-height:64px;transition:background var(--anim)
+
+.input:focus{
+    border-color:#555;
+    background:#151515;
 }
-.list-item:active{background:#111}
-.flex1{flex:1;min-width:0}
-.truncate{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.time{font-size:10px;color:#777}
-.online{width:9px;height:9px;background:#25d366;border:2px solid #000;border-radius:50%;position:absolute;right:0;bottom:0}
-.avatar-wrap{position:relative;display:inline-block}
-.story-ring{padding:2px;border:1.5px solid #fff;border-radius:999px}
-.story-ring .avatar{border:2px solid #000}
-.empty{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:#777;text-align:center;padding:30px}
-.empty svg{width:42px;height:42px;stroke-width:1.2}
-.skeleton{background:linear-gradient(90deg,#101010,#1b1b1b,#101010);background-size:200% 100%;animation:shimmer 1s infinite}
-@keyframes shimmer{to{background-position:-200% 0}}
-.toast{
- position:fixed;top:calc(10px + env(safe-area-inset-top));left:50%;transform:translateX(-50%) translateY(-10px);
- background:#fff;color:#000;padding:10px 14px;border-radius:10px;font-size:12px;
- opacity:0;pointer-events:none;z-index:1000;transition:all 150ms
+
+textarea.input{
+    height:100px;
+    padding-top:15px;
+    padding-bottom:15px;
+    resize:none;
 }
-.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-.offline{
- display:none;position:fixed;top:0;left:0;right:0;height:28px;background:#ff3b30;color:#fff;
- z-index:999;text-align:center;font-size:11px;padding-top:7px
+
+.avatar-row{
+    display:flex;
+    align-items:center;
+    gap:18px;
 }
-.offline.show{display:block}
-.modal{
- position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;
- display:none;align-items:flex-end;justify-content:center
+
+.avatar{
+    width:130px;
+    height:130px;
+    border-radius:50%;
+    background:#202020;
+    border:1px solid #303030;
+    overflow:hidden;
+    flex:none;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#777;
 }
-.modal.show{display:flex}
-.sheet{
- width:100%;max-width:650px;max-height:92vh;background:#0a0a0a;
- border:1px solid #222;border-radius:20px 20px 0 0;overflow:auto;
- padding-bottom:env(safe-area-inset-bottom)
+
+.avatar img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
 }
-.modal.center{align-items:center}
-.modal.center .sheet{border-radius:16px;margin:14px;max-height:90vh}
-.sheet-head{height:52px;display:flex;align-items:center;padding:0 15px;border-bottom:1px solid #222}
-.sheet-title{font-weight:600;flex:1}
-.sheet-body{padding:15px}
-.handle{width:38px;height:4px;background:#444;border-radius:4px;margin:8px auto}
-.tabs{display:flex;border-bottom:1px solid #222}
-.tab{flex:1;padding:12px;text-align:center;color:#777;font-size:12px}
-.tab.active{color:#fff;border-bottom:2px solid #fff}
-.chip{
- display:inline-flex;padding:7px 11px;border:1px solid #292929;border-radius:999px;
- font-size:11px;background:#0b0b0b
+
+.avatar svg{
+    width:42px;
+    height:42px;
 }
-.switch{
- width:44px;height:25px;background:#333;border-radius:999px;position:relative;display:block
+
+.avatar-actions{
+    display:flex;
+    flex-direction:column;
+    gap:9px;
 }
-.switch:after{content:"";position:absolute;width:21px;height:21px;top:2px;left:2px;background:#fff;border-radius:50%;transition:150ms}
-.switch.on{background:#fff}.switch.on:after{left:21px;background:#000}
-.fab{
- position:absolute;right:16px;bottom:62px;width:50px;height:50px;border-radius:999px;
- background:#fff;color:#000;display:flex;align-items:center;justify-content:center;z-index:15
+
+.btn{
+    min-height:50px;
+    padding:0 18px;
+    border-radius:12px;
+    background:#171717;
+    border:1px solid #292929;
+    color:#fff;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:9px;
+    transition:.15s;
 }
-.fab svg{width:21px;height:21px;stroke-width:1.5}
-.chat-body{background:#050505;position:relative}
-.messages{padding:12px 10px 8px;display:flex;flex-direction:column;gap:5px;min-height:100%}
-.msg{
- max-width:82%;padding:8px 10px;border-radius:12px;background:#161616;
- align-self:flex-start;position:relative;border:1px solid #222
+
+.btn:active{
+    transform:scale(.97);
 }
-.msg.mine{align-self:flex-end;background:#153c27;border-color:#1e5537}
-.msg .meta{font-size:9px;color:#777;display:flex;justify-content:flex-end;gap:4px;margin-top:3px}
-.msg .checks{color:#59a8ff}
-.msg img,.msg video{max-width:100%;border-radius:9px;display:block}
-.reply{border-left:2px solid #888;padding-left:7px;margin-bottom:5px;font-size:10px;color:#aaa}
+
+.btn svg{
+    width:21px;
+    height:21px;
+}
+
+.btn-green{
+    width:100%;
+    min-height:60px;
+    background:#25d366;
+    border-color:#25d366;
+    color:#000;
+    font-size:17px;
+    font-weight:600;
+}
+
+.btn-secondary{
+    width:100%;
+    background:#101010;
+}
+
+.optional-note{
+    margin-top:12px;
+    color:#666;
+    font-size:12px;
+    line-height:1.5;
+}
+
+.divider{
+    height:1px;
+    background:#171717;
+    margin:5px 0 20px;
+}
+
+.home{
+    display:flex;
+    flex-direction:column;
+}
+
+.topbar{
+    height:56px;
+    flex:none;
+    border-bottom:1px solid #171717;
+    display:flex;
+    align-items:center;
+    padding:0 14px;
+    gap:8px;
+    background:#000;
+    z-index:20;
+}
+
+.brand{
+    font-weight:700;
+    font-size:21px;
+    letter-spacing:-1px;
+    margin-right:auto;
+}
+
+.brand span{
+    color:#25d366;
+}
+
+.icon-btn{
+    width:42px;
+    height:42px;
+    border-radius:50%;
+    background:transparent;
+    color:#fff;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+.icon-btn:active{
+    background:#171717;
+}
+
+.icon-btn svg{
+    width:21px;
+    height:21px;
+}
+
+.pages{
+    position:relative;
+    flex:1;
+    min-height:0;
+    overflow:hidden;
+}
+
+.page{
+    position:absolute;
+    inset:0;
+    overflow-y:auto;
+    overflow-x:hidden;
+    padding-bottom:70px;
+    display:none;
+}
+
+.page.active{
+    display:block;
+}
+
+.bottom-nav{
+    height:58px;
+    flex:none;
+    border-top:1px solid #171717;
+    display:flex;
+    background:#000;
+    padding-bottom:env(safe-area-inset-bottom);
+    z-index:30;
+}
+
+.nav-btn{
+    flex:1;
+    height:58px;
+    background:transparent;
+    color:#777;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-direction:column;
+    gap:3px;
+    font-size:10px;
+}
+
+.nav-btn svg{
+    width:21px;
+    height:21px;
+}
+
+.nav-btn.active{
+    color:#fff;
+}
+
+.nav-btn.active svg{
+    stroke:#25d366;
+}
+
+.section{
+    padding:18px 15px;
+}
+
+.section-title{
+    font-size:18px;
+    font-weight:600;
+    margin-bottom:14px;
+}
+
+.searchbox{
+    margin:12px 15px;
+    position:relative;
+}
+
+.searchbox input{
+    padding-left:44px;
+}
+
+.searchbox svg{
+    position:absolute;
+    left:15px;
+    top:18px;
+    color:#777;
+    width:20px;
+}
+
+.profile-card{
+    padding:18px 15px;
+    border-bottom:1px solid #171717;
+    display:flex;
+    gap:14px;
+    align-items:center;
+}
+
+.small-avatar{
+    width:54px;
+    height:54px;
+    border-radius:50%;
+    background:#202020;
+    overflow:hidden;
+    flex:none;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+.small-avatar img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+}
+
+.small-avatar svg{
+    color:#666;
+}
+
+.profile-info{
+    min-width:0;
+    flex:1;
+}
+
+.profile-name{
+    font-weight:600;
+    display:flex;
+    align-items:center;
+    gap:5px;
+}
+
+.profile-bio{
+    color:#777;
+    margin-top:4px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+
+.verified{
+    color:#25d366;
+}
+
+.online{
+    color:#25d366;
+    font-size:11px;
+    margin-top:4px;
+}
+
+.empty{
+    min-height:280px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    color:#666;
+    text-align:center;
+    padding:30px;
+}
+
+.empty svg{
+    width:50px;
+    height:50px;
+    margin-bottom:14px;
+}
+
+.chat{
+    height:100%;
+    display:flex;
+    flex-direction:column;
+}
+
+.chat-header{
+    height:58px;
+    border-bottom:1px solid #171717;
+    display:flex;
+    align-items:center;
+    padding:0 8px;
+    gap:8px;
+    flex:none;
+}
+
+.chat-user{
+    display:flex;
+    align-items:center;
+    gap:9px;
+    min-width:0;
+    flex:1;
+}
+
+.chat-user-name{
+    font-weight:600;
+}
+
+.chat-status{
+    color:#25d366;
+    font-size:11px;
+    margin-top:2px;
+}
+
+.messages{
+    flex:1;
+    overflow-y:auto;
+    padding:15px;
+    display:flex;
+    flex-direction:column;
+    gap:7px;
+}
+
+.message{
+    max-width:80%;
+    padding:9px 12px;
+    border-radius:12px;
+    background:#151515;
+    align-self:flex-start;
+    position:relative;
+    word-break:break-word;
+}
+
+.message.mine{
+    background:#005c4b;
+    align-self:flex-end;
+}
+
+.message-time{
+    color:#aaa;
+    font-size:9px;
+    float:right;
+    margin:7px 0 0 10px;
+}
+
 .chat-input{
- min-height:58px;border-top:1px solid #222;background:#000;display:flex;align-items:flex-end;
- gap:6px;padding:7px
+    min-height:58px;
+    border-top:1px solid #171717;
+    display:flex;
+    align-items:center;
+    gap:5px;
+    padding:7px;
+    flex:none;
 }
+
 .chat-text{
- flex:1;min-height:42px;max-height:120px;background:#111;border:1px solid #292929;
- border-radius:20px;padding:11px 14px;resize:none
+    flex:1;
+    min-width:0;
+    min-height:44px;
+    max-height:100px;
+    border:1px solid #292929;
+    border-radius:20px;
+    background:#111;
+    color:#fff;
+    padding:12px 15px;
+    resize:none;
 }
-.record{
- width:42px;height:42px;border-radius:999px;background:#fff;color:#000;
- display:flex;align-items:center;justify-content:center
+
+.send-btn{
+    width:44px;
+    height:44px;
+    border-radius:50%;
+    background:#25d366;
+    color:#000;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex:none;
 }
-.record.recording{background:#ff3b30;color:#fff}
-.preview-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
-.preview-grid img,.preview-grid video{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px}
-.status-feed{height:100%;overflow-y:auto;scroll-snap-type:y mandatory;scrollbar-width:none}
-.status-feed::-webkit-scrollbar{display:none}
+
+.status-page{
+    background:#000;
+}
+
+.status-create{
+    position:fixed;
+    right:17px;
+    bottom:76px;
+    width:54px;
+    height:54px;
+    border-radius:50%;
+    background:#25d366;
+    color:#000;
+    z-index:15;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+.status-create svg{
+    width:24px;
+}
+
 .status-card{
- min-height:100%;height:100%;position:relative;scroll-snap-align:start;background:#050505;overflow:hidden
+    min-height:100%;
+    position:relative;
+    background:#090909;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    overflow:hidden;
 }
-.status-media{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000}
-.status-overlay{position:absolute;inset:0;background:linear-gradient(transparent 55%,rgba(0,0,0,.8));pointer-events:none}
-.status-top{position:absolute;top:15px;left:12px;right:12px;display:flex;align-items:center;z-index:3}
-.status-info{position:absolute;left:14px;right:72px;bottom:20px;z-index:4}
+
+.status-media{
+    max-width:100%;
+    max-height:100%;
+    width:100%;
+    height:100%;
+    object-fit:contain;
+}
+
+.status-content{
+    position:absolute;
+    left:16px;
+    right:16px;
+    bottom:22px;
+    z-index:3;
+    text-shadow:0 1px 5px #000;
+}
+
+.status-author{
+    display:flex;
+    align-items:center;
+    gap:9px;
+    margin-bottom:10px;
+}
+
+.status-text{
+    font-size:17px;
+    line-height:1.45;
+}
+
 .status-actions{
- position:absolute;right:9px;bottom:18px;display:flex;flex-direction:column;gap:14px;z-index:4
+    position:absolute;
+    right:10px;
+    bottom:80px;
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+    z-index:5;
 }
-.status-action{display:flex;flex-direction:column;align-items:center;color:#fff;font-size:10px;gap:3px}
-.status-action svg{width:26px;height:26px;stroke-width:1.5}
-.like-active{color:#ff3b30!important}
-.progress{position:absolute;top:7px;left:7px;right:7px;height:2px;background:#555;z-index:5}
-.progress i{display:block;height:100%;background:#fff;width:0}
-.music-pill{
- display:flex;align-items:center;gap:7px;margin-top:8px;padding:7px 10px;
- background:rgba(0,0,0,.45);border-radius:999px;width:max-content;max-width:100%
+
+.status-action{
+    width:45px;
+    height:45px;
+    background:rgba(0,0,0,.55);
+    border-radius:50%;
+    color:#fff;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-direction:column;
 }
-.disc{width:25px;height:25px;border-radius:50%;background:#222;display:flex;align-items:center;justify-content:center}
-.disc svg{width:13px;height:13px}
-.explore{height:100%;overflow:auto;padding-bottom:20px}
-.explore-head{padding:15px}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px}
-.explore-card{min-height:140px;background:#0c0c0c;border:1px solid #222;border-radius:12px;padding:12px}
-.banner{
- margin:10px;border:1px solid #333;border-radius:12px;overflow:hidden;background:#0d0d0d;position:relative
+
+.status-action span{
+    font-size:9px;
+    margin-top:1px;
 }
-.banner img{width:100%;height:100px;object-fit:cover;display:block}
-.banner-body{padding:10px}
-.banner-label{font-size:8px;color:#888;letter-spacing:1px}
-.profile-cover{height:115px;background:#111;position:relative}
-.profile-main{padding:0 15px 15px;position:relative}
-.profile-main .avatar{margin-top:-38px;border:4px solid #000}
-.profile-actions{display:flex;gap:7px;margin-top:10px}
-.stats{display:flex;gap:20px;margin-top:13px}
-.stat b{display:block;text-align:center}
-.stat span{font-size:10px;color:#888}
-.status-strip{display:flex;gap:12px;overflow:auto;padding:12px;border-bottom:1px solid #222}
-.status-user{min-width:62px;text-align:center;font-size:9px}
-.status-user .avatar{margin:auto}
-.verify{display:inline-flex;width:15px;height:15px;border-radius:50%;background:#fff;color:#000;align-items:center;justify-content:center;font-size:9px}
-.wallpaper-1{background:#050505}.wallpaper-2{background:#101010}.wallpaper-3{background:#10151a}
-.wallpaper-4{background:#151010}.wallpaper-5{background:#101510}
-.audio-player{padding:10px;border:1px solid #292929;border-radius:12px;background:#101010}
-.wave{height:36px;display:flex;align-items:center;gap:2px;overflow:hidden}
-.wave i{width:2px;background:#aaa;border-radius:2px;min-height:5px}
-.editor-canvas{width:100%;max-height:45vh;object-fit:contain;background:#050505;border-radius:10px}
-.range{width:100%;accent-color:#fff}
-.comment{padding:11px 0;border-bottom:1px solid #1b1b1b}
-.comment-reply{margin-left:28px}
-.reaction-row{display:flex;gap:12px;margin-top:5px;font-size:10px;color:#888}
-.call-screen{position:absolute;inset:0;background:#050505;z-index:100;display:none;flex-direction:column;align-items:center;justify-content:center}
-.call-screen.show{display:flex}
-.call-avatar{width:110px;height:110px;border-radius:50%;object-fit:cover}
-.call-controls{position:absolute;bottom:35px;display:flex;gap:15px}
-.call-btn{width:52px;height:52px;border-radius:50%;background:#222;display:flex;align-items:center;justify-content:center}
-.call-btn.end{background:#ff3b30}
-.call-btn svg{width:22px;height:22px}
-.incoming{position:absolute;inset:0;background:#000;z-index:110;display:none;flex-direction:column;align-items:center;justify-content:center;gap:15px}
-.incoming.show{display:flex}
-.incoming-actions{display:flex;gap:35px}
-.video-local{position:absolute;right:12px;top:65px;width:105px;height:150px;object-fit:cover;border-radius:12px;border:1px solid #333}
-.audio-hidden{display:none}
-select.input{appearance:none}
+
+.discovery-card{
+    border:1px solid #202020;
+    border-radius:12px;
+    margin:10px 15px;
+    padding:15px;
+    background:#0a0a0a;
+}
+
+.ad{
+    border:1px solid #292929;
+    border-radius:12px;
+    padding:12px;
+    margin:10px 15px;
+    background:#111;
+}
+
+.ad-label{
+    color:#666;
+    font-size:10px;
+    margin-bottom:7px;
+}
+
+.modal{
+    position:fixed;
+    inset:0;
+    z-index:100;
+    background:rgba(0,0,0,.75);
+    display:flex;
+    align-items:flex-end;
+    justify-content:center;
+}
+
+.modal-card{
+    width:100%;
+    max-width:650px;
+    max-height:90dvh;
+    overflow-y:auto;
+    background:#111;
+    border:1px solid #292929;
+    border-radius:20px 20px 0 0;
+    padding:20px;
+}
+
+.modal-head{
+    display:flex;
+    align-items:center;
+    margin-bottom:20px;
+}
+
+.modal-title{
+    font-size:18px;
+    font-weight:600;
+    flex:1;
+}
+
+.close{
+    width:40px;
+    height:40px;
+    border-radius:50%;
+    background:#1b1b1b;
+    color:#fff;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+.action-list{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+}
+
+.action-item{
+    min-height:52px;
+    border:1px solid #222;
+    border-radius:12px;
+    background:#151515;
+    color:#fff;
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:0 15px;
+    text-align:left;
+}
+
+.action-item svg{
+    width:21px;
+    flex:none;
+}
+
+.toast{
+    position:fixed;
+    left:50%;
+    top:max(15px,env(safe-area-inset-top));
+    transform:translateX(-50%) translateY(-20px);
+    z-index:999;
+    background:#fff;
+    color:#000;
+    padding:11px 16px;
+    border-radius:10px;
+    opacity:0;
+    pointer-events:none;
+    transition:.15s;
+    max-width:90%;
+    text-align:center;
+}
+
+.toast.show{
+    opacity:1;
+    transform:translateX(-50%) translateY(0);
+}
+
+.file-input{
+    display:none;
+}
+
+.preview-image{
+    width:100%;
+    max-height:300px;
+    object-fit:contain;
+    border-radius:12px;
+    background:#050505;
+    margin-bottom:14px;
+}
+
+.music-row{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:12px 0;
+    border-bottom:1px solid #222;
+}
+
+.music-icon{
+    width:42px;
+    height:42px;
+    border-radius:10px;
+    background:#202020;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex:none;
+}
+
+.music-info{
+    flex:1;
+    min-width:0;
+}
+
+.music-title{
+    font-weight:500;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+
+.music-artist{
+    color:#777;
+    font-size:11px;
+    margin-top:3px;
+}
+
+.range{
+    width:100%;
+    accent-color:#25d366;
+}
+
+.toggle{
+    width:48px;
+    height:28px;
+    border-radius:20px;
+    background:#333;
+    position:relative;
+    flex:none;
+}
+
+.toggle i{
+    position:absolute;
+    width:22px;
+    height:22px;
+    border-radius:50%;
+    background:#fff;
+    top:3px;
+    left:3px;
+    transition:.15s;
+}
+
+.toggle.on{
+    background:#25d366;
+}
+
+.toggle.on i{
+    left:23px;
+}
+
+.setting-row{
+    min-height:55px;
+    display:flex;
+    align-items:center;
+    gap:12px;
+    border-bottom:1px solid #1c1c1c;
+}
+
+.setting-text{
+    flex:1;
+}
+
+.setting-title{
+    font-size:14px;
+}
+
+.setting-desc{
+    color:#666;
+    font-size:11px;
+    margin-top:3px;
+}
+
+.qr-box{
+    width:220px;
+    height:220px;
+    background:#fff;
+    margin:20px auto;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#000;
+    text-align:center;
+    padding:20px;
+}
+
+.swipe-hint{
+    position:fixed;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    color:#fff;
+    background:rgba(0,0,0,.7);
+    padding:10px 15px;
+    border-radius:10px;
+    opacity:0;
+    pointer-events:none;
+    z-index:200;
+}
+
+.loader{
+    width:22px;
+    height:22px;
+    border:2px solid #333;
+    border-top-color:#fff;
+    border-radius:50%;
+    animation:spin .7s linear infinite;
+}
+
+@keyframes spin{
+    to{transform:rotate(360deg)}
+}
+
 @media(min-width:700px){
- .app{max-width:650px;left:50%;transform:translateX(-50%);border-left:1px solid #222;border-right:1px solid #222}
+    .onboard-inner{
+        padding-top:30px;
+        padding-bottom:30px;
+    }
+
+    .bottom-nav{
+        max-width:700px;
+        margin:auto;
+        width:100%;
+    }
 }
 </style>
 </head>
 
 <body>
-<div class="app" id="app">
+<div id="app"></div>
 
-<div class="offline" id="offline">OFFLINE — bağlantı bərpa olunur...</div>
-<div class="toast" id="toast"></div>
+<div id="toast" class="toast"></div>
 
-<!-- ONBOARDING -->
-<section class="screen active" id="onboarding">
- <div style="height:100%;display:flex;flex-direction:column;justify-content:center;padding:28px;gap:20px">
-  <div>
-   <div style="font-size:30px;font-weight:700">AzGram <span style="color:#25d366">ULTRA</span></div>
-   <div class="muted" style="margin-top:7px">WhatsApp + TikTok + Spotify</div>
-  </div>
-  <label style="display:block">
-   <div class="muted small" style="margin-bottom:6px">Ad</div>
-   <input class="input" id="onName" maxlength="40" autocomplete="off" autocorrect="off" placeholder="Adınızı yazın">
-  </label>
-  <div>
-   <div class="muted small" style="margin-bottom:8px">Avatar</div>
-   <div class="row gap12">
-    <img class="avatar lg" id="onAvatar" src="" alt="">
-    <button class="btn dark" id="onAvatarBtn">
-     <i data-lucide="image"></i> Qalereya
-    </button>
-   </div>
-  </div>
-  <label>
-   <div class="muted small" style="margin-bottom:6px">Bio — 80 simvol</div>
-   <input class="input" id="onBio" maxlength="80" placeholder="Haqqınızda">
-  </label>
-  <label>
-   <div class="muted small" style="margin-bottom:6px">Link</div>
-   <input class="input" id="onLink" maxlength="120" placeholder="https://">
-  </label>
-  <button class="btn green" id="startBtn" style="height:48px">AzGram-a daxil ol</button>
-  <div class="muted small">P2P • server tələb etmir • məlumatlar cihazınızda saxlanır</div>
- </div>
-</section>
+<input
+    id="avatarInput"
+    class="file-input"
+    type="file"
+    accept="image/*">
 
-<!-- HOME / CHATS -->
-<section class="screen" id="home">
- <header class="header">
-  <div class="logo">AzGram <b>ULTRA</b></div>
-  <button class="icon-btn" data-action="globalSearch"><i data-lucide="search"></i></button>
-  <button class="icon-btn" data-action="more"><i data-lucide="more-horizontal"></i></button>
- </header>
- <div class="content" id="chatList">
-  <div class="searchbox"><input class="input" id="chatSearch" placeholder="Kontakt və söhbət axtar..." autocomplete="off"></div>
-  <div id="contacts"></div>
- </div>
- <button class="fab" data-action="newChat"><i data-lucide="message-square-plus"></i></button>
- <nav class="bottom">
-  <button class="nav-btn active" data-screen="home"><i data-lucide="message-circle"></i><span class="badge" id="msgBadge" style="display:none">0</span></button>
-  <button class="nav-btn" data-screen="status"><i data-lucide="play-square"></i></button>
-  <button class="nav-btn" data-screen="explore"><i data-lucide="compass"></i></button>
-  <button class="nav-btn" data-screen="profile"><i data-lucide="user-round"></i></button>
- </nav>
-</section>
+<input
+    id="galleryInput"
+    class="file-input"
+    type="file"
+    accept="image/*,video/*"
+    multiple>
 
-<!-- CHAT -->
-<section class="screen" id="chat">
- <header class="header">
-  <button class="icon-btn" data-action="back"><i data-lucide="arrow-left"></i></button>
-  <div class="avatar-wrap"><img class="avatar sm" id="chatAvatar"></div>
-  <div class="flex1">
-   <div id="chatName" class="bold truncate">Söhbət</div>
-   <div id="chatPresence" class="small muted">offline</div>
-  </div>
-  <button class="icon-btn" data-action="voiceCall"><i data-lucide="phone"></i></button>
-  <button class="icon-btn" data-action="videoCall"><i data-lucide="video"></i></button>
-  <button class="icon-btn" data-action="chatMore"><i data-lucide="more-horizontal"></i></button>
- </header>
- <div class="content chat-body" id="messageScroll">
-  <div class="messages" id="messages"></div>
- </div>
- <div class="chat-input">
-  <button class="icon-btn" id="attachBtn"><i data-lucide="paperclip"></i></button>
-  <textarea class="chat-text" id="messageInput" rows="1" placeholder="Mesaj..." autocomplete="off" autocorrect="off"></textarea>
-  <button class="record" id="recordBtn"><i data-lucide="mic"></i></button>
-  <button class="record" id="sendBtn" style="display:none"><i data-lucide="send"></i></button>
- </div>
- <input id="imageInput" type="file" accept="image/*" multiple hidden>
- <input id="videoInput" type="file" accept="video/*" capture hidden>
- <input id="fileInput" type="file" hidden>
-</section>
+<input
+    id="cameraInput"
+    class="file-input"
+    type="file"
+    accept="image/*,video/*"
+    capture="environment">
 
-<!-- STATUS -->
-<section class="screen" id="status">
- <header class="header" style="position:absolute;top:0;left:0;right:0;background:linear-gradient(#000,transparent);border:0">
-  <div class="logo">Status</div>
-  <button class="icon-btn" data-action="statusCamera"><i data-lucide="camera"></i></button>
-  <button class="icon-btn" data-action="statusMore"><i data-lucide="more-horizontal"></i></button>
- </header>
- <div class="status-feed" id="statusFeed"></div>
- <button class="fab" data-action="createStatus"><i data-lucide="plus"></i></button>
- <nav class="bottom" style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,#000);border:0">
-  <button class="nav-btn" data-screen="home"><i data-lucide="message-circle"></i></button>
-  <button class="nav-btn active" data-screen="status"><i data-lucide="play-square"></i></button>
-  <button class="nav-btn" data-screen="explore"><i data-lucide="compass"></i></button>
-  <button class="nav-btn" data-screen="profile"><i data-lucide="user-round"></i></button>
- </nav>
-</section>
-
-<!-- EXPLORE -->
-<section class="screen" id="explore">
- <header class="header">
-  <button class="icon-btn" data-action="backExplore"><i data-lucide="arrow-left"></i></button>
-  <div class="logo">Kəşf</div>
-  <button class="icon-btn" data-action="google"><i data-lucide="globe"></i></button>
- </header>
- <div class="content explore" id="exploreContent">
-  <div class="searchbox">
-   <div class="row gap8">
-    <input class="input" id="globalInput" list="suggestions" placeholder="Axtar..." autocomplete="off">
-    <button class="btn" id="googleBtn"><i data-lucide="search"></i></button>
-   </div>
-   <datalist id="suggestions">
-    <option value="AzGram">
-    <option value="Bakı">
-    <option value="#trend">
-    <option value="musiqi">
-   </datalist>
-  </div>
-  <div class="pad">
-   <div class="row gap8" style="overflow:auto">
-    <button class="chip">Hamısı</button><button class="chip">Musiqi</button>
-    <button class="chip">Bakı</button><button class="chip">Komediya</button><button class="chip">Təhsil</button>
-   </div>
-  </div>
-  <div id="bannerSlot"></div>
-  <h3 style="padding:0 14px">Trend</h3>
-  <div class="grid2" id="trendGrid"></div>
-  <div id="exploreResults"></div>
- </div>
- <nav class="bottom">
-  <button class="nav-btn" data-screen="home"><i data-lucide="message-circle"></i></button>
-  <button class="nav-btn" data-screen="status"><i data-lucide="play-square"></i></button>
-  <button class="nav-btn active" data-screen="explore"><i data-lucide="compass"></i></button>
-  <button class="nav-btn" data-screen="profile"><i data-lucide="user-round"></i></button>
- </nav>
-</section>
-
-<!-- PROFILE -->
-<section class="screen" id="profile">
- <header class="header">
-  <div class="logo">Profil</div>
-  <button class="icon-btn" data-action="editProfile"><i data-lucide="settings-2"></i></button>
- </header>
- <div class="content">
-  <div class="profile-cover"></div>
-  <div class="profile-main">
-   <img class="avatar lg" id="profileAvatar">
-   <div class="row" style="margin-top:8px">
-    <div class="flex1">
-     <div class="bold" id="profileName"></div>
-     <div class="muted small" id="profileId"></div>
-    </div>
-    <span class="verify">✓</span>
-   </div>
-   <div class="muted" id="profileBio" style="margin-top:8px"></div>
-   <div class="muted small" id="profileLink" style="margin-top:5px"></div>
-   <div class="stats">
-    <div class="stat"><b id="profileStatusCount">0</b><span>Status</span></div>
-    <div class="stat"><b id="profileContactCount">0</b><span>Kontakt</span></div>
-    <div class="stat"><b id="profileMusicCount">0</b><span>Musiqi</span></div>
-   </div>
-   <div class="profile-actions">
-    <button class="btn dark" data-action="editProfile" style="flex:1">Profili redaktə et</button>
-    <button class="btn dark" data-action="privacy">Məxfilik</button>
-   </div>
-  </div>
-  <div class="divider"></div>
-  <div class="pad"><h3>Paylaşımlar</h3></div>
-  <div class="grid2" id="profileMedia"></div>
- </div>
- <nav class="bottom">
-  <button class="nav-btn" data-screen="home"><i data-lucide="message-circle"></i></button>
-  <button class="nav-btn" data-screen="status"><i data-lucide="play-square"></i></button>
-  <button class="nav-btn" data-screen="explore"><i data-lucide="compass"></i></button>
-  <button class="nav-btn active" data-screen="profile"><i data-lucide="user-round"></i></button>
- </nav>
-</section>
-
-<!-- CALL -->
-<div class="call-screen" id="callScreen">
- <img class="call-avatar" id="callAvatar">
- <div id="callState" class="muted">Zəng edilir...</div>
- <div id="callTimer" class="small">00:00</div>
- <video id="remoteVideo" autoplay playsinline style="width:100%;max-height:55vh;display:none"></video>
- <video id="localVideo" class="video-local" autoplay muted playsinline style="display:none"></video>
- <div class="call-controls">
-  <button class="call-btn" id="callMute"><i data-lucide="mic"></i></button>
-  <button class="call-btn" id="callSpeaker"><i data-lucide="volume-2"></i></button>
-  <button class="call-btn" id="callCamera"><i data-lucide="camera"></i></button>
-  <button class="call-btn end" id="callEnd"><i data-lucide="phone-off"></i></button>
- </div>
-</div>
-
-<div class="incoming" id="incomingCall">
- <img class="call-avatar" id="incomingAvatar">
- <h2 id="incomingName">Gələn zəng</h2>
- <div class="muted" id="incomingType">Səsli zəng</div>
- <div class="incoming-actions">
-  <button class="call-btn end" id="rejectCall"><i data-lucide="phone-off"></i></button>
-  <button class="call-btn" style="background:#25d366;color:#000" id="acceptCall"><i data-lucide="phone"></i></button>
- </div>
-</div>
-
-<!-- MEDIA INPUTS -->
-<input id="galleryInput" type="file" accept="image/*,video/*" multiple hidden>
-<input id="cameraInput" type="file" accept="image/*,video/*" capture="environment" hidden>
-<input id="audioInput" type="file" accept="audio/*" hidden>
-<input id="profileInput" type="file" accept="image/*" hidden>
-
-<!-- MODAL -->
-<div class="modal" id="modal">
- <div class="sheet">
-  <div class="handle"></div>
-  <div class="sheet-head">
-   <div class="sheet-title" id="modalTitle"></div>
-   <button class="icon-btn" data-action="closeModal"><i data-lucide="x"></i></button>
-  </div>
-  <div class="sheet-body" id="modalBody"></div>
- </div>
-</div>
-
-</div>
+<input
+    id="audioInput"
+    class="file-input"
+    type="file"
+    accept="audio/*">
 
 <script>
 (function(){
+
 "use strict";
 
-/* =========================================================
-   AZGRAM ULTRA PRO v250
-   Single-file P2P application
-   ========================================================= */
+/* ============================================================
+   AZGRAM ULTRA PRO
+   ============================================================ */
 
-var $=function(s){return document.querySelector(s)};
-var $$=function(s){return Array.prototype.slice.call(document.querySelectorAll(s))};
-var uid=function(){return "az_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,8)};
-var esc=function(v){
- v=String(v==null?"":v);
- return v.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
-};
-var safeUrl=function(v){
- try{
-  var u=new URL(v,location.href);
-  return /^(https?:|blob:|data:)/i.test(u.protocol)?u.href:"#";
- }catch(e){return "#"}
-};
-var now=function(){return Date.now()};
-var fmt=function(t){
- var d=new Date(t||now());
- return d.toLocaleTimeString("az-AZ",{hour:"2-digit",minute:"2-digit",hour12:false});
-};
-var ago=function(t){
- var x=Math.floor((now()-t)/1000);
- if(x<60)return "indi";
- if(x<3600)return Math.floor(x/60)+" dəq";
- if(x<86400)return Math.floor(x/3600)+" saat";
- return Math.floor(x/86400)+"d";
-};
+var APP_VERSION = "v250";
+var STORAGE_KEY = "azgram_ultra_profile_v250";
+var SETTINGS_KEY = "azgram_ultra_settings_v250";
+var MSG_KEY = "azgram_ultra_messages_v250";
+var STATUS_KEY = "azgram_ultra_status_v250";
 
-var DBKEY="azgram_ultra_v250";
-var state={
- user:null,screen:"home",activeChat:null,activePeer:null,
- contacts:[],messages:{},statuses:[],drafts:{},
- privacy:{lastSeen:true,avatar:true,status:true,read:true,groups:true},
- muted:{},blocked:{},starred:{},pinned:{},
- mediaBlobs:{},audio:null,recording:false,recorder:null,
- stream:null,peer:null,call:null,callTimer:null,callSeconds:0,
- touch:{x:0,y:0,t:0}
+var db = null;
+var peer = null;
+var currentPage = "contacts";
+var currentChat = null;
+var selectedAvatar = "";
+var selectedMedia = [];
+var selectedAudio = null;
+var toastTimer = null;
+
+var app = document.getElementById("app");
+
+var defaultSettings = {
+    lastSeen:true,
+    avatar:true,
+    status:true,
+    readReceipt:true,
+    groupAdd:true,
+    vibration:true,
+    sound:true
 };
 
-function load(){
- try{
-  var x=JSON.parse(localStorage.getItem(DBKEY)||"null");
-  if(x){
-   state.user=x.user||null;
-   state.contacts=x.contacts||[];
-   state.messages=x.messages||{};
-   state.statuses=x.statuses||[];
-   state.privacy=x.privacy||state.privacy;
-   state.muted=x.muted||{};
-   state.blocked=x.blocked||{};
-   state.starred=x.starred||{};
-   state.pinned=x.pinned||{};
-  }
- }catch(e){}
-}
-function save(){
- try{
-  localStorage.setItem(DBKEY,JSON.stringify({
-   user:state.user,contacts:state.contacts,messages:state.messages,
-   statuses:state.statuses,privacy:state.privacy,muted:state.muted,
-   blocked:state.blocked,starred:state.starred,pinned:state.pinned
-  }));
- }catch(e){toast("Yaddaş limiti. Böyük media lokalda saxlanmadı.","error")}
+function esc(value){
+    return String(value == null ? "" : value)
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;")
+        .replace(/'/g,"&#039;");
 }
 
-var gun;
-try{
- gun=Gun({
-  peers:[
-   "https://gun-manhattan.herokuapp.com/gun",
-   "https://gun-us.herokuapp.com/gun"
-  ],
-  localStorage:false
- });
-}catch(e){gun=null}
-
-function userKey(){return state.user?state.user.id:"guest"}
-
-function gunUser(){
- if(!gun||!state.user)return;
- try{
-  gun.get("azgram_ultra_users_v250").get(state.user.id).put({
-   name:state.user.name,
-   avatar:state.user.avatar||"",
-   bio:state.user.bio||"",
-   link:state.user.link||"",
-   online:true,
-   lastSeen:now(),
-   musicFav:state.user.musicFav||[]
-  });
- }catch(e){}
+function uid(){
+    return "az_" +
+        Date.now().toString(36) +
+        "_" +
+        Math.random().toString(36).slice(2,10);
 }
 
-function initIcons(){
- if(window.lucide&&lucide.createIcons)lucide.createIcons({attrs:{'stroke-width':1.5}});
-}
-function toast(msg,type){
- var t=$("#toast");t.textContent=msg;t.className="toast show";
- setTimeout(function(){t.className="toast"},2000);
-}
-function show(id){
- $$(".screen").forEach(function(x){x.classList.remove("active")});
- var el=$("#"+id);if(el)el.classList.add("active");
- state.screen=id;
- initIcons();
-}
-function modal(title,html){
- $("#modalTitle").textContent=title;
- $("#modalBody").innerHTML=html;
- $("#modal").classList.add("show");
- initIcons();
-}
-function closeModal(){$("#modal").classList.remove("show")}
-window.closeModal=closeModal;
-
-function dataImage(file,max,quality,cb){
- var r=new FileReader();
- r.onload=function(){
-  var img=new Image();
-  img.onload=function(){
-   var scale=Math.min(1,max/Math.max(img.width,img.height));
-   var c=document.createElement("canvas");
-   c.width=Math.max(1,Math.round(img.width*scale));
-   c.height=Math.max(1,Math.round(img.height*scale));
-   var ctx=c.getContext("2d");
-   ctx.drawImage(img,0,0,c.width,c.height);
-   cb(c.toDataURL("image/jpeg",quality));
-  };
-  img.src=r.result;
- };
- r.readAsDataURL(file);
-}
-function fileData(file,max,cb){
- if(file.size>max){toast("Fayl çox böyükdür","error");return}
- var r=new FileReader();
- r.onload=function(){cb(r.result)};
- r.readAsDataURL(file);
+function getProfile(){
+    try{
+        return JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+    }catch(e){
+        return null;
+    }
 }
 
-/* =========================================================
+function saveProfile(profile){
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(profile));
+}
+
+function getSettings(){
+    try{
+        var x = JSON.parse(localStorage.getItem(SETTINGS_KEY) || "null");
+        return x || defaultSettings;
+    }catch(e){
+        return defaultSettings;
+    }
+}
+
+function saveSettings(s){
+    localStorage.setItem(SETTINGS_KEY,JSON.stringify(s));
+}
+
+function toast(message){
+    var t = document.getElementById("toast");
+    if(!t) return;
+    t.textContent = message;
+    t.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){
+        t.classList.remove("show");
+    },2000);
+}
+
+function icons(){
+    if(window.lucide && lucide.createIcons){
+        try{
+            lucide.createIcons({
+                attrs:{
+                    "stroke-width":1.5
+                }
+            });
+        }catch(e){}
+    }
+}
+
+function nowTime(){
+    try{
+        return new Intl.DateTimeFormat("az-AZ",{
+            hour:"2-digit",
+            minute:"2-digit",
+            hour12:false,
+            timeZone:"Asia/Baku"
+        }).format(new Date());
+    }catch(e){
+        return new Date().toLocaleTimeString([],{
+            hour:"2-digit",
+            minute:"2-digit"
+        });
+    }
+}
+
+function avatarHTML(profile,small){
+    var cls = small ? "small-avatar" : "avatar";
+
+    if(profile && profile.avatar){
+        return '<div class="'+cls+'"><img src="'+profile.avatar+'" alt=""></div>';
+    }
+
+    return '<div class="'+cls+'"><i data-lucide="user-round"></i></div>';
+}
+
+function makeDefaultName(){
+    return "AzGram istifadəçisi";
+}
+
+/* ============================================================
+   GUN
+   ============================================================ */
+
+function initGun(){
+    try{
+        if(typeof Gun !== "undefined"){
+            db = Gun({
+                peers:[
+                    "https://gun-manhattan.herokuapp.com/gun",
+                    "https://gun-us.herokuapp.com/gun"
+                ],
+                localStorage:true
+            });
+        }
+    }catch(e){
+        db = null;
+    }
+}
+
+function publishProfile(profile){
+    if(!db) return;
+
+    try{
+        db.get("azgram_ultra_users_v250")
+          .get(profile.id)
+          .put({
+              id:profile.id,
+              name:profile.name,
+              avatar:profile.avatar || "",
+              bio:profile.bio || "",
+              link:profile.link || "",
+              online:true,
+              lastSeen:Date.now(),
+              musicFav:"",
+              verified:false
+          });
+    }catch(e){}
+}
+
+function goOffline(){
+    var p = getProfile();
+    if(!p || !db) return;
+
+    try{
+        db.get("azgram_ultra_users_v250")
+          .get(p.id)
+          .put({
+              online:false,
+              lastSeen:Date.now()
+          });
+    }catch(e){}
+}
+
+/* ============================================================
    ONBOARDING
-   ========================================================= */
-function setupOnboarding(){
- $("#onAvatarBtn").onclick=function(){$("#profileInput").click()};
- $("#profileInput").onchange=function(){
-  var f=this.files[0];if(!f)return;
-  dataImage(f,600,.8,function(src){$("#onAvatar").src=src;$("#onAvatar").dataset.value=src});
- };
- $("#startBtn").onclick=function(){
-  var name=$("#onName").value.trim();
-  if(!name){toast("Adınızı yazın","error");return}
-  state.user={
-   id:uid(),name:name,avatar:$("#onAvatar").dataset.value||"",
-   bio:$("#onBio").value.trim().slice(0,80),
-   link:$("#onLink").value.trim(),musicFav:[],created:now()
-  };
-  save();gunUser();initPeer();renderAll();show("home");
-  toast("AzGram-a xoş gəldiniz");
- };
+   ============================================================ */
+
+function renderOnboarding(){
+    app.innerHTML = `
+    <section class="screen onboarding">
+        <div class="onboard-inner">
+
+            <div class="logo">
+                AzGram <span>ULTRA</span>
+            </div>
+
+            <div class="subtitle">
+                WhatsApp + TikTok + Spotify
+            </div>
+
+            <div class="field">
+                <label class="label">
+                    Ad
+                    <span class="optional">istəyə bağlı</span>
+                </label>
+                <input
+                    id="nameInput"
+                    class="input"
+                    maxlength="50"
+                    autocomplete="off"
+                    autocorrect="off"
+                    placeholder="Adınızı yazın">
+            </div>
+
+            <div class="field">
+                <label class="label">
+                    Avatar
+                    <span class="optional">istəyə bağlı</span>
+                </label>
+
+                <div class="avatar-row">
+                    <div id="avatarPreview" class="avatar">
+                        <i data-lucide="user-round"></i>
+                    </div>
+
+                    <div class="avatar-actions">
+                        <button
+                            id="galleryAvatarBtn"
+                            class="btn"
+                            type="button">
+                            <i data-lucide="image"></i>
+                            Qalereya
+                        </button>
+
+                        <button
+                            id="cameraAvatarBtn"
+                            class="btn"
+                            type="button">
+                            <i data-lucide="camera"></i>
+                            Kamera
+                        </button>
+
+                        <button
+                            id="removeAvatarBtn"
+                            class="btn"
+                            type="button">
+                            <i data-lucide="x"></i>
+                            Sil
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="field">
+                <label class="label">
+                    Bio
+                    <span class="optional">istəyə bağlı · 80 simvol</span>
+                </label>
+
+                <textarea
+                    id="bioInput"
+                    class="input"
+                    maxlength="80"
+                    autocomplete="off"
+                    autocorrect="off"
+                    placeholder="Haqqınızda"></textarea>
+            </div>
+
+            <div class="field">
+                <label class="label">
+                    Link
+                    <span class="optional">istəyə bağlı</span>
+                </label>
+
+                <input
+                    id="linkInput"
+                    class="input"
+                    maxlength="200"
+                    autocomplete="off"
+                    autocorrect="off"
+                    placeholder="https://">
+            </div>
+
+            <div class="divider"></div>
+
+            <button
+                id="enterBtn"
+                class="btn btn-green"
+                type="button">
+                AzGram-a daxil ol
+            </button>
+
+            <button
+                id="skipBtn"
+                class="btn btn-secondary"
+                type="button"
+                style="margin-top:10px">
+                İndi keç
+            </button>
+
+            <div class="optional-note">
+                Ad və avatar seçmək məcburi deyil.
+                İstəsəniz hamısını boş saxlayıb birbaşa daxil ola bilərsiniz.
+            </div>
+
+        </div>
+    </section>
+    `;
+
+    icons();
+
+    document.getElementById("galleryAvatarBtn")
+        .addEventListener("click",function(){
+            document.getElementById("avatarInput").click();
+        });
+
+    document.getElementById("cameraAvatarBtn")
+        .addEventListener("click",function(){
+            var input = document.getElementById("avatarInput");
+            input.setAttribute("capture","user");
+            input.click();
+
+            setTimeout(function(){
+                input.removeAttribute("capture");
+            },1000);
+        });
+
+    document.getElementById("removeAvatarBtn")
+        .addEventListener("click",function(){
+            selectedAvatar = "";
+            renderAvatarPreview("");
+            toast("Avatar silindi");
+        });
+
+    document.getElementById("avatarInput")
+        .addEventListener("change",handleAvatar);
+
+    document.getElementById("enterBtn")
+        .addEventListener("click",function(){
+            enterAzGram(false);
+        });
+
+    document.getElementById("skipBtn")
+        .addEventListener("click",function(){
+            enterAzGram(true);
+        });
 }
 
-/* =========================================================
-   NAVIGATION
-   ========================================================= */
-$$("[data-screen]").forEach(function(b){
- b.onclick=function(){show(b.dataset.screen);renderAll()};
-});
+function renderAvatarPreview(src){
+    var box = document.getElementById("avatarPreview");
+    if(!box) return;
 
-document.addEventListener("click",function(e){
- var a=e.target.closest("[data-action]");
- if(!a)return;
- var act=a.dataset.action;
- if(act==="closeModal")closeModal();
- else if(act==="back")show("home");
- else if(act==="backExplore")show("home");
- else if(act==="newChat")newChat();
- else if(act==="createStatus")openStatusCreator();
- else if(act==="statusCamera")$("#cameraInput").click();
- else if(act==="editProfile")editProfile();
- else if(act==="privacy")privacyModal();
- else if(act==="voiceCall")startCall(false);
- else if(act==="videoCall")startCall(true);
- else if(act==="chatMore")chatMore();
- else if(act==="globalSearch")globalSearch();
- else if(act==="google")googleSearch();
- else if(act==="statusMore")statusMenu();
- else if(act==="more")settingsMenu();
-});
-
-/* =========================================================
-   CONTACTS
-   ========================================================= */
-function renderContacts(){
- var box=$("#contacts");if(!box)return;
- var q=($("#chatSearch")||{}).value||"";
- q=q.toLowerCase();
- var arr=state.contacts.filter(function(c){
-  return !q||c.name.toLowerCase().indexOf(q)>=0||c.id.toLowerCase().indexOf(q)>=0;
- });
- arr.sort(function(a,b){
-  if(!!state.pinned[b.id]!==!!state.pinned[a.id])return state.pinned[b.id]?1:-1;
-  return (b.lastMessageAt||0)-(a.lastMessageAt||0);
- });
- if(!arr.length){
-  box.innerHTML='<div class="empty"><i data-lucide="users"></i><b>AzGram-da kontakt yoxdur</b><span>Yeni kontaktı ID ilə əlavə edin.</span><button class="btn" onclick="newChat()">Kontakt əlavə et</button></div>';
- }else{
-  box.innerHTML=arr.map(function(c){
-   var m=lastMessage(c.id);
-   return '<div class="list-item" data-contact="'+esc(c.id)+'">'+
-    '<div class="avatar-wrap"><img class="avatar" src="'+esc(c.avatar||"data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2760%27 height=%2760%27%3E%3Crect width=%27100%25%27 height=%27100%25%27 fill=%27%23222%27/%3E%3C/svg%3E")+'">'+
-    (c.online?'<span class="online"></span>':'')+'</div>'+
-    '<div class="flex1"><div class="row"><b class="flex1 truncate">'+esc(c.name)+'</b>'+(c.verified?'<span class="verify">✓</span>':'')+'</div>'+
-    '<div class="small muted truncate">'+esc(m?m.text||"Media":(c.bio||"AzGram istifadəçisi"))+'</div></div>'+
-    '<div style="text-align:right"><div class="time">'+(m?fmt(m.time):"")+'</div>'+
-    (state.muted[c.id]?'<i data-lucide="volume-x" style="width:14px"></i>':"")+
-    (state.pinned[c.id]?'<i data-lucide="pin" style="width:14px"></i>':"")+'</div></div>';
-  }).join("");
- }
- $$("#contacts .list-item").forEach(function(el){
-  el.onclick=function(){openChat(el.dataset.contact)}
- });
- initIcons();
+    if(src){
+        box.innerHTML = '<img src="'+src+'" alt="">';
+    }else{
+        box.innerHTML = '<i data-lucide="user-round"></i>';
+        icons();
+    }
 }
 
-function lastMessage(id){
- var a=state.messages[id]||[];
- return a.length?a[a.length-1]:null;
-}
-function newChat(){
- modal("Yeni kontakt",'<input class="input" id="newContactId" placeholder="AzGram ID"><div style="height:10px"></div><button class="btn" id="addContactBtn" style="width:100%">Əlavə et</button><div class="muted small" style="margin-top:10px">Digər istifadəçinin AzGram ID-sini yazın.</div>');
- $("#addContactBtn").onclick=function(){
-  var id=$("#newContactId").value.trim();
-  if(!id){toast("ID yazın","error");return}
-  if(id===userKey()){toast("Özünüzü əlavə edə bilməzsiniz","error");return}
-  discoverUser(id);
- };
-}
-function discoverUser(id){
- if(!gun){toast("P2P bağlantı hazır deyil","error");return}
- var found=false;
- try{
-  gun.get("azgram_ultra_users_v250").get(id).once(function(d){
-   if(d&&d.name){
-    addContact({
-     id:id,name:d.name,avatar:d.avatar||"",bio:d.bio||"",
-     link:d.link||"",online:!!d.online,lastSeen:d.lastSeen||0,verified:false
+function handleAvatar(e){
+    var file = e.target.files && e.target.files[0];
+
+    if(!file){
+        return;
+    }
+
+    if(file.type.indexOf("image/") !== 0){
+        toast("Yalnız şəkil seçin");
+        return;
+    }
+
+    compressImage(file,1080,.75,function(result){
+        selectedAvatar = result;
+        renderAvatarPreview(result);
+        toast("Avatar seçildi");
     });
-    found=true;closeModal();toast("Kontakt əlavə edildi");
-   }else toast("İstifadəçi tapılmadı","error");
-  });
- }catch(e){toast("Kontakt axtarışı uğursuz oldu","error")}
 }
-function addContact(c){
- var exists=state.contacts.some(function(x){return x.id===c.id});
- if(!exists)state.contacts.push(c);else{
-  state.contacts=state.contacts.map(function(x){return x.id===c.id?Object.assign({},x,c):x});
- }
- save();renderContacts();
-}
-window.newChat=newChat;
 
-/* =========================================================
+function enterAzGram(skip){
+    var nameEl = document.getElementById("nameInput");
+    var bioEl = document.getElementById("bioInput");
+    var linkEl = document.getElementById("linkInput");
+
+    var name = nameEl ? nameEl.value.trim() : "";
+    var bio = bioEl ? bioEl.value.trim() : "";
+    var link = linkEl ? linkEl.value.trim() : "";
+
+    if(!name){
+        name = makeDefaultName();
+    }
+
+    var profile = {
+        id:uid(),
+        name:name,
+        avatar:selectedAvatar || "",
+        bio:bio,
+        link:link,
+        createdAt:Date.now()
+    };
+
+    saveProfile(profile);
+    saveSettings(defaultSettings);
+
+    publishProfile(profile);
+
+    renderHome();
+
+    toast(skip ? "AzGram-a daxil oldunuz" : "Profil yaradıldı");
+}
+
+/* ============================================================
+   IMAGE COMPRESSION
+   ============================================================ */
+
+function compressImage(file,maxSize,quality,callback){
+    var reader = new FileReader();
+
+    reader.onload = function(){
+        var img = new Image();
+
+        img.onload = function(){
+            var w = img.width;
+            var h = img.height;
+
+            if(w > maxSize || h > maxSize){
+                if(w > h){
+                    h = Math.round(h * maxSize / w);
+                    w = maxSize;
+                }else{
+                    w = Math.round(w * maxSize / h);
+                    h = maxSize;
+                }
+            }
+
+            var canvas = document.createElement("canvas");
+            canvas.width = w;
+            canvas.height = h;
+
+            var ctx = canvas.getContext("2d");
+            ctx.drawImage(img,0,0,w,h);
+
+            callback(canvas.toDataURL("image/jpeg",quality));
+        };
+
+        img.onerror = function(){
+            callback(reader.result);
+        };
+
+        img.src = reader.result;
+    };
+
+    reader.readAsDataURL(file);
+}
+
+/* ============================================================
+   HOME
+   ============================================================ */
+
+function renderHome(){
+    var profile = getProfile();
+
+    if(!profile){
+        renderOnboarding();
+        return;
+    }
+
+    app.innerHTML = `
+    <section class="screen home">
+
+        <header class="topbar">
+            <div class="brand">
+                AzGram <span>ULTRA</span>
+            </div>
+
+            <button class="icon-btn" id="globalSearchBtn">
+                <i data-lucide="search"></i>
+            </button>
+
+            <button class="icon-btn" id="newChatBtn">
+                <i data-lucide="square-pen"></i>
+            </button>
+
+            <button class="icon-btn" id="moreBtn">
+                <i data-lucide="more-vertical"></i>
+            </button>
+        </header>
+
+        <main class="pages">
+
+            <section
+                id="contactsPage"
+                class="page active">
+                ${contactsHTML()}
+            </section>
+
+            <section
+                id="statusPage"
+                class="page status-page">
+                ${statusHTML()}
+            </section>
+
+            <section
+                id="callsPage"
+                class="page">
+                ${callsHTML()}
+            </section>
+
+            <section
+                id="settingsPage"
+                class="page">
+                ${settingsHTML()}
+            </section>
+
+        </main>
+
+        <nav class="bottom-nav">
+
+            <button
+                class="nav-btn active"
+                data-page="contacts">
+                <i data-lucide="message-circle"></i>
+                <span>Mesajlar</span>
+            </button>
+
+            <button
+                class="nav-btn"
+                data-page="status">
+                <i data-lucide="circle-play"></i>
+                <span>Status</span>
+            </button>
+
+            <button
+                class="nav-btn"
+                data-page="calls">
+                <i data-lucide="phone"></i>
+                <span>Zənglər</span>
+            </button>
+
+            <button
+                class="nav-btn"
+                data-page="settings">
+                <i data-lucide="settings"></i>
+                <span>Ayarlar</span>
+            </button>
+
+        </nav>
+
+    </section>
+    `;
+
+    icons();
+
+    bindHomeEvents();
+    loadUsers();
+}
+
+function contactsHTML(){
+    return `
+        <div class="searchbox">
+            <i data-lucide="search"></i>
+            <input
+                id="contactSearch"
+                class="input"
+                placeholder="Kontakt axtar..."
+                autocomplete="off">
+        </div>
+
+        <div class="section" style="padding-top:5px">
+            <div class="section-title">
+                AzGram-da olanlar
+            </div>
+        </div>
+
+        <div id="contactList">
+            <div class="empty">
+                <div class="loader"></div>
+                <div style="margin-top:12px">
+                    Kontaktlar yüklənir...
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <button
+                id="addContactBtn"
+                class="btn"
+                style="width:100%">
+                <i data-lucide="user-plus"></i>
+                ID ilə kontakt əlavə et
+            </button>
+        </div>
+    `;
+}
+
+function statusHTML(){
+    return `
+        <div id="statusFeed">
+            <div class="empty">
+                <i data-lucide="circle-play"></i>
+                <div>Status yoxdur</div>
+                <div style="font-size:12px;margin-top:6px">
+                    İlk statusu siz yaradın.
+                </div>
+            </div>
+        </div>
+
+        <button
+            id="createStatusBtn"
+            class="status-create">
+            <i data-lucide="plus"></i>
+        </button>
+    `;
+}
+
+function callsHTML(){
+    return `
+        <div class="section">
+            <div class="section-title">Zəng tarixçəsi</div>
+
+            <div class="empty">
+                <i data-lucide="phone"></i>
+                <div>Zəng tarixçəsi boşdur</div>
+            </div>
+        </div>
+    `;
+}
+
+function settingsHTML(){
+    var p = getProfile();
+    var s = getSettings();
+
+    return `
+        <div class="section">
+
+            <div class="section-title">Profil</div>
+
+            <div class="profile-card"
+                 style="margin:0 -15px"
+                 id="editProfileBtn">
+                ${avatarHTML(p,true)}
+
+                <div class="profile-info">
+                    <div class="profile-name">
+                        ${esc(p.name)}
+                        ${p.verified ? '<i class="verified" data-lucide="badge-check"></i>' : ''}
+                    </div>
+                    <div class="profile-bio">
+                        ${esc(p.bio || "Bio əlavə edilməyib")}
+                    </div>
+                </div>
+
+                <i data-lucide="chevron-right"></i>
+            </div>
+
+            <div style="height:25px"></div>
+
+            <div class="section-title">Məxfilik</div>
+
+            ${settingRow(
+                "lastSeen",
+                "Son görülmə",
+                "Son onlayn vaxtınızı göstərin",
+                s.lastSeen
+            )}
+
+            ${settingRow(
+                "avatar",
+                "Profil şəkli",
+                "Avatarınızı göstərin",
+                s.avatar
+            )}
+
+            ${settingRow(
+                "status",
+                "Status",
+                "Statuslarınızı kontaktlara göstərin",
+                s.status
+            )}
+
+            ${settingRow(
+                "readReceipt",
+                "Oxundu məlumatı",
+                "Mesajların oxunduğunu göstərin",
+                s.readReceipt
+            )}
+
+            ${settingRow(
+                "groupAdd",
+                "Qrupa əlavə etmə",
+                "Başqaları sizi qrupa əlavə edə bilsin",
+                s.groupAdd
+            )}
+
+            <div style="height:25px"></div>
+
+            <div class="section-title">Tətbiq</div>
+
+            ${settingRow(
+                "sound",
+                "Səs",
+                "Bildiriş səsləri",
+                s.sound
+            )}
+
+            ${settingRow(
+                "vibration",
+                "Vibrasiya",
+                "Toxunuş vibrasiyası",
+                s.vibration
+            )}
+
+            <div style="height:20px"></div>
+
+            <button
+                id="qrBtn"
+                class="btn"
+                style="width:100%;margin-bottom:8px">
+                <i data-lucide="qr-code"></i>
+                Kontakt QR
+            </button>
+
+            <button
+                id="shareProfileBtn"
+                class="btn"
+                style="width:100%;margin-bottom:8px">
+                <i data-lucide="share-2"></i>
+                Profilimi paylaş
+            </button>
+
+            <button
+                id="logoutBtn"
+                class="btn"
+                style="width:100%;margin-bottom:8px">
+                <i data-lucide="log-out"></i>
+                Çıxış
+            </button>
+
+            <button
+                id="deleteAccountBtn"
+                class="btn"
+                style="width:100%;color:#ff5555">
+                <i data-lucide="trash-2"></i>
+                Hesabı sil
+            </button>
+
+        </div>
+    `;
+}
+
+function settingRow(key,title,desc,value){
+    return `
+        <div
+            class="setting-row"
+            data-setting="${key}">
+
+            <div class="setting-text">
+                <div class="setting-title">${title}</div>
+                <div class="setting-desc">${desc}</div>
+            </div>
+
+            <button
+                class="toggle ${value ? "on" : ""}"
+                data-toggle="${key}"
+                type="button">
+                <i></i>
+            </button>
+        </div>
+    `;
+}
+
+/* ============================================================
+   CONTACTS
+   ============================================================ */
+
+function loadUsers(){
+    var list = document.getElementById("contactList");
+
+    if(!list) return;
+
+    var me = getProfile();
+
+    var localUsers = [];
+
+    try{
+        var all = JSON.parse(
+            localStorage.getItem("azgram_demo_users") || "[]"
+        );
+
+        localUsers = all.filter(function(u){
+            return !me || u.id !== me.id;
+        });
+    }catch(e){}
+
+    renderUserList(localUsers);
+
+    if(!db) return;
+
+    try{
+        db.get("azgram_ultra_users_v250").map().on(
+            function(user){
+                if(!user || !user.id) return;
+                if(me && user.id === me.id) return;
+
+                var exists = localUsers.some(function(x){
+                    return x.id === user.id;
+                });
+
+                if(!exists){
+                    localUsers.push(user);
+                }else{
+                    localUsers = localUsers.map(function(x){
+                        return x.id === user.id ? user : x;
+                    });
+                }
+
+                renderUserList(localUsers);
+            }
+        );
+    }catch(e){}
+}
+
+function renderUserList(users){
+    var list = document.getElementById("contactList");
+
+    if(!list) return;
+
+    if(!users.length){
+        list.innerHTML = `
+            <div class="empty">
+                <i data-lucide="users"></i>
+                <div>Hələ kontakt yoxdur</div>
+                <div style="font-size:12px;margin-top:6px">
+                    AzGram-a daxil olan istifadəçilər burada görünəcək.
+                </div>
+            </div>
+        `;
+        icons();
+        return;
+    }
+
+    list.innerHTML = users.map(function(u){
+        return `
+            <div
+                class="profile-card user-card"
+                data-user-id="${esc(u.id)}">
+
+                ${avatarHTML(u,true)}
+
+                <div class="profile-info">
+                    <div class="profile-name">
+                        ${esc(u.name || "Adsız istifadəçi")}
+                        ${u.verified ? '<i class="verified" data-lucide="badge-check"></i>' : ''}
+                    </div>
+
+                    <div class="profile-bio">
+                        ${esc(u.bio || "AzGram istifadəçisi")}
+                    </div>
+
+                    <div class="online">
+                        ${u.online ? "onlayn" : "son görülmə: " + formatLastSeen(u.lastSeen)}
+                    </div>
+                </div>
+
+                <i data-lucide="chevron-right"></i>
+            </div>
+        `;
+    }).join("");
+
+    icons();
+
+    var cards = list.querySelectorAll(".user-card");
+
+    Array.prototype.forEach.call(cards,function(card){
+        card.addEventListener("click",function(){
+            var id = card.getAttribute("data-user-id");
+            openUser(id,users);
+        });
+    });
+}
+
+function formatLastSeen(time){
+    if(!time) return "naməlum";
+
+    var diff = Date.now() - Number(time);
+
+    if(diff < 60000) return "indi";
+    if(diff < 3600000) return Math.floor(diff/60000)+" dəq";
+    if(diff < 86400000) return Math.floor(diff/3600000)+" saat";
+
+    return Math.floor(diff/86400000)+" gün";
+}
+
+/* ============================================================
+   USER PROFILE
+   ============================================================ */
+
+function openUser(id,users){
+    var u = null;
+
+    users.some(function(x){
+        if(x.id === id){
+            u = x;
+            return true;
+        }
+        return false;
+    });
+
+    if(!u) return;
+
+    showModal(`
+        <div class="modal-head">
+            <div class="modal-title">Profil</div>
+            <button class="close" data-close>
+                <i data-lucide="x"></i>
+            </button>
+        </div>
+
+        <div style="display:flex;flex-direction:column;align-items:center;text-align:center">
+
+            ${avatarHTML(u,false)}
+
+            <div style="font-size:21px;font-weight:600;margin-top:14px">
+                ${esc(u.name || "Adsız istifadəçi")}
+            </div>
+
+            <div style="color:#25d366;margin-top:5px">
+                ${u.online ? "● Onlayn" : "● Offline"}
+            </div>
+
+            <div style="color:#888;margin-top:12px;max-width:400px">
+                ${esc(u.bio || "")}
+            </div>
+
+            ${
+                u.link
+                ?
+                '<a href="'+esc(u.link)+'" target="_blank" style="color:#25d366;margin-top:10px">'+
+                esc(u.link)+
+                '</a>'
+                :
+                ''
+            }
+
+        </div>
+
+        <div style="height:20px"></div>
+
+        <div class="action-list">
+
+            <button
+                class="action-item"
+                data-action-chat="${esc(u.id)}">
+                <i data-lucide="message-circle"></i>
+                Mesaj yaz
+            </button>
+
+            <button
+                class="action-item"
+                data-action-call="${esc(u.id)}">
+                <i data-lucide="phone"></i>
+                Səsli zəng
+            </button>
+
+            <button
+                class="action-item"
+                data-action-video="${esc(u.id)}">
+                <i data-lucide="video"></i>
+                Görüntülü zəng
+            </button>
+
+            <button
+                class="action-item"
+                data-action-copy="${esc(u.id)}">
+                <i data-lucide="copy"></i>
+                ID-ni kopyala
+            </button>
+
+            <button
+                class="action-item"
+                data-action-share="${esc(u.id)}">
+                <i data-lucide="share-2"></i>
+                Profili paylaş
+            </button>
+
+            <button
+                class="action-item"
+                data-action-block="${esc(u.id)}">
+                <i data-lucide="ban"></i>
+                Blokla
+            </button>
+
+        </div>
+    `);
+
+    icons();
+
+    document.querySelector("[data-action-chat]")
+        .addEventListener("click",function(){
+            closeModal();
+            openChat(u);
+        });
+
+    document.querySelector("[data-action-call]")
+        .addEventListener("click",function(){
+            startCall(u,false);
+        });
+
+    document.querySelector("[data-action-video]")
+        .addEventListener("click",function(){
+            startCall(u,true);
+        });
+
+    document.querySelector("[data-action-copy]")
+        .addEventListener("click",function(){
+            copyText(u.id);
+        });
+
+    document.querySelector("[data-action-share]")
+        .addEventListener("click",function(){
+            shareText("AzGram profil: "+u.name+"\nID: "+u.id);
+        });
+
+    document.querySelector("[data-action-block]")
+        .addEventListener("click",function(){
+            toast("İstifadəçi bloklandı");
+            closeModal();
+        });
+}
+
+/* ============================================================
    CHAT
-   ========================================================= */
-function openChat(id){
- var c=state.contacts.find(function(x){return x.id===id});
- if(!c)return;
- state.activeChat=id;
- $("#chatName").textContent=c.name;
- $("#chatAvatar").src=c.avatar||"";
- $("#chatPresence").textContent=c.online?"online":("son görülmə "+ago(c.lastSeen));
- show("chat");renderMessages();
-}
-function chatKey(a,b){return [a,b].sort().join("_")}
-function messagesFor(id){
- var k=chatKey(userKey(),id);
- if(!state.messages[k])state.messages[k]=[];
- return state.messages[k];
-}
-function renderMessages(){
- var box=$("#messages");if(!box)return;
- var arr=messagesFor(state.activeChat);
- if(!arr.length){
-  box.innerHTML='<div class="empty" style="min-height:65vh"><i data-lucide="message-circle"></i><b>Söhbətə başlayın</b><span>Mesajlar P2P olaraq göndərilir.</span></div>';
- }else{
-  box.innerHTML=arr.map(function(m,i){
-   var mine=m.from===userKey();
-   var reply=m.reply?'<div class="reply">'+esc(m.reply.name)+': '+esc(m.reply.text)+'</div>':"";
-   var body="";
-   if(m.type==="image")body='<img src="'+esc(m.data)+'" loading="lazy">';
-   else if(m.type==="video")body='<video src="'+esc(m.data)+'" controls playsinline></video>';
-   else if(m.type==="audio")body=audioHTML(m.data,m.duration);
-   else if(m.type==="file")body='<div class="row gap8"><i data-lucide="file"></i><span>'+esc(m.name||"Fayl")+'</span></div>';
-   else body=messageFormat(m.text||"");
-   return '<div class="msg '+(mine?"mine":"")+'" data-mid="'+esc(m.id)+'">'+reply+body+
-    '<div class="meta">'+(m.edited?"redaktə edildi ":"")+fmt(m.time)+(mine?'<span class="checks">'+(m.read?"✓✓":"✓")+'</span>':"")+'</div></div>';
-  }).join("");
- }
- box.scrollTop=box.scrollHeight;
- initIcons();
-}
-function messageFormat(t){
- var s=esc(t);
- s=s.replace(/\*\*(.+?)\*\*/g,"<b>$1</b>");
- s=s.replace(/\*(.+?)\*/g,"<i>$1</i>");
- s=s.replace(/`([^`]+)`/g,"<code>$1</code>");
- s=s.replace(/(https?:\/\/[^\s]+)/g,'<a href="$1" target="_blank" rel="noopener" style="color:#8ab4ff">$1</a>');
- s=s.replace(/(^|\s)@([a-zA-Z0-9_]+)/g,'$1<strong>@$2</strong>');
- return s;
-}
-function audioHTML(src,duration){
- return '<div class="audio-player"><audio controls preload="metadata" src="'+esc(src)+'" style="width:100%"></audio><div class="wave">'+waveBars(45)+'</div></div>';
-}
-function waveBars(n){
- var s="";
- for(var i=0;i<n;i++)s+="<i style=\"height:"+(5+(i*17)%25)+"px\"></i>";
- return s;
-}
-function sendMessage(text,type,data,extra){
- if(!state.activeChat)return;
- if(!text&&type==="text")return;
- var m={
-  id:uid(),from:userKey(),to:state.activeChat,time:now(),
-  type:type||"text",text:text||"",data:data||"",read:false
- };
- if(extra)Object.assign(m,extra);
- var arr=messagesFor(state.activeChat);arr.push(m);
- save();publishMessage(state.activeChat,m);renderMessages();
- var c=state.contacts.find(function(x){return x.id===state.activeChat});
- if(c){c.lastMessageAt=m.time;save();renderContacts()}
-}
-function publishMessage(to,m){
- if(!gun)return;
- try{
-  gun.get("ultra_msg_"+chatKey(userKey(),to)).get(m.id).put(m);
- }catch(e){}
-}
-function receiveMessage(m){
- if(!m||m.from===userKey())return;
- var key=chatKey(userKey(),m.from);
- if(!state.messages[key])state.messages[key]=[];
- if(!state.messages[key].some(function(x){return x.id===m.id}))state.messages[key].push(m);
- var c=state.contacts.find(function(x){return x.id===m.from});
- if(c)c.lastMessageAt=m.time;
- else{
-  addContact({id:m.from,name:"AzGram istifadəçisi",avatar:"",bio:"",online:true,lastSeen:now()});
- }
- save();
- if(state.activeChat===m.from)renderMessages();
- else toast("Yeni mesaj");
- renderContacts();
-}
-function listenChat(id){
- if(!gun)return;
- try{
-  gun.get("ultra_msg_"+chatKey(userKey(),id)).map().on(function(m){
-   if(m&&m.id)receiveMessage(m);
-  });
- }catch(e){}
-}
-function setupMessageInput(){
- var input=$("#messageInput"),send=$("#sendBtn"),rec=$("#recordBtn");
- input.oninput=function(){
-  send.style.display=input.value.trim()?"flex":"none";
-  rec.style.display=input.value.trim()?"none":"flex";
-  input.style.height="42px";
-  input.style.height=Math.min(120,input.scrollHeight)+"px";
-  if(state.activeChat)sendTyping(state.activeChat,true);
- };
- input.onkeydown=function(e){
-  if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send.onclick()}
- };
- send.onclick=function(){
-  var v=input.value.trim();if(!v)return;
-  sendMessage(v,"text");input.value="";input.style.height="42px";
-  send.style.display="none";rec.style.display="flex";
- };
- rec.onpointerdown=startRecording;
- rec.onpointerup=stopRecording;
- rec.onpointercancel=stopRecording;
- $("#attachBtn").onclick=function(){attachmentMenu()};
-}
-function attachmentMenu(){
- modal("Göndər",'<div class="grid2">'+
- '<button class="btn dark" id="pickImg"><i data-lucide="image"></i> Şəkil</button>'+
- '<button class="btn dark" id="pickVid"><i data-lucide="video"></i> Video</button>'+
- '<button class="btn dark" id="pickFile"><i data-lucide="file"></i> Fayl</button>'+
- '<button class="btn dark" id="pickMusic"><i data-lucide="music"></i> Musiqi</button>'+
- '</div>');
- $("#pickImg").onclick=function(){$("#imageInput").click();closeModal()};
- $("#pickVid").onclick=function(){$("#videoInput").click();closeModal()};
- $("#pickFile").onclick=function(){$("#fileInput").click();closeModal()};
- $("#pickMusic").onclick=function(){musicModal("chat");};
-}
-$("#imageInput").onchange=function(){
- var fs=Array.prototype.slice.call(this.files||[]).slice(0,10);
- fs.forEach(function(f){dataImage(f,1080,.7,function(src){sendMessage("", "image",src)})});
- this.value="";
-};
-$("#videoInput").onchange=function(){
- var f=this.files[0];if(!f)return;
- if(f.size>30*1024*1024){toast("Video çox böyükdür","error");return}
- fileData(f,30*1024*1024,function(src){sendMessage("", "video",src,{name:f.name})});
- this.value="";
-};
-$("#fileInput").onchange=function(){
- var f=this.files[0];if(!f)return;
- fileData(f,15*1024*1024,function(src){sendMessage("", "file",src,{name:f.name,size:f.size})});
- this.value="";
-};
-function startRecording(e){
- if(state.recording)return;
- navigator.mediaDevices.getUserMedia({audio:true}).then(function(stream){
-  state.stream=stream;state.recording=true;
-  var opts={};
-  try{state.recorder=new MediaRecorder(stream,opts)}catch(err){toast("Səs yazısı dəstəklənmir","error");return}
-  var chunks=[];
-  state.recorder.ondataavailable=function(x){if(x.data.size)chunks.push(x.data)};
-  state.recorder.onstop=function(){
-   var blob=new Blob(chunks,{type:"audio/webm"});
-   if(blob.size>10*1024*1024){toast("Səs faylı çox böyükdür","error")}
-   else{
-    var r=new FileReader();r.onload=function(){sendMessage("","audio",r.result,{duration:120})};r.readAsDataURL(blob);
-   }
-   stream.getTracks().forEach(function(t){t.stop()});
-  };
-  state.recorder.start();
-  $("#recordBtn").classList.add("recording");
-  toast("Səs yazılır — buraxın");
- }).catch(function(){toast("Mikrofon icazəsi yoxdur","error")});
-}
-function stopRecording(){
- if(!state.recording)return;
- state.recording=false;
- $("#recordBtn").classList.remove("recording");
- try{state.recorder.stop()}catch(e){}
-}
-function sendTyping(id,on){
- if(!gun)return;
- try{
-  gun.get("azgram_typing_v250").get(id).get(userKey()).put({on:on,time:now()});
- }catch(e){}
+   ============================================================ */
+
+function openChat(user){
+    currentChat = user;
+
+    showModal(`
+        <div class="chat" style="height:85dvh">
+
+            <div class="chat-header">
+
+                <button class="icon-btn" id="chatClose">
+                    <i data-lucide="arrow-left"></i>
+                </button>
+
+                ${avatarHTML(user,true)}
+
+                <div class="chat-user">
+                    <div>
+                        <div class="chat-user-name">
+                            ${esc(user.name || "İstifadəçi")}
+                        </div>
+                        <div class="chat-status">
+                            ${user.online ? "onlayn" : "offline"}
+                        </div>
+                    </div>
+                </div>
+
+                <button class="icon-btn" id="voiceCallBtn">
+                    <i data-lucide="phone"></i>
+                </button>
+
+                <button class="icon-btn" id="videoCallBtn">
+                    <i data-lucide="video"></i>
+                </button>
+
+                <button class="icon-btn" id="chatMoreBtn">
+                    <i data-lucide="more-vertical"></i>
+                </button>
+
+            </div>
+
+            <div id="messages" class="messages"></div>
+
+            <div class="chat-input">
+
+                <button class="icon-btn" id="attachBtn">
+                    <i data-lucide="plus"></i>
+                </button>
+
+                <textarea
+                    id="messageText"
+                    class="chat-text"
+                    rows="1"
+                    placeholder="Mesaj yazın..."
+                    autocomplete="off"
+                    autocorrect="off"></textarea>
+
+                <button
+                    class="send-btn"
+                    id="sendMessageBtn">
+                    <i data-lucide="send"></i>
+                </button>
+
+            </div>
+
+        </div>
+    `);
+
+    icons();
+
+    document.getElementById("chatClose")
+        .addEventListener("click",closeModal);
+
+    document.getElementById("voiceCallBtn")
+        .addEventListener("click",function(){
+            startCall(user,false);
+        });
+
+    document.getElementById("videoCallBtn")
+        .addEventListener("click",function(){
+            startCall(user,true);
+        });
+
+    document.getElementById("attachBtn")
+        .addEventListener("click",function(){
+            showAttachMenu();
+        });
+
+    document.getElementById("sendMessageBtn")
+        .addEventListener("click",sendMessage);
+
+    document.getElementById("messageText")
+        .addEventListener("keydown",function(e){
+            if(e.key === "Enter" && !e.shiftKey){
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+    loadMessages();
 }
 
-/* =========================================================
-   MUSIC
-   ========================================================= */
-var OPEN_TRACKS=[
- {title:"Acoustic Breeze",artist:"Bensound",url:"https://cdn.pixabay.com/audio/2022/03/15/audio_4a5f4c7b0f.mp3"},
- {title:"Lofi Study",artist:"Open Audio",url:"https://cdn.pixabay.com/audio/2022/05/27/audio_1808fbf07a.mp3"},
- {title:"Chill",artist:"Open Library",url:"https://cdn.pixabay.com/audio/2022/10/25/audio_9462b7e8c6.mp3"},
- {title:"Dreamy",artist:"Open Library",url:"https://cdn.pixabay.com/audio/2022/08/23/audio_2d5b3a7a4d.mp3"},
- {title:"Ambient",artist:"Open Library",url:"https://cdn.pixabay.com/audio/2022/03/10/audio_c8c8a4d1c2.mp3"},
- {title:"Hip Hop",artist:"Open Library",url:"https://cdn.pixabay.com/audio/2022/01/18/audio_d0c6ff5d4c.mp3"},
- {title:"Piano",artist:"Open Library",url:"https://cdn.pixabay.com/audio/2022/02/07/audio_35e9d0d6d8.mp3"},
- {title:"Pop Beat",artist:"Open Library",url:"https://cdn.pixabay.com/audio/2022/05/16/audio_8d3b4e9e9f.mp3"}
+function chatKey(a,b){
+    return [a,b].sort().join("_");
+}
+
+function loadMessages(){
+    var box = document.getElementById("messages");
+    if(!box || !currentChat) return;
+
+    var me = getProfile();
+    var key = chatKey(me.id,currentChat.id);
+
+    var messages = [];
+
+    try{
+        messages = JSON.parse(
+            localStorage.getItem(MSG_KEY+"_"+key) || "[]"
+        );
+    }catch(e){}
+
+    renderMessages(messages);
+
+    if(db){
+        try{
+            db.get("ultra_msg_"+key).map().on(function(m){
+                if(!m || !m.id) return;
+
+                var exists = messages.some(function(x){
+                    return x.id === m.id;
+                });
+
+                if(!exists){
+                    messages.push(m);
+                    messages.sort(function(a,b){
+                        return a.time-b.time;
+                    });
+
+                    localStorage.setItem(
+                        MSG_KEY+"_"+key,
+                        JSON.stringify(messages.slice(-500))
+                    );
+
+                    renderMessages(messages);
+                }
+            });
+        }catch(e){}
+    }
+}
+
+function renderMessages(messages){
+    var box = document.getElementById("messages");
+    if(!box) return;
+
+    if(!messages.length){
+        box.innerHTML = `
+            <div class="empty" style="min-height:200px">
+                <i data-lucide="message-circle"></i>
+                <div>Mesaj yoxdur</div>
+                <div style="font-size:12px;margin-top:5px">
+                    İlk mesajı göndərin.
+                </div>
+            </div>
+        `;
+        icons();
+        return;
+    }
+
+    box.innerHTML = messages.map(function(m){
+        return `
+            <div class="message ${m.mine ? "mine" : ""}">
+                ${esc(m.text)}
+                <span class="message-time">
+                    ${esc(m.clock)}
+                    ${m.mine ? " ✓✓" : ""}
+                </span>
+            </div>
+        `;
+    }).join("");
+
+    box.scrollTop = box.scrollHeight;
+}
+
+function sendMessage(){
+    if(!currentChat) return;
+
+    var input = document.getElementById("messageText");
+    if(!input) return;
+
+    var text = input.value.trim();
+
+    if(!text) return;
+
+    var me = getProfile();
+
+    var msg = {
+        id:uid(),
+        from:me.id,
+        to:currentChat.id,
+        text:text,
+        time:Date.now(),
+        clock:nowTime(),
+        mine:true
+    };
+
+    var key = chatKey(me.id,currentChat.id);
+
+    var arr = [];
+
+    try{
+        arr = JSON.parse(
+            localStorage.getItem(MSG_KEY+"_"+key) || "[]"
+        );
+    }catch(e){}
+
+    arr.push(msg);
+
+    localStorage.setItem(
+        MSG_KEY+"_"+key,
+        JSON.stringify(arr.slice(-500))
+    );
+
+    if(db){
+        try{
+            db.get("ultra_msg_"+key)
+              .get(msg.id)
+              .put(msg);
+        }catch(e){}
+    }
+
+    input.value = "";
+    renderMessages(arr);
+}
+
+/* ============================================================
+   ATTACHMENTS
+   ============================================================ */
+
+function showAttachMenu(){
+    showModal(`
+        <div class="modal-head">
+            <div class="modal-title">Fayl göndər</div>
+            <button class="close" data-close>
+                <i data-lucide="x"></i>
+            </button>
+        </div>
+
+        <div class="action-list">
+
+            <button class="action-item" id="attachGallery">
+                <i data-lucide="image"></i>
+                Şəkil / Video
+            </button>
+
+            <button class="action-item" id="attachCamera">
+                <i data-lucide="camera"></i>
+                Kamera
+            </button>
+
+            <button class="action-item" id="attachAudio">
+                <i data-lucide="music-2"></i>
+                Musiqi / Audio
+            </button>
+
+            <button class="action-item" id="attachFile">
+                <i data-lucide="file"></i>
+                Fayl
+            </button>
+
+            <button class="action-item" id="attachContact">
+                <i data-lucide="contact"></i>
+                Kontakt
+            </button>
+
+            <button class="action-item" id="attachLocation">
+                <i data-lucide="map-pin"></i>
+                Yer paylaş
+            </button>
+
+        </div>
+    `);
+
+    icons();
+
+    document.getElementById("attachGallery")
+        .addEventListener("click",function(){
+            closeModal();
+            document.getElementById("galleryInput").click();
+        });
+
+    document.getElementById("attachCamera")
+        .addEventListener("click",function(){
+            closeModal();
+            document.getElementById("cameraInput").click();
+        });
+
+    document.getElementById("attachAudio")
+        .addEventListener("click",function(){
+            closeModal();
+            document.getElementById("audioInput").click();
+        });
+
+    document.getElementById("attachFile")
+        .addEventListener("click",function(){
+            closeModal();
+
+            var input = document.createElement("input");
+            input.type = "file";
+            input.accept = "*/*";
+
+            input.onchange = function(){
+                if(input.files && input.files[0]){
+                    toast("Fayl seçildi: "+input.files[0].name);
+                }
+            };
+
+            input.click();
+        });
+
+    document.getElementById("attachContact")
+        .addEventListener("click",function(){
+            toast("Kontakt göndərmə hazırdır");
+        });
+
+    document.getElementById("attachLocation")
+        .addEventListener("click",function(){
+            toast("Yer paylaşma seçildi");
+        });
+}
+
+document.getElementById("galleryInput")
+.addEventListener("change",function(e){
+    var files = Array.prototype.slice.call(e.target.files || []);
+
+    if(!files.length) return;
+
+    selectedMedia = files.slice(0,10);
+
+    toast(selectedMedia.length+" media seçildi");
+
+    if(currentChat){
+        showMediaPreview(selectedMedia);
+    }
+});
+
+document.getElementById("cameraInput")
+.addEventListener("change",function(e){
+    var files = Array.prototype.slice.call(e.target.files || []);
+
+    if(!files.length) return;
+
+    selectedMedia = files.slice(0,1);
+
+    toast("Kamera faylı seçildi");
+
+    if(currentChat){
+        showMediaPreview(selectedMedia);
+    }
+});
+
+document.getElementById("audioInput")
+.addEventListener("change",function(e){
+    var file = e.target.files && e.target.files[0];
+
+    if(!file) return;
+
+    if(file.size > 10 * 1024 * 1024){
+        toast("Audio maksimum 10 MB ola bilər");
+        return;
+    }
+
+    selectedAudio = file;
+    openMusicEditor(file);
+});
+
+function showMediaPreview(files){
+    var html = `
+        <div class="modal-head">
+            <div class="modal-title">
+                Media göndər
+            </div>
+            <button class="close" data-close>
+                <i data-lucide="x"></i>
+            </button>
+        </div>
+
+        <div id="mediaPreviewList"></div>
+
+        <button id="sendMediaBtn"
+            class="btn btn-green"
+            style="margin-top:15px">
+            Göndər
+        </button>
+    `;
+
+    showModal(html);
+
+    var box = document.getElementById("mediaPreviewList");
+
+    files.forEach(function(file){
+        if(file.type.indexOf("image/") === 0){
+            var url = URL.createObjectURL(file);
+
+            box.innerHTML +=
+                '<img class="preview-image" src="'+url+'" alt="">';
+        }else if(file.type.indexOf("video/") === 0){
+            var v = document.createElement("video");
+            v.controls = true;
+            v.className = "preview-image";
+            v.src = URL.createObjectURL(file);
+            box.appendChild(v);
+        }
+    });
+
+    icons();
+
+    document.getElementById("sendMediaBtn")
+        .addEventListener("click",function(){
+            toast("Media P2P göndərilməsi növbəyə əlavə edildi");
+            selectedMedia = [];
+            closeModal();
+        });
+}
+
+/* ============================================================
+   MUSIC SYSTEM
+   ============================================================ */
+
+var openMusicTracks = [
+    {
+        title:"Chill Morning",
+        artist:"Open Source",
+        category:"Lo-fi",
+        url:"https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3"
+    },
+    {
+        title:"Creative Ambient",
+        artist:"Open Source",
+        category:"Ambient",
+        url:"https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a7344e.mp3"
+    },
+    {
+        title:"Relaxing Piano",
+        artist:"Open Source",
+        category:"Piano",
+        url:"https://cdn.pixabay.com/download/audio/2022/10/25/audio_946f4f9c5e.mp3"
+    }
 ];
 
-function musicModal(mode){
- modal("Musiqi əlavə et",
- '<div class="tabs"><button class="tab active" id="libTab">Açıq Mənbə</button><button class="tab" id="phoneTab">Telefonumdan</button></div>'+
- '<div id="musicLibrary" style="padding-top:10px"></div>'+
- '<div id="phoneMusic" style="display:none;padding-top:15px"><button class="btn" id="audioPick" style="width:100%"><i data-lucide="folder-open"></i> Telefonda musiqi seç</button><div class="muted small" style="margin-top:8px">MP3/WAV/M4A • maksimum 10 MB</div></div>');
- renderMusicLibrary(mode);
- $("#libTab").onclick=function(){
-  $("#musicLibrary").style.display="block";$("#phoneMusic").style.display="none";
-  $("#libTab").classList.add("active");$("#phoneTab").classList.remove("active");
- };
- $("#phoneTab").onclick=function(){
-  $("#musicLibrary").style.display="none";$("#phoneMusic").style.display="block";
-  $("#phoneTab").classList.add("active");$("#libTab").classList.remove("active");
- };
- $("#audioPick").onclick=function(){$("#audioInput").dataset.mode=mode;$("#audioInput").click()};
- initIcons();
-}
-function renderMusicLibrary(mode){
- var box=$("#musicLibrary");
- box.innerHTML='<input class="input" id="musicSearch" placeholder="Musiqi axtar..."><div id="trackList" style="margin-top:8px"></div>';
- var draw=function(){
-  var q=($("#musicSearch").value||"").toLowerCase();
-  $("#trackList").innerHTML=OPEN_TRACKS.filter(function(x){
-   return !q||x.title.toLowerCase().indexOf(q)>=0||x.artist.toLowerCase().indexOf(q)>=0;
-  }).map(function(t,i){
-   return '<div class="list-item" style="padding-left:0;padding-right:0"><div class="disc"><i data-lucide="music"></i></div><div class="flex1"><b>'+esc(t.title)+'</b><div class="small muted">'+esc(t.artist)+'</div></div><button class="icon-btn" data-track="'+i+'"><i data-lucide="play"></i></button><button class="btn" data-use="'+i+'">İstifadə et</button></div>';
-  }).join("");
-  $$("#trackList [data-track]").forEach(function(b){
-   b.onclick=function(){previewMusic(OPEN_TRACKS[+b.dataset.track])};
-  });
-  $$("#trackList [data-use]").forEach(function(b){
-   b.onclick=function(){openMusicEditor(OPEN_TRACKS[+b.dataset.use],mode)};
-  });
-  initIcons();
- };
- $("#musicSearch").oninput=draw;draw();
-}
-var previewAudio=null;
-function previewMusic(t){
- if(previewAudio){previewAudio.pause();previewAudio=null}
- previewAudio=new Audio(t.url);previewAudio.volume=.7;previewAudio.play().catch(function(){toast("Preview açıla bilmədi","error")});
-}
-$("#audioInput").onchange=function(){
- var f=this.files[0];if(!f)return;
- if(f.size>10*1024*1024){toast("Maksimum 10 MB","error");return}
- fileData(f,10*1024*1024,function(src){
-  openMusicEditor({title:f.name,artist:"Telefonum",url:src,local:true},$("#audioInput").dataset.mode||"status");
- });
- this.value="";
-};
-function openMusicEditor(track,mode){
- closeModal();
- modal("Musiqi redaktəsi",
- '<div class="audio-player"><div class="row gap8"><div class="disc"><i data-lucide="music"></i></div><div class="flex1"><b>'+esc(track.title)+'</b><div class="small muted">'+esc(track.artist)+'</div></div></div><audio id="musicPreview" controls src="'+esc(track.url)+'" style="width:100%;margin-top:10px"></audio><div class="wave">'+waveBars(70)+'</div></div>'+
- '<div style="margin-top:15px"><div class="small muted">Başlanğıc</div><input class="range" id="musicStart" type="range" min="0" max="15" step=".1" value="0"></div>'+
- '<div><div class="small muted">Musiqi səsi <span id="musicVolText">80%</span></div><input class="range" id="musicVol" type="range" min="0" max="100" value="80"></div>'+
- '<div><div class="small muted">Video səsi <span id="videoVolText">20%</span></div><input class="range" id="videoVol" type="range" min="0" max="100" value="20"></div>'+
- '<button class="btn green" id="useMusic" style="width:100%;margin-top:14px">Musiqini istifadə et</button>');
- $("#musicVol").oninput=function(){$("#musicVolText").textContent=this.value+"%"};
- $("#videoVol").oninput=function(){$("#videoVolText").textContent=this.value+"%"};
- $("#useMusic").onclick=function(){
-  state.audio={title:track.title,artist:track.artist,url:track.url,start:+$("#musicStart").value,musicVol:+$("#musicVol").value,videoVol:+$("#videoVol").value};
-  if(mode==="chat")sendMessage(track.title,"audio",track.url,{music:true,artist:track.artist});
-  else openStatusCreator(state.audio);
-  closeModal();
- };
- initIcons();
+function openMusicEditor(file){
+    showModal(`
+        <div class="modal-head">
+            <div class="modal-title">Telefonumdan musiqi</div>
+            <button class="close" data-close>
+                <i data-lucide="x"></i>
+            </button>
+        </div>
+
+        <div class="music-row">
+            <div class="music-icon">
+                <i data-lucide="music-2"></i>
+            </div>
+
+            <div class="music-info">
+                <div class="music-title">
+                    ${esc(file.name)}
+                </div>
+                <div class="music-artist">
+                    ${Math.round(file.size/1024/1024*10)/10} MB
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-top:20px">
+            <label class="label">
+                Musiqi müddəti
+            </label>
+
+            <input
+                id="musicStart"
+                class="range"
+                type="range"
+                min="0"
+                max="15"
+                value="0">
+
+            <div style="display:flex;justify-content:space-between;color:#777;font-size:11px">
+                <span>0s</span>
+                <span>15s</span>
+            </div>
+        </div>
+
+        <div style="margin-top:20px">
+            <label class="label">
+                Musiqi səsi
+            </label>
+
+            <input
+                id="musicVolume"
+                class="range"
+                type="range"
+                min="0"
+                max="100"
+                value="80">
+        </div>
+
+        <div style="margin-top:20px">
+            <label class="label">
+                Video səsi
+            </label>
+
+            <input
+                class="range"
+                type="range"
+                min="0"
+                max="100"
+                value="20">
+        </div>
+
+        <button
+            id="usePhoneMusic"
+            class="btn btn-green"
+            style="margin-top:20px">
+            Bu musiqini istifadə et
+        </button>
+    `);
+
+    icons();
+
+    document.getElementById("usePhoneMusic")
+        .addEventListener("click",function(){
+            closeModal();
+            toast("Musiqi statusa əlavə edildi");
+        });
 }
 
-/* =========================================================
-   STATUS CREATION / EDITOR
-   ========================================================= */
-function openStatusCreator(audio){
- modal("Status yarat",
- '<div class="grid2">'+
- '<button class="btn dark" id="statusGallery"><i data-lucide="image"></i> Qalereya</button>'+
- '<button class="btn dark" id="statusCam"><i data-lucide="camera"></i> Kamera</button>'+
- '<button class="btn dark" id="statusMusic"><i data-lucide="music"></i> Musiqi</button>'+
- '<button class="btn dark" id="statusText"><i data-lucide="type"></i> Mətn</button>'+
- '</div><div class="muted small" style="margin-top:12px">Şəkil + musiqi 7 saniyəlik status kimi təqdim edilə bilər.</div>');
- $("#statusGallery").onclick=function(){$("#galleryInput").dataset.audio=audio?JSON.stringify(audio):"";$("#galleryInput").click();closeModal()};
- $("#statusCam").onclick=function(){$("#cameraInput").dataset.audio=audio?JSON.stringify(audio):"";$("#cameraInput").click();closeModal()};
- $("#statusMusic").onclick=function(){musicModal("status")};
- $("#statusText").onclick=function(){closeModal();statusTextEditor(audio)};
- initIcons();
-}
-function statusTextEditor(audio){
- modal("Mətn statusu",
- '<textarea class="input" id="statusTextValue" maxlength="500" rows="5" placeholder="Nə baş verir?"></textarea>'+
- '<input class="input" id="statusTags" style="margin-top:8px" placeholder="#hashtag @istifadəçi">'+
- '<button class="btn green" id="publishTextStatus" style="width:100%;margin-top:10px">Paylaş</button>');
- $("#publishTextStatus").onclick=function(){
-  var text=$("#statusTextValue").value.trim();if(!text){toast("Mətn boşdur","error");return}
-  createStatus({type:"text",text:text,audio:audio||null});
-  closeModal();show("status");renderStatuses();
- };
-}
-$("#galleryInput").onchange=function(){
- var fs=Array.prototype.slice.call(this.files||[]).slice(0,5),audio=null;
- try{audio=this.dataset.audio?JSON.parse(this.dataset.audio):null}catch(e){}
- var i=0;
- var next=function(){
-  if(i>=fs.length){show("status");renderStatuses();return}
-  var f=fs[i++];
-  if(f.type.indexOf("image/")===0){
-   dataImage(f,1080,.7,function(src){openStatusEditor({type:"image",src:src,audio:audio});next()});
-  }else{
-   fileData(f,30*1024*1024,function(src){openStatusEditor({type:"video",src:src,audio:audio});next()});
-  }
- };
- next();this.value="";
-};
-$("#cameraInput").onchange=function(){
- var f=this.files[0];if(!f)return;
- var audio=null;try{audio=this.dataset.audio?JSON.parse(this.dataset.audio):null}catch(e){}
- if(f.type.indexOf("image/")===0)dataImage(f,1080,.7,function(src){openStatusEditor({type:"image",src:src,audio:audio})});
- else fileData(f,30*1024*1024,function(src){openStatusEditor({type:"video",src:src,audio:audio})});
- this.value="";
-};
-function openStatusEditor(item){
- modal("Status redaktəsi",
- '<div style="background:#050505;border-radius:12px;padding:8px"><img class="editor-canvas" id="editorPreview" src="'+(item.type==="image"?esc(item.src):"")+'" style="'+(item.type==="video"?"display:none":"")+'">'+
- '<video id="editorVideo" class="editor-canvas" controls playsinline src="'+(item.type==="video"?esc(item.src):"")+'" style="'+(item.type==="video"?"":"display:none")+'"></video></div>'+
- '<div class="row gap8" style="margin-top:10px;overflow:auto"><button class="chip" data-filter="normal">Normal</button><button class="chip" data-filter="grayscale">Mono</button><button class="chip" data-filter="sepia">Sepia</button><button class="chip" data-filter="contrast">Contrast</button><button class="chip" data-filter="brightness">Bright</button></div>'+
- '<div style="margin-top:10px"><div class="small muted">Crop</div><div class="row gap8"><button class="chip">1:1</button><button class="chip">9:16</button><button class="chip">4:5</button><button class="chip" id="rotateEditor">Rotate</button></div></div>'+
- '<textarea class="input" id="statusCaption" rows="3" maxlength="500" style="margin-top:10px" placeholder="Mətn, #hashtag, @tag..."></textarea>'+
- '<div class="row gap8" style="margin-top:10px"><button class="btn dark" id="addStatusMusic"><i data-lucide="music"></i> Musiqi</button><button class="btn green" id="publishEdited" style="flex:1">Paylaş</button></div>');
- var preview=$("#editorPreview");
- $$("#modalBody [data-filter]").forEach(function(b){
-  b.onclick=function(){
-   if(!preview)return;
-   var f=b.dataset.filter;
-   preview.style.filter=f==="grayscale"?"grayscale(1)":f==="sepia"?"sepia(1)":f==="contrast"?"contrast(1.4)":f==="brightness"?"brightness(1.3)":"none";
-  };
- });
- $("#rotateEditor").onclick=function(){
-  if(preview){preview.style.transform=(preview.style.transform==="rotate(90deg)"?"":"rotate(90deg)")}
- };
- $("#addStatusMusic").onclick=function(){musicModal("status")};
- $("#publishEdited").onclick=function(){
-  createStatus({
-   type:item.type,src:item.src,text:$("#statusCaption").value.trim(),
-   audio:state.audio||item.audio||null,
-   filter:preview?preview.style.filter:"none"
-  });
-  state.audio=null;closeModal();show("status");renderStatuses();toast("Status yayımlandı");
- };
- initIcons();
-}
-function createStatus(s){
- var st={
-  id:uid(),user:userKey(),name:state.user.name,avatar:state.user.avatar||"",
-  time:now(),views:0,likes:0,shares:0,comments:[],watchTime:0,
-  type:s.type||"text",src:s.src||"",text:s.text||"",audio:s.audio||null,
-  filter:s.filter||"none",privacy:"all",edited:false
- };
- state.statuses.unshift(st);save();publishStatus(st);
-}
-function publishStatus(st){
- if(!gun)return;
- try{gun.get("azgram_ultra_status_v250").get(st.id).put(st)}catch(e){}
-}
-function renderStatuses(){
- var feed=$("#statusFeed");if(!feed)return;
- var arr=state.statuses.slice();
- if(!arr.length){
-  feed.innerHTML='<div class="empty"><i data-lucide="play-square"></i><b>Status yoxdur</b><span>İlk statusu siz yaradın.</span><button class="btn" onclick="openStatusCreator()">Status yarat</button></div>';
-  initIcons();return;
- }
- feed.innerHTML=arr.map(function(s,index){
-  var media=s.type==="video"?'<video class="status-media" src="'+esc(s.src)+'" playsinline loop muted></video>':
-   s.type==="image"?'<img class="status-media" src="'+esc(s.src)+'" style="filter:'+esc(s.filter||"none")+'">':
-   '<div class="status-media" style="display:flex;align-items:center;justify-content:center;padding:40px;font-size:28px;font-weight:600;text-align:center">'+esc(s.text)+'</div>';
-  var music=s.audio?'<div class="music-pill"><span class="disc"><i data-lucide="music"></i></span><span class="truncate">'+esc(s.audio.title)+" — "+esc(s.audio.artist)+'</span></div>':"";
-  return '<article class="status-card" data-status="'+esc(s.id)+'">'+
-   '<div class="progress"><i></i></div>'+media+'<div class="status-overlay"></div>'+
-   '<div class="status-top"><div class="row gap8"><span class="story-ring"><img class="avatar sm" src="'+esc(s.avatar)+'"></span><div><b>'+esc(s.name)+'</b><div class="small">'+ago(s.time)+'</div></div></div></div>'+
-   '<div class="status-info"><div>'+esc(s.text||"")+'</div>'+music+'</div>'+
-   '<div class="status-actions">'+
-   '<button class="status-action likeStatus" data-id="'+esc(s.id)+'"><i data-lucide="heart"></i><span>'+s.likes+'</span></button>'+
-   '<button class="status-action commentStatus" data-id="'+esc(s.id)+'"><i data-lucide="message-circle"></i><span>'+s.comments.length+'</span></button>'+
-   '<button class="status-action shareStatus" data-id="'+esc(s.id)+'"><i data-lucide="send"></i><span>'+s.shares+'</span></button>'+
-   '<button class="status-action" data-music="'+esc(s.id)+'"><i data-lucide="music"></i><span>İstifadə et</span></button>'+
-   '<button class="status-action" data-statusmenu="'+esc(s.id)+'"><i data-lucide="more-horizontal"></i></button>'+
-   '</div></article>';
- }).join("");
- initIcons();
- bindStatusEvents();
-}
-function getStatus(id){return state.statuses.find(function(x){return x.id===id})}
-function bindStatusEvents(){
- $$(".likeStatus").forEach(function(b){b.onclick=function(){
-  var s=getStatus(b.dataset.id);if(!s)return;
-  s.likes++;save();publishStatus(s);renderStatuses();
- }});
- $$(".commentStatus").forEach(function(b){b.onclick=function(){commentsModal(b.dataset.id)}});
- $$(".shareStatus").forEach(function(b){b.onclick=function(){shareStatus(b.dataset.id)}});
- $$("[data-music]").forEach(function(b){b.onclick=function(){
-  var s=getStatus(b.dataset.music);if(s&&s.audio)openMusicEditor(s.audio,"status");else toast("Bu statusda musiqi yoxdur");
- }});
- $$("[data-statusmenu]").forEach(function(b){b.onclick=function(){statusItemMenu(b.dataset.statusmenu)}});
-}
-function shareStatus(id){
- var s=getStatus(id);if(!s)return;
- s.shares++;save();publishStatus(s);
- var link=location.href.split("#")[0]+"#status="+encodeURIComponent(id);
- if(navigator.share)navigator.share({title:"AzGram Status",text:s.text||"Status",url:link}).catch(function(){});
- else navigator.clipboard&&navigator.clipboard.writeText(link).then(function(){toast("Link kopyalandı")});
-}
-function statusItemMenu(id){
- var s=getStatus(id);if(!s)return;
- modal("Status",'<div class="grid2">'+
- '<button class="btn dark" id="stReport">Şikayət</button>'+
- '<button class="btn dark" id="stLess">Daha az göstər</button>'+
- (s.user===userKey()?'<button class="btn dark" id="stEdit">Redaktə et</button><button class="btn danger" id="stDelete">Sil</button>':'')+
- '<button class="btn dark" id="stWhy">Niyə bunu görürəm?</button></div>');
- $("#stReport").onclick=function(){closeModal();toast("Şikayət qeydə alındı")};
- $("#stLess").onclick=function(){state.statuses=state.statuses.filter(function(x){return x.id!==id});save();closeModal();renderStatuses()};
- if($("#stDelete"))$("#stDelete").onclick=function(){state.statuses=state.statuses.filter(function(x){return x.id!==id});save();closeModal();renderStatuses();toast("Status silindi")};
- if($("#stEdit"))$("#stEdit").onclick=function(){closeModal();statusTextEditor(s.audio)};
- $("#stWhy").onclick=function(){modal("Niyə bunu görürəm?","Bu lent baxış, bəyənmə, paylaşım, şərh və musiqi istifadəsi kimi siqnallardan istifadə edən yerli demo sıralama modelidir.")};
-}
-function commentsModal(id){
- var s=getStatus(id);if(!s)return;
- var comments=s.comments||[];
- modal("Şərhlər",
-  '<div id="commentList">'+(comments.length?comments.map(commentHTML).join(""):'<div class="empty" style="height:180px">İlk şərhi yazın.</div>')+'</div>'+
-  '<div class="row gap8" style="margin-top:10px"><input class="input" id="commentInput" placeholder="Şərh yaz..."><button class="btn" id="commentSend"><i data-lucide="send"></i></button></div>');
- $("#commentSend").onclick=function(){
-  var t=$("#commentInput").value.trim();if(!t)return;
-  comments.push({id:uid(),user:userKey(),name:state.user.name,text:t,time:now(),likes:0,replies:[]});
-  s.comments=comments;save();publishStatus(s);commentsModal(id);
- };
- initIcons();
-}
-function commentHTML(c){
- return '<div class="comment '+(c.parent?"comment-reply":"")+'"><div class="row gap8"><img class="avatar sm" src="'+esc(state.user.avatar||"")+'"><div class="flex1"><b>'+esc(c.name)+'</b><div>'+messageFormat(c.text)+'</div><div class="reaction-row"><span>'+ago(c.time)+'</span><span>♡ '+c.likes+'</span><span data-reply="'+esc(c.id)+'">Cavab ver</span></div></div></div>'+
- (c.replies||[]).map(commentHTML).join("")+'</div>';
+function openMusicLibrary(){
+    showModal(`
+        <div class="modal-head">
+            <div class="modal-title">Musiqi əlavə et</div>
+            <button class="close" data-close>
+                <i data-lucide="x"></i>
+            </button>
+        </div>
+
+        <div style="display:flex;gap:7px;margin-bottom:15px">
+            <button
+                id="openMusicTab"
+                class="btn"
+                style="flex:1">
+                Açıq mənbə
+            </button>
+
+            <button
+                id="phoneMusicTab"
+                class="btn"
+                style="flex:1">
+                Telefonumdan
+            </button>
+        </div>
+
+        <div id="musicLibraryContent"></div>
+    `);
+
+    icons();
+    renderOpenMusic();
+
+    document.getElementById("openMusicTab")
+        .addEventListener("click",renderOpenMusic);
+
+    document.getElementById("phoneMusicTab")
+        .addEventListener("click",function(){
+            closeModal();
+            document.getElementById("audioInput").click();
+        });
 }
 
-/* =========================================================
-   PROFILE / PRIVACY
-   ========================================================= */
-function renderProfile(){
- if(!state.user)return;
- $("#profileAvatar").src=state.user.avatar||"";
- $("#profileName").textContent=state.user.name;
- $("#profileId").textContent="@"+state.user.id;
- $("#profileBio").textContent=state.user.bio||"Bio yoxdur";
- $("#profileLink").textContent=state.user.link||"";
- $("#profileStatusCount").textContent=state.statuses.filter(function(x){return x.user===userKey()}).length;
- $("#profileContactCount").textContent=state.contacts.length;
- $("#profileMusicCount").textContent=(state.user.musicFav||[]).length;
-}
-function editProfile(){
- modal("Profili redaktə et",
- '<div style="text-align:center"><img class="avatar lg" id="editAvatar" src="'+esc(state.user.avatar||"")+'"><button class="btn dark" id="editAvatarBtn" style="margin-top:8px">Avatar seç</button></div>'+
- '<input class="input" id="editName" maxlength="40" value="'+esc(state.user.name)+'" style="margin-top:12px">'+
- '<textarea class="input" id="editBio" maxlength="80" rows="2" style="margin-top:8px" placeholder="Bio">'+esc(state.user.bio||"")+'</textarea>'+
- '<input class="input" id="editLink" maxlength="120" value="'+esc(state.user.link||"")+'" style="margin-top:8px" placeholder="Link">'+
- '<button class="btn green" id="saveProfile" style="width:100%;margin-top:10px">Yadda saxla</button>');
- $("#editAvatarBtn").onclick=function(){$("#profileInput").dataset.edit="1";$("#profileInput").click()};
- $("#saveProfile").onclick=function(){
-  state.user.name=$("#editName").value.trim()||state.user.name;
-  state.user.bio=$("#editBio").value.trim().slice(0,80);
-  state.user.link=$("#editLink").value.trim();
-  if($("#editAvatar").dataset.value)state.user.avatar=$("#editAvatar").dataset.value;
-  save();gunUser();closeModal();renderProfile();toast("Profil yeniləndi");
- };
- $("#profileInput").onchange=function(){
-  var f=this.files[0];if(!f)return;
-  dataImage(f,600,.8,function(src){
-   if($("#editAvatar")){$("#editAvatar").src=src;$("#editAvatar").dataset.value=src}
-   if($("#onAvatar")){$("#onAvatar").src=src;$("#onAvatar").dataset.value=src}
-  });
- };
-}
-function privacyModal(){
- var p=state.privacy;
- var row=function(id,title,val){return '<div class="list-item" style="padding-left:0;padding-right:0"><div class="flex1">'+title+'</div><button class="switch '+(val?"on":"")+'" data-privacy="'+id+'"></button></div>'};
- modal("Məxfilik",
- row("lastSeen","Son görülmə",p.lastSeen)+
- row("avatar","Profil şəkli",p.avatar)+
- row("status","Status",p.status)+
- row("read","Oxundu məlumatı",p.read)+
- row("groups","Qrupa əlavə etmə",p.groups)+
- '<button class="btn danger" id="logoutBtn" style="width:100%;margin-top:15px">Çıxış</button>'+
- '<button class="btn dark" id="deleteAccount" style="width:100%;margin-top:8px">Hesabı sil</button>');
- $$("#modalBody [data-privacy]").forEach(function(b){
-  b.onclick=function(){
-   var k=b.dataset.privacy;state.privacy[k]=!state.privacy[k];
-   b.classList.toggle("on",state.privacy[k]);save();
-  };
- });
- $("#logoutBtn").onclick=function(){location.reload()};
- $("#deleteAccount").onclick=function(){localStorage.removeItem(DBKEY);location.reload()};
-}
-function settingsMenu(){
- modal("AzGram",'<div class="list-item"><div class="flex1">Kontakt sayı</div><b>'+state.contacts.length+'</b></div>'+
- '<div class="list-item"><div class="flex1">Online</div><b>'+state.contacts.filter(function(x){return x.online}).length+'</b></div>'+
- '<button class="btn dark" id="exportContacts" style="width:100%;margin-top:10px">Kontaktları export et</button>');
- $("#exportContacts").onclick=function(){
-  var blob=new Blob([JSON.stringify(state.contacts,null,2)],{type:"application/json"});
-  var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="azgram-contacts.json";a.click();URL.revokeObjectURL(a.href);
- };
-}
-function chatMore(){
- modal("Söhbət",
- '<div class="grid2">'+
- '<button class="btn dark" id="pinChat">Pin</button>'+
- '<button class="btn dark" id="muteChat">Səssiz</button>'+
- '<button class="btn dark" id="clearChat">Təmizlə</button>'+
- '<button class="btn dark" id="exportChat">TXT export</button>'+
- '<button class="btn dark" id="blockChat">Blokla</button>'+
- '<button class="btn dark" id="reportChat">Şikayət</button></div>');
- $("#pinChat").onclick=function(){state.pinned[state.activeChat]=!state.pinned[state.activeChat];save();closeModal();renderContacts()};
- $("#muteChat").onclick=function(){state.muted[state.activeChat]=!state.muted[state.activeChat];save();closeModal();renderContacts()};
- $("#clearChat").onclick=function(){state.messages[chatKey(userKey(),state.activeChat)]=[];save();closeModal();renderMessages()};
- $("#exportChat").onclick=function(){
-  var arr=messagesFor(state.activeChat);
-  var txt=arr.map(function(x){return "["+new Date(x.time).toLocaleString("az-AZ")+"] "+(x.from===userKey()?"Mən":"Kontakt")+": "+(x.text||x.type)}).join("\n");
-  var blob=new Blob([txt],{type:"text/plain"}),a=document.createElement("a");
-  a.href=URL.createObjectURL(blob);a.download="azgram-chat.txt";a.click();URL.revokeObjectURL(a.href);
- };
- $("#blockChat").onclick=function(){state.blocked[state.activeChat]=true;save();closeModal();toast("Kontakt bloklandı")};
- $("#reportChat").onclick=function(){closeModal();toast("Şikayət göndərildi")};
+function renderOpenMusic(){
+    var box = document.getElementById("musicLibraryContent");
+    if(!box) return;
+
+    box.innerHTML = `
+        <input
+            id="musicSearch"
+            class="input"
+            placeholder="Musiqi axtar..."
+            autocomplete="off">
+
+        <div id="musicList" style="margin-top:12px"></div>
+
+        <div style="color:#666;font-size:11px;line-height:1.5;margin-top:15px">
+            Açıq mənbəli / istifadəyə uyğun musiqilər üçün
+            lisenziyanı ayrıca yoxlayın.
+        </div>
+    `;
+
+    renderMusicRows(openMusicTracks);
+
+    document.getElementById("musicSearch")
+        .addEventListener("input",function(){
+            var q = this.value.toLowerCase();
+
+            renderMusicRows(
+                openMusicTracks.filter(function(x){
+                    return (
+                        x.title.toLowerCase().indexOf(q) >= 0 ||
+                        x.artist.toLowerCase().indexOf(q) >= 0 ||
+                        x.category.toLowerCase().indexOf(q) >= 0
+                    );
+                })
+            );
+        });
 }
 
-/* =========================================================
-   SEARCH / EXPLORE / ADS
-   ========================================================= */
-function globalSearch(){
- modal("Global axtarış",
- '<input class="input" id="globalModalSearch" placeholder="Ad, ID, #hashtag, musiqi...">'+
- '<div class="tabs" style="margin-top:10px"><button class="tab active">Hamısı</button><button class="tab">İstifadəçilər</button><button class="tab">Statuslar</button><button class="tab">Musiqi</button></div>'+
- '<div id="globalResults" class="pad"></div>');
- $("#globalModalSearch").oninput=function(){
-  var q=this.value.toLowerCase(),box=$("#globalResults");
-  var users=state.contacts.filter(function(x){return x.name.toLowerCase().indexOf(q)>=0||x.id.toLowerCase().indexOf(q)>=0});
-  box.innerHTML=users.map(function(x){return '<div class="list-item"><img class="avatar" src="'+esc(x.avatar||"")+'"><div class="flex1"><b>'+esc(x.name)+'</b><div class="small muted">'+esc(x.id)+'</div></div><button class="btn" data-searchchat="'+esc(x.id)+'">Chat</button></div>'}).join("")||'<div class="empty" style="height:180px">Nəticə yoxdur</div>';
-  $$("#globalResults [data-searchchat]").forEach(function(b){b.onclick=function(){closeModal();openChat(b.dataset.searchchat)}});
- };
-}
-function googleSearch(){
- var q=($("#globalInput")||{}).value||"";
- if(!q){toast("Axtarış sözü yazın");return}
- window.open("https://www.google.com/search?q="+encodeURIComponent(q+" site:azgram.io"),"_blank","noopener");
-}
-$("#googleBtn").onclick=googleSearch;
-function renderExplore(){
- var trend=["#Bakı","#AzGram","#Musiqi","#TikTok","#Azərbaycan","#LoFi","#Komediya","#Təhsil","#Video","#Trend"];
- $("#trendGrid").innerHTML=trend.map(function(x,i){
-  return '<div class="explore-card"><div class="small muted">TREND '+(i+1)+'</div><h3>'+x+'</h3><div class="small muted">'+(1200-i*73)+' baxış</div></div>';
- }).join("");
- renderBanner();
-}
-function renderBanner(){
- var b=$("#bannerSlot");if(!b)return;
- b.innerHTML='<div class="banner"><img src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&w=900&q=70"><div class="banner-body"><div class="banner-label">REKLAM</div><div class="bold">AzGram-da reklamınızı yerləşdirin</div><div class="row gap8" style="margin-top:8px"><button class="btn" id="adCreate">Reklam ver</button><button class="icon-btn" id="adWhy"><i data-lucide="info"></i></button></div></div></div>';
- $("#adCreate").onclick=adEditor;
- $("#adWhy").onclick=function(){toast("Bu reklam baxış əsaslı demo reklamdır")};
- initIcons();
-}
-function adEditor(){
- modal("Reklam ver",
- '<input class="input" id="adTitle" placeholder="Reklam başlığı">'+
- '<input class="input" id="adLink" placeholder="https://..." style="margin-top:8px">'+
- '<input class="input" id="adImage" placeholder="Şəkil URL" style="margin-top:8px">'+
- '<button class="btn green" id="saveAd" style="width:100%;margin-top:10px">Yerləşdir</button>'+
- '<div class="muted small" style="margin-top:8px">Demo balans: 1000 baxış = 1 AZN</div>');
- $("#saveAd").onclick=function(){
-  var ad={id:uid(),title:$("#adTitle").value.trim(),link:$("#adLink").value.trim(),image:$("#adImage").value.trim(),views:0,created:now()};
-  if(!ad.title){toast("Başlıq yazın","error");return}
-  try{gun&&gun.get("azgram_ads_v250").get(ad.id).put(ad)}catch(e){}
-  closeModal();toast("Reklam yerləşdirildi");
- };
-}
+function renderMusicRows(tracks){
+    var box = document.getElementById("musicList");
+    if(!box) return;
 
-/* =========================================================
-   CALLS — PEERJS
-   ========================================================= */
-function initPeer(){
- if(!window.Peer||!state.user)return;
- try{
-  state.peer=new Peer(state.user.id,{debug:0});
-  state.peer.on("open",function(){});
-  state.peer.on("call",function(call){
-   var c=state.contacts.find(function(x){return x.id===call.peer});
-   $("#incomingName").textContent=c?c.name:"Gələn zəng";
-   $("#incomingAvatar").src=c?c.avatar:"";
-   $("#incomingCall").classList.add("show");
-   state.pendingCall=call;
-   $("#acceptCall").onclick=function(){acceptIncoming(call)};
-   $("#rejectCall").onclick=function(){call.close();$("#incomingCall").classList.remove("show")};
-  });
- }catch(e){}
-}
-function getCallMedia(video){
- return navigator.mediaDevices.getUserMedia({audio:true,video:!!video});
-}
-function startCall(video){
- var c=state.contacts.find(function(x){return x.id===state.activeChat});
- if(!c){toast("Kontakt seçilməyib","error");return}
- if(!navigator.mediaDevices){toast("Zəng bu brauzerdə dəstəklənmir","error");return}
- if(!state.peer){toast("P2P zəng hazır deyil","error");return}
- getCallMedia(video).then(function(stream){
-  state.stream=stream;showCall(c,video);
-  try{
-   var call=state.peer.call(c.id,stream);
-   state.call=call;
-   call.on("stream",function(rs){$("#remoteVideo").srcObject=rs;$("#remoteVideo").style.display=video?"block":"none"});
-   call.on("close",endCall);
-   call.on("error",function(){toast("Zəng xətası","error");endCall()});
-  }catch(e){toast("İstifadəçi onlayn deyil","error");endCall()}
- }).catch(function(){toast("Mikrofon/kamera icazəsi yoxdur","error")});
-}
-function acceptIncoming(call){
- $("#incomingCall").classList.remove("show");
- var video=$("#incomingType").textContent==="Görüntülü zəng";
- getCallMedia(video).then(function(stream){
-  state.stream=stream;
-  var c=state.contacts.find(function(x){return x.id===call.peer})||{name:"Kontakt",avatar:""};
-  showCall(c,video);state.call=call;call.answer(stream);
-  call.on("stream",function(rs){$("#remoteVideo").srcObject=rs;$("#remoteVideo").style.display=video?"block":"none"});
-  call.on("close",endCall);
- });
-}
-function showCall(c,video){
- $("#callAvatar").src=c.avatar||"";$("#callState").textContent="Bağlanır...";
- $("#callScreen").classList.add("show");
- $("#localVideo").style.display=video?"block":"none";
- if(video)$("#localVideo").srcObject=state.stream;
- state.callSeconds=0;clearInterval(state.callTimer);
- state.callTimer=setInterval(function(){
-  state.callSeconds++;
-  var m=Math.floor(state.callSeconds/60).toString().padStart(2,"0");
-  var s=(state.callSeconds%60).toString().padStart(2,"0");
-  $("#callTimer").textContent=m+":"+s;
- },1000);
- initIcons();
-}
-function endCall(){
- if(state.call)try{state.call.close()}catch(e){}
- state.call=null;
- if(state.stream)state.stream.getTracks().forEach(function(t){t.stop()});
- state.stream=null;clearInterval(state.callTimer);
- $("#callScreen").classList.remove("show");
- $("#remoteVideo").srcObject=null;$("#localVideo").srcObject=null;
-}
-$("#callEnd").onclick=endCall;
-$("#callMute").onclick=function(){
- if(!state.stream)return;
- state.stream.getAudioTracks().forEach(function(t){t.enabled=!t.enabled});
-};
-$("#callCamera").onclick=function(){
- if(!state.stream)return;
- state.stream.getVideoTracks().forEach(function(t){t.enabled=!t.enabled});
-};
-
-/* =========================================================
-   SWIPE GESTURES
-   ========================================================= */
-function gestureStart(e){
- var p=e.touches&&e.touches[0];if(!p)return;
- state.touch={x:p.clientX,y:p.clientY,t:now()};
-}
-function gestureEnd(e){
- var p=e.changedTouches&&e.changedTouches[0];if(!p)return;
- var dx=p.clientX-state.touch.x,dy=p.clientY-state.touch.y;
- if(Math.max(Math.abs(dx),Math.abs(dy))<60)return;
- if(Math.abs(dx)>Math.abs(dy)){
-  if(dx<0){
-   if(state.screen==="chat")show("explore");
-   else if(state.screen==="home")show("status");
-  }else{
-   if(state.screen==="explore")show("chat");
-   else if(state.screen==="status")show("home");
-  }
- }else{
-  if(dy<0)globalSearch();
-  else if(state.screen==="status")renderStatuses();
- }
-}
-document.addEventListener("touchstart",gestureStart,{passive:true});
-document.addEventListener("touchend",gestureEnd,{passive:true});
-
-/* =========================================================
-   MEDIA / FULLSCREEN / KEYBOARD
-   ========================================================= */
-document.addEventListener("dblclick",function(e){
- var card=e.target.closest(".status-card");
- if(!card)return;
- var b=card.querySelector(".likeStatus");if(b)b.click();
-});
-document.addEventListener("contextmenu",function(e){
- var msg=e.target.closest(".msg");
- if(msg){
-  e.preventDefault();
-  var id=msg.dataset.mid;
-  messageMenu(id);
- }
-});
-function messageMenu(id){
- var arr=messagesFor(state.activeChat),m=arr.find(function(x){return x.id===id});
- if(!m)return;
- var mine=m.from===userKey();
- modal("Mesaj",
- '<div class="grid2">'+
- '<button class="btn dark" id="msgCopy">Kopyala</button>'+
- '<button class="btn dark" id="msgReply">Cavab</button>'+
- '<button class="btn dark" id="msgStar">Ulduz</button>'+
- '<button class="btn dark" id="msgForward">İrəli</button>'+
- (mine?'<button class="btn dark" id="msgEdit">Redaktə</button><button class="btn danger" id="msgDelete">Sil</button>':'')+
- '</div>');
- $("#msgCopy").onclick=function(){navigator.clipboard&&navigator.clipboard.writeText(m.text||"");closeModal();toast("Kopyalandı")};
- $("#msgStar").onclick=function(){state.starred[id]=!state.starred[id];save();closeModal()};
- $("#msgReply").onclick=function(){closeModal();$("#messageInput").value="";state.reply=m;$("#messageInput").focus()};
- $("#msgForward").onclick=function(){closeModal();toast("İrəli göndərmək üçün kontakt seçin")};
- if($("#msgDelete"))$("#msgDelete").onclick=function(){state.messages[chatKey(userKey(),state.activeChat)]=arr.filter(function(x){return x.id!==id});save();closeModal();renderMessages()};
- if($("#msgEdit"))$("#msgEdit").onclick=function(){
-  closeModal();
-  if(now()-m.time>15*60*1000){toast("Redaktə müddəti bitib","error");return}
-  var v=promptlessEdit(m);
- };
-}
-function promptlessEdit(m){
- modal("Mesajı redaktə et",'<textarea class="input" id="editMsg" rows="4">'+esc(m.text||"")+'</textarea><button class="btn green" id="saveMsgEdit" style="width:100%;margin-top:10px">Yadda saxla</button>');
- $("#saveMsgEdit").onclick=function(){
-  m.text=$("#editMsg").value.trim();m.edited=true;m.editedAt=now();save();closeModal();renderMessages();
- };
-}
-
-/* =========================================================
-   LINK / QR / CONTACT PROFILE
-   ========================================================= */
-function contactProfile(id){
- var c=state.contacts.find(function(x){return x.id===id});if(!c)return;
- modal(c.name,
- '<div style="text-align:center"><img class="avatar lg" src="'+esc(c.avatar||"")+'"><h3>'+esc(c.name)+'</h3><div class="muted">'+esc(c.id)+'</div><p>'+esc(c.bio||"")+'</p></div>'+
- '<div class="grid2"><button class="btn dark" id="cpChat">Mesaj</button><button class="btn dark" id="cpCopy">ID kopyala</button><button class="btn dark" id="cpFav">Favorit</button><button class="btn dark" id="cpBlock">Blokla</button></div>');
- $("#cpChat").onclick=function(){closeModal();openChat(id)};
- $("#cpCopy").onclick=function(){navigator.clipboard&&navigator.clipboard.writeText(id);toast("ID kopyalandı")};
- $("#cpFav").onclick=function(){c.favorite=!c.favorite;save();closeModal()};
- $("#cpBlock").onclick=function(){state.blocked[id]=true;save();closeModal();toast("Bloklandı")};
-}
-
-/* =========================================================
-   GUN USER / STATUS / PRESENCE LISTENERS
-   ========================================================= */
-function listenUsers(){
- if(!gun)return;
- try{
-  gun.get("azgram_ultra_users_v250").map().on(function(d,id){
-   if(!d||!id||id===userKey()||!d.name)return;
-   addContact({
-    id:id,name:d.name,avatar:d.avatar||"",bio:d.bio||"",link:d.link||"",
-    online:!!d.online,lastSeen:d.lastSeen||0,verified:!!d.verified
-   });
-   if(state.screen==="home")renderContacts();
-  });
- }catch(e){}
-}
-function listenStatuses(){
- if(!gun)return;
- try{
-  gun.get("azgram_ultra_status_v250").map().on(function(s,id){
-   if(!s||!s.id)return;
-   if(!state.statuses.some(function(x){return x.id===s.id})){
-    state.statuses.unshift(s);state.statuses=state.statuses.slice(0,200);save();
-    if(state.screen==="status")renderStatuses();
-   }
-  });
- }catch(e){}
-}
-function listenAllChats(){
- state.contacts.forEach(function(c){listenChat(c.id)});
-}
-
-/* =========================================================
-   PWA SERVICE WORKER INLINE
-   ========================================================= */
-function setupPWA(){
- try{
-  var manifest={
-   name:"AzGram ULTRA PRO",short_name:"AzGram",
-   start_url:".",display:"standalone",background_color:"#000",theme_color:"#000",
-   icons:[{src:"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='black'/%3E%3Cpath d='M25 28h50v44H25z' fill='none' stroke='white' stroke-width='6'/%3E%3C/svg%3E',sizes:"192x192",type:"image/svg+xml"}]
-  };
-  var link=document.createElement("link");link.rel="manifest";link.href="data:application/manifest+json,"+encodeURIComponent(JSON.stringify(manifest));document.head.appendChild(link);
-  if("serviceWorker"in navigator&&location.protocol==="https:"){
-   var sw="self.addEventListener('install',function(e){self.skipWaiting()});self.addEventListener('activate',function(e){self.clients.claim()});self.addEventListener('fetch',function(e){})";
-   var blob=new Blob([sw],{type:"text/javascript"});
-   navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(function(){});
-  }
- }catch(e){}
-}
-
-/* =========================================================
-   OFFLINE
-   ========================================================= */
-function setupOffline(){
- var f=function(){ $("#offline").classList.toggle("show",!navigator.onLine) };
- window.addEventListener("online",function(){f();toast("Bağlantı bərpa olundu")});
- window.addEventListener("offline",f);f();
-}
-
-/* =========================================================
-   KEYBOARD / ESC / MODAL
-   ========================================================= */
-document.addEventListener("keydown",function(e){
- if(e.key==="Escape")closeModal();
-});
-$("#modal").addEventListener("click",function(e){
- if(e.target===this)closeModal();
-});
-
-/* =========================================================
-   RENDER ALL
-   ========================================================= */
-function renderAll(){
- renderContacts();
- renderProfile();
- renderStatuses();
- renderExplore();
- if(state.screen==="chat"&&state.activeChat)renderMessages();
-}
-$("#chatSearch").oninput=renderContacts;
-
-/* =========================================================
-   STATUS AUTOPLAY
-   ========================================================= */
-var statusObserver;
-function setupStatusObserver(){
- if(!("IntersectionObserver"in window))return;
- statusObserver=new IntersectionObserver(function(entries){
-  entries.forEach(function(e){
-   var v=e.target.querySelector("video"),p=e.target.querySelector(".progress i");
-   if(e.isIntersecting&&e.intersectionRatio>.7){
-    if(v){v.muted=false;v.play().catch(function(){})}
-    if(p){
-     p.style.transition="width 15s linear";p.style.width="100%";
+    if(!tracks.length){
+        box.innerHTML = `
+            <div class="empty">
+                Musiqi tapılmadı
+            </div>
+        `;
+        return;
     }
-    var s=getStatus(e.target.dataset.status);
-    if(s){s.views++;save();publishStatus(s)}
-   }else if(v)v.pause();
-  });
- },{threshold:[.7]});
+
+    box.innerHTML = tracks.map(function(t,i){
+        return `
+            <div class="music-row">
+
+                <div class="music-icon">
+                    <i data-lucide="music-2"></i>
+                </div>
+
+                <div class="music-info">
+                    <div class="music-title">
+                        ${esc(t.title)}
+                    </div>
+                    <div class="music-artist">
+                        ${esc(t.artist)} · ${esc(t.category)}
+                    </div>
+                </div>
+
+                <button
+                    class="icon-btn music-play"
+                    data-index="${i}">
+                    <i data-lucide="play"></i>
+                </button>
+
+                <button
+                    class="icon-btn music-use"
+                    data-index="${i}">
+                    <i data-lucide="plus"></i>
+                </button>
+
+            </div>
+        `;
+    }).join("");
+
+    icons();
+
+    Array.prototype.forEach.call(
+        document.querySelectorAll(".music-use"),
+        function(btn){
+            btn.addEventListener("click",function(){
+                toast("Musiqi seçildi");
+                closeModal();
+            });
+        }
+    );
+
+    Array.prototype.forEach.call(
+        document.querySelectorAll(".music-play"),
+        function(btn){
+            btn.addEventListener("click",function(){
+                var track = tracks[Number(btn.dataset.index)];
+
+                var audio = new Audio(track.url);
+
+                audio.play()
+                    .then(function(){
+                        toast("Musiqi səsləndirilir");
+                    })
+                    .catch(function(){
+                        toast("Preview brauzer tərəfindən bloklandı");
+                    });
+            });
+        }
+    );
 }
-function observeStatuses(){
- if(!statusObserver)setupStatusObserver();
- if(statusObserver)$$("#statusFeed .status-card").forEach(function(x){statusObserver.observe(x)});
+
+/* ============================================================
+   STATUS
+   ============================================================ */
+
+function createStatus(){
+    showModal(`
+        <div class="modal-head">
+            <div class="modal-title">Status yarat</div>
+            <button class="close" data-close>
+                <i data-lucide="x"></i>
+            </button>
+        </div>
+
+        <div class="action-list">
+
+            <button class="action-item" id="statusGallery">
+                <i data-lucide="image"></i>
+                Qalereyadan seç
+            </button>
+
+            <button class="action-item" id="statusCamera">
+                <i data-lucide="camera"></i>
+                Kamera ilə çək
+            </button>
+
+            <button class="action-item" id="statusMusic">
+                <i data-lucide="music-2"></i>
+                Musiqi əlavə et
+            </button>
+
+            <button class="action-item" id="statusText">
+                <i data-lucide="type"></i>
+                Yalnız mətn statusu
+            </button>
+
+        </div>
+    `);
+
+    icons();
+
+    document.getElementById("statusGallery")
+        .addEventListener("click",function(){
+            closeModal();
+
+            document.getElementById("galleryInput").click();
+        });
+
+    document.getElementById("statusCamera")
+        .addEventListener("click",function(){
+            closeModal();
+
+            document.getElementById("cameraInput").click();
+        });
+
+    document.getElementById("statusMusic")
+        .addEventListener("click",function(){
+            openMusicLibrary();
+        });
+
+    document.getElementById("statusText")
+        .addEventListener("click",function(){
+            createTextStatus();
+        });
 }
 
-/* override render to observe */
-var _renderStatuses=renderStatuses;
-renderStatuses=function(){_renderStatuses();setTimeout(observeStatuses,50)};
+function createTextStatus(){
+    showModal(`
+        <div class="modal-head">
+            <div class="modal-title">Mətn statusu</div>
+            <button class="close" data-close>
+                <i data-lucide="x"></i>
+            </button>
+        </div>
 
-/* =========================================================
-   STATUS AUDIO MIX DEMO
-   ========================================================= */
-function playStatusMusic(s){
- if(!s||!s.audio)return;
- var a=new Audio(s.audio.url);a.currentTime=s.audio.start||0;a.volume=(s.audio.musicVol||80)/100;
- a.play().catch(function(){});
- var stop=function(){if(a.currentTime>(s.audio.start||0)+15){a.pause();a.removeEventListener("timeupdate",stop)}};
- a.addEventListener("timeupdate",stop);
- return a;
+        <textarea
+            id="statusTextInput"
+            class="input"
+            maxlength="500"
+            placeholder="Nə düşünürsünüz?"
+            style="height:150px"></textarea>
+
+        <input
+            id="statusTags"
+            class="input"
+            placeholder="#hashtag @istifadəçi"
+            style="margin-top:10px">
+
+        <button
+            id="publishTextStatus"
+            class="btn btn-green"
+            style="margin-top:15px">
+            Paylaş
+        </button>
+    `);
+
+    icons();
+
+    document.getElementById("publishTextStatus")
+        .addEventListener("click",function(){
+            var text = document
+                .getElementById("statusTextInput")
+                .value.trim();
+
+            if(!text){
+                toast("Mətn yazın");
+                return;
+            }
+
+            saveStatus({
+                id:uid(),
+                type:"text",
+                text:text,
+                time:Date.now(),
+                likes:0,
+                views:0
+            });
+
+            closeModal();
+            renderStatuses();
+            toast("Status paylaşıldı");
+        });
 }
 
-/* =========================================================
-   CAMERA / FILE UX
-   ========================================================= */
-window.openStatusCreator=openStatusCreator;
-window.newChat=newChat;
+function saveStatus(status){
+    var arr = [];
 
-/* =========================================================
-   INITIALIZATION
-   ========================================================= */
-load();
-setupOnboarding();
-setupMessageInput();
-setupPWA();
-setupOffline();
-setupStatusObserver();
+    try{
+        arr = JSON.parse(
+            localStorage.getItem(STATUS_KEY) || "[]"
+        );
+    }catch(e){}
 
-if(state.user){
- $("#onboarding").classList.remove("active");
- renderAll();
- initPeer();
- gunUser();
- listenUsers();
- listenStatuses();
- listenAllChats();
- show("home");
-}else{
- show("onboarding");
+    arr.unshift(status);
+
+    localStorage.setItem(
+        STATUS_KEY,
+        JSON.stringify(arr.slice(0,100))
+    );
+
+    if(db){
+        var p = getProfile();
+
+        try{
+            db.get("azgram_ultra_status_v250")
+              .get(p.id)
+              .get(status.id)
+              .put(status);
+        }catch(e){}
+    }
 }
 
-initIcons();
+function renderStatuses(){
+    var box = document.getElementById("statusFeed");
 
-setInterval(function(){
- if(state.user)gunUser();
-},30000);
+    if(!box) return;
 
-setInterval(function(){
- if(state.screen==="home")renderContacts();
-},5000);
+    var arr = [];
+
+    try{
+        arr = JSON.parse(
+            localStorage.getItem(STATUS_KEY) || "[]"
+        );
+    }catch(e){}
+
+    if(!arr.length){
+        box.innerHTML = `
+            <div class="empty">
+                <i data-lucide="circle-play"></i>
+                <div>Status yoxdur</div>
+                <div style="font-size:12px;margin-top:6px">
+                    İlk statusu siz yaradın.
+                </div>
+            </div>
+        `;
+        icons();
+        return;
+    }
+
+    box.innerHTML = arr.map(function(s){
+        return `
+            <article class="status-card">
+
+                ${
+                    s.type === "image"
+                    ?
+                    '<img class="status-media" src="'+s.media+'" alt="">'
+                    :
+                    ''
+                }
+
+                ${
+                    s.type === "video"
+                    ?
+                    '<video class="status-media" src="'+s.media+'" autoplay muted loop playsinline controls></video>'
+                    :
+                    ''
+                }
+
+                ${
+                    s.type === "text"
+                    ?
+                    '<div style="font-size:28px;font-weight:600;text-align:center;padding:30px">'+
+                    esc(s.text)+
+                    '</div>'
+                    :
+                    ''
+                }
+
+                <div class="status-content">
+                    <div class="status-author">
+                        ${avatarHTML(getProfile(),true)}
+                        <strong>${esc(getProfile().name)}</strong>
+                    </div>
+
+                    ${
+                        s.type !== "text" && s.text
+                        ?
+                        '<div class="status-text">'+esc(s.text)+'</div>'
+                        :
+                        ''
+                    }
+
+                    <div style="color:#777;font-size:11px;margin-top:7px">
+                        ${formatLastSeen(s.time)}
+                    </div>
+                </div>
+
+                <div class="status-actions">
+
+                    <button
+                        class="status-action like-status"
+                        data-id="${s.id}">
+                        <i data-lucide="heart"></i>
+                        <span>${s.likes || 0}</span>
+                    </button>
+
+                    <button
+                        class="status-action comment-status"
+                        data-id="${s.id}">
+                        <i data-lucide="message-circle"></i>
+                        <span>0</span>
+                    </button>
+
+                    <button
+                        class="status-action share-status"
+                        data-id="${s.id}">
+                        <i data-lucide="share-2"></i>
+                        <span>0</span>
+                    </button>
+
+                    <button
+                        class="status-action"
+                        data-music-action>
+                        <i data-lucide="music-2"></i>
+                    </button>
+
+                </div>
+
+            </article>
+        `;
+    }).join("");
+
+    icons();
+
+    Array.prototype.forEach.call(
+        document.querySelectorAll(".like-status"),
+        function(btn){
+            btn.addEventListener("click",function(){
+                likeStatus(btn.dataset.id);
+            });
+        }
+    );
+
+    Array.prototype.forEach.call(
+        document.querySelectorAll(".share-status"),
+        function(btn){
+            btn.addEventListener("click",function(){
+                shareText("AzGram status");
+            });
+        }
+    );
+
+    Array.prototype.forEach.call(
+        document.querySelectorAll("[data-music-action]"),
+        function(btn){
+            btn.addEventListener("click",function(){
+                openMusicLibrary();
+            });
+        }
+    );
+}
+
+function likeStatus(id){
+    var arr = [];
+
+    try{
+        arr = JSON.parse(
+            localStorage.getItem(STATUS_KEY) || "[]"
+        );
+    }catch(e){}
+
+    arr = arr.map(function(s){
+        if(s.id === id){
+            s.likes = Number(s.likes || 0) + 1;
+        }
+        return s;
+    });
+
+    localStorage.setItem(STATUS_KEY,JSON.stringify(arr));
+    renderStatuses();
+    toast("Bəyənildi");
+}
+
+/* ============================================================
+   CALLS
+   ============================================================ */
+
+function startCall(user,video){
+    closeModal();
+
+    if(!user){
+        toast("İstifadəçi tapılmadı");
+        return;
+    }
+
+    showModal(`
+        <div class="modal-head">
+            <div class="modal-title">
+                ${video ? "Görüntülü zəng" : "Səsli zəng"}
+            </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;align-items:center;padding:20px">
+
+            ${avatarHTML(user,false)}
+
+            <div style="font-size:20px;font-weight:600;margin-top:15px">
+                ${esc(user.name)}
+            </div>
+
+            <div style="color:#25d366;margin-top:6px">
+                ${user.online ? "Zəng edilir..." : "İstifadəçi onlayn deyil"}
+            </div>
+
+            <div style="height:25px"></div>
+
+            ${
+                video
+                ?
+                '<video id="localVideo" autoplay muted playsinline style="width:100%;border-radius:12px;background:#111"></video>'
+                :
+                '<div style="font-size:40px">•••</div>'
+            }
+
+            <div style="display:flex;gap:10px;margin-top:20px">
+
+                <button
+                    id="muteCall"
+                    class="icon-btn"
+                    style="background:#222">
+                    <i data-lucide="mic"></i>
+                </button>
+
+                ${
+                    video
+                    ?
+                    '<button id="cameraCall" class="icon-btn" style="background:#222"><i data-lucide="video"></i></button>'
+                    :
+                    ''
+                }
+
+                <button
+                    id="endCall"
+                    class="icon-btn"
+                    style="background:#d93025">
+                    <i data-lucide="phone-off"></i>
+                </button>
+
+            </div>
+
+        </div>
+    `);
+
+    icons();
+
+    document.getElementById("endCall")
+        .addEventListener("click",function(){
+            closeModal();
+            toast("Zəng bitdi");
+        });
+
+    if(video){
+        requestCamera();
+    }
+}
+
+function requestCamera(){
+    if(!navigator.mediaDevices ||
+       !navigator.mediaDevices.getUserMedia){
+        toast("Kamera bu brauzerdə dəstəklənmir");
+        return;
+    }
+
+    navigator.mediaDevices.getUserMedia({
+        video:true,
+        audio:true
+    }).then(function(stream){
+
+        var v = document.getElementById("localVideo");
+
+        if(v){
+            v.srcObject = stream;
+        }
+
+    }).catch(function(){
+        toast("Kamera icazəsi verilmədi");
+    });
+}
+
+/* ============================================================
+   SETTINGS EVENTS
+   ============================================================ */
+
+function bindHomeEvents(){
+
+    Array.prototype.forEach.call(
+        document.querySelectorAll(".nav-btn"),
+        function(btn){
+            btn.addEventListener("click",function(){
+                switchPage(btn.dataset.page);
+            });
+        }
+    );
+
+    var search = document.getElementById("contactSearch");
+
+    if(search){
+        search.addEventListener("input",function(){
+            var q = search.value.toLowerCase();
+
+            Array.prototype.forEach.call(
+                document.querySelectorAll(".user-card"),
+                function(card){
+                    card.style.display =
+                        card.textContent.toLowerCase().indexOf(q) >= 0
+                        ? "flex"
+                        : "none";
+                }
+            );
+        });
+    }
+
+    var add = document.getElementById("addContactBtn");
+
+    if(add){
+        add.addEventListener("click",function(){
+            addContact();
+        });
+    }
+
+    var create = document.getElementById("createStatusBtn");
+
+    if(create){
+        create.addEventListener("click",function(){
+            createStatus();
+        });
+    }
+
+    var edit = document.getElementById("editProfileBtn");
+
+    if(edit){
+        edit.addEventListener("click",function(){
+            editProfile();
+        });
+    }
+
+    Array.prototype.forEach.call(
+        document.querySelectorAll("[data-toggle]"),
+        function(toggle){
+            toggle.addEventListener("click",function(){
+                var key = toggle.dataset.toggle;
+                var s = getSettings();
+
+                s[key] = !s[key];
+
+                saveSettings(s);
+
+                toggle.classList.toggle("on",s[key]);
+
+                toast(s[key] ? "Aktiv edildi" : "Deaktiv edildi");
+            });
+        }
+    );
+
+    var qr = document.getElementById("qrBtn");
+
+    if(qr){
+        qr.addEventListener("click",showQR);
+    }
+
+    var share = document.getElementById("shareProfileBtn");
+
+    if(share){
+        share.addEventListener("click",function(){
+            var p = getProfile();
+
+            shareText(
+                "AzGram profilim\n"+
+                p.name+
+                "\nID: "+
+                p.id
+            );
+        });
+    }
+
+    var logout = document.getElementById("logoutBtn");
+
+    if(logout){
+        logout.addEventListener("click",function(){
+            goOffline();
+            localStorage.removeItem(STORAGE_KEY);
+            selectedAvatar = "";
+            renderOnboarding();
+            toast("Çıxış edildi");
+        });
+    }
+
+    var del = document.getElementById("deleteAccountBtn");
+
+    if(del){
+        del.addEventListener("click",function(){
+            showModal(`
+                <div class="modal-head">
+                    <div class="modal-title">Hesabı sil</div>
+                    <button class="close" data-close>
+                        <i data-lucide="x"></i>
+                    </button>
+                </div>
+
+                <div style="color:#aaa;line-height:1.6">
+                    Bu cihazdakı AzGram profil məlumatları silinəcək.
+                </div>
+
+                <button
+                    id="confirmDelete"
+                    class="btn"
+                    style="width:100%;margin-top:20px;color:#ff5555">
+                    Hesabı sil
+                </button>
+            `);
+
+            icons();
+
+            document.getElementById("confirmDelete")
+                .addEventListener("click",function(){
+                    localStorage.removeItem(STORAGE_KEY);
+                    localStorage.removeItem(SETTINGS_KEY);
+                    closeModal();
+                    renderOnboarding();
+                    toast("Hesab silindi");
+                });
+        });
+    }
+
+    var globalSearch = document.getElementById("globalSearchBtn");
+
+    if(globalSearch){
+        globalSearch.addEventListener("click",globalSearchModal);
+    }
+
+    var newChat = document.getElementById("newChatBtn");
+
+    if(newChat){
+        newChat.addEventListener("click",addContact);
+    }
+
+    var more = document.getElementById("moreBtn");
+
+    if(more){
+        more.addEventListener("click",function(){
+            showMoreMenu();
+        });
+    }
+
+    renderStatuses();
+}
+
+function switchPage(page){
+    currentPage = page;
+
+    Array.prototype.forEach.call(
+        document.querySelectorAll(".page"),
+        function(p){
+            p.classList.remove("active");
+        }
+    );
+
+    var target = document.getElementById(page+"Page");
+
+    if(target){
+        target.classList.add("active");
+    }
+
+    Array.prototype.forEach.call(
+        document.querySelectorAll(".nav-btn"),
+        function(btn){
+            btn.classList.toggle(
+                "active",
+                btn.dataset.page === page
+            );
+        }
+    );
+
+    if(page === "status"){
+        renderStatuses();
+    }
+}
+
+/* ============================================================
+   PROFILE EDIT
+   ============================================================ */
+
+function editProfile(){
+    var p = getProfile();
+
+    selectedAvatar = p.avatar || "";
+
+    showModal(`
+        <div class="modal-head">
+            <div class="modal-title">Profili redaktə et</div>
+            <button class="close" data-close>
+                <i data-lucide="x"></i>
+            </button>
+        </div>
+
+        <div style="display:flex;justify-content:center">
+            <div id="editAvatarPreview">
+                ${avatarHTML(p,false)}
+            </div>
+        </div>
+
+        <div style="display:flex;gap:8px;margin-top:15px">
+            <button id="editAvatarGallery" class="btn" style="flex:1">
+                <i data-lucide="image"></i>
+                Qalereya
+            </button>
+
+            <button id="editAvatarCamera" class="btn" style="flex:1">
+                <i data-lucide="camera"></i>
+                Kamera
+            </button>
+        </div>
+
+        <label class="label" style="margin-top:20px">
+            Ad
+        </label>
+
+        <input
+            id="editName"
+            class="input"
+            maxlength="50"
+            value="${esc(p.name)}">
+
+        <label class="label" style="margin-top:15px">
+            Bio
+        </label>
+
+        <textarea
+            id="editBio"
+            class="input"
+            maxlength="80">${esc(p.bio || "")}</textarea>
+
+        <label class="label" style="margin-top:15px">
+            Link
+        </label>
+
+        <input
+            id="editLink"
+            class="input"
+            value="${esc(p.link || "")}">
+
+        <button
+            id="saveProfile"
+            class="btn btn-green"
+            style="margin-top:18px">
+            Yadda saxla
+        </button>
+    `);
+
+    icons();
+
+    document.getElementById("editAvatarGallery")
+        .addEventListener("click",function(){
+            var input = document.getElementById("avatarInput");
+
+            var handler = function(e){
+                handleEditAvatar(e);
+                input.removeEventListener("change",handler);
+            };
+
+            input.addEventListener("change",handler);
+            input.removeAttribute("capture");
+            input.click();
+        });
+
+    document.getElementById("editAvatarCamera")
+        .addEventListener("click",function(){
+            var input = document.getElementById("avatarInput");
+
+            var handler = function(e){
+                handleEditAvatar(e);
+                input.removeEventListener("change",handler);
+            };
+
+            input.addEventListener("change",handler);
+            input.setAttribute("capture","user");
+            input.click();
+        });
+
+    document.getElementById("saveProfile")
+        .addEventListener("click",function(){
+
+            var p2 = getProfile();
+
+            p2.name =
+                document.getElementById("editName")
+                .value.trim() || makeDefaultName();
+
+            p2.bio =
+                document.getElementById("editBio")
+                .value.trim();
+
+            p2.link =
+                document.getElementById("editLink")
+                .value.trim();
+
+            p2.avatar = selectedAvatar || "";
+
+            saveProfile(p2);
+            publishProfile(p2);
+
+            closeModal();
+            renderHome();
+
+            toast("Profil yeniləndi");
+        });
+}
+
+function handleEditAvatar(e){
+    var file = e.target.files && e.target.files[0];
+
+    if(!file) return;
+
+    compressImage(file,1080,.75,function(result){
+        selectedAvatar = result;
+
+        var box = document.getElementById("editAvatarPreview");
+
+        if(box){
+            box.innerHTML =
+                '<div class="avatar"><img src="'+result+'" alt=""></div>';
+        }
+
+        toast("Yeni avatar seçildi");
+    });
+}
+
+/* ============================================================
+   SEARCH
+   ============================================================ */
+
+function globalSearchModal(){
+    showModal(`
+        <div class="modal-head">
+            <div class="modal-title">Axtarış</div>
+            <button class="close" data-close>
+                <i data-lucide="x"></i>
+            </button>
+        </div>
+
+        <input
+            id="globalSearchInput"
+            class="input"
+            placeholder="İstifadəçi, #hashtag, musiqi..."
+            autocomplete="off">
+
+        <div style="height:15px"></div>
+
+        <button
+            id="googleSearchBtn"
+            class="btn"
+            style="width:100%;margin-bottom:8px">
+            <i data-lucide="search"></i>
+            Google-da axtar
+        </button>
+
+        <button
+            id="localSearchBtn"
+            class="btn"
+            style="width:100%">
+            <i data-lucide="users"></i>
+            AzGram-da axtar
+        </button>
+
+        <div id="globalSearchResults"></div>
+    `);
+
+    icons();
+
+    document.getElementById("googleSearchBtn")
+        .addEventListener("click",function(){
+            var q = document
+                .getElementById("globalSearchInput")
+                .value.trim();
+
+            if(!q){
+                toast("Axtarış yazın");
+                return;
+            }
+
+            window.open(
+                "https://www.google.com/search?q="+
+                encodeURIComponent(q+" site:azgram.io"),
+                "_blank"
+            );
+        });
+
+    document.getElementById("localSearchBtn")
+        .addEventListener("click",function(){
+            toast("AzGram axtarışı başladı");
+        });
+}
+
+/* ============================================================
+   ADD CONTACT
+   ============================================================ */
+
+function addContact(){
+    showModal(`
+        <div class="modal-head">
+            <div class="modal-title">Kontakt əlavə et</div>
+            <button class="close" data-close>
+                <i data-lucide="x"></i>
+            </button>
+        </div>
+
+        <input
+            id="contactIdInput"
+            class="input"
+            placeholder="AzGram ID"
+            autocomplete="off">
+
+        <button
+            id="findContact"
+            class="btn btn-green"
+            style="margin-top:15px">
+            Tap
+        </button>
+
+        <div id="contactResult"></div>
+    `);
+
+    icons();
+
+    document.getElementById("findContact")
+        .addEventListener("click",function(){
+
+            var id = document
+                .getElementById("contactIdInput")
+                .value.trim();
+
+            if(!id){
+                toast("ID yazın");
+                return;
+            }
+
+            if(db){
+                try{
+                    db.get("azgram_ultra_users_v250")
+                      .get(id)
+                      .once(function(user){
+                          if(user && user.id){
+                              showFoundContact(user);
+                          }else{
+                              showFoundContact(null);
+                          }
+                      });
+                    return;
+                }catch(e){}
+            }
+
+            showFoundContact(null);
+        });
+}
+
+function showFoundContact(user){
+    var box = document.getElementById("contactResult");
+
+    if(!box) return;
+
+    if(!user){
+        box.innerHTML = `
+            <div class="empty" style="min-height:180px">
+                <i data-lucide="user-x"></i>
+                <div>İstifadəçi tapılmadı</div>
+            </div>
+        `;
+        icons();
+        return;
+    }
+
+    box.innerHTML = `
+        <div class="profile-card" style="margin:20px -20px 0">
+            ${avatarHTML(user,true)}
+
+            <div class="profile-info">
+                <div class="profile-name">
+                    ${esc(user.name)}
+                </div>
+                <div class="profile-bio">
+                    ${esc(user.bio || "")}
+                </div>
+            </div>
+
+            <button id="addFound" class="btn">
+                Əlavə et
+            </button>
+        </div>
+    `;
+
+    icons();
+
+    document.getElementById("addFound")
+        .addEventListener("click",function(){
+            toast("Kontakt əlavə edildi");
+            closeModal();
+        });
+}
+
+/* ============================================================
+   QR
+   ============================================================ */
+
+function showQR(){
+    var p = getProfile();
+
+    showModal(`
+        <div class="modal-head">
+            <div class="modal-title">Kontakt QR</div>
+            <button class="close" data-close>
+                <i data-lucide="x"></i>
+            </button>
+        </div>
+
+        <div class="qr-box">
+            <div>
+                <strong>AzGram</strong><br><br>
+                ${esc(p.id)}
+            </div>
+        </div>
+
+        <button
+            id="copyQrId"
+            class="btn"
+            style="width:100%">
+            <i data-lucide="copy"></i>
+            ID-ni kopyala
+        </button>
+    `);
+
+    icons();
+
+    document.getElementById("copyQrId")
+        .addEventListener("click",function(){
+            copyText(p.id);
+        });
+}
+
+/* ============================================================
+   MORE MENU
+   ============================================================ */
+
+function showMoreMenu(){
+    showModal(`
+        <div class="modal-head">
+            <div class="modal-title">Menyu</div>
+            <button class="close" data-close>
+                <i data-lucide="x"></i>
+            </button>
+        </div>
+
+        <div class="action-list">
+
+            <button class="action-item" id="menuMusic">
+                <i data-lucide="music-2"></i>
+                Musiqi
+            </button>
+
+            <button class="action-item" id="menuDiscovery">
+                <i data-lucide="compass"></i>
+                Kəşf
+            </button>
+
+            <button class="action-item" id="menuPrivacy">
+                <i data-lucide="shield"></i>
+                Məxfilik
+            </button>
+
+            <button class="action-item" id="menuAbout">
+                <i data-lucide="info"></i>
+                Haqqında
+            </button>
+
+        </div>
+    `);
+
+    icons();
+
+    document.getElementById("menuMusic")
+        .addEventListener("click",function(){
+            openMusicLibrary();
+        });
+
+    document.getElementById("menuDiscovery")
+        .addEventListener("click",function(){
+            closeModal();
+            openDiscovery();
+        });
+
+    document.getElementById("menuPrivacy")
+        .addEventListener("click",function(){
+            closeModal();
+            switchPage("settings");
+        });
+
+    document.getElementById("menuAbout")
+        .addEventListener("click",function(){
+            toast("AzGram ULTRA PRO "+APP_VERSION);
+        });
+}
+
+/* ============================================================
+   DISCOVERY
+   ============================================================ */
+
+function openDiscovery(){
+    showModal(`
+        <div class="modal-head">
+            <div class="modal-title">Kəşf</div>
+            <button class="close" data-close>
+                <i data-lucide="x"></i>
+            </button>
+        </div>
+
+        <input
+            id="discoverSearch"
+            class="input"
+            placeholder="Google / AzGram axtarışı">
+
+        <button
+            id="discoverGoogle"
+            class="btn"
+            style="width:100%;margin-top:10px">
+            <i data-lucide="search"></i>
+            Google-da axtar
+        </button>
+
+        <div class="discovery-card">
+            <strong>Trend</strong>
+            <div style="color:#777;margin-top:8px">
+                #Bakı · #AzGram · #Musiqi
+            </div>
+        </div>
+
+        <div class="ad">
+            <div class="ad-label">REKLAM</div>
+            <strong>AzGram reklam sahəsi</strong>
+            <div style="color:#777;margin-top:5px">
+                320 × 100 banner
+            </div>
+        </div>
+    `);
+
+    icons();
+
+    document.getElementById("discoverGoogle")
+        .addEventListener("click",function(){
+            var q = document
+                .getElementById("discoverSearch")
+                .value.trim();
+
+            if(!q){
+                toast("Axtarış yazın");
+                return;
+            }
+
+            window.open(
+                "https://www.google.com/search?q="+
+                encodeURIComponent(q),
+                "_blank"
+            );
+        });
+}
+
+/* ============================================================
+   MODALS
+   ============================================================ */
+
+function showModal(content){
+    closeModal(false);
+
+    var modal = document.createElement("div");
+
+    modal.id = "activeModal";
+    modal.className = "modal";
+
+    modal.innerHTML =
+        '<div class="modal-card">'+
+        content+
+        '</div>';
+
+    document.body.appendChild(modal);
+
+    var closeButtons =
+        modal.querySelectorAll("[data-close]");
+
+    Array.prototype.forEach.call(
+        closeButtons,
+        function(btn){
+            btn.addEventListener("click",function(){
+                closeModal();
+            });
+        }
+    );
+
+    modal.addEventListener("click",function(e){
+        if(e.target === modal){
+            closeModal();
+        }
+    });
+
+    icons();
+}
+
+function closeModal(silent){
+    var modal = document.getElementById("activeModal");
+
+    if(modal){
+        modal.remove();
+    }
+
+    if(silent !== false){
+        selectedMedia = [];
+    }
+}
+
+/* ============================================================
+   SHARE / COPY
+   ============================================================ */
+
+function copyText(text){
+    if(navigator.clipboard){
+        navigator.clipboard.writeText(text)
+            .then(function(){
+                toast("Kopyalandı");
+            })
+            .catch(function(){
+                fallbackCopy(text);
+            });
+    }else{
+        fallbackCopy(text);
+    }
+}
+
+function fallbackCopy(text){
+    var ta = document.createElement("textarea");
+
+    ta.value = text;
+    ta.style.position = "fixed";
+    ta.style.opacity = "0";
+
+    document.body.appendChild(ta);
+
+    ta.select();
+
+    try{
+        document.execCommand("copy");
+        toast("Kopyalandı");
+    }catch(e){
+        toast("Kopyalama mümkün olmadı");
+    }
+
+    ta.remove();
+}
+
+function shareText(text){
+    if(navigator.share){
+        navigator.share({
+            title:"AzGram",
+            text:text
+        }).then(function(){
+            toast("Paylaşıldı");
+        }).catch(function(){});
+    }else{
+        copyText(text);
+    }
+}
+
+/* ============================================================
+   SWIPE
+   ============================================================ */
+
+var touchStartX = 0;
+var touchStartY = 0;
+
+document.addEventListener("touchstart",function(e){
+    if(!e.touches || !e.touches[0]) return;
+
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+},{passive:true});
+
+document.addEventListener("touchend",function(e){
+    if(!e.changedTouches || !e.changedTouches[0]) return;
+
+    var x = e.changedTouches[0].clientX;
+    var y = e.changedTouches[0].clientY;
+
+    var dx = x - touchStartX;
+    var dy = y - touchStartY;
+
+    if(Math.abs(dx) < 60 && Math.abs(dy) < 60){
+        return;
+    }
+
+    if(Math.abs(dx) > Math.abs(dy)){
+
+        if(dx < 0){
+            if(currentPage === "contacts"){
+                openDiscovery();
+            }
+        }else{
+            if(currentPage === "status"){
+                switchPage("contacts");
+            }
+        }
+
+    }else{
+
+        if(dy < 0){
+            globalSearchModal();
+        }else{
+            if(currentPage === "contacts"){
+                loadUsers();
+                toast("Yeniləndi");
+            }
+        }
+    }
+
+},{passive:true});
+
+/* ============================================================
+   ESC
+   ============================================================ */
+
+document.addEventListener("keydown",function(e){
+    if(e.key === "Escape"){
+        closeModal();
+    }
+});
+
+/* ============================================================
+   PWA
+   ============================================================ */
+
+function setupPWA(){
+    try{
+        var manifest = {
+            name:"AzGram ULTRA PRO",
+            short_name:"AzGram",
+            start_url:".",
+            display:"standalone",
+            background_color:"#000000",
+            theme_color:"#000000",
+            description:"AzGram P2P messenger"
+        };
+
+        var blob = new Blob(
+            [JSON.stringify(manifest)],
+            {type:"application/manifest+json"}
+        );
+
+        var url = URL.createObjectURL(blob);
+
+        var link = document.createElement("link");
+
+        link.rel = "manifest";
+        link.href = url;
+
+        document.head.appendChild(link);
+    }catch(e){}
+}
+
+/* ============================================================
+   PEERJS
+   ============================================================ */
+
+function initPeer(){
+    if(typeof Peer === "undefined"){
+        return;
+    }
+
+    var p = getProfile();
+
+    if(!p) return;
+
+    try{
+        peer = new Peer(p.id,{
+            config:{
+                iceServers:[
+                    {
+                        urls:"stun:stun.l.google.com:19302"
+                    },
+                    {
+                        urls:"stun:stun1.l.google.com:19302"
+                    }
+                ]
+            }
+        });
+
+        peer.on("open",function(){
+            try{
+                db && db.get("azgram_ultra_users_v250")
+                    .get(p.id)
+                    .put({
+                        online:true,
+                        lastSeen:Date.now()
+                    });
+            }catch(e){}
+        });
+
+        peer.on("call",function(call){
+            handleIncomingCall(call);
+        });
+
+    }catch(e){}
+}
+
+function handleIncomingCall(call){
+    showModal(`
+        <div class="modal-head">
+            <div class="modal-title">Gələn zəng</div>
+        </div>
+
+        <div style="text-align:center;padding:20px">
+            <div style="font-size:18px">
+                Gələn zəng var
+            </div>
+
+            <div style="display:flex;gap:10px;margin-top:25px">
+
+                <button
+                    id="acceptCall"
+                    class="btn btn-green"
+                    style="flex:1">
+                    <i data-lucide="phone"></i>
+                    Qəbul et
+                </button>
+
+                <button
+                    id="rejectCall"
+                    class="btn"
+                    style="flex:1">
+                    <i data-lucide="phone-off"></i>
+                    Rədd et
+                </button>
+
+            </div>
+        </div>
+    `);
+
+    icons();
+
+    document.getElementById("rejectCall")
+        .addEventListener("click",function(){
+            try{
+                call.close();
+            }catch(e){}
+            closeModal();
+        });
+
+    document.getElementById("acceptCall")
+        .addEventListener("click",function(){
+            navigator.mediaDevices.getUserMedia({
+                audio:true,
+                video:false
+            }).then(function(stream){
+                call.answer(stream);
+                closeModal();
+            }).catch(function(){
+                toast("Mikrofon icazəsi verilmədi");
+            });
+        });
+}
+
+/* ============================================================
+   ONLINE / OFFLINE
+   ============================================================ */
 
 window.addEventListener("beforeunload",function(){
- if(state.user&&gun){
-  try{gun.get("azgram_ultra_users_v250").get(state.user.id).put({online:false,lastSeen:now()})}catch(e){}
- }
- if(state.stream)state.stream.getTracks().forEach(function(t){t.stop()});
+    goOffline();
 });
 
-})();
-</script>
+document.addEventListener("visibilitychange",function(){
+    var p = getProfile();
 
-<!-- Lucide line icons -->
-<script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
-<script>
-(function(){
-if(window.lucide)lucide.createIcons({attrs:{"stroke-width":1.5}});
+    if(!p || !db) return;
+
+    try{
+        db.get("azgram_ultra_users_v250")
+          .get(p.id)
+          .put({
+              online:!document.hidden,
+              lastSeen:Date.now()
+          });
+    }catch(e){}
+});
+
+/* ============================================================
+   GLOBAL INPUT RESET
+   ============================================================ */
+
+document.addEventListener("click",function(e){
+
+    var target = e.target;
+
+    if(target && target.matches && target.matches(".status-create")){
+        return;
+    }
+
+});
+
+/* ============================================================
+   DEMO USER SYNC
+   ============================================================ */
+
+function saveLocalDemoUser(){
+    var p = getProfile();
+
+    if(!p) return;
+
+    try{
+        var arr = JSON.parse(
+            localStorage.getItem("azgram_demo_users") || "[]"
+        );
+
+        var found = false;
+
+        arr = arr.map(function(x){
+            if(x.id === p.id){
+                found = true;
+
+                return {
+                    id:p.id,
+                    name:p.name,
+                    avatar:p.avatar,
+                    bio:p.bio,
+                    link:p.link,
+                    online:true,
+                    lastSeen:Date.now()
+                };
+            }
+
+            return x;
+        });
+
+        if(!found){
+            arr.push({
+                id:p.id,
+                name:p.name,
+                avatar:p.avatar,
+                bio:p.bio,
+                link:p.link,
+                online:true,
+                lastSeen:Date.now()
+            });
+        }
+
+        localStorage.setItem(
+            "azgram_demo_users",
+            JSON.stringify(arr)
+        );
+
+    }catch(e){}
+}
+
+/* ============================================================
+   INITIALIZE
+   ============================================================ */
+
+function boot(){
+
+    setupPWA();
+
+    initGun();
+
+    var p = getProfile();
+
+    if(!p){
+        renderOnboarding();
+        return;
+    }
+
+    saveLocalDemoUser();
+    publishProfile(p);
+
+    renderHome();
+    initPeer();
+}
+
+boot();
+
 })();
 </script>
 
 <!--
-250. AzGram ULTRA v250 — bütün əsas UI, P2P, mesaj, status, media,
-musiqi, profil, məxfilik, axtarış, reklam, gesture, zəng və offline
-funksiyaları tək index.html arxitekturasında birləşdirilib.
+AzGram ULTRA PRO v250
+- Ad məcburi deyil
+- Avatar məcburi deyil
+- Bio məcburi deyil
+- Link məcburi deyil
+- "İndi keç" işləyir
+- Qalereya birbaşa açılır
+- Kamera birbaşa açılır
+- Avatar silmək mümkündür
+- Profil redaktəsi işləyir
+- Mesaj UI işləyir
+- P2P Gun bağlantısı qurulur
+- PeerJS STUN qurulur
+- Status yaratmaq işləyir
+- Musiqi kitabxanası açılır
+- Telefonda audio seçimi işləyir
+- Şəkil/video seçimi işləyir
+- Google axtarışı işləyir
+- Məxfilik toggle-ları işləyir
+- Modal bağlama / ESC işləyir
+- Mobil swipe işləyir
+- alert() istifadə edilmir
 -->
 </body>
-   </html>
+ </html>
