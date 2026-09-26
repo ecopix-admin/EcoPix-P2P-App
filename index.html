@@ -1,66 +1,2260 @@
+<!-- AzGram - Single File - GitHub Pages Ready -->
 <!DOCTYPE html>
 <html lang="az">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#000000">
 <title>AzGram</title>
+
 <script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
+
 <style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:system-ui}
-body{background:#000;color:#fff;height:100vh;overflow:hidden;display:flex;flex-direction:column}
-header{height:52px;background:#111;display:flex;align-items:center;justify-content:space-between;padding:0 12px;border-bottom:1px solid #222}
-header b{font-size:18px}
-header input{width:52%;background:#222;border:0;border-radius:20px;padding:8px 12px;color:#fff;outline:none}
-main{flex:1;overflow:hidden;position:relative}
-.page{position:absolute;inset:0;display:none;flex-direction:column}
-.page.active{display:flex}
-#feed{overflow-y:scroll;scroll-snap-type:y mandatory;background:#000}
-.slide{height:100%;scroll-snap-align:start;position:relative;background:#111;display:flex;align-items:center;justify-content:center}
-.slide img,.slide video{width:100%;height:100%;object-fit:cover}
-.ov{position:absolute;bottom:0;left:0;right:0;padding:14px 12px 24px;background:linear-gradient(transparent,rgba(0,0,0,.9))}
-.btns{position:absolute;right:10px;bottom:90px;display:flex;flex-direction:column;gap:14px}
-.b{width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer}
-.chatlist{flex:1;overflow:auto;padding-bottom:60px}
-.citem{padding:10px 12px;border-bottom:1px solid #151515;display:flex;gap:10px}
-.citem img{width:40px;height:40px;border-radius:50%}
-.inputbar{height:54px;background:#111;display:flex;gap:8px;padding:8px;border-top:1px solid #222}
-.inputbar input{flex:1;background:#222;border:0;border-radius:20px;padding:0 14px;color:#fff;outline:none}
-.inputbar button{background:#fff;color:#000;border:0;border-radius:20px;padding:0 16px;font-weight:700}
-nav{height:54px;background:#111;display:flex;border-top:1px solid #222}
-nav button{flex:1;background:0;border:0;color:#777;font-size:11px}
-nav button.active{color:#fff;font-weight:700}
-.ad{position:absolute;top:60px;left:10px;background:#ffcc00;color:#000;font-size:10px;padding:2px 6px;border-radius:4px;font-weight:700}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000;color:#fff;font-family:Arial,Helvetica,sans-serif}
+button,input{font:inherit}
+button{border:0;outline:0}
+input{outline:0}
+
+:root{
+ --black:#000;
+ --panel:#111;
+ --panel2:#171717;
+ --input:#222;
+ --line:#292929;
+ --text:#fff;
+ --muted:#8d8d8d;
+ --green:#25d366;
+ --blue:#2196f3;
+ --danger:#ff3158;
+}
+
+#app{
+ width:100%;
+ height:100vh;
+ height:100dvh;
+ display:flex;
+ flex-direction:column;
+ background:#000;
+}
+
+.topbar{
+ height:58px;
+ min-height:58px;
+ background:#111;
+ display:flex;
+ align-items:center;
+ padding:0 12px;
+ border-bottom:1px solid #202020;
+ z-index:30;
+}
+
+.logo{
+ font-size:23px;
+ font-weight:800;
+ letter-spacing:-1px;
+ color:#fff;
+ margin-right:12px;
+ white-space:nowrap;
+}
+
+.logo span{color:#25d366}
+
+.searchWrap{
+ flex:1;
+ height:40px;
+ position:relative;
+}
+
+.searchWrap input{
+ width:100%;
+ height:100%;
+ border:0;
+ border-radius:22px;
+ background:#222;
+ color:#fff;
+ padding:0 16px 0 42px;
+ font-size:14px;
+}
+
+.searchIcon{
+ position:absolute;
+ left:15px;
+ top:11px;
+ color:#888;
+ font-size:16px;
+ pointer-events:none;
+}
+
+.profileBtn{
+ margin-left:10px;
+ width:38px;
+ height:38px;
+ border-radius:50%;
+ background:#222;
+ color:#fff;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ font-weight:bold;
+ cursor:pointer;
+}
+
+.searchResults{
+ position:absolute;
+ top:58px;
+ left:0;
+ right:0;
+ background:#111;
+ max-height:300px;
+ overflow-y:auto;
+ z-index:50;
+ display:none;
+ border-bottom:1px solid #292929;
+}
+
+.searchResults.show{display:block}
+
+.searchResult{
+ display:flex;
+ align-items:center;
+ gap:12px;
+ padding:11px 15px;
+ border-bottom:1px solid #1d1d1d;
+ cursor:pointer;
+}
+
+.searchResult:hover{background:#181818}
+
+.avatar{
+ width:45px;
+ height:45px;
+ min-width:45px;
+ border-radius:50%;
+ background:linear-gradient(135deg,#25d366,#128c7e);
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ color:#fff;
+ font-size:18px;
+ font-weight:bold;
+ overflow:hidden;
+}
+
+.avatar.small{
+ width:40px;
+ height:40px;
+ min-width:40px;
+ font-size:16px;
+}
+
+.avatar img{
+ width:100%;
+ height:100%;
+ object-fit:cover;
+}
+
+.main{
+ flex:1;
+ min-height:0;
+ display:flex;
+ overflow:hidden;
+ position:relative;
+}
+
+.sidebar{
+ width:340px;
+ max-width:100%;
+ background:#111;
+ border-right:1px solid #202020;
+ display:flex;
+ flex-direction:column;
+ position:relative;
+ z-index:10;
+}
+
+.sideHeader{
+ height:50px;
+ display:flex;
+ align-items:center;
+ padding:0 15px;
+ border-bottom:1px solid #202020;
+}
+
+.sideTitle{
+ font-size:15px;
+ font-weight:700;
+}
+
+.onlineCount{
+ margin-left:auto;
+ color:#25d366;
+ font-size:12px;
+}
+
+.contacts{
+ flex:1;
+ overflow-y:auto;
+ overscroll-behavior:contain;
+}
+
+.contact{
+ height:68px;
+ padding:8px 14px;
+ display:flex;
+ align-items:center;
+ gap:12px;
+ cursor:pointer;
+ border-bottom:1px solid #191919;
+}
+
+.contact:hover{background:#181818}
+.contact.active{background:#202020}
+
+.contactInfo{
+ min-width:0;
+ flex:1;
+}
+
+.contactName{
+ font-size:15px;
+ font-weight:600;
+ white-space:nowrap;
+ overflow:hidden;
+ text-overflow:ellipsis;
+}
+
+.lastMessage{
+ margin-top:4px;
+ font-size:12px;
+ color:#888;
+ white-space:nowrap;
+ overflow:hidden;
+ text-overflow:ellipsis;
+}
+
+.onlineDot{
+ width:8px;
+ height:8px;
+ background:#25d366;
+ border-radius:50%;
+ box-shadow:0 0 7px #25d366;
+}
+
+.empty{
+ padding:30px 20px;
+ color:#777;
+ text-align:center;
+ font-size:13px;
+ line-height:1.6;
+}
+
+.chat{
+ flex:1;
+ min-width:0;
+ display:flex;
+ flex-direction:column;
+ background:#050505;
+ position:relative;
+}
+
+.chatHeader{
+ height:58px;
+ min-height:58px;
+ background:#111;
+ border-bottom:1px solid #202020;
+ display:flex;
+ align-items:center;
+ padding:0 14px;
+ gap:10px;
+ z-index:4;
+}
+
+.backBtn{
+ display:none;
+ width:38px;
+ height:38px;
+ background:transparent;
+ color:#fff;
+ font-size:23px;
+ cursor:pointer;
+}
+
+.chatUser{
+ flex:1;
+ min-width:0;
+}
+
+.chatName{
+ font-weight:700;
+ font-size:15px;
+ white-space:nowrap;
+ overflow:hidden;
+ text-overflow:ellipsis;
+}
+
+.typing{
+ font-size:11px;
+ color:#25d366;
+ height:15px;
+ margin-top:2px;
+}
+
+.chatActions{
+ display:flex;
+ gap:3px;
+}
+
+.iconBtn{
+ width:38px;
+ height:38px;
+ border-radius:50%;
+ background:transparent;
+ color:#aaa;
+ cursor:pointer;
+ font-size:19px;
+}
+
+.iconBtn:hover{background:#222;color:#fff}
+
+.messages{
+ flex:1;
+ overflow-y:auto;
+ padding:15px 12px;
+ display:flex;
+ flex-direction:column;
+ gap:6px;
+ background:
+ radial-gradient(circle at 20% 20%,rgba(255,255,255,.018),transparent 25%),
+ #050505;
+}
+
+.messageRow{
+ display:flex;
+ width:100%;
+}
+
+.messageRow.me{justify-content:flex-end}
+.messageRow.them{justify-content:flex-start}
+
+.bubble{
+ max-width:min(78%,500px);
+ padding:8px 10px 5px;
+ border-radius:12px;
+ background:#202020;
+ color:#fff;
+ font-size:14px;
+ line-height:1.35;
+ position:relative;
+ word-break:break-word;
+}
+
+.me .bubble{
+ background:#075e54;
+ border-bottom-right-radius:4px;
+}
+
+.them .bubble{
+ border-bottom-left-radius:4px;
+}
+
+.msgText{white-space:pre-wrap}
+
+.msgMedia{
+ max-width:100%;
+ max-height:300px;
+ display:block;
+ border-radius:8px;
+ margin-bottom:5px;
+ object-fit:contain;
+}
+
+.msgTime{
+ text-align:right;
+ color:#9a9a9a;
+ font-size:9px;
+ margin-left:10px;
+ margin-top:2px;
+ white-space:nowrap;
+}
+
+.msgStatus{
+ font-size:12px;
+ color:#999;
+ margin-left:2px;
+}
+
+.msgStatus.read{color:#42a5f5}
+
+.messageComposer{
+ min-height:60px;
+ background:#111;
+ border-top:1px solid #202020;
+ padding:8px 10px;
+ display:flex;
+ gap:8px;
+ align-items:flex-end;
+}
+
+.attachBtn,.emojiBtn{
+ width:42px;
+ height:42px;
+ min-width:42px;
+ border-radius:50%;
+ background:#222;
+ color:#bbb;
+ cursor:pointer;
+ font-size:20px;
+}
+
+.messageInput{
+ flex:1;
+ min-height:42px;
+ max-height:120px;
+ border:0;
+ border-radius:21px;
+ padding:11px 15px;
+ background:#222;
+ color:#fff;
+ resize:none;
+ font-size:14px;
+ line-height:20px;
+}
+
+.sendBtn{
+ width:42px;
+ height:42px;
+ min-width:42px;
+ border-radius:50%;
+ background:#25d366;
+ color:#000;
+ font-size:18px;
+ font-weight:bold;
+ cursor:pointer;
+}
+
+.sendBtn:active{transform:scale(.94)}
+
+.fileInput{display:none}
+
+.welcome{
+ flex:1;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ text-align:center;
+ padding:30px;
+ color:#666;
+ background:#050505;
+}
+
+.welcomeBox h2{
+ color:#ddd;
+ margin:0 0 8px;
+ font-size:22px;
+}
+
+.welcomeBox p{
+ margin:0;
+ font-size:13px;
+ line-height:1.6;
+}
+
+.statusPanel{
+ flex:1;
+ min-width:0;
+ background:#000;
+ position:relative;
+ display:none;
+}
+
+.statusPanel.active{display:block}
+
+.statusFeed{
+ height:100%;
+ width:100%;
+ overflow-y:auto;
+ scroll-snap-type:y mandatory;
+ scroll-behavior:smooth;
+ scrollbar-width:none;
+}
+
+.statusFeed::-webkit-scrollbar{display:none}
+
+.statusItem{
+ width:100%;
+ height:100%;
+ min-height:100%;
+ scroll-snap-align:start;
+ scroll-snap-stop:always;
+ position:relative;
+ background:#050505;
+ overflow:hidden;
+}
+
+.statusMedia{
+ position:absolute;
+ inset:0;
+ width:100%;
+ height:100%;
+ object-fit:cover;
+ background:#000;
+}
+
+.statusShade{
+ position:absolute;
+ inset:0;
+ background:
+ linear-gradient(to top,rgba(0,0,0,.8),transparent 45%),
+ linear-gradient(to bottom,rgba(0,0,0,.45),transparent 20%);
+ pointer-events:none;
+}
+
+.statusTop{
+ position:absolute;
+ top:14px;
+ left:14px;
+ right:14px;
+ display:flex;
+ align-items:center;
+ gap:10px;
+ z-index:2;
+}
+
+.statusAvatar{
+ width:42px;
+ height:42px;
+ border-radius:50%;
+ background:#222;
+ overflow:hidden;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ font-weight:bold;
+}
+
+.statusAvatar img{
+ width:100%;
+ height:100%;
+ object-fit:cover;
+}
+
+.statusAuthor{
+ flex:1;
+}
+
+.statusAuthorName{
+ font-weight:bold;
+ font-size:14px;
+}
+
+.statusTime{
+ color:#bbb;
+ font-size:10px;
+ margin-top:3px;
+}
+
+.adBadge{
+ background:#ffd600;
+ color:#000;
+ font-size:10px;
+ font-weight:bold;
+ padding:5px 8px;
+ border-radius:5px;
+}
+
+.statusBottom{
+ position:absolute;
+ left:15px;
+ right:75px;
+ bottom:24px;
+ z-index:2;
+}
+
+.statusText{
+ font-size:17px;
+ line-height:1.4;
+ font-weight:500;
+ text-shadow:0 2px 5px #000;
+ margin-bottom:10px;
+}
+
+.hashtags{
+ color:#fff;
+ font-size:13px;
+}
+
+.statusActions{
+ position:absolute;
+ right:13px;
+ bottom:22px;
+ display:flex;
+ flex-direction:column;
+ gap:15px;
+ z-index:3;
+}
+
+.statusAction{
+ width:50px;
+ height:50px;
+ border-radius:50%;
+ background:rgba(20,20,20,.7);
+ color:#fff;
+ display:flex;
+ flex-direction:column;
+ align-items:center;
+ justify-content:center;
+ cursor:pointer;
+ font-size:22px;
+}
+
+.statusAction span{
+ font-size:10px;
+ margin-top:2px;
+ color:#ddd;
+}
+
+.statusAction.liked{
+ color:#ff3158;
+}
+
+.statusCreate{
+ position:absolute;
+ right:15px;
+ top:15px;
+ z-index:8;
+ width:43px;
+ height:43px;
+ border-radius:50%;
+ background:#25d366;
+ color:#000;
+ font-size:25px;
+ font-weight:bold;
+ cursor:pointer;
+}
+
+.statusEmpty{
+ width:100%;
+ height:100%;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ color:#777;
+ text-align:center;
+ padding:30px;
+}
+
+.bottomNav{
+ height:64px;
+ min-height:64px;
+ background:#111;
+ border-top:1px solid #202020;
+ display:flex;
+ z-index:40;
+ padding-bottom:env(safe-area-inset-bottom);
+}
+
+.navBtn{
+ flex:1;
+ background:transparent;
+ color:#777;
+ display:flex;
+ flex-direction:column;
+ align-items:center;
+ justify-content:center;
+ gap:4px;
+ cursor:pointer;
+ font-size:11px;
+}
+
+.navBtn .navIcon{font-size:20px}
+.navBtn.active{color:#25d366}
+
+.calls{
+ flex:1;
+ display:none;
+ background:#050505;
+ padding:25px;
+ overflow:auto;
+}
+
+.calls.active{display:block}
+
+.callsTitle{
+ font-size:21px;
+ font-weight:bold;
+ margin-bottom:8px;
+}
+
+.callsText{
+ color:#777;
+ font-size:13px;
+ line-height:1.6;
+}
+
+.modal{
+ position:fixed;
+ inset:0;
+ background:rgba(0,0,0,.8);
+ display:none;
+ align-items:center;
+ justify-content:center;
+ z-index:100;
+ padding:20px;
+}
+
+.modal.show{display:flex}
+
+.modalBox{
+ width:min(420px,100%);
+ background:#111;
+ border:1px solid #292929;
+ border-radius:16px;
+ padding:20px;
+ box-shadow:0 20px 70px #000;
+}
+
+.modalTitle{
+ font-size:20px;
+ font-weight:bold;
+ margin-bottom:8px;
+}
+
+.modalText{
+ color:#999;
+ font-size:12px;
+ line-height:1.5;
+ margin-bottom:15px;
+}
+
+.modalInput{
+ width:100%;
+ height:46px;
+ background:#222;
+ border:0;
+ border-radius:9px;
+ padding:0 13px;
+ color:#fff;
+ margin-bottom:10px;
+}
+
+.modalTextarea{
+ width:100%;
+ min-height:90px;
+ background:#222;
+ border:0;
+ border-radius:9px;
+ padding:12px;
+ color:#fff;
+ resize:none;
+ margin-bottom:10px;
+}
+
+.modalFile{
+ width:100%;
+ color:#aaa;
+ font-size:12px;
+ margin-bottom:15px;
+}
+
+.modalActions{
+ display:flex;
+ justify-content:flex-end;
+ gap:8px;
+}
+
+.modalCancel,.modalSave{
+ padding:10px 16px;
+ border-radius:8px;
+ cursor:pointer;
+}
+
+.modalCancel{background:#222;color:#ccc}
+.modalSave{background:#25d366;color:#000;font-weight:bold}
+
+.toast{
+ position:fixed;
+ left:50%;
+ bottom:82px;
+ transform:translateX(-50%) translateY(20px);
+ background:#222;
+ color:#fff;
+ padding:10px 15px;
+ border-radius:20px;
+ font-size:12px;
+ opacity:0;
+ pointer-events:none;
+ transition:.25s;
+ z-index:200;
+}
+
+.toast.show{
+ opacity:1;
+ transform:translateX(-50%) translateY(0);
+}
+
+.hidden{display:none!important}
+
+@media(max-width:700px){
+ .sidebar{
+   width:100%;
+   border-right:0;
+ }
+ .chat{
+   position:absolute;
+   inset:0;
+   width:100%;
+   z-index:20;
+   transform:translateX(100%);
+   transition:transform .2s ease;
+ }
+ .chat.open{transform:translateX(0)}
+ .backBtn{display:block}
+ .topbar{height:56px;min-height:56px}
+ .searchResults{top:56px}
+ .statusPanel{
+   position:absolute;
+   inset:0;
+   z-index:15;
+ }
+ .statusPanel.active{display:block}
+ .bottomNav{height:62px;min-height:62px}
+ .bubble{max-width:85%}
+}
+
+@media(min-width:701px){
+ .main.statusMode .sidebar{display:none}
+ .main.statusMode .chat{display:none}
+ .main.statusMode .statusPanel{display:block}
+}
+
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-thumb{background:#333;border-radius:10px}
+::-webkit-scrollbar-track{background:transparent}
 </style>
 </head>
+
 <body>
-<header><b>AZGRAM</b><input id="q" placeholder="Axtar #baku" oninput="search(this.value)"></header>
-<main>
-<div id="p-msg" class="page active"><div id="chatList" class="chatlist"></div><div class="inputbar"><input id="msgIn" placeholder="Mesaj yaz..."><button onclick="sendMsg()">Göndər</button></div></div>
-<div id="p-feed" class="page"><div id="feed" style="flex:1"></div><div class="inputbar"><input id="stIn" placeholder="Status yaz #baku"><button onclick="postStatus()">Paylaş</button><input type="file" id="f" accept="image/*,video/*" style="display:none"></div></div>
-<div id="p-search" class="page"><div id="sRes" style="padding:10px;overflow:auto"></div></div>
+<div id="app">
+
+<header class="topbar">
+  <div class="logo">Az<span>Gram</span></div>
+
+  <div class="searchWrap">
+    <span class="searchIcon">⌕</span>
+    <input id="searchInput" type="search" placeholder="Ad və ya #hashtag axtar..." autocomplete="off">
+    <div id="searchResults" class="searchResults"></div>
+  </div>
+
+  <button id="profileBtn" class="profileBtn">A</button>
+</header>
+
+<main id="main" class="main">
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sideHeader">
+      <div class="sideTitle">AzGram-da olanlar</div>
+      <div id="onlineCount" class="onlineCount">0 istifadəçi</div>
+    </div>
+    <div id="contacts" class="contacts"></div>
+  </aside>
+
+  <section id="chat" class="chat">
+
+    <div id="welcome" class="welcome">
+      <div class="welcomeBox">
+        <h2>AzGram</h2>
+        <p>Mesajlaşmaq üçün soldan bir istifadəçi seçin.</p>
+      </div>
+    </div>
+
+    <div id="chatContent" class="hidden" style="height:100%;display:flex;flex-direction:column">
+
+      <div class="chatHeader">
+        <button id="backBtn" class="backBtn">‹</button>
+
+        <div id="chatAvatar" class="avatar small">A</div>
+
+        <div class="chatUser">
+          <div id="chatName" class="chatName">İstifadəçi</div>
+          <div id="typingIndicator" class="typing"></div>
+        </div>
+
+        <div class="chatActions">
+          <button class="iconBtn" title="Zəng">☎</button>
+          <button class="iconBtn" title="Video zəng">▣</button>
+        </div>
+      </div>
+
+      <div id="messages" class="messages"></div>
+
+      <div class="messageComposer">
+        <button id="attachBtn" class="attachBtn">＋</button>
+        <input id="messageFile" class="fileInput" type="file" accept="image/*,video/*">
+        <textarea id="messageInput" class="messageInput" rows="1" placeholder="Mesaj yaz..."></textarea>
+        <button id="sendBtn" class="sendBtn">➤</button>
+      </div>
+
+    </div>
+  </section>
+
+  <section id="statusPanel" class="statusPanel">
+    <button id="createStatusBtn" class="statusCreate">＋</button>
+    <div id="statusFeed" class="statusFeed"></div>
+  </section>
+
+  <section id="calls" class="calls">
+    <div class="callsTitle">Zənglər</div>
+    <div class="callsText">
+      AzGram zəng sistemi üçün bu bölmə hazırdır.<br><br>
+      WebRTC əsaslı səsli və video zəng funksiyası növbəti mərhələdə əlavə oluna bilər.
+    </div>
+  </section>
+
 </main>
-<nav>
-<button class="active" onclick="go('p-msg',this)">💬<br>Mesaj</button>
-<button onclick="go('p-feed',this)">▶️<br>Status</button>
-<button onclick="go('p-search',this)">🔍<br>Axtar</button>
+
+<nav class="bottomNav">
+  <button id="navMessages" class="navBtn active">
+    <div class="navIcon">▣</div>
+    <div>Mesajlar</div>
+  </button>
+
+  <button id="navStatus" class="navBtn">
+    <div class="navIcon">◉</div>
+    <div>Status</div>
+  </button>
+
+  <button id="navCalls" class="navBtn">
+    <div class="navIcon">☎</div>
+    <div>Zənglər</div>
+  </button>
 </nav>
+
+</div>
+
+<div id="nameModal" class="modal">
+  <div class="modalBox">
+    <div class="modalTitle">AzGram-a xoş gəldin</div>
+    <div class="modalText">AzGram-da görünəcək adını yaz.</div>
+    <input id="nameInput" class="modalInput" maxlength="40" placeholder="Adınız">
+    <div class="modalActions">
+      <button id="nameSave" class="modalSave">Davam et</button>
+    </div>
+  </div>
+</div>
+
+<div id="statusModal" class="modal">
+  <div class="modalBox">
+    <div class="modalTitle">Yeni Status</div>
+    <div class="modalText">
+      Mətn yaza və ya şəkil/video seçə bilərsən.
+      Fayl Gun şəbəkəsində paylaşılmaq üçün Base64 formatına çevrilir.
+    </div>
+
+    <textarea id="statusTextInput" class="modalTextarea" maxlength="1000" placeholder="Nə düşünürsən? #AzGram"></textarea>
+
+    <input id="statusFileInput" class="modalFile" type="file" accept="image/*,video/*">
+
+    <div class="modalActions">
+      <button id="statusCancel" class="modalCancel">Ləğv et</button>
+      <button id="statusPublish" class="modalSave">Paylaş</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
 <script>
-const gun = Gun(['https://gun-manhattan.herokuapp.com/gun','https://gun-us.herokuapp.com/gun']);
-const statuses = gun.get('azgram_v3_status');
-const messages = gun.get('azgram_v3_msg');
-let myName = localStorage.getItem('ag_name') || ('User'+Math.floor(Math.random()*9000));
-localStorage.setItem('ag_name', myName);
-let allStatus = [];
-function go(id,btn){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
-function sendMsg(){let v=document.getElementById('msgIn').value.trim();if(!v) return;messages.set({user:myName,text:v,time:Date.now()});document.getElementById('msgIn').value='';}
-messages.map().on((d,id)=>{if(!d||!d.text) return;if(document.getElementById('m-'+id)) return;let div=document.createElement('div');div.id='m-'+id;div.className='citem';div.innerHTML=`<img src="https://i.pravatar.cc/100?u=${d.user}"><div><b>${d.user}</b><div style="color:#ccc">${d.text}</div></div>`;document.getElementById('chatList').appendChild(div);document.getElementById('chatList').scrollTop=99999;});
-function postStatus(){let t=document.getElementById('stIn').value.trim();if(!t) return alert('Status yaz');let file=document.getElementById('f').files[0];if(file){let r=new FileReader();r.onload=e=>{saveStatus(t,e.target.result)};r.readAsDataURL(file);}else{saveStatus(t,'https://picsum.photos/seed/'+Date.now()+'/720/1280');}}
-function saveStatus(text,src){statuses.set({user:myName,text:text,src:src,likes:0,time:Date.now()});document.getElementById('stIn').value='';document.getElementById('f').value='';}
-statuses.map().on((d,id)=>{if(!d||!d.text) return;if(allStatus.find(x=>x._id==id)) return;allStatus.push({_id:id,...d});render();});
-function render(filter=''){let list=[...allStatus];if(filter) list=list.filter(s=>(s.text+s.user).toLowerCase().includes(filter.toLowerCase()));list.sort((a,b)=>(b.likes*5-(Date.now()-b.time)/3600000)-(a.likes*5-(Date.now()-a.time)/3600000));let feed=document.getElementById('feed');feed.innerHTML='';list.forEach((s,i)=>{let ad=(i+1)%4==0?'<div class="ad">REKLAM</div>':'';let d=document.createElement('div');d.className='slide';let isVid=s.src&&s.src.startsWith('data:video');d.innerHTML=`${ad}${isVid?`<video src="${s.src}" loop muted playsinline></video>`:`<img src="${s.src}">`}<div class="btns"><div class="b" onclick="like('${s._id}')">❤️<br><small style="font-size:10px">${s.likes||0}</small></div></div><div class="ov"><b>@${s.user}</b><div>${s.text}</div></div>`;feed.appendChild(d);});feed.querySelectorAll('video').forEach(v=>{v.play().catch(()=>{});});}
-function like(id){let s=allStatus.find(x=>x._id==id);if(!s) return;statuses.get(id).put({likes:(s.likes||0)+1});s.likes=(s.likes||0)+1;render(document.getElementById('q').value);}
-function search(v){if(v){go('p-search',document.querySelectorAll('nav button')[2]);let list=allStatus.filter(s=>(s.text+s.user).toLowerCase().includes(v.toLowerCase()));let h=`<div style="color:#888">${list.length} nəticə</div>`;list.forEach(s=>{h+=`<div style="padding:10px;border-bottom:1px solid #222"><b>@${s.user}</b> ${s.text} - ${s.likes||0} bəyəni</div>`});document.getElementById('sRes').innerHTML=h;render(v);}else{render('');}}
-document.getElementById('stIn').addEventListener('click',()=>document.getElementById('f').click());
+/* ============================================================
+   AZGRAM SINGLE FILE APPLICATION
+   GUN.JS + GITHUB PAGES
+   ============================================================ */
+
+(() => {
+"use strict";
+
+/* ------------------------------------------------------------
+   GUN CONNECTION
+   ------------------------------------------------------------ */
+
+const gun = Gun({
+  peers: [
+    "https://gun-manhattan.herokuapp.com/gun"
+  ],
+  localStorage: true
+});
+
+const usersDB = gun.get("azgram_users");
+const statusDB = gun.get("azgram_status");
+
+/* ------------------------------------------------------------
+   LOCAL STATE
+   ------------------------------------------------------------ */
+
+let myName = localStorage.getItem("myName") || "";
+let myContacts = loadContacts();
+
+let users = {};
+let statuses = {};
+let activeChat = null;
+let activeChatUser = null;
+let messageUnsub = null;
+let typingTimer = null;
+let typingWatch = null;
+let searchTimer = null;
+let currentMode = "messages";
+let statusLoaded = false;
+let messageLastSeen = {};
+let pendingMessageFile = null;
+
+/* ------------------------------------------------------------
+   DOM
+   ------------------------------------------------------------ */
+
+const $ = id => document.getElementById(id);
+
+const main = $("main");
+const sidebar = $("sidebar");
+const chat = $("chat");
+const contactsEl = $("contacts");
+const messagesEl = $("messages");
+const chatContent = $("chatContent");
+const welcome = $("welcome");
+const chatName = $("chatName");
+const chatAvatar = $("chatAvatar");
+const typingIndicator = $("typingIndicator");
+const messageInput = $("messageInput");
+const searchInput = $("searchInput");
+const searchResults = $("searchResults");
+const statusPanel = $("statusPanel");
+const statusFeed = $("statusFeed");
+const calls = $("calls");
+const toast = $("toast");
+
+/* ------------------------------------------------------------
+   HELPERS
+   ------------------------------------------------------------ */
+
+function loadContacts(){
+  try{
+    const x = JSON.parse(localStorage.getItem("myContacts") || "[]");
+    return Array.isArray(x) ? x : [];
+  }catch(e){
+    return [];
+  }
+}
+
+function saveContacts(){
+  localStorage.setItem("myContacts", JSON.stringify(myContacts));
+}
+
+function escapeHTML(value){
+  return String(value ?? "")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
+}
+
+function safeName(name){
+  return String(name || "İstifadəçi").trim().slice(0,40);
+}
+
+function initials(name){
+  const parts = safeName(name).split(/\s+/).filter(Boolean);
+  if(!parts.length) return "A";
+  if(parts.length === 1) return parts[0].slice(0,2).toUpperCase();
+  return (parts[0][0] + parts[1][0]).toUpperCase();
+}
+
+function avatarHTML(user, cls="avatar"){
+  const name = safeName(user?.name || user || "A");
+  const avatar = user?.avatar || "";
+  if(avatar){
+    return `<div class="${cls}"><img src="${escapeHTML(avatar)}" alt=""></div>`;
+  }
+  return `<div class="${cls}">${escapeHTML(initials(name))}</div>`;
+}
+
+function normalizeName(name){
+  return String(name || "").trim().toLowerCase();
+}
+
+function chatID(a,b){
+  const x = normalizeName(a);
+  const y = normalizeName(b);
+  return [x,y].sort().join("__");
+}
+
+function messageDB(otherName){
+  return gun.get("azgram_messages_" + chatID(myName, otherName));
+}
+
+function now(){
+  return Date.now();
+}
+
+function formatTime(timestamp){
+  const d = new Date(Number(timestamp) || Date.now());
+  return d.toLocaleTimeString("az-AZ", {
+    hour:"2-digit",
+    minute:"2-digit"
+  });
+}
+
+function formatAge(timestamp){
+  const diff = Math.max(0, Date.now() - Number(timestamp || Date.now()));
+  const min = Math.floor(diff / 60000);
+  if(min < 1) return "indi";
+  if(min < 60) return min + " dəq";
+  const h = Math.floor(min / 60);
+  if(h < 24) return h + " saat";
+  return Math.floor(h / 24) + " gün";
+}
+
+function showToast(text){
+  toast.textContent = text;
+  toast.classList.add("show");
+  clearTimeout(showToast.t);
+  showToast.t = setTimeout(() => toast.classList.remove("show"),2200);
+}
+
+function randomID(){
+  return Date.now().toString(36) + Math.random().toString(36).slice(2,10);
+}
+
+/* ------------------------------------------------------------
+   FIRST LOGIN
+   ------------------------------------------------------------ */
+
+function askName(){
+  $("nameModal").classList.add("show");
+  setTimeout(() => $("nameInput").focus(),100);
+}
+
+function saveMyName(){
+  const value = safeName($("nameInput").value);
+  if(value.length < 2){
+    showToast("Zəhmət olmasa adınızı yazın.");
+    return;
+  }
+
+  myName = value;
+  localStorage.setItem("myName",myName);
+  $("nameModal").classList.remove("show");
+  registerUser();
+}
+
+$("nameSave").addEventListener("click",saveMyName);
+
+$("nameInput").addEventListener("keydown",e => {
+  if(e.key === "Enter"){
+    e.preventDefault();
+    saveMyName();
+  }
+});
+
+/* ------------------------------------------------------------
+   USER REGISTRATION
+   ------------------------------------------------------------ */
+
+function registerUser(){
+  if(!myName) return;
+
+  const key = normalizeName(myName);
+
+  usersDB.get(key).put({
+    name: myName,
+    key: key,
+    online: true,
+    lastSeen: now(),
+    createdAt: users[key]?.createdAt || now()
+  });
+
+  users[key] = {
+    ...(users[key] || {}),
+    name: myName,
+    key:key,
+    online:true,
+    lastSeen:now()
+  };
+
+  renderContacts();
+}
+
+/* ------------------------------------------------------------
+   AUTOMATIC USER DISCOVERY
+   ------------------------------------------------------------ */
+
+function subscribeUsers(){
+  usersDB.map().on((data,key) => {
+    if(!data || !key || !data.name) return;
+
+    const normalized = normalizeName(data.name);
+
+    users[normalized] = {
+      ...users[normalized],
+      ...data,
+      key: normalized
+    };
+
+    renderContacts();
+  });
+}
+
+/* ------------------------------------------------------------
+   ONLINE HEARTBEAT
+   ------------------------------------------------------------ */
+
+function heartbeat(){
+  if(!myName) return;
+
+  usersDB.get(normalizeName(myName)).put({
+    name:myName,
+    key:normalizeName(myName),
+    online:true,
+    lastSeen:now()
+  });
+}
+
+setInterval(heartbeat,15000);
+
+window.addEventListener("beforeunload",() => {
+  if(!myName) return;
+
+  usersDB.get(normalizeName(myName)).put({
+    name:myName,
+    online:false,
+    lastSeen:now()
+  });
+});
+
+/* ------------------------------------------------------------
+   CONTACTS
+   ------------------------------------------------------------ */
+
+function allContacts(){
+  const map = {};
+
+  Object.keys(users).forEach(k => {
+    const u = users[k];
+    if(u?.name && normalizeName(u.name) !== normalizeName(myName)){
+      map[normalizeName(u.name)] = u;
+    }
+  });
+
+  myContacts.forEach(name => {
+    const key = normalizeName(name);
+    if(key && key !== normalizeName(myName) && !map[key]){
+      map[key] = {name};
+    }
+  });
+
+  return Object.values(map).sort((a,b) => {
+    const ao = a.online ? 1 : 0;
+    const bo = b.online ? 1 : 0;
+    if(ao !== bo) return bo - ao;
+    return safeName(a.name).localeCompare(safeName(b.name),"az");
+  });
+}
+
+function renderContacts(){
+  const list = allContacts();
+
+  $("onlineCount").textContent = list.length + " istifadəçi";
+
+  if(!list.length){
+    contactsEl.innerHTML = `
+      <div class="empty">
+        Hazırda başqa AzGram istifadəçisi tapılmadı.<br><br>
+        Başqa istifadəçilər AzGram-a daxil olduqda avtomatik burada görünəcəklər.
+      </div>
+    `;
+    return;
+  }
+
+  contactsEl.innerHTML = list.map(user => {
+    const active = activeChat && normalizeName(activeChat) === normalizeName(user.name);
+
+    return `
+      <div class="contact ${active ? "active":""}" data-name="${escapeHTML(user.name)}">
+        ${avatarHTML(user,"avatar")}
+        <div class="contactInfo">
+          <div class="contactName">${escapeHTML(user.name)}</div>
+          <div class="lastMessage">
+            ${user.online ? "onlayn" : "AzGram istifadəçisi"}
+          </div>
+        </div>
+        ${user.online ? `<div class="onlineDot"></div>` : ""}
+      </div>
+    `;
+  }).join("");
+
+  contactsEl.querySelectorAll(".contact").forEach(el => {
+    el.addEventListener("click",() => {
+      openChat(el.dataset.name);
+    });
+  });
+}
+
+/* ------------------------------------------------------------
+   OPEN CHAT
+   ------------------------------------------------------------ */
+
+function openChat(name){
+  if(!name || normalizeName(name) === normalizeName(myName)) return;
+
+  activeChat = name;
+  activeChatUser = users[normalizeName(name)] || {name};
+
+  if(!myContacts.some(x => normalizeName(x) === normalizeName(name))){
+    myContacts.push(name);
+    saveContacts();
+  }
+
+  chatName.textContent = name;
+
+  const user = users[normalizeName(name)] || {name};
+  chatAvatar.outerHTML = avatarHTML(user,"avatar small");
+
+  const newAvatar = document.querySelector(".chatHeader .avatar");
+  if(newAvatar) newAvatar.id = "chatAvatar";
+
+  welcome.classList.add("hidden");
+  chatContent.classList.remove("hidden");
+  chatContent.style.display = "flex";
+
+  if(window.innerWidth <= 700){
+    chat.classList.add("open");
+  }
+
+  renderContacts();
+  subscribeMessages(name);
+  subscribeTyping(name);
+}
+
+/* ------------------------------------------------------------
+   CHAT MESSAGES
+   ------------------------------------------------------------ */
+
+function subscribeMessages(otherName){
+  messagesEl.innerHTML = "";
+
+  const db = messageDB(otherName);
+
+  if(messageUnsub){
+    try{ messageUnsub.off(); }catch(e){}
+    messageUnsub = null;
+  }
+
+  messageUnsub = db.map().on((data,key) => {
+    if(!data || !data.id) return;
+    renderMessage(data);
+  });
+}
+
+const renderedMessages = new Map();
+
+function renderMessage(msg){
+  if(!activeChat) return;
+  if(msg.chat !== chatID(myName,activeChat)) return;
+
+  const id = msg.id || randomID();
+
+  let el = renderedMessages.get(id);
+
+  if(!el){
+    el = document.createElement("div");
+    el.dataset.id = id;
+    renderedMessages.set(id,el);
+    messagesEl.appendChild(el);
+  }
+
+  const mine = normalizeName(msg.from) === normalizeName(myName);
+
+  let mediaHTML = "";
+
+  if(msg.fileData){
+    if(String(msg.fileType || "").startsWith("video")){
+      mediaHTML = `<video class="msgMedia" src="${escapeHTML(msg.fileData)}" controls playsinline></video>`;
+    }else{
+      mediaHTML = `<img class="msgMedia" src="${escapeHTML(msg.fileData)}" alt="">`;
+    }
+  }
+
+  const status = mine
+    ? `<span class="msgStatus ${msg.read ? "read":""}">${msg.read ? "✓✓" : "✓✓"}</span>`
+    : "";
+
+  el.className = "messageRow " + (mine ? "me":"them");
+
+  el.innerHTML = `
+    <div class="bubble">
+      ${mediaHTML}
+      ${msg.text ? `<div class="msgText">${escapeHTML(msg.text)}</div>` : ""}
+      <div class="msgTime">
+        ${formatTime(msg.time)}
+        ${status}
+      </div>
+    </div>
+  `;
+
+  requestAnimationFrame(scrollMessages);
+
+  if(!mine && !msg.read){
+    markMessageRead(msg.id);
+  }
+}
+
+function scrollMessages(){
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+}
+
+/* ------------------------------------------------------------
+   SEND MESSAGE
+   ------------------------------------------------------------ */
+
+function sendMessage(){
+  if(!activeChat) return;
+
+  const text = messageInput.value.trim();
+
+  if(!text && !pendingMessageFile){
+    return;
+  }
+
+  const db = messageDB(activeChat);
+
+  const message = {
+    id:randomID(),
+    chat:chatID(myName,activeChat),
+    from:myName,
+    to:activeChat,
+    text:text,
+    time:now(),
+    read:false
+  };
+
+  if(pendingMessageFile){
+    message.fileData = pendingMessageFile.data;
+    message.fileType = pendingMessageFile.type;
+    message.fileName = pendingMessageFile.name;
+  }
+
+  db.get(message.id).put(message);
+
+  messageInput.value = "";
+  messageInput.style.height = "42px";
+  pendingMessageFile = null;
+
+  stopTyping();
+  scrollMessages();
+}
+
+$("sendBtn").addEventListener("click",sendMessage);
+
+messageInput.addEventListener("keydown",e => {
+  if(e.key === "Enter" && !e.shiftKey){
+    e.preventDefault();
+    sendMessage();
+  }
+});
+
+messageInput.addEventListener("input",() => {
+  messageInput.style.height = "42px";
+  messageInput.style.height = Math.min(messageInput.scrollHeight,120) + "px";
+
+  startTyping();
+});
+
+/* ------------------------------------------------------------
+   MESSAGE FILE
+   ------------------------------------------------------------ */
+
+$("attachBtn").addEventListener("click",() => {
+  $("messageFile").click();
+});
+
+$("messageFile").addEventListener("change",e => {
+  const file = e.target.files?.[0];
+  if(!file) return;
+
+  if(file.size > 8 * 1024 * 1024){
+    showToast("Fayl maksimum 8 MB olmalıdır.");
+    e.target.value = "";
+    return;
+  }
+
+  const reader = new FileReader();
+
+  reader.onload = () => {
+    pendingMessageFile = {
+      data:reader.result,
+      type:file.type,
+      name:file.name
+    };
+
+    showToast("Fayl mesaja əlavə edildi. Göndər düyməsinə basın.");
+  };
+
+  reader.readAsDataURL(file);
+  e.target.value = "";
+});
+
+/* ------------------------------------------------------------
+   READ STATUS
+   ------------------------------------------------------------ */
+
+function markMessageRead(id){
+  if(!activeChat || !id) return;
+
+  messageDB(activeChat).get(id).put({
+    read:true,
+    readBy:myName,
+    readAt:now()
+  });
+}
+
+/* ------------------------------------------------------------
+   TYPING INDICATOR
+   ------------------------------------------------------------ */
+
+function typingDB(other){
+  return gun.get("azgram_typing_" + chatID(myName,other));
+}
+
+function startTyping(){
+  if(!activeChat) return;
+
+  typingDB(activeChat).put({
+    name:myName,
+    typing:true,
+    time:now()
+  });
+
+  clearTimeout(typingTimer);
+  typingTimer = setTimeout(stopTyping,1800);
+}
+
+function stopTyping(){
+  if(!activeChat) return;
+
+  typingDB(activeChat).put({
+    name:myName,
+    typing:false,
+    time:now()
+  });
+}
+
+function subscribeTyping(other){
+  if(typingWatch){
+    try{typingWatch.off();}catch(e){}
+  }
+
+  typingWatch = typingDB(other).on(data => {
+    if(!data) return;
+
+    const valid =
+      data.typing === true &&
+      normalizeName(data.name) !== normalizeName(myName) &&
+      Date.now() - Number(data.time || 0) < 4000;
+
+    typingIndicator.textContent = valid ? "yazır..." : "";
+  });
+}
+
+/* ------------------------------------------------------------
+   BACK BUTTON
+   ------------------------------------------------------------ */
+
+$("backBtn").addEventListener("click",() => {
+  chat.classList.remove("open");
+  activeChat = null;
+  activeChatUser = null;
+
+  if(messageUnsub){
+    try{messageUnsub.off();}catch(e){}
+  }
+
+  welcome.classList.remove("hidden");
+  chatContent.classList.add("hidden");
+  renderContacts();
+});
+
+/* ------------------------------------------------------------
+   STATUS DATA
+   ------------------------------------------------------------ */
+
+function subscribeStatuses(){
+  statusDB.map().on((data,key) => {
+    if(!data || !data.id) return;
+
+    statuses[data.id] = {
+      ...statuses[data.id],
+      ...data
+    };
+
+    renderStatuses();
+  });
+}
+
+/* ------------------------------------------------------------
+   STATUS SCORE
+   score = (likes*5 + views) / (hours + 1)
+   ------------------------------------------------------------ */
+
+function statusScore(status){
+  const ageHours = Math.max(
+    0,
+    (Date.now() - Number(status.createdAt || Date.now())) / 3600000
+  );
+
+  return (
+    (Number(status.likes || 0) * 5 + Number(status.views || 0))
+    /
+    (ageHours + 1)
+  );
+}
+
+function getSortedStatuses(){
+  return Object.values(statuses)
+    .filter(s => s && s.id)
+    .sort((a,b) => statusScore(b) - statusScore(a));
+}
+
+/* ------------------------------------------------------------
+   STATUS RENDER
+   ------------------------------------------------------------ */
+
+function renderStatuses(){
+  if(currentMode !== "status" && !statusLoaded) return;
+
+  const list = getSortedStatuses();
+
+  if(!list.length){
+    statusFeed.innerHTML = `
+      <div class="statusEmpty">
+        <div>
+          <div style="font-size:32px;margin-bottom:10px">◉</div>
+          <div>Hələ status yoxdur.</div>
+          <div style="font-size:12px;margin-top:7px">
+            İlk statusu sən paylaş.
+          </div>
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  const oldScroll = statusFeed.scrollTop;
+
+  statusFeed.innerHTML = list.map((status,index) => {
+    const user = users[normalizeName(status.author)] || {
+      name:status.author
+    };
+
+    const isVideo = String(status.fileType || "").startsWith("video");
+    const likedByMe = Array.isArray(status.likedBy) &&
+      status.likedBy.some(x => normalizeName(x) === normalizeName(myName));
+
+    let media = "";
+
+    if(status.fileData){
+      if(isVideo){
+        media = `
+          <video
+            class="statusMedia"
+            src="${escapeHTML(status.fileData)}"
+            playsinline
+            muted
+            loop
+            preload="metadata">
+          </video>
+        `;
+      }else{
+        media = `
+          <img
+            class="statusMedia"
+            src="${escapeHTML(status.fileData)}"
+            alt="">
+        `;
+      }
+    }else{
+      media = `
+        <div
+          class="statusMedia"
+          style="
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            padding:35px;
+            background:linear-gradient(135deg,#101010,#242424);
+            font-size:25px;
+            text-align:center;
+          ">
+          ${escapeHTML(status.text || "")}
+        </div>
+      `;
+    }
+
+    const ad = ((index + 1) % 4 === 0)
+      ? `<div class="adBadge">REKLAM</div>`
+      : "";
+
+    return `
+      <article
+        class="statusItem"
+        data-status-id="${escapeHTML(status.id)}">
+
+        ${media}
+
+        <div class="statusShade"></div>
+
+        <div class="statusTop">
+          ${avatarHTML(user,"statusAvatar")}
+
+          <div class="statusAuthor">
+            <div class="statusAuthorName">
+              ${escapeHTML(status.author)}
+            </div>
+            <div class="statusTime">
+              ${formatAge(status.createdAt)}
+            </div>
+          </div>
+
+          ${ad}
+        </div>
+
+        <div class="statusBottom">
+          ${
+            status.text
+            ? `<div class="statusText">${escapeHTML(status.text)}</div>`
+            : ""
+          }
+
+          ${
+            status.hashtags?.length
+            ? `<div class="hashtags">${status.hashtags.map(x => escapeHTML(x)).join(" ")}</div>`
+            : ""
+          }
+        </div>
+
+        <div class="statusActions">
+
+          <button
+            class="statusAction ${likedByMe ? "liked":""}"
+            data-like="${escapeHTML(status.id)}">
+            ${likedByMe ? "♥" : "♡"}
+            <span>${Number(status.likes || 0)}</span>
+          </button>
+
+          <button
+            class="statusAction"
+            data-share="${escapeHTML(status.id)}">
+            ↗
+            <span>Paylaş</span>
+          </button>
+
+        </div>
+
+      </article>
+    `;
+  }).join("");
+
+  statusFeed.scrollTop = oldScroll;
+
+  bindStatusButtons();
+  setupStatusVideos();
+}
+
+function bindStatusButtons(){
+  statusFeed.querySelectorAll("[data-like]").forEach(btn => {
+    btn.addEventListener("click",e => {
+      e.stopPropagation();
+      likeStatus(btn.dataset.like);
+    });
+  });
+
+  statusFeed.querySelectorAll("[data-share]").forEach(btn => {
+    btn.addEventListener("click",e => {
+      e.stopPropagation();
+      shareStatus(btn.dataset.share);
+    });
+  });
+}
+
+/* ------------------------------------------------------------
+   STATUS LIKE
+   ------------------------------------------------------------ */
+
+function likeStatus(id){
+  const status = statuses[id];
+  if(!status) return;
+
+  const liked = Array.isArray(status.likedBy)
+    ? [...status.likedBy]
+    : [];
+
+  const index = liked.findIndex(
+    x => normalizeName(x) === normalizeName(myName)
+  );
+
+  let likes = Number(status.likes || 0);
+
+  if(index >= 0){
+    liked.splice(index,1);
+    likes = Math.max(0,likes - 1);
+  }else{
+    liked.push(myName);
+    likes++;
+  }
+
+  statusDB.get(id).put({
+    likes,
+    likedBy:liked
+  });
+}
+
+/* ------------------------------------------------------------
+   STATUS VIEWS
+   ------------------------------------------------------------ */
+
+const viewedStatuses = new Set();
+
+function setupStatusObserver(){
+  if(!("IntersectionObserver" in window)) return;
+
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if(entry.isIntersecting && entry.intersectionRatio > .65){
+        const id = entry.target.dataset.statusId;
+
+        if(!id || viewedStatuses.has(id)) return;
+
+        viewedStatuses.add(id);
+
+        const status = statuses[id];
+
+        if(status){
+          statusDB.get(id).put({
+            views:Number(status.views || 0) + 1
+          });
+        }
+
+        const video = entry.target.querySelector("video");
+
+        if(video){
+          video.play().catch(()=>{});
+        }
+      }
+    });
+  },{
+    threshold:[.65]
+  });
+
+  const observe = () => {
+    statusFeed.querySelectorAll(".statusItem").forEach(item => {
+      observer.observe(item);
+    });
+  };
+
+  observe();
+
+  const mutation = new MutationObserver(observe);
+  mutation.observe(statusFeed,{childList:true});
+}
+
+function setupStatusVideos(){
+  statusFeed.querySelectorAll("video").forEach(video => {
+    video.muted = true;
+
+    video.addEventListener("click",e => {
+      e.stopPropagation();
+      if(video.paused) video.play().catch(()=>{});
+      else video.pause();
+    });
+  });
+}
+
+/* ------------------------------------------------------------
+   SHARE STATUS
+   ------------------------------------------------------------ */
+
+async function shareStatus(id){
+  const status = statuses[id];
+  if(!status) return;
+
+  const text =
+    `${status.author} - AzGram\n` +
+    `${status.text || ""}`;
+
+  if(navigator.share){
+    try{
+      await navigator.share({
+        title:"AzGram",
+        text
+      });
+      return;
+    }catch(e){}
+  }
+
+  try{
+    await navigator.clipboard.writeText(text);
+    showToast("Status məlumatı kopyalandı.");
+  }catch(e){
+    showToast("Paylaşma bu cihazda dəstəklənmir.");
+  }
+}
+
+/* ------------------------------------------------------------
+   STATUS CREATION
+   ------------------------------------------------------------ */
+
+$("createStatusBtn").addEventListener("click",() => {
+  $("statusTextInput").value = "";
+  $("statusFileInput").value = "";
+  $("statusModal").classList.add("show");
+});
+
+$("statusCancel").addEventListener("click",() => {
+  $("statusModal").classList.remove("show");
+});
+
+$("statusPublish").addEventListener("click",publishStatus);
+
+function extractHashtags(text){
+  const found = text.match(/#[\p{L}\p{N}_-]+/gu) || [];
+  return [...new Set(found.map(x => x.toLowerCase()))];
+}
+
+async function publishStatus(){
+  const text = $("statusTextInput").value.trim();
+  const file = $("statusFileInput").files?.[0];
+
+  if(!text && !file){
+    showToast("Mətn və ya fayl əlavə edin.");
+    return;
+  }
+
+  if(file && file.size > 12 * 1024 * 1024){
+    showToast("Status faylı maksimum 12 MB olmalıdır.");
+    return;
+  }
+
+  $("statusPublish").disabled = true;
+
+  const finish = data => {
+    const id = randomID();
+
+    const status = {
+      id,
+      author:myName,
+      text:text.slice(0,1000),
+      fileData:data?.data || "",
+      fileType:data?.type || "",
+      fileName:data?.name || "",
+      hashtags:extractHashtags(text),
+      likes:0,
+      views:0,
+      likedBy:[],
+      createdAt:now()
+    };
+
+    statusDB.get(id).put(status);
+
+    $("statusModal").classList.remove("show");
+    $("statusPublish").disabled = false;
+
+    showToast("Status uğurla paylaşıldı.");
+
+    switchMode("status");
+  };
+
+  if(file){
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      finish({
+        data:reader.result,
+        type:file.type,
+        name:file.name
+      });
+    };
+
+    reader.onerror = () => {
+      $("statusPublish").disabled = false;
+      showToast("Fayl oxunarkən xəta baş verdi.");
+    };
+
+    reader.readAsDataURL(file);
+  }else{
+    finish(null);
+  }
+}
+
+/* ------------------------------------------------------------
+   SEARCH
+   ------------------------------------------------------------ */
+
+searchInput.addEventListener("input",() => {
+  clearTimeout(searchTimer);
+
+  searchTimer = setTimeout(() => {
+    runSearch(searchInput.value.trim());
+  },100);
+});
+
+function runSearch(query){
+  if(!query){
+    searchResults.classList.remove("show");
+    searchResults.innerHTML = "";
+    return;
+  }
+
+  const q = query.toLowerCase();
+
+  const foundUsers = allContacts().filter(user =>
+    safeName(user.name).toLowerCase().includes(
+      q.replace(/^#/,"")
+    )
+  );
+
+  const foundStatuses = getSortedStatuses().filter(status => {
+    const text = String(status.text || "").toLowerCase();
+    const author = String(status.author || "").toLowerCase();
+    const tags = (status.hashtags || []).join(" ").toLowerCase();
+
+    return (
+      text.includes(q) ||
+      author.includes(q.replace(/^#/,"")) ||
+      tags.includes(q)
+    );
+  }).slice(0,15);
+
+  let html = "";
+
+  foundUsers.forEach(user => {
+    html += `
+      <div
+        class="searchResult"
+        data-search-user="${escapeHTML(user.name)}">
+
+        ${avatarHTML(user,"avatar small")}
+
+        <div>
+          <div style="font-weight:bold;font-size:14px">
+            ${escapeHTML(user.name)}
+          </div>
+          <div style="font-size:11px;color:#777">
+            AzGram istifadəçisi
+          </div>
+        </div>
+      </div>
+    `;
+  });
+
+  foundStatuses.forEach(status => {
+    html += `
+      <div
+        class="searchResult"
+        data-search-status="${escapeHTML(status.id)}">
+
+        <div class="avatar small">◉</div>
+
+        <div style="min-width:0">
+          <div style="font-weight:bold;font-size:14px">
+            ${escapeHTML(status.author)}
+          </div>
+          <div style="font-size:11px;color:#777;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+            ${escapeHTML(status.text || "Status")}
+          </div>
+        </div>
+      </div>
+    `;
+  });
+
+  if(!html){
+    html = `<div class="empty">Nəticə tapılmadı.</div>`;
+  }
+
+  searchResults.innerHTML = html;
+  searchResults.classList.add("show");
+
+  searchResults.querySelectorAll("[data-search-user]").forEach(el => {
+    el.addEventListener("click",() => {
+      searchResults.classList.remove("show");
+      searchInput.value = "";
+      switchMode("messages");
+      openChat(el.dataset.searchUser);
+    });
+  });
+
+  searchResults.querySelectorAll("[data-search-status]").forEach(el => {
+    el.addEventListener("click",() => {
+      searchResults.classList.remove("show");
+      searchInput.value = "";
+      switchMode("status");
+      setTimeout(() => {
+        const target = statusFeed.querySelector(
+          `[data-status-id="${CSS.escape(el.dataset.searchStatus)}"]`
+        );
+
+        target?.scrollIntoView({behavior:"smooth"});
+      },100);
+    });
+  });
+}
+
+document.addEventListener("click",e => {
+  if(!e.target.closest(".searchWrap")){
+    searchResults.classList.remove("show");
+  }
+});
+
+/* ------------------------------------------------------------
+   NAVIGATION
+   ------------------------------------------------------------ */
+
+function setNav(active){
+  document.querySelectorAll(".navBtn").forEach(x => x.classList.remove("active"));
+  active.classList.add("active");
+}
+
+function switchMode(mode){
+  currentMode = mode;
+
+  main.classList.toggle("statusMode",mode === "status");
+
+  sidebar.style.display = mode === "messages" ? "" : "none";
+  chat.style.display = mode === "messages" ? "" : "none";
+  statusPanel.classList.toggle("active",mode === "status");
+  calls.classList.toggle("active",mode === "calls");
+
+  if(mode === "messages"){
+    setNav($("navMessages"));
+
+    if(window.innerWidth <= 700 && !activeChat){
+      sidebar.style.display = "flex";
+    }
+
+    statusPanel.classList.remove("active");
+  }
+
+  if(mode === "status"){
+    setNav($("navStatus"));
+    statusLoaded = true;
+    renderStatuses();
+  }
+
+  if(mode === "calls"){
+    setNav($("navCalls"));
+  }
+}
+
+$("navMessages").addEventListener("click",() => {
+  switchMode("messages");
+});
+
+$("navStatus").addEventListener("click",() => {
+  switchMode("status");
+});
+
+$("navCalls").addEventListener("click",() => {
+  switchMode("calls");
+});
+
+/* ------------------------------------------------------------
+   PROFILE BUTTON
+   ------------------------------------------------------------ */
+
+$("profileBtn").addEventListener("click",() => {
+  if(!myName){
+    askName();
+    return;
+  }
+
+  const newName = prompt("AzGram adınızı dəyişin:",myName);
+
+  if(newName === null) return;
+
+  const clean = safeName(newName);
+
+  if(clean.length < 2){
+    showToast("Ad çox qısadır.");
+    return;
+  }
+
+  myName = clean;
+  localStorage.setItem("myName",myName);
+
+  registerUser();
+  $("profileBtn").textContent = initials(myName);
+
+  showToast("Ad yeniləndi.");
+});
+
+/* ------------------------------------------------------------
+   INITIALIZATION
+   ------------------------------------------------------------ */
+
+function init(){
+  if(!myName){
+    askName();
+  }else{
+    $("profileBtn").textContent = initials(myName);
+    registerUser();
+  }
+
+  subscribeUsers();
+  subscribeStatuses();
+  setupStatusObserver();
+
+  renderContacts();
+
+  /* Keep local contact list alive even if relay temporarily unavailable */
+  myContacts.forEach(name => {
+    if(!users[normalizeName(name)]){
+      users[normalizeName(name)] = {name};
+    }
+  });
+
+  renderContacts();
+}
+
+/* ------------------------------------------------------------
+   RESPONSIVE MODE
+   ------------------------------------------------------------ */
+
+window.addEventListener("resize",() => {
+  if(window.innerWidth > 700){
+    chat.classList.remove("open");
+  }
+
+  if(currentMode === "messages"){
+    sidebar.style.display = "";
+    chat.style.display = "";
+  }
+});
+
+/* ------------------------------------------------------------
+   PERIODIC STATUS CLEANUP / REFRESH
+   ------------------------------------------------------------ */
+
+setInterval(() => {
+  if(currentMode === "status"){
+    renderStatuses();
+  }
+},30000);
+
+/* ------------------------------------------------------------
+   START
+   ------------------------------------------------------------ */
+
+init();
+
+})();
 </script>
+
 </body>
  </html>
