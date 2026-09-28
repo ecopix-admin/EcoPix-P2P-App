@@ -1,2949 +1,810 @@
 <!DOCTYPE html>
 <html lang="az">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#ff6a00">
-  <meta name="description" content="AzStock.az — Azərbaycanın orijinal stock foto arxivi. Bakı, təbiət, tekstura, kənd və şəhər görüntüləri.">
-  <title>AzStock.az — Azərbaycanın Orijinal Stock Arxivi</title>
-
-  <!-- ================================================================
-       AZSTOCK.AZ — TƏK FAYLLI PRODUCTION DEMO
-       Texnologiyalar: HTML5 + Tailwind CDN + Vanilla JavaScript
-       Backend tələb etmir. Səbət localStorage-da saxlanılır.
-       ================================================================ -->
-
-  <!-- Tailwind CDN — build prosesi tələb olunmur -->
-  <script src="https://cdn.tailwindcss.com"></script>
-
-  <script>
-    /* ================================================================
-       TAILWIND KONFİQURASİYASI
-       ================================================================ */
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            azorange: '#ff6a00',
-            azblack: '#111111',
-            azsoft: '#f6f6f6'
-          },
-          boxShadow: {
-            soft: '0 10px 35px rgba(0,0,0,.08)',
-            card: '0 8px 25px rgba(0,0,0,.08)'
-          }
-        }
-      }
-    };
-  </script>
-
-  <style>
-    /* ================================================================
-       GLOBAL DƏYİŞƏNLƏR
-       ================================================================ */
-    :root {
-      --orange: #ff6a00;
-      --orange-dark: #e85d00;
-      --black: #111111;
-      --white: #ffffff;
-      --gray-50: #fafafa;
-      --gray-100: #f4f4f4;
-      --gray-200: #e8e8e8;
-      --gray-400: #999999;
-      --gray-600: #666666;
-      --gray-800: #222222;
-      --radius: 18px;
-    }
-
-    * {
-      box-sizing: border-box;
-    }
-
-    html {
-      scroll-behavior: smooth;
-    }
-
-    body {
-      margin: 0;
-      background: #fff;
-      color: var(--black);
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system,
-        BlinkMacSystemFont, "Segoe UI", sans-serif;
-    }
-
-    button,
-    input,
-    select {
-      font: inherit;
-    }
-
-    button {
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    /* ================================================================
-       SCROLLBAR
-       ================================================================ */
-    ::-webkit-scrollbar {
-      width: 9px;
-      height: 9px;
-    }
-
-    ::-webkit-scrollbar-track {
-      background: #f1f1f1;
-    }
-
-    ::-webkit-scrollbar-thumb {
-      background: #c7c7c7;
-      border-radius: 99px;
-    }
-
-    ::-webkit-scrollbar-thumb:hover {
-      background: #999;
-    }
-
-    /* ================================================================
-       NAVİQASİYA
-       ================================================================ */
-    .nav-blur {
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
-      background: rgba(255,255,255,.93);
-    }
-
-    .logo-mark {
-      width: 38px;
-      height: 38px;
-      border-radius: 11px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      background: var(--black);
-      color: white;
-      font-weight: 900;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .logo-mark::after {
-      content: "";
-      position: absolute;
-      width: 19px;
-      height: 19px;
-      background: var(--orange);
-      border-radius: 50%;
-      right: -6px;
-      bottom: -6px;
-    }
-
-    .logo-text span {
-      color: var(--orange);
-    }
-
-    /* ================================================================
-       HERO
-       ================================================================ */
-    .hero-bg {
-      background:
-        radial-gradient(circle at 10% 10%, rgba(255,106,0,.10), transparent 30%),
-        radial-gradient(circle at 90% 80%, rgba(255,106,0,.07), transparent 28%),
-        #fff;
-    }
-
-    .hero-grid {
-      background-image:
-        linear-gradient(rgba(0,0,0,.025) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0,0,0,.025) 1px, transparent 1px);
-      background-size: 36px 36px;
-    }
-
-    .hero-search {
-      box-shadow:
-        0 20px 50px rgba(0,0,0,.10),
-        0 2px 8px rgba(0,0,0,.05);
-    }
-
-    /* ================================================================
-       AUTOCOMPLETE
-       ================================================================ */
-    .autocomplete-box {
-      display: none;
-      position: absolute;
-      left: 0;
-      right: 0;
-      top: calc(100% + 8px);
-      z-index: 80;
-      background: white;
-      border: 1px solid #eee;
-      border-radius: 16px;
-      overflow: hidden;
-      box-shadow: 0 18px 45px rgba(0,0,0,.14);
-    }
-
-    .autocomplete-box.open {
-      display: block;
-    }
-
-    .autocomplete-item {
-      padding: 13px 16px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .autocomplete-item:hover {
-      background: #f7f7f7;
-    }
-
-    .autocomplete-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--orange);
-    }
-
-    /* ================================================================
-       TAGLAR
-       ================================================================ */
-    .tag-pill {
-      transition: transform .18s ease, background .18s ease, color .18s ease;
-    }
-
-    .tag-pill:hover {
-      transform: translateY(-2px);
-    }
-
-    /* ================================================================
-       FILTER BUTTONS
-       ================================================================ */
-    .filter-btn {
-      border: 1px solid #e6e6e6;
-      background: white;
-      color: #555;
-      transition: all .2s ease;
-    }
-
-    .filter-btn:hover {
-      border-color: var(--orange);
-      color: var(--orange);
-    }
-
-    .filter-btn.active {
-      background: var(--black);
-      color: white;
-      border-color: var(--black);
-    }
-
-    /* ================================================================
-       MASONRY — CSS COLUMNS
-       ================================================================ */
-    .masonry {
-      column-count: 5;
-      column-gap: 18px;
-    }
-
-    .photo-card {
-      break-inside: avoid;
-      margin-bottom: 18px;
-      position: relative;
-      border-radius: var(--radius);
-      overflow: hidden;
-      background: #eee;
-      cursor: pointer;
-      box-shadow: 0 3px 15px rgba(0,0,0,.05);
-    }
-
-    .photo-card img {
-      display: block;
-      width: 100%;
-      height: auto;
-      min-height: 190px;
-      object-fit: cover;
-      transition: transform .45s cubic-bezier(.2,.7,.2,1);
-    }
-
-    .photo-card:hover img {
-      transform: scale(1.045);
-    }
-
-    .photo-overlay {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-end;
-      padding: 15px;
-      opacity: 0;
-      background: linear-gradient(
-        to top,
-        rgba(0,0,0,.82),
-        rgba(0,0,0,.18) 55%,
-        transparent 100%
-      );
-      transition: opacity .25s ease;
-    }
-
-    .photo-card:hover .photo-overlay {
-      opacity: 1;
-    }
-
-    .photo-info {
-      color: white;
-      transform: translateY(7px);
-      transition: transform .25s ease;
-    }
-
-    .photo-card:hover .photo-info {
-      transform: translateY(0);
-    }
-
-    .photo-actions {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-top: 10px;
-    }
-
-    .action-btn {
-      width: 38px;
-      height: 38px;
-      border-radius: 11px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      border: 1px solid rgba(255,255,255,.25);
-      background: rgba(0,0,0,.35);
-      color: white;
-      transition: .2s ease;
-    }
-
-    .action-btn:hover {
-      background: var(--orange);
-      border-color: var(--orange);
-    }
-
-    .buy-mini {
-      flex: 1;
-      height: 38px;
-      border: 0;
-      border-radius: 11px;
-      background: var(--orange);
-      color: white;
-      font-weight: 800;
-      cursor: pointer;
-    }
-
-    .buy-mini:hover {
-      background: var(--orange-dark);
-    }
-
-    /* ================================================================
-       LIKE STATE
-       ================================================================ */
-    .like-btn.liked {
-      background: #ff3355;
-      border-color: #ff3355;
-    }
-
-    /* ================================================================
-       VIDEO KARTLARI
-       ================================================================ */
-    .video-card {
-      position: relative;
-      border-radius: 18px;
-      overflow: hidden;
-      background: #111;
-      aspect-ratio: 16 / 10;
-    }
-
-    .video-card video {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-      opacity: .88;
-    }
-
-    .video-play {
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%,-50%);
-      width: 58px;
-      height: 58px;
-      border-radius: 50%;
-      background: rgba(255,255,255,.93);
-      color: #111;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding-left: 3px;
-      font-size: 22px;
-      box-shadow: 0 10px 30px rgba(0,0,0,.2);
-    }
-
-    .video-badges {
-      position: absolute;
-      left: 12px;
-      right: 12px;
-      bottom: 12px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .video-badge {
-      padding: 6px 9px;
-      border-radius: 8px;
-      background: rgba(0,0,0,.65);
-      color: white;
-      font-size: 12px;
-      font-weight: 800;
-    }
-
-    /* ================================================================
-       MODAL / LIGHTBOX
-       ================================================================ */
-    .modal-backdrop {
-      position: fixed;
-      inset: 0;
-      z-index: 200;
-      display: none;
-      background: rgba(0,0,0,.72);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      padding: 18px;
-    }
-
-    .modal-backdrop.open {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .lightbox {
-      width: min(1180px, 100%);
-      max-height: calc(100vh - 36px);
-      overflow: auto;
-      border-radius: 24px;
-      background: white;
-      box-shadow: 0 30px 90px rgba(0,0,0,.35);
-    }
-
-    .lightbox-media {
-      background: #111;
-      min-height: 360px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .lightbox-media img {
-      width: 100%;
-      max-height: 65vh;
-      object-fit: contain;
-    }
-
-    .close-btn {
-      position: absolute;
-      top: 18px;
-      right: 18px;
-      width: 42px;
-      height: 42px;
-      border-radius: 50%;
-      background: rgba(0,0,0,.65);
-      color: white;
-      border: 1px solid rgba(255,255,255,.25);
-      z-index: 5;
-    }
-
-    /* ================================================================
-       STAT KARTLARI
-       ================================================================ */
-    .stat-card {
-      border: 1px solid #eee;
-      border-radius: 20px;
-      padding: 24px;
-      background: white;
-      transition: transform .2s ease, box-shadow .2s ease;
-    }
-
-    .stat-card:hover {
-      transform: translateY(-3px);
-      box-shadow: var(--shadow);
-    }
-
-    /* ================================================================
-       PRICING
-       ================================================================ */
-    .price-card {
-      border: 1px solid #e9e9e9;
-      border-radius: 24px;
-      background: white;
-      padding: 30px;
-      position: relative;
-    }
-
-    .price-card.featured {
-      border: 2px solid var(--orange);
-      box-shadow: 0 18px 50px rgba(255,106,0,.12);
-    }
-
-    .featured-label {
-      position: absolute;
-      right: 22px;
-      top: 22px;
-      background: var(--orange);
-      color: white;
-      font-size: 11px;
-      padding: 6px 9px;
-      border-radius: 999px;
-      font-weight: 900;
-      text-transform: uppercase;
-    }
-
-    /* ================================================================
-       FAQ
-       ================================================================ */
-    .faq-item {
-      border-bottom: 1px solid #eee;
-    }
-
-    .faq-question {
-      width: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 20px 0;
-      background: transparent;
-      border: 0;
-      cursor: pointer;
-      text-align: left;
-      font-weight: 800;
-    }
-
-    .faq-answer {
-      display: none;
-      color: #666;
-      line-height: 1.7;
-      padding: 0 0 20px;
-    }
-
-    .faq-item.open .faq-answer {
-      display: block;
-    }
-
-    .faq-item.open .faq-plus {
-      transform: rotate(45deg);
-    }
-
-    .faq-plus {
-      transition: transform .2s ease;
-      font-size: 22px;
-      color: var(--orange);
-    }
-
-    /* ================================================================
-       TOAST
-       ================================================================ */
-    #toast {
-      position: fixed;
-      z-index: 300;
-      right: 20px;
-      bottom: 20px;
-      transform: translateY(120px);
-      opacity: 0;
-      transition: .3s ease;
-      pointer-events: none;
-    }
-
-    #toast.show {
-      transform: translateY(0);
-      opacity: 1;
-    }
-
-    /* ================================================================
-       MOBILE NAV
-       ================================================================ */
-    .mobile-menu {
-      display: none;
-    }
-
-    .mobile-menu.open {
-      display: block;
-    }
-
-    /* ================================================================
-       RESPONSIVE MASONRY
-       ================================================================ */
-    @media (max-width: 1280px) {
-      .masonry {
-        column-count: 4;
-      }
-    }
-
-    @media (max-width: 900px) {
-      .masonry {
-        column-count: 3;
-      }
-    }
-
-    @media (max-width: 640px) {
-      .masonry {
-        column-count: 2;
-        column-gap: 10px;
-      }
-
-      .photo-card {
-        margin-bottom: 10px;
-        border-radius: 12px;
-      }
-
-      .photo-card img {
-        min-height: 130px;
-      }
-
-      .photo-overlay {
-        opacity: 1;
-        padding: 9px;
-        background: linear-gradient(
-          to top,
-          rgba(0,0,0,.78),
-          transparent 65%
-        );
-      }
-
-      .photo-info {
-        transform: none;
-      }
-
-      .photo-info .meta-hide-mobile {
-        display: none;
-      }
-
-      .photo-actions {
-        margin-top: 7px;
-      }
-
-      .action-btn {
-        width: 32px;
-        height: 32px;
-      }
-
-      .buy-mini {
-        height: 32px;
-        font-size: 11px;
-      }
-
-      .lightbox {
-        border-radius: 16px;
-      }
-
-      .lightbox-media {
-        min-height: 260px;
-      }
-    }
-
-    /* ================================================================
-       ACCESSIBILITY
-       ================================================================ */
-    :focus-visible {
-      outline: 3px solid rgba(255,106,0,.45);
-      outline-offset: 2px;
-    }
-
-    .sr-only {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      padding: 0;
-      margin: -1px;
-      overflow: hidden;
-      clip: rect(0,0,0,0);
-      white-space: nowrap;
-      border: 0;
-    }
-
-    /* ================================================================
-       SKELETON
-       ================================================================ */
-    .image-loading {
-      background:
-        linear-gradient(
-          90deg,
-          #eee 25%,
-          #f7f7f7 50%,
-          #eee 75%
-        );
-      background-size: 200% 100%;
-      animation: shimmer 1.4s infinite;
-    }
-
-    @keyframes shimmer {
-      0% { background-position: 200% 0; }
-      100% { background-position: -200% 0; }
-    }
-
-    /* ================================================================
-       NO RESULTS
-       ================================================================ */
-    .no-results {
-      display: none;
-      padding: 70px 20px;
-      text-align: center;
-      color: #777;
-    }
-
-    .no-results.show {
-      display: block;
-    }
-
-    /* ================================================================
-       PRINT
-       ================================================================ */
-    @media print {
-      .nav-blur,
-      .hero-search,
-      .modal-backdrop,
-      #toast,
-      footer {
-        display: none !important;
-      }
-    }
-  </style>
-  <!-- ================================================================
-       AZSTOCK.AZ DEVELOPER NOTES
-       Bu fayl backend olmadan işləyən frontend marketplace prototipidir.
-       120 foto kartı JavaScript ilə yaradılır.
-       20 video kartı JavaScript ilə yaradılır.
-       Axtarış real-time filter edir.
-       Kateqoriyalar Tekstura / Doğa / Şəhər / Kənd kimi ayrılır.
-       Səbət localStorage istifadə edir.
-       Lightbox EXIF nümunə məlumatlarını göstərir.
-       Real ödəniş üçün sonrakı mərhələdə payment API lazımdır.
-       Real contributor upload üçün backend/storage lazımdır.
-       Picsum əsas preview mənbəyidir.
-       Unsplash source URL-ləri müxtəliflik üçün istifadə edilir.
-       Şəkillər loading=lazy ilə işarələnib.
-       Responsive CSS columns desktopdan mobilə uyğunlaşır.
-       ================================================================ -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>LinguaKey — Universal Translator</title>
+
+<style>
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+    -webkit-tap-highlight-color:transparent;
+}
+
+body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+    background:#080b10;
+    color:#fff;
+    height:100vh;
+    overflow:hidden;
+}
+
+.app{
+    width:100%;
+    max-width:480px;
+    height:100vh;
+    margin:auto;
+    background:#0c1017;
+    display:flex;
+    flex-direction:column;
+}
+
+/* HEADER */
+
+.header{
+    height:68px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 17px;
+    border-bottom:1px solid #202631;
+    background:#0d121a;
+}
+
+.brand{
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+
+.logo{
+    width:40px;
+    height:40px;
+    border-radius:13px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:linear-gradient(135deg,#5d5cff,#8c5cff);
+    font-size:21px;
+    box-shadow:0 7px 25px #5d5cff33;
+}
+
+.brandText{
+    font-weight:800;
+    font-size:18px;
+}
+
+.brandSub{
+    font-size:10px;
+    color:#7f8998;
+    margin-top:2px;
+}
+
+.status{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    color:#83e3a1;
+    font-size:11px;
+}
+
+.dot{
+    width:7px;
+    height:7px;
+    border-radius:50%;
+    background:#48d879;
+    box-shadow:0 0 9px #48d879;
+}
+
+/* LANGUAGE */
+
+.langBox{
+    padding:12px;
+    border-bottom:1px solid #202631;
+}
+
+.language{
+    height:48px;
+    background:#141a23;
+    border:1px solid #252d39;
+    border-radius:15px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 9px;
+}
+
+.lang{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    min-width:105px;
+    justify-content:center;
+}
+
+.flag{
+    font-size:21px;
+}
+
+.langName{
+    font-size:13px;
+    font-weight:700;
+}
+
+.swap{
+    width:36px;
+    height:36px;
+    border-radius:11px;
+    border:1px solid #343c49;
+    background:#202733;
+    color:white;
+    font-size:18px;
+}
+
+/* CHAT */
+
+.chat{
+    flex:1;
+    overflow-y:auto;
+    padding:18px 15px 12px;
+}
+
+.contact{
+    text-align:center;
+    margin-bottom:18px;
+}
+
+.avatar{
+    width:55px;
+    height:55px;
+    border-radius:50%;
+    background:linear-gradient(135deg,#ff8c5c,#ff4f81);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    margin:auto;
+    font-size:23px;
+    font-weight:800;
+}
+
+.contactName{
+    margin-top:7px;
+    font-weight:700;
+}
+
+.contactLang{
+    font-size:11px;
+    color:#7e8998;
+    margin-top:3px;
+}
+
+.message{
+    max-width:82%;
+    margin-bottom:13px;
+    animation:appear .2s ease;
+}
+
+@keyframes appear{
+    from{opacity:0;transform:translateY(7px)}
+    to{opacity:1;transform:none}
+}
+
+.incoming{
+    margin-right:auto;
+}
+
+.outgoing{
+    margin-left:auto;
+}
+
+.bubble{
+    padding:12px 14px;
+    border-radius:17px;
+    line-height:1.42;
+    font-size:14px;
+}
+
+.incoming .bubble{
+    background:#171e28;
+    border:1px solid #242d39;
+    border-bottom-left-radius:5px;
+}
+
+.outgoing .bubble{
+    background:linear-gradient(135deg,#5d5cff,#7354e8);
+    border-bottom-right-radius:5px;
+}
+
+.original{
+    font-size:11px;
+    color:#7d8796;
+    margin-top:5px;
+    padding:0 5px;
+}
+
+.translated{
+    font-size:11px;
+    color:#9de8b3;
+    margin-top:5px;
+    padding:0 5px;
+}
+
+.time{
+    font-size:9px;
+    color:#687281;
+    margin-top:5px;
+    text-align:right;
+}
+
+/* TRANSLATION CARD */
+
+.translateCard{
+    margin:0 14px 10px;
+    background:#121923;
+    border:1px solid #293342;
+    border-radius:17px;
+    padding:12px;
+}
+
+.cardTop{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:8px;
+}
+
+.cardTitle{
+    font-size:11px;
+    color:#8d99a8;
+    font-weight:700;
+}
+
+.auto{
+    color:#6fdf91;
+    font-size:10px;
+}
+
+.preview{
+    background:#0b1017;
+    border-radius:11px;
+    padding:10px;
+    font-size:13px;
+    min-height:42px;
+}
+
+.translationResult{
+    margin-top:7px;
+    color:#a9a4ff;
+    font-size:13px;
+}
+
+/* INPUT */
+
+.inputArea{
+    padding:10px 12px 9px;
+    border-top:1px solid #202631;
+    background:#0d121a;
+}
+
+.quick{
+    display:flex;
+    gap:7px;
+    overflow-x:auto;
+    margin-bottom:8px;
+}
+
+.quick button{
+    flex:none;
+    border:1px solid #2b3441;
+    background:#151c26;
+    color:#c5ccd5;
+    border-radius:10px;
+    padding:7px 10px;
+    font-size:10px;
+}
+
+.inputRow{
+    display:flex;
+    align-items:flex-end;
+    gap:8px;
+}
+
+.textBox{
+    flex:1;
+    min-height:48px;
+    max-height:100px;
+    background:#171e28;
+    border:1px solid #2b3441;
+    border-radius:16px;
+    padding:13px;
+    color:white;
+    font-size:14px;
+    outline:none;
+    resize:none;
+}
+
+.textBox:focus{
+    border-color:#6861ff;
+}
+
+.send{
+    width:48px;
+    height:48px;
+    border:none;
+    border-radius:15px;
+    background:linear-gradient(135deg,#5d5cff,#7654ed);
+    color:white;
+    font-size:20px;
+    box-shadow:0 8px 25px #5d5cff44;
+}
+
+/* KEYBOARD */
+
+.keyboard{
+    padding:8px 4px 4px;
+    background:#10151d;
+    border-top:1px solid #222a35;
+}
+
+.krow{
+    display:flex;
+    gap:4px;
+    margin-bottom:5px;
+}
+
+.key{
+    flex:1;
+    height:39px;
+    border:0;
+    border-radius:7px;
+    background:#202733;
+    color:#e9edf2;
+    font-size:14px;
+}
+
+.key:active{
+    transform:scale(.96);
+    background:#333c4b;
+}
+
+.special{
+    flex:1.5;
+}
+
+.space{
+    flex:4;
+}
+
+.translateKey{
+    background:linear-gradient(135deg,#5d5cff,#7654ed);
+    font-weight:800;
+}
+
+/* TOAST */
+
+.toast{
+    position:fixed;
+    left:50%;
+    bottom:260px;
+    transform:translateX(-50%) translateY(20px);
+    background:#e9edf2;
+    color:#111;
+    padding:10px 16px;
+    border-radius:12px;
+    font-size:12px;
+    font-weight:700;
+    opacity:0;
+    pointer-events:none;
+    transition:.25s;
+    z-index:99;
+}
+
+.toast.show{
+    opacity:1;
+    transform:translateX(-50%) translateY(0);
+}
+
+/* DESKTOP */
+
+@media(min-width:600px){
+    body{
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        background:#05070a;
+    }
+
+    .app{
+        height:850px;
+        max-height:95vh;
+        border-radius:25px;
+        overflow:hidden;
+        box-shadow:0 30px 100px #000;
+        border:1px solid #202631;
+    }
+}
+</style>
 </head>
 
 <body>
 
-  <!-- ================================================================
-       HEADER
-       ================================================================ -->
-  <header class="nav-blur sticky top-0 z-50 border-b border-gray-100">
-    <div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="h-[72px] flex items-center gap-4">
-
-        <!-- Logo -->
-        <a href="#top" class="flex items-center gap-2 shrink-0" aria-label="AzStock.az ana səhifə">
-          <span class="logo-mark">A</span>
-          <span class="logo-text text-[20px] font-black tracking-tight">
-            AzStock<span>.az</span>
-          </span>
-        </a>
-
-        <!-- Desktop search -->
-        <div class="hidden lg:block flex-1 max-w-[500px] ml-4">
-          <label class="sr-only" for="headerSearch">Şəkil axtar</label>
-          <div class="relative">
-            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">⌕</span>
-            <input
-              id="headerSearch"
-              type="search"
-              autocomplete="off"
-              placeholder="50000+ şəkil axtar"
-              class="w-full h-11 pl-11 pr-4 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-orange-400 outline-none"
-            >
-            <div id="headerSuggestions" class="autocomplete-box"></div>
-          </div>
-        </div>
-
-        <!-- Desktop links -->
-        <nav class="hidden lg:flex items-center gap-1 ml-auto" aria-label="Əsas menyu">
-          <div class="relative group">
-            <button
-              id="categoryMenuButton"
-              class="px-3 py-2 rounded-lg text-sm font700 hover:bg-gray-100"
-              type="button"
-            >
-              Kateqoriyalar <span class="text-gray-400">⌄</span>
-            </button>
-
-            <div
-              id="categoryMenu"
-              class="hidden absolute right-0 top-full mt-2 w-52 rounded-2xl border border-gray-100 bg-white shadow-2xl p-2"
-            >
-              <button data-category="all" class="category-menu-item w-full text-left px-3 py-2 rounded-lg hover:bg-gray-100">Hamısı</button>
-              <button data-category="Tekstura" class="category-menu-item w-full text-left px-3 py-2 rounded-lg hover:bg-gray-100">Tekstura</button>
-              <button data-category="Doğa" class="category-menu-item w-full text-left px-3 py-2 rounded-lg hover:bg-gray-100">Doğa</button>
-              <button data-category="Şəhər" class="category-menu-item w-full text-left px-3 py-2 rounded-lg hover:bg-gray-100">Şəhər</button>
-              <button data-category="Kənd" class="category-menu-item w-full text-left px-3 py-2 rounded-lg hover:bg-gray-100">Kənd</button>
-            </div>
-          </div>
-
-          <a href="#pricing" class="px-3 py-2 rounded-lg text-sm font-semibold hover:bg-gray-100">
-            Qiymətlər
-          </a>
-
-          <a href="#contributor" class="px-3 py-2 rounded-lg text-sm font-semibold hover:bg-gray-100">
-            Sat
-          </a>
-
-          <button
-            id="cartButton"
-            type="button"
-            class="ml-2 h-10 px-4 rounded-xl bg-black text-white text-sm font-extrabold hover:bg-orange-600 transition flex items-center gap-2"
-          >
-            Səbət
-            <span id="cartCount" class="min-w-5 h-5 px-1 rounded-full bg-orange-500 text-[11px] flex items-center justify-center">0</span>
-          </button>
-        </nav>
-
-        <!-- Mobile controls -->
-        <div class="lg:hidden ml-auto flex items-center gap-2">
-          <button
-            id="mobileCartButton"
-            type="button"
-            class="w-10 h-10 rounded-xl bg-black text-white flex items-center justify-center relative"
-            aria-label="Səbət"
-          >
-            🛒
-            <span id="mobileCartCount" class="absolute -right-1 -top-1 min-w-5 h-5 px-1 rounded-full bg-orange-500 text-[10px] flex items-center justify-center">0</span>
-          </button>
-
-          <button
-            id="mobileMenuButton"
-            type="button"
-            class="w-10 h-10 rounded-xl border border-gray-200 flex items-center justify-center"
-            aria-label="Menyu"
-          >
-            ☰
-          </button>
-        </div>
-      </div>
-
-      <!-- Mobile menu -->
-      <div id="mobileMenu" class="mobile-menu border-t border-gray-100 py-4 lg:hidden">
-        <div class="flex flex-col gap-1">
-          <a href="#gallery" class="px-3 py-3 rounded-lg hover:bg-gray-100">Şəkillər</a>
-          <a href="#videos" class="px-3 py-3 rounded-lg hover:bg-gray-100">Videolar</a>
-          <a href="#pricing" class="px-3 py-3 rounded-lg hover:bg-gray-100">Qiymətlər</a>
-          <a href="#contributor" class="px-3 py-3 rounded-lg hover:bg-gray-100">Contributor ol</a>
-        </div>
-      </div>
-    </div>
-  </header>
-
-  <!-- ================================================================
-       HERO
-       ================================================================ -->
-  <main id="top">
-
-    <section class="hero-bg hero-grid">
-      <div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="min-h-[590px] py-20 md:py-28 flex flex-col items-center justify-center text-center">
-
-          <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-orange-50 text-orange-700 text-xs font-black mb-7">
-            <span class="w-2 h-2 rounded-full bg-orange-500"></span>
-            AZƏRBAYCAN ÜÇÜN YERLİ STOCK PLATFORMASI
-          </div>
-
-          <h1 class="max-w-4xl text-4xl sm:text-5xl md:text-6xl font-black tracking-[-.04em] leading-[1.02]">
-            Azərbaycanın
-            <span class="text-orange-500">100% orijinal</span>
-            stock arxivi
-          </h1>
-
-          <p class="max-w-2xl mt-6 text-base sm:text-lg text-gray-600 leading-7">
-            Azərbaycanı Azərbaycandan çəkilmiş foto, tekstura və video ilə kəşf et.
-            Dizayn, reklam, media və kommersiya layihələri üçün yerli vizuallar.
-          </p>
-
-          <!-- Main search -->
-          <div class="relative w-full max-w-3xl mt-10">
-            <div class="hero-search bg-white rounded-2xl p-2 flex flex-col sm:flex-row gap-2 border border-gray-100">
-              <div class="relative flex-1">
-                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-xl">⌕</span>
-                <input
-                  id="heroSearch"
-                  type="search"
-                  autocomplete="off"
-                  placeholder="Bakı, kərpic, dağ, xalça..."
-                  class="w-full h-14 pl-12 pr-4 rounded-xl outline-none text-base"
-                >
-                <div id="heroSuggestions" class="autocomplete-box text-left"></div>
-              </div>
-
-              <button
-                id="heroSearchButton"
-                type="button"
-                class="h-14 px-7 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-black transition"
-              >
-                Axtar
-              </button>
-            </div>
-          </div>
-
-          <!-- Popular tags -->
-          <div class="mt-7 flex flex-wrap justify-center gap-2 max-w-3xl">
-            <span class="text-xs font-bold text-gray-400 mr-1 py-2">Populyar:</span>
-            <button class="tag-pill px-3 py-1.5 rounded-full bg-white border border-gray-200 text-xs font-bold" data-tag="Bakı">Bakı</button>
-            <button class="tag-pill px-3 py-1.5 rounded-full bg-white border border-gray-200 text-xs font-bold" data-tag="Kərpic">Kərpic</button>
-            <button class="tag-pill px-3 py-1.5 rounded-full bg-white border border-gray-200 text-xs font-bold" data-tag="Ağac">Ağac</button>
-            <button class="tag-pill px-3 py-1.5 rounded-full bg-white border border-gray-200 text-xs font-bold" data-tag="Dağ">Dağ</button>
-            <button class="tag-pill px-3 py-1.5 rounded-full bg-white border border-gray-200 text-xs font-bold" data-tag="Xalça">Xalça</button>
-            <button class="tag-pill px-3 py-1.5 rounded-full bg-white border border-gray-200 text-xs font-bold" data-tag="Palçıq">Palçıq</button>
-            <button class="tag-pill px-3 py-1.5 rounded-full bg-white border border-gray-200 text-xs font-bold" data-tag="Daş">Daş</button>
-            <button class="tag-pill px-3 py-1.5 rounded-full bg-white border border-gray-200 text-xs font-bold" data-tag="Kənd">Kənd</button>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ==============================================================
-         QUICK STATS
-         ============================================================== -->
-    <section class="py-8 border-y border-gray-100 bg-white">
-      <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div class="stat-card">
-          <div class="text-2xl font-black">50K+</div>
-          <div class="text-xs text-gray-500 mt-1">Arxiv planı</div>
-        </div>
-        <div class="stat-card">
-          <div class="text-2xl font-black">100%</div>
-          <div class="text-xs text-gray-500 mt-1">Orijinal fayllar</div>
-        </div>
-        <div class="stat-card">
-          <div class="text-2xl font-black">$3+</div>
-          <div class="text-xs text-gray-500 mt-1">Başlanğıc qiymət</div>
-        </div>
-        <div class="stat-card">
-          <div class="text-2xl font-black">70%</div>
-          <div class="text-xs text-gray-500 mt-1">Contributor payı</div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ================================================================
-         GALLERY SECTION
-         ================================================================ -->
-    <section id="gallery" class="py-16 md:py-20">
-      <div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
-
-        <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
-          <div>
-            <div class="text-orange-500 text-xs font-black uppercase tracking-widest mb-2">
-              YERLİ ARXİV
-            </div>
-            <h2 class="text-3xl md:text-4xl font-black tracking-tight">
-              Azərbaycandan seçilmiş şəkillər
-            </h2>
-            <p class="text-gray-500 mt-2">
-              <span id="resultCount">120</span> nəticə nümayiş olunur
-            </p>
-          </div>
-
-          <div class="flex flex-wrap gap-2" role="group" aria-label="Kateqoriya filtrləri">
-            <button class="filter-btn active px-4 py-2 rounded-full text-sm font-bold" data-filter="all">Hamısı</button>
-            <button class="filter-btn px-4 py-2 rounded-full text-sm font-bold" data-filter="Tekstura">Tekstura</button>
-            <button class="filter-btn px-4 py-2 rounded-full text-sm font-bold" data-filter="Doğa">Doğa</button>
-            <button class="filter-btn px-4 py-2 rounded-full text-sm font-bold" data-filter="Şəhər">Şəhər</button>
-            <button class="filter-btn px-4 py-2 rounded-full text-sm font-bold" data-filter="Kənd">Kənd</button>
-          </div>
-        </div>
-
-        <!-- JS burada 120 kart yaradır -->
-        <div id="photoGrid" class="masonry"></div>
-
-        <div id="noResults" class="no-results">
-          <div class="text-5xl mb-4">⌕</div>
-          <h3 class="text-xl font-black text-gray-900">Nəticə tapılmadı</h3>
-          <p class="mt-2">Axtarış sözünü və ya kateqoriyanı dəyişməyə çalış.</p>
-          <button id="resetFilters" class="mt-5 px-5 py-2.5 rounded-xl bg-black text-white font-bold">
-            Filtrləri sıfırla
-          </button>
-        </div>
-      </div>
-    </section>
-
-    <!-- ================================================================
-         VIDEO SECTION
-         ================================================================ -->
-    <section id="videos" class="py-16 md:py-20 bg-gray-50 border-y border-gray-100">
-      <div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
-
-        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
-          <div>
-            <div class="text-orange-500 text-xs font-black uppercase tracking-widest mb-2">
-              STOCK VIDEO
-            </div>
-            <h2 class="text-3xl md:text-4xl font-black tracking-tight">
-              Qısa video kolleksiyası
-            </h2>
-            <p class="text-gray-500 mt-2">
-              Bakı və Azərbaycan mövzulu 1080p preview-lər.
-            </p>
-          </div>
-          <span class="text-sm font-bold text-gray-500">20 video</span>
-        </div>
-
-        <div id="videoGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"></div>
-      </div>
-    </section>
-
-    <!-- ================================================================
-         CONTRIBUTOR SECTION
-         ================================================================ -->
-    <section id="contributor" class="py-20">
-      <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="rounded-[28px] bg-black text-white overflow-hidden">
-          <div class="grid lg:grid-cols-2">
-
-            <div class="p-8 md:p-12 lg:p-16">
-              <div class="inline-flex px-3 py-1.5 rounded-full bg-orange-500/15 text-orange-400 text-xs font-black mb-5">
-                CONTRIBUTOR PROQRAMI
-              </div>
-
-              <h2 class="text-3xl md:text-4xl font-black tracking-tight">
-                Şəkillərini sat, gəlirini artır.
-              </h2>
-
-              <p class="mt-5 text-gray-400 leading-7">
-                Yerli fotoqraflar, dizaynerlər və kontent istehsalçıları
-                öz orijinal materiallarını AzStock.az arxivinə əlavə edə bilərlər.
-              </p>
-
-              <div class="grid grid-cols-2 gap-4 mt-8">
-                <div class="rounded-2xl bg-white/5 border border-white/10 p-5">
-                  <div class="text-3xl font-black text-orange-400">70%</div>
-                  <div class="text-xs text-gray-400 mt-1">Satışdan pay</div>
-                </div>
-
-                <div class="rounded-2xl bg-white/5 border border-white/10 p-5">
-                  <div class="text-3xl font-black text-orange-400">24/7</div>
-                  <div class="text-xs text-gray-400 mt-1">Arxiv görünürlüğü</div>
-                </div>
-              </div>
-
-              <button
-                id="contributorButton"
-                type="button"
-                class="mt-8 px-6 py-3.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-black"
-              >
-                Contributor kimi başla
-              </button>
-            </div>
-
-            <div class="relative min-h-[360px] lg:min-h-full">
-              <img
-                src="https://picsum.photos/900/700?random=901"
-                alt="AzStock contributor"
-                loading="lazy"
-                class="absolute inset-0 w-full h-full object-cover opacity-75"
-              >
-              <div class="absolute inset-0 bg-gradient-to-r from-black via-black/20 to-transparent"></div>
-
-              <div class="absolute left-8 bottom-8 right-8">
-                <div class="text-xs uppercase tracking-widest text-orange-400 font-black">
-                  YERLİ YARADICILAR
-                </div>
-                <div class="text-2xl font-black mt-2">
-                  Bakıdan Şəkiyə, Naxçıvandan Qəbələyə.
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ================================================================
-         PRICING
-         ================================================================ -->
-    <section id="pricing" class="py-20 bg-gray-50 border-y border-gray-100">
-      <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
-
-        <div class="text-center max-w-2xl mx-auto">
-          <div class="text-orange-500 text-xs font-black uppercase tracking-widest">
-            QİYMƏTLƏR
-          </div>
-          <h2 class="text-3xl md:text-4xl font-black mt-2 tracking-tight">
-            Sadə və aydın lisenziya
-          </h2>
-          <p class="text-gray-500 mt-3">
-            Demo arxivdə qiymətlər real alış axınını göstərmək üçün hazırlanıb.
-          </p>
-        </div>
-
-        <div class="grid md:grid-cols-3 gap-5 mt-10">
-
-          <article class="price-card">
-            <div class="text-sm font-black text-gray-500">SINGLE</div>
-            <div class="mt-4 text-4xl font-black">$3</div>
-            <div class="text-sm text-gray-500 mt-1">/ şəkil</div>
-
-            <ul class="mt-7 space-y-3 text-sm text-gray-600">
-              <li>✓ 1 stock şəkil</li>
-              <li>✓ 4032×3024-ə qədər</li>
-              <li>✓ Kommersiya istifadəsi</li>
-              <li>✓ Sadə lisenziya</li>
-            </ul>
-
-            <button class="price-buy mt-8 w-full py-3 rounded-xl bg-black text-white font-black" data-plan="Single">
-              Seç
-            </button>
-          </article>
-
-          <article class="price-card featured">
-            <span class="featured-label">Populyar</span>
-
-            <div class="text-sm font-black text-orange-500">CREATOR</div>
-            <div class="mt-4 text-4xl font-black">$19</div>
-            <div class="text-sm text-gray-500 mt-1">/ ay</div>
-
-            <ul class="mt-7 space-y-3 text-sm text-gray-600">
-              <li>✓ 15 download / ay</li>
-              <li>✓ HD və yüksək çözünürlük</li>
-              <li>✓ Kommersiya lisenziyası</li>
-              <li>✓ Contributor endirimləri</li>
-            </ul>
-
-            <button class="price-buy mt-8 w-full py-3 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-black" data-plan="Creator">
-              Başla
-            </button>
-          </article>
-
-          <article class="price-card">
-            <div class="text-sm font-black text-gray-500">BUSINESS</div>
-            <div class="mt-4 text-4xl font-black">$59</div>
-            <div class="text-sm text-gray-500 mt-1">/ ay</div>
-
-            <ul class="mt-7 space-y-3 text-sm text-gray-600">
-              <li>✓ 100 download / ay</li>
-              <li>✓ Komanda istifadəsi</li>
-              <li>✓ Prioritet dəstək</li>
-              <li>✓ Kampaniya lisenziyası</li>
-            </ul>
-
-            <button class="price-buy mt-8 w-full py-3 rounded-xl bg-black text-white font-black" data-plan="Business">
-              Başla
-            </button>
-          </article>
-        </div>
-
-        <p class="text-center text-xs text-gray-400 mt-6">
-          Qeyd: Bu tək-fayllı versiyada ödəniş gateway-i qoşulmayıb; düymələr demo alış axınını göstərir.
-        </p>
-      </div>
-    </section>
-
-    <!-- ================================================================
-         FAQ
-         ================================================================ -->
-    <section class="py-20">
-      <div class="max-w-[820px] mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center mb-8">
-          <div class="text-orange-500 text-xs font-black uppercase tracking-widest">
-            FAQ
-          </div>
-          <h2 class="text-3xl font-black mt-2">
-            Tez-tez verilən suallar
-          </h2>
-        </div>
-
-        <div class="border-t border-gray-200">
-
-          <div class="faq-item">
-            <button class="faq-question" type="button">
-              AzStock.az nədir?
-              <span class="faq-plus">+</span>
-            </button>
-            <div class="faq-answer">
-              AzStock.az Azərbaycan mövzulu foto və video materialların
-              axtarılması, alınması və contributor-lar tərəfindən satılması
-              üçün nəzərdə tutulmuş stock platforma konseptidir.
-            </div>
-          </div>
-
-          <div class="faq-item">
-            <button class="faq-question" type="button">
-              Contributor necə gəlir qazanır?
-              <span class="faq-plus">+</span>
-            </button>
-            <div class="faq-answer">
-              Contributor təsdiqlənmiş orijinal foto və videolarını yükləyir.
-              Satış olduqda platformanın qaydalarına uyğun olaraq müəllif payı hesablanır.
-            </div>
-          </div>
-
-          <div class="faq-item">
-            <button class="faq-question" type="button">
-              Şəkillər hansı ölçüdədir?
-              <span class="faq-plus">+</span>
-            </button>
-            <div class="faq-answer">
-              Demo kartlarda 4032×3024 metadata nümunəsi göstərilir.
-              Real platformada contributor tərəfindən yüklənən orijinal faylın
-              texniki xüsusiyyətləri saxlanmalıdır.
-            </div>
-          </div>
-
-          <div class="faq-item">
-            <button class="faq-question" type="button">
-              Səbət məlumatları harada saxlanılır?
-              <span class="faq-plus">+</span>
-            </button>
-            <div class="faq-answer">
-              Bu single-file versiyada səbət brauzerin localStorage yaddaşında saxlanılır.
-              Saytı bağlayıb açdıqda səbət bərpa olunur.
-            </div>
-          </div>
-
-        </div>
-      </div>
-    </section>
-
-  </main>
-
-  <!-- ================================================================
-       FOOTER
-       ================================================================ -->
-  <footer class="bg-black text-white pt-16 pb-8">
-    <div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
-
-      <div class="grid sm:grid-cols-2 lg:grid-cols-5 gap-10 pb-12 border-b border-white/10">
-
-        <div class="lg:col-span-2">
-          <div class="flex items-center gap-2">
-            <span class="logo-mark">A</span>
-            <span class="text-xl font-black">
-              AzStock<span class="text-orange-500">.az</span>
-            </span>
-          </div>
-
-          <p class="text-gray-400 text-sm leading-6 mt-5 max-w-sm">
-            Azərbaycanın yerli stock foto və video arxivi.
-            Yerli yaradıcıların işlərini dünya layihələri ilə birləşdirən platforma.
-          </p>
-
-          <div class="flex gap-2 mt-6">
-            <a href="#" class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center hover:bg-orange-500">ig</a>
-            <a href="#" class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center hover:bg-orange-500">in</a>
-            <a href="#" class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center hover:bg-orange-500">tg</a>
-          </div>
-        </div>
-
+<div class="app">
+
+<header class="header">
+    <div class="brand">
+        <div class="logo">文</div>
         <div>
-          <h3 class="font-black">Platforma</h3>
-          <ul class="mt-4 space-y-3 text-sm text-gray-400">
-            <li><a href="#gallery" class="hover:text-white">Şəkillər</a></li>
-            <li><a href="#videos" class="hover:text-white">Videolar</a></li>
-            <li><a href="#pricing" class="hover:text-white">Qiymətlər</a></li>
-            <li><a href="#contributor" class="hover:text-white">Contributor</a></li>
-          </ul>
+            <div class="brandText">LinguaKey</div>
+            <div class="brandSub">Universal Translation</div>
         </div>
-
-        <div>
-          <h3 class="font-black">Hüquqi</h3>
-          <ul class="mt-4 space-y-3 text-sm text-gray-400">
-            <li><a href="#" class="hover:text-white">Lisenziya</a></li>
-            <li><a href="#" class="hover:text-white">Məxfilik</a></li>
-            <li><a href="#" class="hover:text-white">Şərtlər</a></li>
-            <li><a href="#" class="hover:text-white">DMCA</a></li>
-          </ul>
-        </div>
-
-        <div>
-          <h3 class="font-black">Dəstək</h3>
-          <ul class="mt-4 space-y-3 text-sm text-gray-400">
-            <li><a href="mailto:hello@azstock.az" class="hover:text-white">hello@azstock.az</a></li>
-            <li><a href="#" class="hover:text-white">FAQ</a></li>
-            <li><a href="#" class="hover:text-white">Əlaqə</a></li>
-          </ul>
-        </div>
-
-      </div>
-
-      <div class="flex flex-col md:flex-row gap-3 items-center justify-between pt-7 text-xs text-gray-500">
-        <div>© 2026 AzStock.az. Bütün hüquqlar qorunur.</div>
-        <div>Made for Azerbaijan 🇦🇿</div>
-      </div>
     </div>
-  </footer>
 
-  <!-- ================================================================
-       LIGHTBOX
-       ================================================================ -->
-  <div id="lightboxModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-label="Şəkil detalları">
-    <div class="lightbox relative">
-
-      <button id="closeLightbox" type="button" class="close-btn" aria-label="Bağla">
-        ✕
-      </button>
-
-      <div class="lightbox-media">
-        <img id="lightboxImage" src="" alt="Stock preview">
-      </div>
-
-      <div class="p-5 md:p-7">
-        <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
-
-          <div>
-            <div class="text-xs font-black uppercase tracking-widest text-orange-500">
-              AZSTOCK ORIGINAL
-            </div>
-
-            <h3 id="lightboxTitle" class="text-2xl font-black mt-2">
-              kərpic_1.jpg
-            </h3>
-
-            <div class="flex flex-wrap gap-2 mt-4">
-              <span id="lightboxCategory" class="px-3 py-1.5 rounded-full bg-gray-100 text-xs font-bold">Tekstura</span>
-              <span class="px-3 py-1.5 rounded-full bg-gray-100 text-xs font-bold">4032×3024</span>
-              <span class="px-3 py-1.5 rounded-full bg-gray-100 text-xs font-bold">JPG</span>
-            </div>
-          </div>
-
-          <div class="lg:text-right">
-            <div id="lightboxPrice" class="text-3xl font-black">$3</div>
-            <div class="text-xs text-gray-500 mt-1">standart lisenziya</div>
-
-            <button
-              id="lightboxBuy"
-              type="button"
-              class="mt-4 w-full lg:w-auto px-7 py-3.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-black"
-            >
-              Səbətə əlavə et
-            </button>
-          </div>
-        </div>
-
-        <div class="mt-7 pt-6 border-t border-gray-100">
-          <h4 class="font-black">EXIF / Fayl məlumatları</h4>
-
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
-            <div class="rounded-xl bg-gray-50 p-4">
-              <div class="text-[11px] uppercase text-gray-400 font-bold">Resolution</div>
-              <div id="exifResolution" class="font-black mt-1">4032×3024</div>
-            </div>
-
-            <div class="rounded-xl bg-gray-50 p-4">
-              <div class="text-[11px] uppercase text-gray-400 font-bold">Format</div>
-              <div class="font-black mt-1">JPEG</div>
-            </div>
-
-            <div class="rounded-xl bg-gray-50 p-4">
-              <div class="text-[11px] uppercase text-gray-400 font-bold">Author</div>
-              <div id="exifAuthor" class="font-black mt-1">@bakı_data</div>
-            </div>
-
-            <div class="rounded-xl bg-gray-50 p-4">
-              <div class="text-[11px] uppercase text-gray-400 font-bold">Location</div>
-              <div id="exifLocation" class="font-black mt-1">Azərbaycan</div>
-            </div>
-          </div>
-        </div>
-
-      </div>
+    <div class="status">
+        <span class="dot"></span>
+        Auto
     </div>
-  </div>
+</header>
 
-  <!-- ================================================================
-       CART DRAWER
-       ================================================================ -->
-  <div id="cartModal" class="modal-backdrop">
-    <div class="lightbox max-w-[520px]">
-      <div class="p-6 border-b border-gray-100 flex items-center justify-between">
-        <div>
-          <div class="text-xs uppercase tracking-widest text-orange-500 font-black">SƏBƏT</div>
-          <h3 class="text-2xl font-black mt-1">Seçdiklərin</h3>
+<div class="langBox">
+
+    <div class="language">
+
+        <div class="lang">
+            <span class="flag" id="fromFlag">🇦🇿</span>
+            <span class="langName" id="fromName">Azərbaycan</span>
         </div>
 
-        <button id="closeCart" type="button" class="w-10 h-10 rounded-xl bg-gray-100">
-          ✕
-        </button>
-      </div>
+        <button class="swap" onclick="swapLang()">⇄</button>
 
-      <div id="cartItems" class="p-6 max-h-[55vh] overflow-auto"></div>
-
-      <div class="p-6 border-t border-gray-100">
-        <div class="flex items-center justify-between">
-          <span class="text-gray-500">Məhsul sayı</span>
-          <strong id="cartTotalCount">0</strong>
+        <div class="lang">
+            <span class="flag" id="toFlag">🇬🇧</span>
+            <span class="langName" id="toName">English</span>
         </div>
 
-        <div class="flex items-center justify-between mt-2">
-          <span class="font-black">Demo cəmi</span>
-          <strong id="cartTotalPrice" class="text-2xl">$0</strong>
-        </div>
-
-        <button
-          id="checkoutButton"
-          type="button"
-          class="w-full mt-5 py-3.5 rounded-xl bg-black text-white font-black hover:bg-orange-600"
-        >
-          Checkout-a keç
-        </button>
-      </div>
     </div>
-  </div>
 
-  <!-- ================================================================
-       TOAST
-       ================================================================ -->
-  <div id="toast" class="rounded-2xl bg-black text-white px-5 py-4 shadow-2xl">
-    <div class="flex items-center gap-3">
-      <span class="w-7 h-7 rounded-full bg-orange-500 flex items-center justify-center text-xs">✓</span>
-      <span id="toastText" class="text-sm font-bold">Səbətə əlavə edildi</span>
+</div>
+
+<div class="chat" id="chat">
+
+    <div class="contact">
+        <div class="avatar">J</div>
+        <div class="contactName">James Wilson</div>
+        <div class="contactLang">🇬🇧 English</div>
     </div>
-  </div>
 
-  <!-- ================================================================
-       JAVASCRIPT — AZSTOCK ENGINE
-       ================================================================ -->
-  <script>
-    "use strict";
+    <div class="message incoming">
 
-    /* ================================================================
-       1. SABİT DƏYƏRLƏR
-       ================================================================ */
+        <div class="bubble">
+            Hi! Are you available tomorrow?
+        </div>
 
-    const TOTAL_IMAGES = 120;
-    const TOTAL_VIDEOS = 20;
-    const STORAGE_KEY = "azstock_cart_v1";
-    const LIKE_STORAGE_KEY = "azstock_likes_v1";
+        <div class="translated">
+            🇦🇿 Salam! Sabah vaxtınız var?
+        </div>
 
-    /*
-      Autocomplete üçün istifadə olunan əsas Azərbaycan sözləri.
-      İstifadəçi hərf yazdıqca JS bu massiv üzərində filter edir.
-    */
-    const SEARCH_TERMS = [
-      "Bakı",
-      "Kərpic",
-      "Ağac",
-      "Dağ",
-      "Xalça",
-      "Palçıq",
-      "Daş",
-      "Kənd",
-      "Şəhər",
-      "Tekstura",
-      "Qobustan",
-      "Şəki",
-      "Qəbələ",
-      "Naxçıvan",
-      "Xəzər",
-      "Abşeron"
-    ];
+        <div class="time">20:14 ✓✓</div>
 
-    /*
-      Azərbaycan hissini gücləndirmək üçün istifadə olunan mövzular.
-      Hər kart üçün mövzu JS tərəfindən dövri şəkildə seçilir.
-    */
-    const PHOTO_TOPICS = [
-      {
-        name: "Kərpic",
-        category: "Tekstura",
-        keyword: "brick wall texture"
-      },
-      {
-        name: "Ağac qabığı",
-        category: "Doğa",
-        keyword: "tree bark texture"
-      },
-      {
-        name: "Daş",
-        category: "Tekstura",
-        keyword: "stone texture"
-      },
-      {
-        name: "Dağ",
-        category: "Doğa",
-        keyword: "caucasus mountain"
-      },
-      {
-        name: "Xalça",
-        category: "Tekstura",
-        keyword: "azerbaijan carpet texture"
-      },
-      {
-        name: "Palçıq",
-        category: "Kənd",
-        keyword: "mud texture village"
-      },
-      {
-        name: "Bakı",
-        category: "Şəhər",
-        keyword: "baku city architecture"
-      },
-      {
-        name: "Kənd",
-        category: "Kənd",
-        keyword: "azerbaijan village"
-      },
-      {
-        name: "Qobustan",
-        category: "Doğa",
-        keyword: "gobustan landscape"
-      },
-      {
-        name: "Xəzər",
-        category: "Doğa",
-        keyword: "caspian sea"
-      }
-    ];
+    </div>
 
-    /*
-      Demo preview üçün fərqli rəqəmlərdən istifadə edirik.
-      Picsum real şəkilləri stabil şəkildə qaytarır.
-    */
-    const FALLBACK_IMAGE = "https://picsum.photos/400/300?random=1";
+    <div class="message outgoing">
 
-    /* ================================================================
-       2. APP STATE
-       ================================================================ */
+        <div class="bubble">
+            Bəli, sabah saat 10-da vaxtım var.
+        </div>
 
-    let currentFilter = "all";
-    let currentSearch = "";
-    let currentLightboxItem = null;
-    let toastTimer = null;
+        <div class="translated">
+            🇬🇧 Yes, I am available tomorrow at 10 AM.
+        </div>
 
-    /*
-      localStorage-dan səbəti təhlükəsiz oxuyuruq.
-      JSON pozulubsa boş array-a düşür.
-    */
-    let cart = loadCart();
+        <div class="time">20:15 ✓✓</div>
 
-    /*
-      Bəyənilən şəkillər ayrıca saxlanılır.
-    */
-    let likedItems = loadLikes();
+    </div>
 
-    /* ================================================================
-       3. YARDIMÇI FUNKSİYALAR
-       ================================================================ */
+</div>
 
-    function loadCart() {
-      try {
-        const raw = localStorage.getItem(STORAGE_KEY);
+<div class="translateCard">
 
-        if (!raw) {
-          return [];
-        }
+    <div class="cardTop">
+        <div class="cardTitle">AUTO TRANSLATION</div>
+        <div class="auto">● ACTIVE</div>
+    </div>
 
-        const parsed = JSON.parse(raw);
+    <div class="preview" id="preview">
+        Bəli, sabah saat 10-da vaxtım var.
+    </div>
 
-        return Array.isArray(parsed) ? parsed : [];
-      } catch (error) {
-        console.warn("Səbət localStorage-dan oxunmadı:", error);
+    <div class="translationResult" id="result">
+        → Yes, I am available tomorrow at 10 AM.
+    </div>
 
-        return [];
-      }
+</div>
+
+<div class="inputArea">
+
+    <div class="quick">
+        <button onclick="setText('Salam, necəsən?')">Salam 👋</button>
+        <button onclick="setText('Haradasan?')">Haradasan?</button>
+        <button onclick="setText('Sabah görüşə bilərik?')">Görüşək?</button>
+        <button onclick="setText('Çox sağ ol!')">Sağ ol</button>
+    </div>
+
+    <div class="inputRow">
+
+        <textarea
+            id="input"
+            class="textBox"
+            placeholder="Azərbaycan dilində yaz..."
+            oninput="translateLive()"
+        ></textarea>
+
+        <button class="send" onclick="sendMessage()">➤</button>
+
+    </div>
+
+</div>
+
+<div class="keyboard">
+
+    <div class="krow">
+        <button class="key" onclick="key('Q')">Q</button>
+        <button class="key" onclick="key('W')">W</button>
+        <button class="key" onclick="key('E')">E</button>
+        <button class="key" onclick="key('R')">R</button>
+        <button class="key" onclick="key('T')">T</button>
+        <button class="key" onclick="key('Y')">Y</button>
+        <button class="key" onclick="key('U')">U</button>
+        <button class="key" onclick="key('I')">I</button>
+        <button class="key" onclick="key('O')">O</button>
+        <button class="key" onclick="key('P')">P</button>
+    </div>
+
+    <div class="krow">
+        <button class="key" onclick="key('A')">A</button>
+        <button class="key" onclick="key('S')">S</button>
+        <button class="key" onclick="key('D')">D</button>
+        <button class="key" onclick="key('F')">F</button>
+        <button class="key" onclick="key('G')">G</button>
+        <button class="key" onclick="key('H')">H</button>
+        <button class="key" onclick="key('J')">J</button>
+        <button class="key" onclick="key('K')">K</button>
+        <button class="key" onclick="key('L')">L</button>
+    </div>
+
+    <div class="krow">
+
+        <button class="key special">⇧</button>
+
+        <button class="key" onclick="key('Z')">Z</button>
+        <button class="key" onclick="key('X')">X</button>
+        <button class="key" onclick="key('C')">C</button>
+        <button class="key" onclick="key('V')">V</button>
+        <button class="key" onclick="key('B')">B</button>
+        <button class="key" onclick="key('N')">N</button>
+        <button class="key" onclick="key('M')">M</button>
+
+        <button class="key special" onclick="backspace()">⌫</button>
+
+    </div>
+
+    <div class="krow">
+
+        <button class="key special">🌐</button>
+
+        <button class="key space" onclick="key(' ')">space</button>
+
+        <button class="key translateKey" onclick="translateNow()">🌐 EN</button>
+
+        <button class="key special" onclick="sendMessage()">➤</button>
+
+    </div>
+
+</div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+
+let direction = "AZEN";
+
+const translations = {
+
+    "Salam, necəsən?":
+        "Hello, how are you?",
+
+    "Haradasan?":
+        "Where are you?",
+
+    "Sabah görüşə bilərik?":
+        "Can we meet tomorrow?",
+
+    "Çox sağ ol!":
+        "Thank you very much!",
+
+    "Bəli, sabah saat 10-da vaxtım var.":
+        "Yes, I am available tomorrow at 10 AM.",
+
+    "Mən sabah işə gedəcəyəm.":
+        "I will go to work tomorrow.",
+
+    "Sən harada işləyirsən?":
+        "Where do you work?",
+
+    "Mən Azərbaycandayam.":
+        "I am in Azerbaijan."
+
+};
+
+function translateText(text){
+
+    if(!text.trim()) return "";
+
+    if(direction === "AZEN"){
+
+        if(translations[text])
+            return translations[text];
+
+        return "→ " + text;
+
+    }else{
+
+        const reverse = Object.entries(translations)
+            .find(([az,en]) => en.toLowerCase() === text.toLowerCase());
+
+        if(reverse)
+            return reverse[0];
+
+        return "→ " + text;
+    }
+}
+
+function translateLive(){
+
+    const text = document.getElementById("input").value;
+
+    document.getElementById("preview").textContent =
+        text || "Azərbaycan dilində yaz...";
+
+    document.getElementById("result").textContent =
+        text ? translateText(text) : "→ Tərcümə burada görünəcək";
+}
+
+function translateNow(){
+
+    translateLive();
+
+    showToast("✓ Tərcümə hazırdır");
+}
+
+function setText(text){
+
+    document.getElementById("input").value = text;
+
+    translateLive();
+
+}
+
+function key(k){
+
+    const input = document.getElementById("input");
+
+    input.value += k;
+
+    input.focus();
+
+    translateLive();
+
+}
+
+function backspace(){
+
+    const input = document.getElementById("input");
+
+    input.value = input.value.slice(0,-1);
+
+    input.focus();
+
+    translateLive();
+
+}
+
+function swapLang(){
+
+    direction = direction === "AZEN" ? "ENAZ" : "AZEN";
+
+    if(direction === "AZEN"){
+
+        document.getElementById("fromFlag").textContent = "🇦🇿";
+        document.getElementById("fromName").textContent = "Azərbaycan";
+
+        document.getElementById("toFlag").textContent = "🇬🇧";
+        document.getElementById("toName").textContent = "English";
+
+    }else{
+
+        document.getElementById("fromFlag").textContent = "🇬🇧";
+        document.getElementById("fromName").textContent = "English";
+
+        document.getElementById("toFlag").textContent = "🇦🇿";
+        document.getElementById("toName").textContent = "Azərbaycan";
+
     }
 
-    function saveCart() {
-      try {
-        localStorage.setItem(
-          STORAGE_KEY,
-          JSON.stringify(cart)
-        );
-      } catch (error) {
-        console.warn("Səbət localStorage-a yazılmadı:", error);
-      }
+    translateLive();
+
+    showToast("Dil istiqaməti dəyişdi");
+
+}
+
+function sendMessage(){
+
+    const input = document.getElementById("input");
+
+    const text = input.value.trim();
+
+    if(!text){
+
+        showToast("Əvvəlcə mesaj yaz");
+
+        return;
     }
 
-    function loadLikes() {
-      try {
-        const raw = localStorage.getItem(LIKE_STORAGE_KEY);
+    const translated = translateText(text);
 
-        if (!raw) {
-          return [];
-        }
+    const chat = document.getElementById("chat");
 
-        const parsed = JSON.parse(raw);
+    const message = document.createElement("div");
 
-        return Array.isArray(parsed) ? parsed : [];
-      } catch (error) {
-        return [];
-      }
-    }
+    message.className = "message outgoing";
 
-    function saveLikes() {
-      try {
-        localStorage.setItem(
-          LIKE_STORAGE_KEY,
-          JSON.stringify(likedItems)
-        );
-      } catch (error) {
-        console.warn("Like yaddaşa yazılmadı:", error);
-      }
-    }
+    message.innerHTML = `
 
-    /*
-      HTML daxilində təhlükəsiz mətn göstərmək üçün escape.
-    */
-    function escapeHTML(value) {
-      return String(value)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-    }
+        <div class="bubble">
+            ${escapeHTML(text)}
+        </div>
 
-    /*
-      Qiyməti demo olaraq 3–25 dollar arasında yaradır.
-    */
-    function getPrice(index) {
-      return 3 + (index * 7) % 23;
-    }
+        <div class="translated">
+            ${direction === "AZEN" ? "🇬🇧" : "🇦🇿"} ${escapeHTML(translated.replace("→ ",""))}
+        </div>
 
-    /*
-      Kart üçün mövzu seçir.
-    */
-    function getTopic(index) {
-      return PHOTO_TOPICS[index % PHOTO_TOPICS.length];
-    }
+        <div class="time">
+            indi ✓✓
+        </div>
 
-    /*
-      Picsum URL.
-      Tələbdə verilən 400x300?random=${i} formatından istifadə olunur.
-    */
-    function getPicsumURL(index) {
-      return `https://picsum.photos/400/300?random=${index}`;
-    }
+    `;
 
-    /*
-      Unsplash source URL-i.
-      Bəzi brauzer və CDN mühitlərində source.unsplash.com
-      işləməyə bilər. Ona görə əsas mənbə Picsum, alternativ isə
-      konkret Unsplash images URL-dir.
-    */
-    function getUnsplashURL(topic, index) {
-      const encoded = encodeURIComponent(topic.keyword);
+    chat.appendChild(message);
 
-      /*
-        Source endpoint alternativ olaraq saxlanılır.
-        Şəkil yüklənməsə onerror ilə Picsum-a düşür.
-      */
-      return `https://source.unsplash.com/800x600/?${encoded}&sig=${index}`;
-    }
+    input.value = "";
 
-    /*
-      Müəyyən kart üçün şəkil URL-i.
-      Hər 3-cü kartda Unsplash preview, qalanlarında Picsum.
-    */
-    function getImageURL(index, topic) {
-      if (index % 3 === 0) {
-        return getUnsplashURL(topic, index);
-      }
+    translateLive();
 
-      return getPicsumURL(index);
-    }
+    chat.scrollTop = chat.scrollHeight;
 
-    /*
-      Kart obyektini bir yerdə yaradırıq.
-    */
-    function createPhotoItem(index) {
-      const topic = getTopic(index);
+    showToast("✓ Mesaj tərcümə olunaraq göndərildi");
 
-      const id = `az-photo-${index}`;
+}
 
-      const price = getPrice(index);
+function escapeHTML(str){
 
-      const title = `${topic.name.toLowerCase()}_${index}.jpg`;
+    return str
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;")
+        .replace(/'/g,"&#039;");
 
-      const resolution = index % 5 === 0
-        ? "6000×4000"
-        : "4032×3024";
+}
 
-      const author = index % 4 === 0
-        ? "@azstock_creator"
-        : "@bakı_data";
+function showToast(text){
 
-      const location = topic.name === "Bakı"
-        ? "Bakı, Azərbaycan"
-        : "Azərbaycan";
+    const toast = document.getElementById("toast");
 
-      return {
-        id,
-        index,
-        title,
-        topic: topic.name,
-        category: topic.category,
-        keyword: topic.keyword,
-        price,
-        resolution,
-        author,
-        location,
-        image: getImageURL(index, topic)
-      };
-    }
+    toast.textContent = text;
 
-    /*
-      120 obyektin tamamını bir dəfə yaradırıq.
-    */
-    const photoItems = Array.from(
-      { length: TOTAL_IMAGES },
-      (_, index) => createPhotoItem(index + 1)
-    );
+    toast.classList.add("show");
 
-    /* ================================================================
-       4. TOAST
-       ================================================================ */
-
-    function showToast(message) {
-      const toast = document.getElementById("toast");
-      const text = document.getElementById("toastText");
-
-      text.textContent = message;
-
-      toast.classList.add("show");
-
-      clearTimeout(toastTimer);
-
-      toastTimer = setTimeout(() => {
+    setTimeout(()=>{
         toast.classList.remove("show");
-      }, 2200);
-    }
+    },1800);
 
-    /* ================================================================
-       5. PHOTO CARD HTML
-       ================================================================ */
+}
 
-    function photoCardHTML(item) {
-      const isLiked = likedItems.includes(item.id);
-
-      /*
-        İlk kartlarda eager göstərmək istəsək də tələb bütün şəkillərin
-        lazy olmasını tələb edir. Ona görə bütün şəkillər loading="lazy".
-      */
-      return `
-        <article
-          class="photo-card"
-          data-id="${escapeHTML(item.id)}"
-          data-title="${escapeHTML(item.title)}"
-          data-topic="${escapeHTML(item.topic)}"
-          data-category="${escapeHTML(item.category)}"
-          data-keyword="${escapeHTML(item.keyword)}"
-          data-author="${escapeHTML(item.author)}"
-          data-location="${escapeHTML(item.location)}"
-          data-price="${item.price}"
-          data-resolution="${escapeHTML(item.resolution)}"
-          tabindex="0"
-          role="button"
-          aria-label="${escapeHTML(item.title)} — detallara bax"
-        >
-          <img
-            src="${escapeHTML(item.image)}"
-            alt="${escapeHTML(item.topic)} — Azərbaycan stock foto"
-            loading="lazy"
-            decoding="async"
-            class="image-loading"
-            data-fallback="${escapeHTML(getPicsumURL(item.index))}"
-            onload="this.classList.remove('image-loading')"
-            onerror="this.onerror=null;this.src=this.dataset.fallback;this.classList.remove('image-loading')"
-          >
-
-          <div class="photo-overlay">
-            <div class="photo-info">
-
-              <div class="flex items-center justify-between gap-2">
-                <div class="min-w-0">
-                  <div class="font-black text-sm truncate">
-                    ${escapeHTML(item.title)}
-                  </div>
-
-                  <div class="text-[11px] text-gray-300 mt-1">
-                    ${escapeHTML(item.author)}
-                  </div>
-                </div>
-
-                <div class="shrink-0 font-black text-orange-400">
-                  $${item.price}
-                </div>
-              </div>
-
-              <div class="meta-hide-mobile text-[11px] text-gray-300 mt-2">
-                ${escapeHTML(item.resolution)} · ${escapeHTML(item.category)}
-              </div>
-
-              <div class="photo-actions">
-                <button
-                  type="button"
-                  class="action-btn like-btn ${isLiked ? "liked" : ""}"
-                  data-action="like"
-                  data-id="${escapeHTML(item.id)}"
-                  aria-label="Bəyən"
-                  title="Bəyən"
-                >
-                  ${isLiked ? "♥" : "♡"}
-                </button>
-
-                <button
-                  type="button"
-                  class="action-btn"
-                  data-action="preview"
-                  data-id="${escapeHTML(item.id)}"
-                  aria-label="Böyük baxış"
-                  title="Böyük baxış"
-                >
-                  ⤢
-                </button>
-
-                <button
-                  type="button"
-                  class="buy-mini"
-                  data-action="cart"
-                  data-id="${escapeHTML(item.id)}"
-                >
-                  Səbətə əlavə et
-                </button>
-              </div>
-
-            </div>
-          </div>
-        </article>
-      `;
-    }
-
-    /* ================================================================
-       6. GALLERY RENDER
-       ================================================================ */
-
-    function renderGallery() {
-      const grid = document.getElementById("photoGrid");
-
-      const search = currentSearch.trim().toLocaleLowerCase("az-AZ");
-
-      const filtered = photoItems.filter(item => {
-        const categoryMatches =
-          currentFilter === "all" ||
-          item.category === currentFilter;
-
-        if (!categoryMatches) {
-          return false;
-        }
-
-        if (!search) {
-          return true;
-        }
-
-        const searchable = [
-          item.title,
-          item.topic,
-          item.category,
-          item.keyword,
-          item.author,
-          item.location
-        ]
-          .join(" ")
-          .toLocaleLowerCase("az-AZ");
-
-        return searchable.includes(search);
-      });
-
-      grid.innerHTML = filtered
-        .map(photoCardHTML)
-        .join("");
-
-      document.getElementById("resultCount").textContent = filtered.length;
-
-      const noResults = document.getElementById("noResults");
-
-      if (filtered.length === 0) {
-        noResults.classList.add("show");
-      } else {
-        noResults.classList.remove("show");
-      }
-    }
-
-    /* ================================================================
-       7. SEARCH
-       ================================================================ */
-
-    function runSearch(value) {
-      currentSearch = value || "";
-
-      renderGallery();
-    }
-
-    function renderSuggestions(input, box) {
-      const value = input.value
-        .trim()
-        .toLocaleLowerCase("az-AZ");
-
-      if (!value) {
-        box.innerHTML = "";
-        box.classList.remove("open");
-        return;
-      }
-
-      const matches = SEARCH_TERMS
-        .filter(term =>
-          term.toLocaleLowerCase("az-AZ").includes(value)
-        )
-        .slice(0, 7);
-
-      if (!matches.length) {
-        box.innerHTML = `
-          <div class="px-4 py-3 text-sm text-gray-500">
-            Enter ilə axtarış edə bilərsiniz.
-          </div>
-        `;
-
-        box.classList.add("open");
-
-        return;
-      }
-
-      box.innerHTML = matches
-        .map(term => `
-          <button
-            type="button"
-            class="autocomplete-item w-full text-left"
-            data-suggestion="${escapeHTML(term)}"
-          >
-            <span class="autocomplete-dot"></span>
-            <span>${escapeHTML(term)}</span>
-          </button>
-        `)
-        .join("");
-
-      box.classList.add("open");
-    }
-
-    function connectSearchInput(inputId, suggestionId) {
-      const input = document.getElementById(inputId);
-      const box = document.getElementById(suggestionId);
-
-      input.addEventListener("input", () => {
-        renderSuggestions(input, box);
-
-        /*
-          Search real-time işləyir.
-        */
-        runSearch(input.value);
-
-        /*
-          Əgər digər search input varsa sinxronlaşdırırıq.
-        */
-        if (inputId === "heroSearch") {
-          document.getElementById("headerSearch").value = input.value;
-        } else {
-          document.getElementById("heroSearch").value = input.value;
-        }
-      });
-
-      input.addEventListener("focus", () => {
-        renderSuggestions(input, box);
-      });
-
-      input.addEventListener("keydown", event => {
-        if (event.key === "Enter") {
-          event.preventDefault();
-
-          runSearch(input.value);
-
-          box.classList.remove("open");
-
-          document.getElementById("gallery")
-            .scrollIntoView({ behavior: "smooth" });
-        }
-
-        if (event.key === "Escape") {
-          box.classList.remove("open");
-        }
-      });
-
-      box.addEventListener("click", event => {
-        const button = event.target.closest("[data-suggestion]");
-
-        if (!button) {
-          return;
-        }
-
-        const term = button.dataset.suggestion;
-
-        input.value = term;
-
-        runSearch(term);
-
-        if (inputId === "heroSearch") {
-          document.getElementById("headerSearch").value = term;
-        } else {
-          document.getElementById("heroSearch").value = term;
-        }
-
-        box.classList.remove("open");
-
-        document.getElementById("gallery")
-          .scrollIntoView({ behavior: "smooth" });
-      });
-    }
-
-    /* ================================================================
-       8. FILTERS
-       ================================================================ */
-
-    function setFilter(filter) {
-      currentFilter = filter;
-
-      document
-        .querySelectorAll(".filter-btn")
-        .forEach(button => {
-          button.classList.toggle(
-            "active",
-            button.dataset.filter === filter
-          );
-        });
-
-      renderGallery();
-    }
-
-    document.querySelectorAll(".filter-btn")
-      .forEach(button => {
-        button.addEventListener("click", () => {
-          setFilter(button.dataset.filter);
-        });
-      });
-
-    document.querySelectorAll(".category-menu-item")
-      .forEach(button => {
-        button.addEventListener("click", () => {
-          setFilter(button.dataset.category);
-
-          document.getElementById("categoryMenu")
-            .classList.add("hidden");
-
-          document.getElementById("gallery")
-            .scrollIntoView({ behavior: "smooth" });
-        });
-      });
-
-    /* ================================================================
-       9. CART ENGINE
-       ================================================================ */
-
-    function addToCart(itemId) {
-      const item = photoItems.find(
-        photo => photo.id === itemId
-      );
-
-      if (!item) {
-        return;
-      }
-
-      const exists = cart.some(
-        cartItem => cartItem.id === itemId
-      );
-
-      if (exists) {
-        showToast("Bu şəkil artıq səbətdədir.");
-
-        return;
-      }
-
-      cart.push({
-        id: item.id,
-        title: item.title,
-        price: item.price,
-        image: item.image,
-        category: item.category
-      });
-
-      saveCart();
-
-      updateCartUI();
-
-      showToast(`${item.title} səbətə əlavə edildi.`);
-    }
-
-    function removeFromCart(itemId) {
-      cart = cart.filter(
-        item => item.id !== itemId
-      );
-
-      saveCart();
-
-      updateCartUI();
-
-      renderCart();
-    }
-
-    function updateCartUI() {
-      const count = cart.length;
-
-      document.getElementById("cartCount").textContent = count;
-
-      document.getElementById("mobileCartCount").textContent = count;
-
-      document.getElementById("cartTotalCount").textContent = count;
-    }
-
-    function calculateCartTotal() {
-      return cart.reduce(
-        (sum, item) => sum + Number(item.price || 0),
-        0
-      );
-    }
-
-    function renderCart() {
-      const container = document.getElementById("cartItems");
-
-      const total = calculateCartTotal();
-
-      document.getElementById("cartTotalPrice").textContent =
-        `$${total}`;
-
-      if (!cart.length) {
-        container.innerHTML = `
-          <div class="py-12 text-center text-gray-500">
-            <div class="text-4xl mb-3">🛒</div>
-            <div class="font-black text-gray-900">
-              Səbət boşdur
-            </div>
-            <div class="text-sm mt-1">
-              Şəkillərdən birini seçərək əlavə edə bilərsiniz.
-            </div>
-          </div>
-        `;
-
-        return;
-      }
-
-      container.innerHTML = cart.map(item => `
-        <div class="flex gap-3 py-3 border-b border-gray-100 last:border-0">
-          <img
-            src="${escapeHTML(item.image)}"
-            alt="${escapeHTML(item.title)}"
-            loading="lazy"
-            class="w-20 h-16 object-cover rounded-xl bg-gray-100"
-            onerror="this.onerror=null;this.src='${FALLBACK_IMAGE}'"
-          >
-
-          <div class="min-w-0 flex-1">
-            <div class="font-black text-sm truncate">
-              ${escapeHTML(item.title)}
-            </div>
-
-            <div class="text-xs text-gray-500 mt-1">
-              ${escapeHTML(item.category)}
-            </div>
-
-            <div class="flex items-center justify-between mt-2">
-              <strong>$${item.price}</strong>
-
-              <button
-                type="button"
-                class="text-xs font-bold text-red-500 hover:underline"
-                data-remove-cart="${escapeHTML(item.id)}"
-              >
-                Sil
-              </button>
-            </div>
-          </div>
-        </div>
-      `).join("");
-    }
-
-    /* ================================================================
-       10. LIGHTBOX
-       ================================================================ */
-
-    function openLightbox(itemId) {
-      const item = photoItems.find(
-        photo => photo.id === itemId
-      );
-
-      if (!item) {
-        return;
-      }
-
-      currentLightboxItem = item;
-
-      document.getElementById("lightboxImage").src =
-        item.image;
-
-      document.getElementById("lightboxImage").alt =
-        item.title;
-
-      document.getElementById("lightboxTitle").textContent =
-        item.title;
-
-      document.getElementById("lightboxCategory").textContent =
-        item.category;
-
-      document.getElementById("lightboxPrice").textContent =
-        `$${item.price}`;
-
-      document.getElementById("exifResolution").textContent =
-        item.resolution;
-
-      document.getElementById("exifAuthor").textContent =
-        item.author;
-
-      document.getElementById("exifLocation").textContent =
-        item.location;
-
-      const modal = document.getElementById("lightboxModal");
-
-      modal.classList.add("open");
-
-      document.body.style.overflow = "hidden";
-    }
-
-    function closeLightbox() {
-      document.getElementById("lightboxModal")
-        .classList.remove("open");
-
-      document.body.style.overflow = "";
-
-      currentLightboxItem = null;
-    }
-
-    /* ================================================================
-       11. LIKE ENGINE
-       ================================================================ */
-
-    function toggleLike(itemId, button) {
-      const index = likedItems.indexOf(itemId);
-
-      if (index === -1) {
-        likedItems.push(itemId);
-
-        button.classList.add("liked");
-
-        button.textContent = "♥";
-
-        showToast("Bəyənilənlərə əlavə edildi.");
-      } else {
-        likedItems.splice(index, 1);
-
-        button.classList.remove("liked");
-
-        button.textContent = "♡";
-
-        showToast("Bəyənilənlərdən çıxarıldı.");
-      }
-
-      saveLikes();
-    }
-
-    /* ================================================================
-       12. GALLERY EVENT DELEGATION
-       ================================================================ */
-
-    document.getElementById("photoGrid")
-      .addEventListener("click", event => {
-        const actionButton = event.target.closest("[data-action]");
-
-        if (actionButton) {
-          event.stopPropagation();
-
-          const itemId = actionButton.dataset.id;
-
-          const action = actionButton.dataset.action;
-
-          if (action === "cart") {
-            addToCart(itemId);
-
-            return;
-          }
-
-          if (action === "preview") {
-            openLightbox(itemId);
-
-            return;
-          }
-
-          if (action === "like") {
-            toggleLike(itemId, actionButton);
-
-            return;
-          }
-        }
-
-        const card = event.target.closest(".photo-card");
-
-        if (card) {
-          openLightbox(card.dataset.id);
-        }
-      });
-
-    document.getElementById("photoGrid")
-      .addEventListener("keydown", event => {
-        if (event.key !== "Enter" && event.key !== " ") {
-          return;
-        }
-
-        const card = event.target.closest(".photo-card");
-
-        if (!card) {
-          return;
-        }
-
-        event.preventDefault();
-
-        openLightbox(card.dataset.id);
-      });
-
-    /* ================================================================
-       13. CART MODAL
-       ================================================================ */
-
-    function openCart() {
-      renderCart();
-
-      document.getElementById("cartModal")
-        .classList.add("open");
-
-      document.body.style.overflow = "hidden";
-    }
-
-    function closeCart() {
-      document.getElementById("cartModal")
-        .classList.remove("open");
-
-      document.body.style.overflow = "";
-    }
-
-    document.getElementById("cartButton")
-      .addEventListener("click", openCart);
-
-    document.getElementById("mobileCartButton")
-      .addEventListener("click", openCart);
-
-    document.getElementById("closeCart")
-      .addEventListener("click", closeCart);
-
-    document.getElementById("cartItems")
-      .addEventListener("click", event => {
-        const button = event.target.closest("[data-remove-cart]");
-
-        if (!button) {
-          return;
-        }
-
-        removeFromCart(button.dataset.removeCart);
-
-        showToast("Məhsul səbətdən silindi.");
-      });
-
-    document.getElementById("checkoutButton")
-      .addEventListener("click", () => {
-        if (!cart.length) {
-          showToast("Checkout üçün səbətə məhsul əlavə edin.");
-
-          return;
-        }
-
-        showToast("Demo checkout: real ödəniş sistemi qoşulmalıdır.");
-      });
-
-    /* ================================================================
-       14. LIGHTBOX EVENTS
-       ================================================================ */
-
-    document.getElementById("closeLightbox")
-      .addEventListener("click", closeLightbox);
-
-    document.getElementById("lightboxModal")
-      .addEventListener("click", event => {
-        if (event.target.id === "lightboxModal") {
-          closeLightbox();
-        }
-      });
-
-    document.getElementById("lightboxBuy")
-      .addEventListener("click", () => {
-        if (!currentLightboxItem) {
-          return;
-        }
-
-        addToCart(currentLightboxItem.id);
-      });
-
-    /* ================================================================
-       15. ESCAPE — MODALLARI BAĞLAYIR
-       ================================================================ */
-
-    document.addEventListener("keydown", event => {
-      if (event.key !== "Escape") {
-        return;
-      }
-
-      closeLightbox();
-
-      closeCart();
-
-      document.getElementById("categoryMenu")
-        .classList.add("hidden");
-
-      document.getElementById("heroSuggestions")
-        .classList.remove("open");
-
-      document.getElementById("headerSuggestions")
-        .classList.remove("open");
-    });
-
-    /* ================================================================
-       16. HEADER CATEGORY DROPDOWN
-       ================================================================ */
-
-    const categoryMenuButton =
-      document.getElementById("categoryMenuButton");
-
-    const categoryMenu =
-      document.getElementById("categoryMenu");
-
-    categoryMenuButton.addEventListener("click", event => {
-      event.stopPropagation();
-
-      categoryMenu.classList.toggle("hidden");
-    });
-
-    document.addEventListener("click", event => {
-      if (!categoryMenu.contains(event.target) &&
-          !categoryMenuButton.contains(event.target)) {
-        categoryMenu.classList.add("hidden");
-      }
-    });
-
-    /* ================================================================
-       17. MOBILE MENU
-       ================================================================ */
-
-    document.getElementById("mobileMenuButton")
-      .addEventListener("click", () => {
-        document.getElementById("mobileMenu")
-          .classList.toggle("open");
-      });
-
-    document.querySelectorAll("#mobileMenu a")
-      .forEach(link => {
-        link.addEventListener("click", () => {
-          document.getElementById("mobileMenu")
-            .classList.remove("open");
-        });
-      });
-
-    /* ================================================================
-       18. TAG SEARCH
-       ================================================================ */
-
-    document.querySelectorAll("[data-tag]")
-      .forEach(tag => {
-        tag.addEventListener("click", () => {
-          const value = tag.dataset.tag;
-
-          document.getElementById("heroSearch").value =
-            value;
-
-          document.getElementById("headerSearch").value =
-            value;
-
-          runSearch(value);
-
-          document.getElementById("gallery")
-            .scrollIntoView({ behavior: "smooth" });
-        });
-      });
-
-    /* ================================================================
-       19. HERO SEARCH BUTTON
-       ================================================================ */
-
-    document.getElementById("heroSearchButton")
-      .addEventListener("click", () => {
-        runSearch(
-          document.getElementById("heroSearch").value
-        );
-
-        document.getElementById("gallery")
-          .scrollIntoView({ behavior: "smooth" });
-      });
-
-    /* ================================================================
-       20. RESET FILTERS
-       ================================================================ */
-
-    document.getElementById("resetFilters")
-      .addEventListener("click", () => {
-        currentSearch = "";
-
-        currentFilter = "all";
-
-        document.getElementById("heroSearch").value = "";
-
-        document.getElementById("headerSearch").value = "";
-
-        document
-          .querySelectorAll(".filter-btn")
-          .forEach(button => {
-            button.classList.toggle(
-              "active",
-              button.dataset.filter === "all"
-            );
-          });
-
-        renderGallery();
-      });
-
-    /* ================================================================
-       21. FAQ ACCORDION
-       ================================================================ */
-
-    document.querySelectorAll(".faq-question")
-      .forEach(button => {
-        button.addEventListener("click", () => {
-          const item = button.closest(".faq-item");
-
-          item.classList.toggle("open");
-        });
-      });
-
-    /* ================================================================
-       22. VIDEO GRID
-       ================================================================ */
-
-    function getVideoPoster(index) {
-      return `https://picsum.photos/640/400?random=${700 + index}`;
-    }
-
-    function getVideoSource(index) {
-      /*
-        Public sample video endpoint.
-        Demo üçün MP4 faylı istifadə olunur.
-      */
-      const sources = [
-        "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
-        "https://www.w3schools.com/html/mov_bbb.mp4"
-      ];
-
-      return sources[index % sources.length];
-    }
-
-    function createVideoCard(index) {
-      const topic = PHOTO_TOPICS[index % PHOTO_TOPICS.length];
-
-      return `
-        <article class="video-card">
-          <video
-            preload="none"
-            muted
-            playsinline
-            poster="${getVideoPoster(index)}"
-            aria-label="${escapeHTML(topic.name)} video preview"
-          >
-            <source
-              src="${getVideoSource(index)}"
-              type="video/mp4"
-            >
-          </video>
-
-          <button
-            type="button"
-            class="video-play"
-            data-video-play="${index}"
-            aria-label="Videonu oynat"
-          >
-            ▶
-          </button>
-
-          <div class="video-badges">
-            <span class="video-badge">
-              ${escapeHTML(topic.name)}
-            </span>
-
-            <div class="flex gap-2">
-              <span class="video-badge">0:08</span>
-              <span class="video-badge">1080p</span>
-            </div>
-          </div>
-        </article>
-      `;
-    }
-
-    function renderVideos() {
-      const grid = document.getElementById("videoGrid");
-
-      let html = "";
-
-      /*
-        Tələb olunan 20 video kartı.
-      */
-      for (let i = 1; i <= TOTAL_VIDEOS; i++) {
-        html += createVideoCard(i);
-      }
-
-      grid.innerHTML = html;
-    }
-
-    renderVideos();
-
-    /* ================================================================
-       23. VIDEO PLAY
-       ================================================================ */
-
-    document.getElementById("videoGrid")
-      .addEventListener("click", event => {
-        const button = event.target.closest("[data-video-play]");
-
-        if (!button) {
-          return;
-        }
-
-        const card = button.closest(".video-card");
-
-        const video = card.querySelector("video");
-
-        if (video.paused) {
-          video.play()
-            .then(() => {
-              button.textContent = "❚❚";
-            })
-            .catch(() => {
-              showToast("Video brauzer tərəfindən bloklandı.");
-            });
-        } else {
-          video.pause();
-
-          button.textContent = "▶";
-        }
-      });
-
-    /* ================================================================
-       24. PRICE BUTTONS
-       ================================================================ */
-
-    document.querySelectorAll(".price-buy")
-      .forEach(button => {
-        button.addEventListener("click", () => {
-          const plan = button.dataset.plan;
-
-          showToast(`${plan} planı seçildi — demo checkout.`);
-        });
-      });
-
-    /* ================================================================
-       25. CONTRIBUTOR BUTTON
-       ================================================================ */
-
-    document.getElementById("contributorButton")
-      .addEventListener("click", () => {
-        showToast("Contributor müraciəti üçün backend/form qoşulmalıdır.");
-
-        document.getElementById("contributor")
-          .scrollIntoView({ behavior: "smooth" });
-      });
-
-    /* ================================================================
-       26. SEARCH CONNECTIONS
-       ================================================================ */
-
-    connectSearchInput(
-      "heroSearch",
-      "heroSuggestions"
-    );
-
-    connectSearchInput(
-      "headerSearch",
-      "headerSuggestions"
-    );
-
-    /* ================================================================
-       27. LIGHTBOX IMAGE FALLBACK
-       ================================================================ */
-
-    document.getElementById("lightboxImage")
-      .addEventListener("error", function () {
-        this.onerror = null;
-
-        if (currentLightboxItem) {
-          this.src = getPicsumURL(
-            currentLightboxItem.index
-          );
-        } else {
-          this.src = FALLBACK_IMAGE;
-        }
-      });
-
-    /* ================================================================
-       28. BAŞLANĞIC RENDER
-       ================================================================ */
-
-    /*
-      Səhifə açılan kimi 120 kart DOM-a yazılır.
-      Kartlar hardcoded deyil — yuxarıdakı photoItems və loop
-      vasitəsilə avtomatik yaradılır.
-    */
-    renderGallery();
-
-    /*
-      Səbət sayğaclarını ilk açılışda yeniləyirik.
-    */
-    updateCartUI();
-
-    /*
-      İlk render-dən sonra səbət məlumatını hazırlayırıq.
-    */
-    renderCart();
-
-    /* ================================================================
-       29. PERFORMANCE — IMAGE FALLBACK
-       ================================================================ */
-
-    /*
-      Unsplash source endpoint-in bəzi mühitlərdə cavab verməməsi
-      ehtimalına görə bütün image elementlərinə global fallback
-      müşahidəsi əlavə edilir.
-    */
-    document.getElementById("photoGrid")
-      .addEventListener("error", event => {
-        const image = event.target;
-
-        if (image.tagName !== "IMG") {
-          return;
-        }
-
-        if (image.dataset.fallbackUsed === "true") {
-          return;
-        }
-
-        image.dataset.fallbackUsed = "true";
-
-        const fallback =
-          image.dataset.fallback ||
-          FALLBACK_IMAGE;
-
-        image.src = fallback;
-      }, true);
-
-    /* ================================================================
-       30. OUTSIDE AUTOCOMPLETE CLOSE
-       ================================================================ */
-
-    document.addEventListener("click", event => {
-      const heroInput =
-        document.getElementById("heroSearch");
-
-      const headerInput =
-        document.getElementById("headerSearch");
-
-      const heroBox =
-        document.getElementById("heroSuggestions");
-
-      const headerBox =
-        document.getElementById("headerSuggestions");
-
-      if (!heroInput.contains(event.target) &&
-          !heroBox.contains(event.target)) {
-        heroBox.classList.remove("open");
-      }
-
-      if (!headerInput.contains(event.target) &&
-          !headerBox.contains(event.target)) {
-        headerBox.classList.remove("open");
-      }
-    });
-
-    /* ================================================================
-       31. SIMPLE ANALYTICS-LIKE LOCAL EVENTS
-       ================================================================ */
-
-    /*
-      Backend olmadığı üçün real analytics göndərmirik.
-      Yalnız developer console-da lokal event göstərmək üçün
-      kiçik helper saxlanılır.
-    */
-    function localEvent(name, payload = {}) {
-      if (window.localStorage) {
-        try {
-          const key = "azstock_events_v1";
-
-          const events =
-            JSON.parse(
-              localStorage.getItem(key) || "[]"
-            );
-
-          events.push({
-            name,
-            payload,
-            timestamp: new Date().toISOString()
-          });
-
-          /*
-            Local storage-ı sonsuz böyütməmək üçün son 100 event.
-          */
-          localStorage.setItem(
-            key,
-            JSON.stringify(events.slice(-100))
-          );
-        } catch (error) {
-          /*
-            Analytics səhvi əsas funksionallığı pozmamalıdır.
-          */
-        }
-      }
-    }
-
-    /* ================================================================
-       32. CART EVENT ANALYTICS WRAPPER
-       ================================================================ */
-
-    const originalAddToCart = addToCart;
-
-    addToCart = function(itemId) {
-      localEvent("add_to_cart", { itemId });
-
-      return originalAddToCart(itemId);
-    };
-
-    /* ================================================================
-       33. VIEWPORT OBSERVER
-       ================================================================ */
-
-    /*
-      Lazy image loading brauzer tərəfindən idarə olunur.
-      Bu observer isə yalnız kartın görünməsini lokal event kimi qeyd edir.
-    */
-    if ("IntersectionObserver" in window) {
-      const observer =
-        new IntersectionObserver(
-          entries => {
-            entries.forEach(entry => {
-              if (!entry.isIntersecting) {
-                return;
-              }
-
-              const card = entry.target;
-
-              localEvent("card_visible", {
-                id: card.dataset.id
-              });
-
-              observer.unobserve(card);
-            });
-          },
-          {
-            rootMargin: "200px"
-          }
-        );
-
-      document.querySelectorAll(".photo-card")
-        .forEach(card => observer.observe(card));
-    }
-
-    /* ================================================================
-       34. WINDOW RESIZE SAFETY
-       ================================================================ */
-
-    let resizeTimer = null;
-
-    window.addEventListener("resize", () => {
-      clearTimeout(resizeTimer);
-
-      resizeTimer = setTimeout(() => {
-        /*
-          CSS columns tam responsive olduğuna görə JS layout
-          hesablaması tələb olunmur.
-        */
-      }, 150);
-    });
-
-    /* ================================================================
-       35. PAGE VISIBILITY
-       ================================================================ */
-
-    document.addEventListener("visibilitychange", () => {
-      if (document.hidden) {
-        return;
-      }
-
-      /*
-        Səhifəyə qayıdanda səbət state-i yenilənir.
-      */
-      cart = loadCart();
-
-      updateCartUI();
-    });
-
-    /* ================================================================
-       36. STORAGE EVENT
-       ================================================================ */
-
-    window.addEventListener("storage", event => {
-      if (event.key === STORAGE_KEY) {
-        cart = loadCart();
-
-        updateCartUI();
-
-        renderCart();
-      }
-
-      if (event.key === LIKE_STORAGE_KEY) {
-        likedItems = loadLikes();
-
-        renderGallery();
-      }
-    });
-
-    /* ================================================================
-       37. DEBUG INFORMATION
-       ================================================================ */
-
-    console.info(
-      `AzStock.az loaded: ${photoItems.length} photo cards, ${TOTAL_VIDEOS} video cards.`
-    );
-
-    /* ================================================================
-       38. FINAL HEALTH CHECK
-       ================================================================ */
-
-    /*
-      Production demo üçün əsas DOM elementlərinin mövcudluğunu
-      yoxlayırıq. Hər hansı bir element silinsə console-da görünür.
-    */
-    const requiredElements = [
-      "photoGrid",
-      "videoGrid",
-      "heroSearch",
-      "headerSearch",
-      "cartCount",
-      "lightboxModal",
-      "cartModal"
-    ];
-
-    requiredElements.forEach(id => {
-      if (!document.getElementById(id)) {
-        console.error(
-          `AzStock health check: #${id} tapılmadı.`
-        );
-      }
-    });
-
-    /* ================================================================
-       39. READY EVENT
-       ================================================================ */
-
-    document.addEventListener("DOMContentLoaded", () => {
-      /*
-        DOM artıq script-in sonunda hazırdır, amma bu event gələcək
-        genişləndirmələr üçün saxlanılır.
-      */
-      document.documentElement.classList.add("azstock-ready");
-    });
-
-    /* ================================================================
-       40. END OF AZSTOCK ENGINE
-       ================================================================ */
-  </script>
+</script>
 
 </body>
 </html>
