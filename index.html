@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>LinguaKey — Universal Translator</title>
+<meta name="theme-color" content="#090b10">
+<title>LinguaKey — Smart Keyboard</title>
 
 <style>
 *{
@@ -13,10 +14,20 @@
     -webkit-tap-highlight-color:transparent;
 }
 
+:root{
+    --accent:#ff3b6b;
+    --accent2:#ff6688;
+    --bg:#090b10;
+    --panel:#11151d;
+    --key:#202631;
+    --text:#ffffff;
+    --muted:#858e9d;
+}
+
 body{
+    background:#050608;
+    color:var(--text);
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
-    background:#080b10;
-    color:#fff;
     height:100vh;
     overflow:hidden;
 }
@@ -26,7 +37,7 @@ body{
     max-width:480px;
     height:100vh;
     margin:auto;
-    background:#0c1017;
+    background:var(--bg);
     display:flex;
     flex-direction:column;
 }
@@ -34,16 +45,16 @@ body{
 /* HEADER */
 
 .header{
-    height:68px;
+    height:64px;
+    padding:0 15px;
     display:flex;
     align-items:center;
     justify-content:space-between;
-    padding:0 17px;
     border-bottom:1px solid #202631;
-    background:#0d121a;
+    background:#0d1016;
 }
 
-.brand{
+.logoArea{
     display:flex;
     align-items:center;
     gap:10px;
@@ -53,132 +64,109 @@ body{
     width:40px;
     height:40px;
     border-radius:13px;
+    background:linear-gradient(135deg,var(--accent),var(--accent2));
     display:flex;
     align-items:center;
     justify-content:center;
-    background:linear-gradient(135deg,#5d5cff,#8c5cff);
     font-size:21px;
-    box-shadow:0 7px 25px #5d5cff33;
+    box-shadow:0 7px 25px #ff3b6b33;
 }
 
-.brandText{
-    font-weight:800;
+.title{
     font-size:18px;
+    font-weight:800;
 }
 
-.brandSub{
-    font-size:10px;
+.subtitle{
     color:#7f8998;
+    font-size:10px;
     margin-top:2px;
 }
 
-.status{
-    display:flex;
-    align-items:center;
-    gap:6px;
-    color:#83e3a1;
-    font-size:11px;
+.online{
+    font-size:10px;
+    color:#72df92;
 }
 
 .dot{
+    display:inline-block;
     width:7px;
     height:7px;
     border-radius:50%;
-    background:#48d879;
-    box-shadow:0 0 9px #48d879;
+    background:#5de07e;
+    margin-right:4px;
 }
 
 /* LANGUAGE */
 
-.langBox{
-    padding:12px;
-    border-bottom:1px solid #202631;
-}
-
 .language{
-    height:48px;
-    background:#141a23;
-    border:1px solid #252d39;
-    border-radius:15px;
+    margin:10px 12px;
+    height:45px;
+    border:1px solid #282f3a;
+    background:#131820;
+    border-radius:14px;
     display:flex;
     align-items:center;
-    justify-content:space-between;
-    padding:0 9px;
+    justify-content:center;
+    gap:18px;
 }
 
 .lang{
-    display:flex;
-    align-items:center;
-    gap:8px;
-    min-width:105px;
-    justify-content:center;
-}
-
-.flag{
-    font-size:21px;
-}
-
-.langName{
-    font-size:13px;
+    font-size:12px;
     font-weight:700;
 }
 
 .swap{
-    width:36px;
-    height:36px;
-    border-radius:11px;
-    border:1px solid #343c49;
-    background:#202733;
-    color:white;
-    font-size:18px;
+    width:34px;
+    height:32px;
+    border-radius:10px;
+    background:#242b36;
+    color:#fff;
+    border:1px solid #363f4d;
+    font-size:17px;
 }
 
 /* CHAT */
 
 .chat{
     flex:1;
-    overflow-y:auto;
-    padding:18px 15px 12px;
+    overflow:auto;
+    padding:10px 14px;
 }
 
 .contact{
     text-align:center;
-    margin-bottom:18px;
+    margin:4px 0 15px;
 }
 
 .avatar{
-    width:55px;
-    height:55px;
+    width:50px;
+    height:50px;
+    margin:auto;
     border-radius:50%;
-    background:linear-gradient(135deg,#ff8c5c,#ff4f81);
+    background:linear-gradient(135deg,#ff8a5c,#ff3972);
     display:flex;
     align-items:center;
     justify-content:center;
-    margin:auto;
-    font-size:23px;
+    font-size:20px;
     font-weight:800;
 }
 
 .contactName{
-    margin-top:7px;
+    margin-top:6px;
+    font-size:14px;
     font-weight:700;
 }
 
 .contactLang{
-    font-size:11px;
-    color:#7e8998;
-    margin-top:3px;
+    color:#788291;
+    font-size:10px;
+    margin-top:2px;
 }
 
 .message{
     max-width:82%;
     margin-bottom:13px;
-    animation:appear .2s ease;
-}
-
-@keyframes appear{
-    from{opacity:0;transform:translateY(7px)}
-    to{opacity:1;transform:none}
 }
 
 .incoming{
@@ -192,153 +180,148 @@ body{
 .bubble{
     padding:12px 14px;
     border-radius:17px;
-    line-height:1.42;
     font-size:14px;
+    line-height:1.4;
 }
 
 .incoming .bubble{
-    background:#171e28;
-    border:1px solid #242d39;
+    background:#181e27;
+    border:1px solid #252e3a;
     border-bottom-left-radius:5px;
 }
 
 .outgoing .bubble{
-    background:linear-gradient(135deg,#5d5cff,#7354e8);
+    background:linear-gradient(135deg,var(--accent),var(--accent2));
     border-bottom-right-radius:5px;
 }
 
-.original{
-    font-size:11px;
-    color:#7d8796;
-    margin-top:5px;
-    padding:0 5px;
-}
-
 .translated{
-    font-size:11px;
-    color:#9de8b3;
-    margin-top:5px;
-    padding:0 5px;
+    color:#8fe7a8;
+    font-size:10px;
+    padding:5px 4px 0;
 }
 
 .time{
+    color:#66707e;
     font-size:9px;
-    color:#687281;
-    margin-top:5px;
     text-align:right;
+    margin-top:4px;
 }
 
-/* TRANSLATION CARD */
+/* SMART SUGGESTIONS */
 
-.translateCard{
-    margin:0 14px 10px;
-    background:#121923;
-    border:1px solid #293342;
-    border-radius:17px;
-    padding:12px;
-}
-
-.cardTop{
+.suggestions{
+    padding:7px 11px;
     display:flex;
-    justify-content:space-between;
-    align-items:center;
-    margin-bottom:8px;
+    gap:7px;
+    overflow-x:auto;
+    border-top:1px solid #202631;
+    background:#0d1219;
 }
 
-.cardTitle{
+.suggestion{
+    flex:none;
+    border:1px solid #303947;
+    background:#171d26;
+    color:#e6e9ee;
+    border-radius:12px;
+    padding:8px 11px;
     font-size:11px;
-    color:#8d99a8;
-    font-weight:700;
 }
 
-.auto{
-    color:#6fdf91;
-    font-size:10px;
-}
-
-.preview{
-    background:#0b1017;
-    border-radius:11px;
-    padding:10px;
-    font-size:13px;
-    min-height:42px;
-}
-
-.translationResult{
-    margin-top:7px;
-    color:#a9a4ff;
-    font-size:13px;
+.suggestion.ai{
+    border-color:var(--accent);
+    color:#fff;
 }
 
 /* INPUT */
 
 .inputArea{
-    padding:10px 12px 9px;
-    border-top:1px solid #202631;
-    background:#0d121a;
-}
-
-.quick{
-    display:flex;
-    gap:7px;
-    overflow-x:auto;
-    margin-bottom:8px;
-}
-
-.quick button{
-    flex:none;
-    border:1px solid #2b3441;
-    background:#151c26;
-    color:#c5ccd5;
-    border-radius:10px;
-    padding:7px 10px;
-    font-size:10px;
+    background:#0c1118;
+    padding:8px 10px;
 }
 
 .inputRow{
     display:flex;
-    align-items:flex-end;
     gap:8px;
+    align-items:flex-end;
 }
 
-.textBox{
+textarea{
     flex:1;
-    min-height:48px;
-    max-height:100px;
-    background:#171e28;
-    border:1px solid #2b3441;
-    border-radius:16px;
-    padding:13px;
-    color:white;
-    font-size:14px;
-    outline:none;
+    min-height:46px;
+    max-height:90px;
     resize:none;
+    border-radius:15px;
+    border:1px solid #303845;
+    background:#181f29;
+    color:#fff;
+    outline:none;
+    padding:12px;
+    font-size:14px;
 }
 
-.textBox:focus{
-    border-color:#6861ff;
+textarea:focus{
+    border-color:var(--accent);
+}
+
+.mic{
+    width:46px;
+    height:46px;
+    border-radius:14px;
+    border:1px solid #303845;
+    background:#1a212c;
+    color:#fff;
+    font-size:19px;
 }
 
 .send{
-    width:48px;
-    height:48px;
-    border:none;
-    border-radius:15px;
-    background:linear-gradient(135deg,#5d5cff,#7654ed);
-    color:white;
-    font-size:20px;
-    box-shadow:0 8px 25px #5d5cff44;
+    width:46px;
+    height:46px;
+    border:0;
+    border-radius:14px;
+    background:linear-gradient(135deg,var(--accent),var(--accent2));
+    color:#fff;
+    font-size:19px;
+}
+
+/* TOOLBAR */
+
+.toolbar{
+    height:45px;
+    display:flex;
+    align-items:center;
+    gap:7px;
+    overflow-x:auto;
+    margin-top:7px;
+}
+
+.tool{
+    flex:none;
+    height:34px;
+    padding:0 11px;
+    border-radius:10px;
+    background:#181e27;
+    color:#cbd1da;
+    border:1px solid #2b3440;
+    font-size:11px;
+}
+
+.tool.active{
+    background:var(--accent);
+    border-color:var(--accent);
+    color:#fff;
 }
 
 /* KEYBOARD */
 
 .keyboard{
-    padding:8px 4px 4px;
     background:#10151d;
-    border-top:1px solid #222a35;
+    padding:7px 4px 5px;
+    border-top:1px solid #242b35;
 }
 
-.krow{
+.row{
     display:flex;
     gap:4px;
     margin-bottom:5px;
@@ -348,28 +331,162 @@ body{
     flex:1;
     height:39px;
     border:0;
-    border-radius:7px;
-    background:#202733;
-    color:#e9edf2;
+    border-radius:8px;
+    background:var(--key);
+    color:#f1f3f6;
     font-size:14px;
+    font-weight:500;
+    box-shadow:0 2px 0 #12161c;
 }
 
 .key:active{
-    transform:scale(.96);
-    background:#333c4b;
+    transform:scale(.94);
 }
 
 .special{
-    flex:1.5;
+    flex:1.45;
 }
 
 .space{
     flex:4;
 }
 
-.translateKey{
-    background:linear-gradient(135deg,#5d5cff,#7654ed);
+.translate{
+    background:linear-gradient(135deg,var(--accent),var(--accent2));
     font-weight:800;
+}
+
+/* THEME MODAL */
+
+.modal{
+    position:fixed;
+    inset:0;
+    background:#000b;
+    display:none;
+    align-items:flex-end;
+    justify-content:center;
+    z-index:100;
+}
+
+.modal.show{
+    display:flex;
+}
+
+.themePanel{
+    width:100%;
+    max-width:480px;
+    background:#11161e;
+    border-radius:24px 24px 0 0;
+    padding:18px;
+    border:1px solid #29313d;
+}
+
+.handle{
+    width:40px;
+    height:4px;
+    border-radius:5px;
+    background:#414a57;
+    margin:0 auto 16px;
+}
+
+.panelTitle{
+    font-size:18px;
+    font-weight:800;
+    margin-bottom:4px;
+}
+
+.panelSub{
+    font-size:11px;
+    color:#7e8998;
+    margin-bottom:15px;
+}
+
+.themes{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:10px;
+}
+
+.theme{
+    height:78px;
+    border-radius:16px;
+    border:1px solid #303947;
+    background:#1a2029;
+    color:white;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:5px;
+    font-size:12px;
+}
+
+.themeIcon{
+    font-size:28px;
+}
+
+.theme.selected{
+    border:2px solid var(--accent);
+}
+
+.close{
+    width:100%;
+    margin-top:15px;
+    height:45px;
+    border-radius:13px;
+    border:0;
+    background:#242b36;
+    color:#fff;
+    font-weight:700;
+}
+
+/* CARD THEME EFFECTS */
+
+body.cardTheme .key{
+    border-radius:6px;
+    background:#f4f2ed;
+    color:#171717;
+    font-family:Georgia,serif;
+    font-weight:700;
+}
+
+body.cardTheme .keyboard{
+    background:#181818;
+}
+
+body.cardTheme .translate{
+    color:#fff;
+    background:#111;
+}
+
+body.heartTheme .key{
+    border-radius:13px;
+    background:linear-gradient(145deg,#351420,#221018);
+    border:1px solid #6d2940;
+}
+
+body.spadeTheme .key{
+    background:linear-gradient(145deg,#20242c,#12151a);
+    border-radius:6px;
+}
+
+body.diamondTheme .key{
+    transform:skewX(-1deg);
+    border-radius:4px;
+    background:linear-gradient(145deg,#21141a,#171116);
+    border:1px solid #6e2938;
+}
+
+body.clubTheme .key{
+    border-radius:18px;
+    background:linear-gradient(145deg,#16241d,#101814);
+    border:1px solid #285239;
+}
+
+body.neonTheme .key{
+    background:#10151d;
+    border:1px solid var(--accent);
+    box-shadow:0 0 8px #ff3b6b33;
 }
 
 /* TOAST */
@@ -377,18 +494,18 @@ body{
 .toast{
     position:fixed;
     left:50%;
-    bottom:260px;
-    transform:translateX(-50%) translateY(20px);
-    background:#e9edf2;
+    bottom:250px;
+    transform:translateX(-50%) translateY(15px);
+    background:#f2f4f7;
     color:#111;
-    padding:10px 16px;
+    padding:10px 15px;
     border-radius:12px;
-    font-size:12px;
-    font-weight:700;
+    font-size:11px;
+    font-weight:800;
     opacity:0;
     pointer-events:none;
-    transition:.25s;
-    z-index:99;
+    transition:.2s;
+    z-index:200;
 }
 
 .toast.show{
@@ -396,23 +513,20 @@ body{
     transform:translateX(-50%) translateY(0);
 }
 
-/* DESKTOP */
-
 @media(min-width:600px){
     body{
         display:flex;
         align-items:center;
         justify-content:center;
-        background:#05070a;
     }
 
     .app{
         height:850px;
-        max-height:95vh;
+        max-height:96vh;
         border-radius:25px;
         overflow:hidden;
+        border:1px solid #252d38;
         box-shadow:0 30px 100px #000;
-        border:1px solid #202631;
     }
 }
 </style>
@@ -423,36 +537,32 @@ body{
 <div class="app">
 
 <header class="header">
-    <div class="brand">
-        <div class="logo">文</div>
+
+    <div class="logoArea">
+        <div class="logo" id="logo">♥</div>
+
         <div>
-            <div class="brandText">LinguaKey</div>
-            <div class="brandSub">Universal Translation</div>
+            <div class="title">LinguaKey</div>
+            <div class="subtitle">Smart Translation Keyboard</div>
         </div>
     </div>
 
-    <div class="status">
-        <span class="dot"></span>
-        Auto
+    <div class="online">
+        <span class="dot"></span>ACTIVE
     </div>
+
 </header>
 
-<div class="langBox">
+<div class="language">
 
-    <div class="language">
+    <div class="lang">
+        🇦🇿 Azərbaycan
+    </div>
 
-        <div class="lang">
-            <span class="flag" id="fromFlag">🇦🇿</span>
-            <span class="langName" id="fromName">Azərbaycan</span>
-        </div>
+    <button class="swap" onclick="swapLanguage()">⇄</button>
 
-        <button class="swap" onclick="swapLang()">⇄</button>
-
-        <div class="lang">
-            <span class="flag" id="toFlag">🇬🇧</span>
-            <span class="langName" id="toName">English</span>
-        </div>
-
+    <div class="lang" id="targetLang">
+        🇬🇧 English
     </div>
 
 </div>
@@ -468,77 +578,113 @@ body{
     <div class="message incoming">
 
         <div class="bubble">
-            Hi! Are you available tomorrow?
+            Hi! Are you coming home tonight?
         </div>
 
         <div class="translated">
-            🇦🇿 Salam! Sabah vaxtınız var?
+            🇦🇿 Salam! Bu axşam evə gəlirsən?
         </div>
 
-        <div class="time">20:14 ✓✓</div>
+        <div class="time">
+            20:14 ✓✓
+        </div>
 
     </div>
 
     <div class="message outgoing">
 
         <div class="bubble">
-            Bəli, sabah saat 10-da vaxtım var.
+            Bəli, bir azdan gəlirəm.
         </div>
 
         <div class="translated">
-            🇬🇧 Yes, I am available tomorrow at 10 AM.
+            🇬🇧 Yes, I'll be home soon.
         </div>
 
-        <div class="time">20:15 ✓✓</div>
+        <div class="time">
+            20:15 ✓✓
+        </div>
 
     </div>
 
 </div>
 
-<div class="translateCard">
+<!-- SMART REPLIES -->
 
-    <div class="cardTop">
-        <div class="cardTitle">AUTO TRANSLATION</div>
-        <div class="auto">● ACTIVE</div>
-    </div>
+<div class="suggestions">
 
-    <div class="preview" id="preview">
-        Bəli, sabah saat 10-da vaxtım var.
-    </div>
+    <button class="suggestion ai"
+    onclick="useSuggestion('Bəli, gəlirəm.')">
+        🤖 Bəli, gəlirəm.
+    </button>
 
-    <div class="translationResult" id="result">
-        → Yes, I am available tomorrow at 10 AM.
-    </div>
+    <button class="suggestion"
+    onclick="useSuggestion('Bir az gecikəcəyəm.')">
+        Bir az gecikəcəyəm.
+    </button>
+
+    <button class="suggestion"
+    onclick="useSuggestion('10 dəqiqəyə gəlirəm.')">
+        10 dəqiqəyə gəlirəm.
+    </button>
+
+    <button class="suggestion"
+    onclick="useSuggestion('İndi məşğulam.')">
+        İndi məşğulam.
+    </button>
 
 </div>
+
+<!-- INPUT -->
 
 <div class="inputArea">
 
-    <div class="quick">
-        <button onclick="setText('Salam, necəsən?')">Salam 👋</button>
-        <button onclick="setText('Haradasan?')">Haradasan?</button>
-        <button onclick="setText('Sabah görüşə bilərik?')">Görüşək?</button>
-        <button onclick="setText('Çox sağ ol!')">Sağ ol</button>
-    </div>
-
     <div class="inputRow">
+
+        <button class="mic" onclick="voiceDemo()">🎤</button>
 
         <textarea
             id="input"
-            class="textBox"
             placeholder="Azərbaycan dilində yaz..."
-            oninput="translateLive()"
+            oninput="liveTranslate()"
         ></textarea>
 
-        <button class="send" onclick="sendMessage()">➤</button>
+        <button class="send" onclick="send()">➤</button>
+
+    </div>
+
+    <div class="toolbar">
+
+        <button class="tool active" onclick="openThemes()">
+            🎨 Tema
+        </button>
+
+        <button class="tool" onclick="translate()">
+            🌐 Tərcümə
+        </button>
+
+        <button class="tool" onclick="showToast('🤖 Ağıllı cavablar aktivdir')">
+            🤖 Cavablar
+        </button>
+
+        <button class="tool" onclick="showToast('⚡ Hazır cümlələr')">
+            ⚡ Hazır
+        </button>
+
+        <button class="tool" onclick="showToast('🧠 Şəxsi yaddaş aktivdir')">
+            🧠 Yaddaş
+        </button>
 
     </div>
 
 </div>
 
+<!-- KEYBOARD -->
+
 <div class="keyboard">
 
-    <div class="krow">
+    <div class="row">
+
         <button class="key" onclick="key('Q')">Q</button>
         <button class="key" onclick="key('W')">W</button>
         <button class="key" onclick="key('E')">E</button>
@@ -549,9 +695,11 @@ body{
         <button class="key" onclick="key('I')">I</button>
         <button class="key" onclick="key('O')">O</button>
         <button class="key" onclick="key('P')">P</button>
+
     </div>
 
-    <div class="krow">
+    <div class="row">
+
         <button class="key" onclick="key('A')">A</button>
         <button class="key" onclick="key('S')">S</button>
         <button class="key" onclick="key('D')">D</button>
@@ -561,9 +709,10 @@ body{
         <button class="key" onclick="key('J')">J</button>
         <button class="key" onclick="key('K')">K</button>
         <button class="key" onclick="key('L')">L</button>
+
     </div>
 
-    <div class="krow">
+    <div class="row">
 
         <button class="key special">⇧</button>
 
@@ -579,15 +728,21 @@ body{
 
     </div>
 
-    <div class="krow">
+    <div class="row">
 
-        <button class="key special">🌐</button>
+        <button class="key special" onclick="openThemes()">♥</button>
 
-        <button class="key space" onclick="key(' ')">space</button>
+        <button class="key space" onclick="key(' ')">
+            space
+        </button>
 
-        <button class="key translateKey" onclick="translateNow()">🌐 EN</button>
+        <button class="key translate" onclick="translate()">
+            🌐 EN
+        </button>
 
-        <button class="key special" onclick="sendMessage()">➤</button>
+        <button class="key special" onclick="send()">
+            ➤
+        </button>
 
     </div>
 
@@ -595,98 +750,144 @@ body{
 
 </div>
 
+<!-- THEME SELECTOR -->
+
+<div class="modal" id="themeModal">
+
+    <div class="themePanel">
+
+        <div class="handle"></div>
+
+        <div class="panelTitle">
+            Klaviatura görünüşü
+        </div>
+
+        <div class="panelSub">
+            Öz üslubunu seç
+        </div>
+
+        <div class="themes">
+
+            <button class="theme selected"
+            onclick="setTheme('heart','♥','❤️')">
+
+                <span class="themeIcon">♥</span>
+                Ürək
+
+            </button>
+
+            <button class="theme"
+            onclick="setTheme('spade','♠','♠️')">
+
+                <span class="themeIcon">♠</span>
+                Pik
+
+            </button>
+
+            <button class="theme"
+            onclick="setTheme('diamond','♦','♦️')">
+
+                <span class="themeIcon">♦</span>
+                Karo
+
+            </button>
+
+            <button class="theme"
+            onclick="setTheme('club','♣','♣️')">
+
+                <span class="themeIcon">♣</span>
+                Tref
+
+            </button>
+
+            <button class="theme"
+            onclick="setTheme('card','🃏','🃏')">
+
+                <span class="themeIcon">🃏</span>
+                Kart
+
+            </button>
+
+            <button class="theme"
+            onclick="setTheme('neon','⚡','⚡')">
+
+                <span class="themeIcon">⚡</span>
+                Neon
+
+            </button>
+
+            <button class="theme"
+            onclick="setTheme('classic','⌨','⌨')">
+
+                <span class="themeIcon">⌨</span>
+                Classic
+
+            </button>
+
+            <button class="theme"
+            onclick="setTheme('heart','💗','💗')">
+
+                <span class="themeIcon">💗</span>
+                Love
+
+            </button>
+
+        </div>
+
+        <button class="close" onclick="closeThemes()">
+            Hazırdır
+        </button>
+
+    </div>
+
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
 
-let direction = "AZEN";
-
 const translations = {
 
+    "Bəli, gəlirəm.":
+        "Yes, I'm coming.",
+
+    "Bir az gecikəcəyəm.":
+        "I'll be a little late.",
+
+    "10 dəqiqəyə gəlirəm.":
+        "I'll be there in 10 minutes.",
+
+    "İndi məşğulam.":
+        "I'm busy right now.",
+
     "Salam, necəsən?":
-        "Hello, how are you?",
+        "Hi, how are you?",
 
     "Haradasan?":
         "Where are you?",
 
-    "Sabah görüşə bilərik?":
-        "Can we meet tomorrow?",
+    "Gələndə çörək al.":
+        "Buy bread when you come.",
 
-    "Çox sağ ol!":
-        "Thank you very much!",
+    "Mən yoldayam.":
+        "I'm on my way.",
 
-    "Bəli, sabah saat 10-da vaxtım var.":
-        "Yes, I am available tomorrow at 10 AM.",
-
-    "Mən sabah işə gedəcəyəm.":
-        "I will go to work tomorrow.",
-
-    "Sən harada işləyirsən?":
-        "Where do you work?",
-
-    "Mən Azərbaycandayam.":
-        "I am in Azerbaijan."
+    "Axşam danışarıq.":
+        "We'll talk tonight."
 
 };
 
-function translateText(text){
+let direction = "EN";
 
-    if(!text.trim()) return "";
-
-    if(direction === "AZEN"){
-
-        if(translations[text])
-            return translations[text];
-
-        return "→ " + text;
-
-    }else{
-
-        const reverse = Object.entries(translations)
-            .find(([az,en]) => en.toLowerCase() === text.toLowerCase());
-
-        if(reverse)
-            return reverse[0];
-
-        return "→ " + text;
-    }
-}
-
-function translateLive(){
-
-    const text = document.getElementById("input").value;
-
-    document.getElementById("preview").textContent =
-        text || "Azərbaycan dilində yaz...";
-
-    document.getElementById("result").textContent =
-        text ? translateText(text) : "→ Tərcümə burada görünəcək";
-}
-
-function translateNow(){
-
-    translateLive();
-
-    showToast("✓ Tərcümə hazırdır");
-}
-
-function setText(text){
-
-    document.getElementById("input").value = text;
-
-    translateLive();
-
-}
-
-function key(k){
+function key(letter){
 
     const input = document.getElementById("input");
 
-    input.value += k;
+    input.value += letter;
 
     input.focus();
 
-    translateLive();
+    liveTranslate();
 
 }
 
@@ -698,39 +899,31 @@ function backspace(){
 
     input.focus();
 
-    translateLive();
+    liveTranslate();
 
 }
 
-function swapLang(){
+function liveTranslate(){
 
-    direction = direction === "AZEN" ? "ENAZ" : "AZEN";
+    const text = document.getElementById("input").value;
 
-    if(direction === "AZEN"){
+    if(text){
 
-        document.getElementById("fromFlag").textContent = "🇦🇿";
-        document.getElementById("fromName").textContent = "Azərbaycan";
+        let result = translations[text];
 
-        document.getElementById("toFlag").textContent = "🇬🇧";
-        document.getElementById("toName").textContent = "English";
+        if(!result)
+            result = "→ " + text;
 
-    }else{
-
-        document.getElementById("fromFlag").textContent = "🇬🇧";
-        document.getElementById("fromName").textContent = "English";
-
-        document.getElementById("toFlag").textContent = "🇦🇿";
-        document.getElementById("toName").textContent = "Azərbaycan";
+        document.getElementById("targetLang").innerHTML =
+            direction === "EN"
+            ? "🇬🇧 English"
+            : "🇷🇺 Русский";
 
     }
 
-    translateLive();
-
-    showToast("Dil istiqaməti dəyişdi");
-
 }
 
-function sendMessage(){
+function translate(){
 
     const input = document.getElementById("input");
 
@@ -741,15 +934,43 @@ function sendMessage(){
         showToast("Əvvəlcə mesaj yaz");
 
         return;
+
     }
 
-    const translated = translateText(text);
+    let result = translations[text];
+
+    if(!result)
+        result = text;
+
+    input.value = result;
+
+    showToast("🌐 Tərcümə edildi");
+
+}
+
+function send(){
+
+    const input = document.getElementById("input");
+
+    const text = input.value.trim();
+
+    if(!text){
+
+        showToast("Mesaj yaz");
+
+        return;
+
+    }
 
     const chat = document.getElementById("chat");
 
     const message = document.createElement("div");
 
     message.className = "message outgoing";
+
+    const translated =
+        translations[text] ||
+        text;
 
     message.innerHTML = `
 
@@ -758,7 +979,7 @@ function sendMessage(){
         </div>
 
         <div class="translated">
-            ${direction === "AZEN" ? "🇬🇧" : "🇦🇿"} ${escapeHTML(translated.replace("→ ",""))}
+            🇬🇧 ${escapeHTML(translated)}
         </div>
 
         <div class="time">
@@ -771,11 +992,186 @@ function sendMessage(){
 
     input.value = "";
 
-    translateLive();
-
     chat.scrollTop = chat.scrollHeight;
 
-    showToast("✓ Mesaj tərcümə olunaraq göndərildi");
+    savePhrase(text);
+
+    showToast("✓ Tərcümə olunaraq göndərildi");
+
+}
+
+function useSuggestion(text){
+
+    document.getElementById("input").value = text;
+
+    liveTranslate();
+
+}
+
+function savePhrase(text){
+
+    let phrases =
+        JSON.parse(localStorage.getItem("linguaPhrases") || "[]");
+
+    if(!phrases.includes(text)){
+
+        phrases.unshift(text);
+
+        phrases =
+            phrases.slice(0,30);
+
+        localStorage.setItem(
+            "linguaPhrases",
+            JSON.stringify(phrases)
+        );
+
+    }
+
+}
+
+function swapLanguage(){
+
+    direction =
+        direction === "EN"
+        ? "RU"
+        : "EN";
+
+    document.getElementById("targetLang").innerHTML =
+        direction === "EN"
+        ? "🇬🇧 English"
+        : "🇷🇺 Русский";
+
+    showToast(
+        direction === "EN"
+        ? "🇬🇧 English"
+        : "🇷🇺 Русский"
+    );
+
+}
+
+function openThemes(){
+
+    document
+        .getElementById("themeModal")
+        .classList.add("show");
+
+}
+
+function closeThemes(){
+
+    document
+        .getElementById("themeModal")
+        .classList.remove("show");
+
+}
+
+function setTheme(theme,icon,toastIcon){
+
+    document.body.classList.remove(
+        "heartTheme",
+        "spadeTheme",
+        "diamondTheme",
+        "clubTheme",
+        "cardTheme",
+        "neonTheme"
+    );
+
+    if(theme !== "classic"){
+
+        document.body.classList.add(
+            theme + "Theme"
+        );
+
+    }
+
+    document.getElementById("logo").textContent =
+        icon;
+
+    document.querySelectorAll(".theme")
+        .forEach(t =>
+            t.classList.remove("selected")
+        );
+
+    event.currentTarget.classList.add("selected");
+
+    localStorage.setItem(
+        "linguaTheme",
+        theme
+    );
+
+    showToast(
+        toastIcon + " Tema seçildi"
+    );
+
+}
+
+function voiceDemo(){
+
+    if(
+        !("webkitSpeechRecognition" in window) &&
+        !("SpeechRecognition" in window)
+    ){
+
+        showToast(
+            "🎤 Bu brauzerdə səs tanıma dəstəklənmir"
+        );
+
+        return;
+
+    }
+
+    const SpeechRecognition =
+        window.SpeechRecognition ||
+        window.webkitSpeechRecognition;
+
+    const recognition =
+        new SpeechRecognition();
+
+    recognition.lang = "az-AZ";
+
+    recognition.interimResults = false;
+
+    recognition.onstart = function(){
+
+        showToast("🎤 Danışırsınız...");
+
+    };
+
+    recognition.onresult = function(event){
+
+        const text =
+            event.results[0][0].transcript;
+
+        document.getElementById("input").value =
+            text;
+
+        liveTranslate();
+
+    };
+
+    recognition.onerror = function(){
+
+        showToast("Səs tanınmadı");
+
+    };
+
+    recognition.start();
+
+}
+
+function showToast(text){
+
+    const toast =
+        document.getElementById("toast");
+
+    toast.textContent = text;
+
+    toast.classList.add("show");
+
+    setTimeout(
+        () => toast.classList.remove("show"),
+        1800
+    );
 
 }
 
@@ -790,21 +1186,46 @@ function escapeHTML(str){
 
 }
 
-function showToast(text){
+/* LOAD SAVED THEME */
 
-    const toast = document.getElementById("toast");
+const savedTheme =
+    localStorage.getItem("linguaTheme");
 
-    toast.textContent = text;
+if(savedTheme){
 
-    toast.classList.add("show");
+    document.body.classList.remove(
+        "heartTheme",
+        "spadeTheme",
+        "diamondTheme",
+        "clubTheme",
+        "cardTheme",
+        "neonTheme"
+    );
 
-    setTimeout(()=>{
-        toast.classList.remove("show");
-    },1800);
+    if(savedTheme !== "classic"){
+
+        document.body.classList.add(
+            savedTheme + "Theme"
+        );
+
+    }
+
+    const icons = {
+        heart:"♥",
+        spade:"♠",
+        diamond:"♦",
+        club:"♣",
+        card:"🃏",
+        neon:"⚡",
+        classic:"⌨"
+    };
+
+    document.getElementById("logo").textContent =
+        icons[savedTheme] || "♥";
 
 }
 
 </script>
 
 </body>
-</html>
+        </html>
