@@ -2,1412 +2,946 @@
 <html lang="az">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport"
-      content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-
-<title>VIRTUAL PRO — AI Talking Avatar</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>AI Footballer AZ</title>
 
 <style>
-*{
-  box-sizing:border-box;
-  margin:0;
-  padding:0;
-  -webkit-tap-highlight-color:transparent;
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#05070b;font-family:Arial,sans-serif}
+body{color:#fff}
+#app{position:fixed;inset:0;background:
+radial-gradient(circle at 50% 25%,rgba(30,90,160,.28),transparent 35%),
+linear-gradient(#05080d,#020305)}
+canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+
+#top{
+ position:absolute;top:0;left:0;right:0;padding:18px 18px 0;
+ display:flex;justify-content:space-between;align-items:center;
+ pointer-events:none;z-index:20
 }
-
-html,body{
-  width:100%;
-  height:100%;
-  overflow:hidden;
-  background:#050609;
-  font-family:Inter,Arial,sans-serif;
-  color:white;
-}
-
-body{
-  position:fixed;
-  inset:0;
-}
-
-#app{
-  position:fixed;
-  inset:0;
-  overflow:hidden;
-  background:
-    radial-gradient(circle at 50% 20%,#182133 0%,#080a0f 45%,#030405 100%);
-}
-
-#scene{
-  position:absolute;
-  inset:0;
-  width:100%;
-  height:100%;
-  display:block;
-}
-
-/* ---------- TOP UI ---------- */
-
-.top{
-  position:absolute;
-  left:0;
-  right:0;
-  top:0;
-  padding:
-    calc(env(safe-area-inset-top) + 14px)
-    16px 10px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  z-index:20;
-  pointer-events:none;
-}
-
 .brand{
-  pointer-events:auto;
-  display:flex;
-  align-items:center;
-  gap:10px;
+ font-weight:900;letter-spacing:1.5px;font-size:15px;
+ background:rgba(5,8,13,.55);backdrop-filter:blur(14px);
+ padding:10px 14px;border:1px solid rgba(255,255,255,.1);
+ border-radius:14px
+}
+.live{
+ font-size:11px;font-weight:800;color:#7dffb2;
+ background:rgba(20,80,45,.35);padding:9px 12px;border-radius:20px;
+ border:1px solid rgba(100,255,170,.18)
 }
 
-.logo{
-  width:42px;
-  height:42px;
-  border-radius:14px;
-  display:grid;
-  place-items:center;
-  font-size:21px;
-  background:rgba(255,255,255,.09);
-  border:1px solid rgba(255,255,255,.14);
-  box-shadow:
-    0 10px 35px rgba(0,0,0,.35),
-    inset 0 1px rgba(255,255,255,.08);
-  backdrop-filter:blur(20px);
+#bubble{
+ position:absolute;left:50%;top:13%;transform:translateX(-50%);
+ width:min(88%,520px);min-height:48px;
+ background:rgba(8,11,17,.88);border:1px solid rgba(255,255,255,.16);
+ border-radius:18px;padding:13px 17px;text-align:center;
+ font-size:15px;line-height:1.4;font-weight:600;
+ box-shadow:0 15px 50px rgba(0,0,0,.35);
+ backdrop-filter:blur(16px);z-index:15;display:none
+}
+#bubble:after{
+ content:"";position:absolute;left:50%;bottom:-8px;
+ width:14px;height:14px;background:#080b11;
+ transform:translateX(-50%) rotate(45deg);
+ border-right:1px solid rgba(255,255,255,.12);
+ border-bottom:1px solid rgba(255,255,255,.12)
 }
 
-.brandText b{
-  display:block;
-  font-size:13px;
-  letter-spacing:2px;
+#controls{
+ position:absolute;left:50%;bottom:max(18px,env(safe-area-inset-bottom));
+ transform:translateX(-50%);width:min(94%,620px);
+ z-index:30;display:flex;flex-direction:column;gap:10px
+}
+.panel{
+ background:rgba(5,8,13,.78);backdrop-filter:blur(18px);
+ border:1px solid rgba(255,255,255,.1);border-radius:22px;
+ padding:10px;box-shadow:0 20px 60px rgba(0,0,0,.35)
+}
+.row{display:flex;gap:8px}
+input{
+ flex:1;min-width:0;height:48px;border:1px solid rgba(255,255,255,.1);
+ border-radius:15px;background:rgba(255,255,255,.055);
+ color:#fff;padding:0 15px;font-size:15px;outline:none
+}
+button{
+ border:0;color:#fff;background:rgba(255,255,255,.08);
+ border:1px solid rgba(255,255,255,.09);
+ height:46px;border-radius:14px;padding:0 15px;
+ font-weight:800;cursor:pointer
+}
+button:active{transform:scale(.96)}
+.speak{background:linear-gradient(135deg,#087cff,#0050c9)}
+.rec{background:linear-gradient(135deg,#ef3155,#a90b2b)}
+.share{background:linear-gradient(135deg,#16c982,#087e52)}
+.icon{width:46px;padding:0;font-size:19px}
+.modes{display:flex;gap:7px;overflow:auto}
+.modes button{flex:1;min-width:72px;font-size:11px}
+.active{background:rgba(0,130,255,.35)!important;border-color:#188cff!important}
+
+#hint{
+ position:absolute;left:50%;bottom:165px;transform:translateX(-50%);
+ z-index:10;color:rgba(255,255,255,.58);font-size:12px;
+ text-align:center;pointer-events:none;white-space:nowrap
 }
 
-.brandText span{
-  display:block;
-  font-size:9px;
-  opacity:.5;
-  letter-spacing:1.5px;
-  margin-top:3px;
+#status{
+ position:absolute;left:50%;top:calc(13% + 80px);transform:translateX(-50%);
+ z-index:20;color:rgba(255,255,255,.65);font-size:11px;
+ display:none
 }
 
-.topActions{
-  display:flex;
-  gap:8px;
-  pointer-events:auto;
+#loader{
+ position:absolute;inset:0;z-index:100;background:#040609;
+ display:flex;align-items:center;justify-content:center;
+ flex-direction:column;gap:16px
 }
-
-.iconBtn{
-  width:42px;
-  height:42px;
-  border:1px solid rgba(255,255,255,.12);
-  border-radius:14px;
-  background:rgba(0,0,0,.28);
-  color:#fff;
-  font-size:17px;
-  backdrop-filter:blur(20px);
+.loaderRing{
+ width:50px;height:50px;border:3px solid rgba(255,255,255,.12);
+ border-top-color:#188cff;border-radius:50%;
+ animation:spin 1s linear infinite
 }
+@keyframes spin{to{transform:rotate(360deg)}}
 
-/* ---------- AVATAR INFO ---------- */
-
-.avatarInfo{
-  position:absolute;
-  z-index:10;
-  left:18px;
-  bottom:164px;
-  pointer-events:none;
-  transition:.3s;
-}
-
-.status{
-  display:inline-flex;
-  align-items:center;
-  gap:7px;
-  padding:7px 11px;
-  border-radius:20px;
-  background:rgba(0,0,0,.32);
-  border:1px solid rgba(255,255,255,.1);
-  backdrop-filter:blur(16px);
-  font-size:10px;
-  color:#bfc7d4;
-}
-
-.dot{
-  width:7px;
-  height:7px;
-  border-radius:50%;
-  background:#39ff9b;
-  box-shadow:0 0 12px #39ff9b;
-}
-
-.name{
-  margin-top:9px;
-  font-size:25px;
-  font-weight:800;
-  letter-spacing:-1px;
-}
-
-.role{
-  opacity:.48;
-  font-size:11px;
-  margin-top:3px;
-}
-
-/* ---------- SUBTITLE ---------- */
-
-.subtitle{
-  position:absolute;
-  z-index:12;
-  left:50%;
-  transform:translateX(-50%);
-  bottom:145px;
-  width:min(88%,680px);
-  text-align:center;
-  pointer-events:none;
-}
-
-.subtitleText{
-  display:inline-block;
-  padding:8px 15px;
-  border-radius:16px;
-  background:rgba(0,0,0,.34);
-  border:1px solid rgba(255,255,255,.08);
-  backdrop-filter:blur(18px);
-  font-size:14px;
-  line-height:1.45;
-  text-shadow:0 2px 12px #000;
-}
-
-/* ---------- BOTTOM ---------- */
-
-.bottom{
-  position:absolute;
-  z-index:30;
-  left:0;
-  right:0;
-  bottom:0;
-  padding:
-    10px 14px
-    calc(env(safe-area-inset-bottom) + 12px);
-  background:linear-gradient(
-    to top,
-    rgba(3,4,6,.97),
-    rgba(3,4,6,.72),
-    transparent
-  );
-}
-
-.inputRow{
-  display:flex;
-  gap:8px;
-  max-width:800px;
-  margin:auto;
-}
-
-#textInput{
-  min-width:0;
-  flex:1;
-  height:52px;
-  border:none;
-  outline:none;
-  color:white;
-  padding:0 17px;
-  border-radius:18px;
-  background:rgba(255,255,255,.075);
-  border:1px solid rgba(255,255,255,.1);
-  backdrop-filter:blur(25px);
-  font-size:14px;
-}
-
-#textInput::placeholder{
-  color:rgba(255,255,255,.4);
-}
-
-.speakBtn{
-  width:58px;
-  height:52px;
-  border:none;
-  border-radius:18px;
-  color:white;
-  font-size:20px;
-  background:linear-gradient(135deg,#246bff,#7a42ff);
-  box-shadow:
-    0 8px 28px rgba(73,82,255,.35);
-}
-
-.speakBtn:active{
-  transform:scale(.94);
-}
-
-.shareRow{
-  display:flex;
-  justify-content:center;
-  gap:8px;
-  margin-top:8px;
-}
-
-.smallBtn{
-  border:1px solid rgba(255,255,255,.1);
-  color:#fff;
-  background:rgba(255,255,255,.06);
-  padding:8px 13px;
-  border-radius:13px;
-  font-size:10px;
-  backdrop-filter:blur(15px);
-}
-
-/* ---------- RECORDING ---------- */
-
-.rec{
-  position:absolute;
-  z-index:25;
-  top:80px;
-  left:50%;
-  transform:translateX(-50%);
-  display:none;
-  align-items:center;
-  gap:7px;
-  padding:7px 12px;
-  border-radius:20px;
-  background:rgba(255,30,60,.15);
-  border:1px solid rgba(255,60,80,.3);
-  font-size:10px;
-  backdrop-filter:blur(15px);
-}
-
-.rec.show{
-  display:flex;
-}
-
-.recDot{
-  width:7px;
-  height:7px;
-  background:#ff334f;
-  border-radius:50%;
-  animation:pulse 1s infinite;
-}
-
-@keyframes pulse{
-  50%{opacity:.25}
-}
-
-/* ---------- TAP TO TALK ---------- */
-
-.tapHint{
-  position:absolute;
-  z-index:9;
-  left:50%;
-  top:50%;
-  transform:translate(-50%,-50%);
-  pointer-events:none;
-  opacity:.25;
-  font-size:10px;
-  letter-spacing:2px;
-  transition:opacity .5s;
-}
-
-.tapHint.hide{
-  opacity:0;
-}
-
-/* ---------- LANDSCAPE ---------- */
-
-@media(min-width:800px){
-  .avatarInfo{
-    bottom:125px;
-    left:30px;
-  }
-
-  .subtitle{
-    bottom:105px;
-  }
-
-  .bottom{
-    padding-bottom:20px;
-  }
+@media(max-width:500px){
+ #controls{width:96%}
+ #hint{bottom:174px}
+ .brand{font-size:12px}
+ input{font-size:14px}
 }
 </style>
 </head>
 
 <body>
-
 <div id="app">
+
+<div id="loader">
+ <div class="loaderRing"></div>
+ <b>AI FOOTBALLER</b>
+ <small style="opacity:.5">3D futbolçu hazırlanır...</small>
+</div>
 
 <canvas id="scene"></canvas>
 
-<div class="top">
-  <div class="brand">
-    <div class="logo">✦</div>
-    <div class="brandText">
-      <b>VIRTUAL PRO</b>
-      <span>AI DIGITAL HUMAN</span>
-    </div>
-  </div>
-
-  <div class="topActions">
-    <button class="iconBtn" id="fullscreen">⛶</button>
-  </div>
+<div id="top">
+ <div class="brand">⚽ AI FOOTBALLER</div>
+ <div class="live">● READY</div>
 </div>
 
-<div class="rec" id="rec">
-  <div class="recDot"></div>
-  RECORDING
-</div>
+<div id="bubble"></div>
+<div id="status"></div>
 
-<div class="avatarInfo">
-  <div class="status">
-    <span class="dot"></span>
-    ONLINE · READY
-  </div>
+<div id="hint">Futbolçunun üzünə toxun və ya aşağıdan cümlə yaz</div>
 
-  <div class="name">Virtual Pro</div>
-  <div class="role">AI Football Presenter</div>
-</div>
+<div id="controls">
 
-<div class="subtitle">
-  <span class="subtitleText" id="subtitle"></span>
-</div>
+ <div class="panel">
+   <div class="row">
+     <input id="text" type="text"
+       placeholder="Məsələn: Salam, mən süni intellekt futbolçuyam!"
+       autocomplete="off">
+     <button class="speak" id="speak">▶</button>
+   </div>
+ </div>
 
-<div class="tapHint" id="tapHint">
-  TAP AVATAR TO SPEAK
-</div>
-
-<div class="bottom">
-
-  <div class="inputRow">
-
-    <input
-      id="textInput"
-      type="text"
-      autocomplete="off"
-      placeholder="Avatarın danışacağı mətni yaz..."
-    >
-
-    <button class="speakBtn" id="speak">
-      🎙
-    </button>
-
-  </div>
-
-  <div class="shareRow">
-    <button class="smallBtn" id="recordBtn">
-      🎥 Video
-    </button>
-
-    <button class="smallBtn" id="shareBtn">
-      📤 WhatsApp / Paylaş
-    </button>
-
-    <button class="smallBtn" id="stopBtn">
-      ■ Stop
-    </button>
-  </div>
+ <div class="panel">
+   <div class="modes">
+     <button class="active" data-mode="idle">IDLE</button>
+     <button data-mode="walk">GƏZİŞ</button>
+     <button data-mode="run">QAÇIŞ</button>
+     <button data-mode="warm">İSİNİŞ</button>
+     <button data-mode="stretch">STRETCH</button>
+     <button id="rec" class="rec">● REC</button>
+     <button id="share" class="share">↗</button>
+     <button id="full" class="icon">⛶</button>
+   </div>
+ </div>
 
 </div>
-
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
-
-<script>
-/* ============================================================
-   VIRTUAL PRO
-   SINGLE FILE 3D DIGITAL HUMAN
-   ============================================================ */
-
-const canvas = document.getElementById("scene");
-
-const renderer = new THREE.WebGLRenderer({
-  canvas,
-  antialias:true,
-  alpha:false,
-  preserveDrawingBuffer:true
-});
-
-renderer.setPixelRatio(Math.min(devicePixelRatio,1.7));
-renderer.setSize(innerWidth,innerHeight);
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-renderer.outputColorSpace = THREE.SRGBColorSpace;
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.15;
-
-const scene = new THREE.Scene();
-
-scene.background = new THREE.Color(0x05070b);
-
-const camera = new THREE.PerspectiveCamera(
-  38,
-  innerWidth/innerHeight,
-  .1,
-  100
-);
-
-camera.position.set(0,1.75,5.7);
-
-const clock = new THREE.Clock();
-
-/* ============================================================
-   LIGHTING
-   ============================================================ */
-
-const ambient = new THREE.HemisphereLight(
-  0x9bb8ff,
-  0x090b10,
-  1.8
-);
-
-scene.add(ambient);
-
-const key = new THREE.DirectionalLight(
-  0xffffff,
-  3.1
-);
-
-key.position.set(-3,5,4);
-key.castShadow=true;
-
-key.shadow.mapSize.width=1024;
-key.shadow.mapSize.height=1024;
-
-scene.add(key);
-
-const rim = new THREE.DirectionalLight(
-  0x5e83ff,
-  3
-);
-
-rim.position.set(4,3,-4);
-scene.add(rim);
-
-const warm = new THREE.PointLight(
-  0xff9b6b,
-  2.2,
-  8
-);
-
-warm.position.set(-3,2,2);
-scene.add(warm);
-
-/* ============================================================
-   MATERIALS
-   ============================================================ */
-
-function mat(color,rough=.55,metal=0){
-  return new THREE.MeshStandardMaterial({
-    color,
-    roughness:rough,
-    metalness:metal
-  });
+<script type="importmap">
+{
+ "imports":{
+  "three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+ }
 }
+</script>
 
-const skin = mat(0xb87857,.72);
-const skinDark = mat(0x8c4d38,.8);
-const hairMat = mat(0x171311,.72);
-const white = mat(0xf0f0ed,.42);
-const black = mat(0x090b10,.3);
-const shirtMat = mat(0x11151d,.42);
-const pantsMat = mat(0x080b11,.7);
+<script type="module">
 
-/* ============================================================
-   AVATAR ROOT
-   ============================================================ */
+import * as THREE from "three";
+import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
 
-const avatar = new THREE.Group();
-avatar.position.y = -1.65;
-scene.add(avatar);
+const canvas=document.getElementById("scene");
+const loaderScreen=document.getElementById("loader");
+const bubble=document.getElementById("bubble");
+const status=document.getElementById("status");
+const input=document.getElementById("text");
 
-const torso = new THREE.Group();
-torso.position.y=2.0;
-avatar.add(torso);
-
-/* ============================================================
-   TORSO
-   ============================================================ */
-
-const chestGeo = new THREE.SphereGeometry(1,32,24);
-chestGeo.scale(.92,1.08,.52);
-
-const chest = new THREE.Mesh(chestGeo,shirtMat);
-chest.castShadow=true;
-torso.add(chest);
-
-/* neck */
-
-const neck = new THREE.Mesh(
-  new THREE.CylinderGeometry(.25,.31,.5,24),
-  skin
-);
-
-neck.position.y=1.05;
-neck.castShadow=true;
-torso.add(neck);
-
-/* ============================================================
-   HEAD
-   ============================================================ */
-
-const head = new THREE.Group();
-head.position.y=3.02;
-torso.add(head);
-
-/* skull */
-
-const skullGeo = new THREE.SphereGeometry(1,48,36);
-skullGeo.scale(.76,.91,.70);
-
-const skull = new THREE.Mesh(skullGeo,skin);
-skull.castShadow=true;
-head.add(skull);
-
-/* jaw */
-
-const jaw = new THREE.Group();
-jaw.position.set(0,-.24,.03);
-head.add(jaw);
-
-const jawGeo = new THREE.SphereGeometry(.67,40,24);
-jawGeo.scale(1,.48,.78);
-
-const jawMesh = new THREE.Mesh(jawGeo,skin);
-jawMesh.castShadow=true;
-jaw.add(jawMesh);
-
-/* ============================================================
-   HAIR
-   ============================================================ */
-
-const hair = new THREE.Mesh(
-  new THREE.SphereGeometry(.78,32,22,0,Math.PI*2,0,Math.PI*.48),
-  hairMat
-);
-
-hair.scale.set(1.01,1.05,1);
-hair.position.y=.28;
-head.add(hair);
-
-/* side hair */
-
-for(let side of [-1,1]){
-  const h = new THREE.Mesh(
-    new THREE.SphereGeometry(.18,18,14),
-    hairMat
-  );
-
-  h.scale.set(.75,2.3,.8);
-  h.position.set(side*.67,.02,-.02);
-  head.add(h);
-}
-
-/* ============================================================
-   EYES
-   ============================================================ */
-
-function createEye(side){
-
-  const group = new THREE.Group();
-
-  group.position.set(side*.29,.10,.635);
-
-  const whiteEye = new THREE.Mesh(
-    new THREE.SphereGeometry(.115,24,18),
-    white
-  );
-
-  whiteEye.scale.z=.5;
-  group.add(whiteEye);
-
-  const iris = new THREE.Mesh(
-    new THREE.SphereGeometry(.055,20,16),
-    mat(0x35281d,.3)
-  );
-
-  iris.position.z=.075;
-  group.add(iris);
-
-  const pupil = new THREE.Mesh(
-    new THREE.SphereGeometry(.025,16,12),
-    black
-  );
-
-  pupil.position.z=.105;
-  group.add(pupil);
-
-  const lid = new THREE.Mesh(
-    new THREE.SphereGeometry(.13,20,10,0,Math.PI*2,0,Math.PI*.42),
-    skin
-  );
-
-  lid.scale.set(1.05,.7,.35);
-  lid.position.y=.04;
-  lid.visible=false;
-
-  group.add(lid);
-
-  head.add(group);
-
-  return {
-    group,
-    lid,
-    iris,
-    pupil
-  };
-}
-
-const eyeL=createEye(-1);
-const eyeR=createEye(1);
-
-/* ============================================================
-   EYEBROWS
-   ============================================================ */
-
-function brow(side){
-
-  const b = new THREE.Mesh(
-    new THREE.BoxGeometry(.27,.045,.06),
-    hairMat
-  );
-
-  b.position.set(side*.29,.29,.63);
-  b.rotation.z=side*.12;
-  head.add(b);
-
-  return b;
-}
-
-const browL=brow(-1);
-const browR=brow(1);
-
-/* ============================================================
-   NOSE
-   ============================================================ */
-
-const nose = new THREE.Mesh(
-  new THREE.ConeGeometry(.12,.38,20),
-  skinDark
-);
-
-nose.rotation.x=Math.PI/2;
-nose.position.set(0,.0,.72);
-head.add(nose);
-
-/* ============================================================
-   MOUTH SYSTEM
-   ============================================================ */
-
-const mouth = new THREE.Group();
-
-mouth.position.set(0,-.28,.70);
-head.add(mouth);
-
-/* upper lip */
-
-const upperLip = new THREE.Mesh(
-  new THREE.SphereGeometry(.17,24,12),
-  skinDark
-);
-
-upperLip.scale.set(1.4,.35,.32);
-upperLip.position.y=.025;
-mouth.add(upperLip);
-
-/* lower lip */
-
-const lowerLip = new THREE.Mesh(
-  new THREE.SphereGeometry(.18,24,12),
-  skinDark
-);
-
-lowerLip.scale.set(1.45,.35,.35);
-lowerLip.position.y=-.045;
-mouth.add(lowerLip);
-
-/* teeth */
-
-const teeth = new THREE.Mesh(
-  new THREE.BoxGeometry(.28,.08,.035),
-  white
-);
-
-teeth.position.z=.045;
-teeth.visible=false;
-mouth.add(teeth);
-
-/* mouth cavity */
-
-const cavity = new THREE.Mesh(
-  new THREE.SphereGeometry(.17,24,16),
-  black
-);
-
-cavity.scale.set(1.5,.65,.3);
-cavity.position.z=.025;
-mouth.add(cavity);
-
-/* ============================================================
-   SHOULDERS / ARMS
-   ============================================================ */
-
-function capsule(length,radius,material){
-
-  const g=new THREE.CapsuleGeometry(
-    radius,
-    length,
-    8,
-    16
-  );
-
-  const m=new THREE.Mesh(g,material);
-  m.castShadow=true;
-
-  return m;
-}
-
-function createArm(side){
-
-  const shoulder=new THREE.Group();
-  shoulder.position.set(side*.9,2.35,0);
-  torso.add(shoulder);
-
-  const upper=capsule(.72,.17,shirtMat);
-  upper.position.y=-.38;
-  shoulder.add(upper);
-
-  const elbow=new THREE.Group();
-  elbow.position.y=-.72;
-  shoulder.add(elbow);
-
-  const fore=capsule(.67,.145,skin);
-  fore.position.y=-.34;
-  elbow.add(fore);
-
-  const hand=new THREE.Mesh(
-    new THREE.SphereGeometry(.18,20,16),
-    skin
-  );
-
-  hand.scale.set(.8,1.15,.7);
-  hand.position.y=-.7;
-  elbow.add(hand);
-
-  return {
-    shoulder,
-    elbow,
-    hand
-  };
-}
-
-const leftArm=createArm(-1);
-const rightArm=createArm(1);
-
-/* ============================================================
-   WAIST + LEGS
-   ============================================================ */
-
-const waist=new THREE.Mesh(
-  new THREE.CylinderGeometry(.52,.63,.42,28),
-  pantsMat
-);
-
-waist.position.y=.75;
-torso.add(waist);
-
-function leg(side){
-
-  const g=new THREE.Group();
-  g.position.set(side*.34,.35,0);
-  avatar.add(g);
-
-  const thigh=capsule(.82,.22,pantsMat);
-  thigh.position.y=-.48;
-  g.add(thigh);
-
-  const shin=capsule(.78,.18,pantsMat);
-  shin.position.y=-1.3;
-  g.add(shin);
-
-  const shoe=new THREE.Mesh(
-    new THREE.SphereGeometry(.22,24,16),
-    black
-  );
-
-  shoe.scale.set(1.45,.65,1.9);
-  shoe.position.set(0,-1.78,.12);
-  g.add(shoe);
-
-  return g;
-}
-
-const legL=leg(-1);
-const legR=leg(1);
-
-/* ============================================================
-   GROUND
-   ============================================================ */
-
-const ground=new THREE.Mesh(
-  new THREE.CircleGeometry(5,64),
-  new THREE.MeshStandardMaterial({
-    color:0x06080c,
-    roughness:.82,
-    metalness:.15
-  })
-);
-
-ground.rotation.x=-Math.PI/2;
-ground.position.y=-3.05;
-ground.receiveShadow=true;
-scene.add(ground);
-
-/* glow ring */
-
-const ring=new THREE.Mesh(
-  new THREE.RingGeometry(1.3,1.35,64),
-  new THREE.MeshBasicMaterial({
-    color:0x315fff,
-    transparent:true,
-    opacity:.32,
-    side:THREE.DoubleSide
-  })
-);
-
-ring.rotation.x=-Math.PI/2;
-ring.position.y=-3.03;
-scene.add(ring);
-
-/* ============================================================
-   FACE ANIMATION
-   ============================================================ */
-
-let speaking=false;
-let speechStarted=0;
-let speechEnd=0;
-let currentText="";
-let visemeIndex=0;
-
-let blinkTimer=0;
-let nextBlink=2+Math.random()*4;
-
-function blink(){
-
-  eyeL.lid.visible=true;
-  eyeR.lid.visible=true;
-
-  setTimeout(()=>{
-    eyeL.lid.visible=false;
-    eyeR.lid.visible=false;
-  },100);
-}
-
-/* ============================================================
-   VISEMES
-   ============================================================ */
-
-function getViseme(ch){
-
-  ch=ch.toLowerCase();
-
-  if("aə".includes(ch)) return "A";
-  if("oö".includes(ch)) return "O";
-  if("eə".includes(ch)) return "E";
-  if("uü".includes(ch)) return "U";
-  if("bmp".includes(ch)) return "M";
-  if("fv".includes(ch)) return "F";
-
-  return "REST";
-}
-
-function applyViseme(v,amount){
-
-  let open=.015;
-
-  if(v==="A") open=.16*amount;
-  if(v==="O") open=.13*amount;
-  if(v==="E") open=.075*amount;
-  if(v==="U") open=.09*amount;
-  if(v==="M") open=.015;
-  if(v==="F") open=.035*amount;
-
-  jaw.rotation.x=-open*.75;
-
-  upperLip.scale.y=.35+open*.8;
-  lowerLip.scale.y=.35+open*.8;
-
-  mouth.scale.x=1+Math.sin(amount*Math.PI)*.04;
-
-  teeth.visible=amount>.35 && open>.04;
-}
-
-/* ============================================================
-   SPEAKING GESTURES
-   ============================================================ */
-
-function animateBody(t){
-
-  const breath=Math.sin(t*1.4)*.018;
-
-  chest.scale.y=1+breath;
-  torso.position.y=2+breath;
-
-  if(speaking){
-
-    const wave=Math.sin(t*5.2);
-
-    head.rotation.y=
-      Math.sin(t*1.15)*.035;
-
-    head.rotation.z=
-      Math.sin(t*.9)*.018;
-
-    leftArm.shoulder.rotation.z=
-      -.15 + Math.sin(t*2.1)*.08;
-
-    rightArm.shoulder.rotation.z=
-      .15 - Math.sin(t*2.1)*.08;
-
-    leftArm.elbow.rotation.z=
-      -.12 + Math.sin(t*3.0)*.12;
-
-    rightArm.elbow.rotation.z=
-      .12 - Math.sin(t*2.7)*.15;
-
-    leftArm.hand.rotation.z=
-      Math.sin(t*4)*.2;
-
-    rightArm.hand.rotation.z=
-      Math.sin(t*4.3)*.2;
-
-    browL.rotation.z=
-      -.12+Math.sin(t*2)*.03;
-
-    browR.rotation.z=
-      .12-Math.sin(t*2)*.03;
-
-  }else{
-
-    head.rotation.y=
-      Math.sin(t*.45)*.025;
-
-    head.rotation.z=
-      Math.sin(t*.35)*.01;
-
-    leftArm.shoulder.rotation.z=
-      -.15+Math.sin(t*.8)*.015;
-
-    rightArm.shoulder.rotation.z=
-      .15-Math.sin(t*.8)*.015;
-
-    leftArm.elbow.rotation.z=-.1;
-    rightArm.elbow.rotation.z=.1;
-  }
-}
-
-/* ============================================================
-   SPEECH SYNTHESIS
-   ============================================================ */
-
-const input=document.getElementById("textInput");
-const speakBtn=document.getElementById("speak");
-const subtitle=document.getElementById("subtitle");
-
-let utterance=null;
-
-function chooseVoice(){
-
-  const voices=speechSynthesis.getVoices();
-
-  return voices.find(v=>/az|tr|ru|en/i.test(v.lang))
-      || voices[0];
-}
-
-function speakText(text){
-
-  if(!text.trim()) return;
-
-  speechSynthesis.cancel();
-
-  currentText=text;
-
-  subtitle.textContent=text;
-
-  utterance=new SpeechSynthesisUtterance(text);
-
-  const voice=chooseVoice();
-
-  if(voice){
-    utterance.voice=voice;
-    utterance.lang=voice.lang;
-  }else{
-    utterance.lang="az-AZ";
-  }
-
-  utterance.rate=.91;
-  utterance.pitch=.92;
-  utterance.volume=1;
-
-  utterance.onstart=()=>{
-
-    speaking=true;
-    speechStarted=performance.now()/1000;
-
-    startRecording();
-
-    document.getElementById("tapHint")
-      .classList.add("hide");
-  };
-
-  utterance.onend=()=>{
-
-    speaking=false;
-    applyViseme("REST",0);
-
-    setTimeout(()=>{
-      if(recorder && recorder.state==="recording"){
-        recorder.stop();
-      }
-    },500);
-  };
-
-  utterance.onerror=()=>{
-
-    speaking=false;
-    applyViseme("REST",0);
-  };
-
-  speechSynthesis.speak(utterance);
-}
-
-/* ============================================================
-   CLICK
-   ============================================================ */
-
-speakBtn.onclick=()=>{
-
-  const text=input.value.trim();
-
-  if(text){
-    speakText(text);
-  }else{
-    speakText(
-      "Salam! Mən Virtual Pro adlı süni intellekt avatarıyam. Mən sizin yazdığınız mətnləri danışan animasiya şəklinə çevirə bilirəm."
-    );
-  }
-};
-
-input.addEventListener("keydown",e=>{
-  if(e.key==="Enter"){
-    speakBtn.click();
-  }
-});
-
-/* ============================================================
-   TAP AVATAR
-   ============================================================ */
-
-canvas.addEventListener("pointerup",()=>{
-
-  if(speaking) return;
-
-  const text=input.value.trim();
-
-  if(text){
-    speakText(text);
-  }else{
-    speakText(
-      "Salam! Mən hazıram. Aşağıdakı xanaya mətn yazın və mən onu danışan animasiyaya çevirim."
-    );
-  }
-});
-
-/* ============================================================
-   RECORDING
-   ============================================================ */
-
+let scene,camera,renderer,clock;
+let player=null,mixer=null;
+let currentAction=null;
 let recorder=null;
 let chunks=[];
-let recordedBlob=null;
+let lastVideo=null;
+let speechTimer=null;
+let speaking=false;
+let speechRate=0.94;
+let selectedMode="idle";
+
+const MODEL_URL=
+"https://cdn.jsdelivr.net/gh/MisterYI/deevid-mixamo-assets@main/char/Y_Bot.glb";
+
+/* ---------------- SCENE ---------------- */
+
+scene=new THREE.Scene();
+
+camera=new THREE.PerspectiveCamera(
+ 35,
+ innerWidth/innerHeight,
+ .1,
+ 100
+);
+camera.position.set(0,1.55,4.7);
+
+renderer=new THREE.WebGLRenderer({
+ canvas,
+ antialias:true,
+ alpha:true,
+ powerPreference:"high-performance"
+});
+renderer.setPixelRatio(Math.min(devicePixelRatio,1.7));
+renderer.setSize(innerWidth,innerHeight);
+renderer.shadowMap.enabled=true;
+renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+renderer.outputColorSpace=THREE.SRGBColorSpace;
+renderer.toneMapping=THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure=1.12;
+
+/* lights */
+
+scene.add(new THREE.HemisphereLight(0xaec9ff,0x10131a,2.2));
+
+const key=new THREE.DirectionalLight(0xffffff,3.2);
+key.position.set(3,6,4);
+key.castShadow=true;
+key.shadow.mapSize.set(1024,1024);
+key.shadow.camera.left=-3;
+key.shadow.camera.right=3;
+key.shadow.camera.top=5;
+key.shadow.camera.bottom=-1;
+scene.add(key);
+
+const rim=new THREE.DirectionalLight(0x258cff,2.1);
+rim.position.set(-4,3,-4);
+scene.add(rim);
+
+/* floor */
+
+const floor=new THREE.Mesh(
+ new THREE.CircleGeometry(2.1,96),
+ new THREE.MeshStandardMaterial({
+  color:0x071016,
+  roughness:.86,
+  metalness:.05,
+  transparent:true,
+  opacity:.92
+ })
+);
+floor.rotation.x=-Math.PI/2;
+floor.position.y=.015;
+floor.receiveShadow=true;
+scene.add(floor);
+
+/* dynamic shadow */
+
+const shadowCanvas=document.createElement("canvas");
+shadowCanvas.width=256;
+shadowCanvas.height=256;
+
+const sctx=shadowCanvas.getContext("2d");
+const grd=sctx.createRadialGradient(128,128,10,128,128,110);
+grd.addColorStop(0,"rgba(0,0,0,.55)");
+grd.addColorStop(1,"rgba(0,0,0,0)");
+sctx.fillStyle=grd;
+sctx.fillRect(0,0,256,256);
+
+const shadowTex=new THREE.CanvasTexture(shadowCanvas);
+
+const softShadow=new THREE.Mesh(
+ new THREE.PlaneGeometry(1.65,.72),
+ new THREE.MeshBasicMaterial({
+  map:shadowTex,
+  transparent:true,
+  depthWrite:false
+ })
+);
+softShadow.rotation.x=-Math.PI/2;
+softShadow.position.y=.025;
+scene.add(softShadow);
+
+/* ---------------- PLAYER ---------------- */
+
+const gltfLoader=new GLTFLoader();
+
+function fitModel(root){
+
+ const box=new THREE.Box3().setFromObject(root);
+ const size=box.getSize(new THREE.Vector3());
+ const center=box.getCenter(new THREE.Vector3());
+
+ root.position.x-=center.x;
+ root.position.z-=center.z;
+ root.position.y-=box.min.y;
+
+ const h=size.y;
+
+ if(h>0){
+   const scale=2.55/h;
+   root.scale.setScalar(scale);
+ }
+
+ root.traverse(o=>{
+   if(o.isMesh){
+     o.castShadow=true;
+     o.receiveShadow=true;
+
+     if(o.material){
+       o.material.roughness=.65;
+       o.material.metalness=.03;
+     }
+   }
+ });
+}
+
+async function loadPlayer(){
+
+ try{
+
+   const gltf=await gltfLoader.loadAsync(MODEL_URL);
+
+   player=gltf.scene;
+
+   fitModel(player);
+
+   player.position.set(0,0,0);
+
+   scene.add(player);
+
+   mixer=new THREE.AnimationMixer(player);
+
+   if(gltf.animations && gltf.animations.length){
+
+      gltf.animations.forEach((clip,i)=>{
+        clip.name=clip.name || "Animation_"+i;
+      });
+
+      playBestAnimation("idle");
+   }
+
+   /* footballer kit enhancement */
+
+   addFootballKit(player);
+
+   loaderScreen.style.display="none";
+
+ }catch(err){
+
+   console.error(err);
+
+   loaderScreen.innerHTML=
+   `<b>3D model yüklənmədi</b>
+    <small style="opacity:.55">İnternet bağlantısını yoxla</small>`;
+
+ }
+}
+
+/* ---------------- KIT ---------------- */
+
+function addFootballKit(root){
+
+ let materials=[];
+
+ root.traverse(o=>{
+   if(o.isMesh && o.material){
+     materials.push(o.material);
+   }
+ });
+
+ /* slightly improve contrast */
+
+ materials.forEach(m=>{
+   if("roughness" in m) m.roughness=.55;
+ });
+
+}
+
+/* ---------------- ANIMATION ---------------- */
+
+function findClip(mode){
+
+ if(!mixer || !player) return null;
+
+ const clips=mixer._actions || [];
+
+ let all=[];
+
+ if(player.userData.animations)
+   all=player.userData.animations;
+
+ return null;
+}
+
+function playBestAnimation(mode){
+
+ if(!mixer || !player) return;
+
+ const rootActions=[];
+
+ /* Search all animations stored by loader */
+ const possible=[];
+
+ mixer._actions.forEach(a=>{
+   if(a.getClip) possible.push(a.getClip());
+ });
+
+ if(!possible.length){
+
+   /* procedural mode */
+   currentAction=null;
+   selectedMode=mode;
+   return;
+ }
+
+ let chosen=possible[0];
+
+ const names=possible.map(c=>c.name.toLowerCase());
+
+ const wanted={
+  idle:["idle","standing","breathing"],
+  walk:["walk"],
+  run:["run","jog","sprint"],
+  warm:["warm","stretch","exercise"],
+  stretch:["stretch","warm"]
+ }[mode]||["idle"];
+
+ for(const w of wanted){
+   const idx=names.findIndex(n=>n.includes(w));
+   if(idx>=0){
+     chosen=possible[idx];
+     break;
+   }
+ }
+
+ const next=mixer.clipAction(chosen);
+
+ if(currentAction && currentAction!==next){
+   currentAction.fadeOut(.25);
+ }
+
+ next.reset().fadeIn(.25).play();
+ currentAction=next;
+ selectedMode=mode;
+}
+
+/* ---------------- PROCEDURAL BODY ---------------- */
+
+let t=0;
+
+function proceduralMotion(dt){
+
+ if(!player)return;
+
+ t+=dt;
+
+ const bones=[];
+
+ player.traverse(o=>{
+   if(o.isBone) bones.push(o);
+ });
+
+ const get=(words)=>{
+   return bones.find(b=>{
+     const n=b.name.toLowerCase();
+     return words.some(w=>n.includes(w));
+   });
+ };
+
+ const leftArm=get(["leftarm","left_arm"]);
+ const rightArm=get(["rightarm","right_arm"]);
+ const leftLeg=get(["leftleg","left_leg"]);
+ const rightLeg=get(["rightleg","right_leg"]);
+ const head=get(["head","neck"]);
+ const spine=get(["spine","chest"]);
+
+ if(selectedMode==="idle"){
+
+   if(leftArm) leftArm.rotation.z+=Math.sin(t*1.3)*dt*.16;
+   if(rightArm) rightArm.rotation.z-=Math.sin(t*1.3)*dt*.16;
+
+   if(spine) spine.rotation.z=Math.sin(t*1.4)*.008;
+
+ }else if(selectedMode==="walk"){
+
+   const s=Math.sin(t*4.8);
+
+   if(leftLeg) leftLeg.rotation.x=s*.28;
+   if(rightLeg) rightLeg.rotation.x=-s*.28;
+
+   if(leftArm) leftArm.rotation.x=-s*.22;
+   if(rightArm) rightArm.rotation.x=s*.22;
+
+ }else if(selectedMode==="run"){
+
+   const s=Math.sin(t*7.5);
+
+   if(leftLeg) leftLeg.rotation.x=s*.55;
+   if(rightLeg) rightLeg.rotation.x=-s*.55;
+
+   if(leftArm) leftArm.rotation.x=-s*.65;
+   if(rightArm) rightArm.rotation.x=s*.65;
+
+ }else if(selectedMode==="warm"){
+
+   const s=Math.sin(t*2.2);
+
+   if(leftLeg) leftLeg.rotation.x=s*.2;
+   if(rightLeg) rightLeg.rotation.x=-s*.2;
+
+   if(leftArm) leftArm.rotation.z=s*.35;
+   if(rightArm) rightArm.rotation.z=-s*.35;
+
+ }else if(selectedMode==="stretch"){
+
+   const s=Math.sin(t*1.3);
+
+   if(spine) spine.rotation.z=s*.08;
+   if(leftArm) leftArm.rotation.x=s*.3;
+   if(rightArm) rightArm.rotation.x=-s*.3;
+ }
+
+ /* breathing */
+
+ if(spine){
+   spine.scale.y=1+Math.sin(t*1.8)*.008;
+ }
+
+ /* head micro movement */
+
+ if(head && !speaking){
+   head.rotation.y=Math.sin(t*.7)*.025;
+   head.rotation.z=Math.sin(t*.9)*.012;
+ }
+
+}
+
+/* ---------------- SPEECH ---------------- */
+
+function getAzerbaijaniVoice(){
+
+ const voices=speechSynthesis.getVoices();
+
+ if(!voices.length)return null;
+
+ const az=voices.filter(v=>
+   /^az(-|_)/i.test(v.lang)
+ );
+
+ if(az.length){
+
+   const male=az.find(v=>
+     /male|babək|babek|azərbaycan|azer/i.test(v.name)
+   );
+
+   return male || az[0];
+ }
+
+ /* Do NOT silently choose Turkish/English.
+    Only exact Azerbaijani voice is accepted. */
+
+ return null;
+}
+
+function showBubble(text){
+
+ bubble.textContent=text;
+ bubble.style.display="block";
+
+ clearTimeout(speechTimer);
+
+ speechTimer=setTimeout(()=>{
+   if(!speaking)bubble.style.display="none";
+ },9000);
+}
+
+function mouthAnimation(start=true){
+
+ if(!player)return;
+
+ speaking=start;
+
+ player.traverse(o=>{
+
+   if(!o.isMesh || !o.morphTargetDictionary)return;
+
+   const dict=o.morphTargetDictionary;
+   const inf=o.morphTargetInfluences;
+
+   if(!inf)return;
+
+   for(const name in dict){
+
+     const n=name.toLowerCase();
+
+     if(
+       n.includes("mouthopen") ||
+       n.includes("jawopen") ||
+       n.includes("viseme") ||
+       n.includes("mouth")
+     ){
+
+       const i=dict[name];
+
+       if(start){
+
+         inf[i]=.25+
+           Math.abs(Math.sin(performance.now()/95))*0.7;
+
+       }else{
+         inf[i]=0;
+       }
+     }
+   }
+ });
+}
+
+function speakAZ(text){
+
+ if(!text.trim())return;
+
+ const voice=getAzerbaijaniVoice();
+
+ if(!voice){
+
+   alert(
+    "Bu cihazda Azərbaycan dili üçün səs mühərriki tapılmadı.\n\n"+
+    "Android-də:\n"+
+    "Ayarlar → Dil və giriş → Mətn-səs çıxışı bölməsindən "+
+    "Azərbaycan dilinin səsini quraşdır."
+   );
+
+   return;
+ }
+
+ speechSynthesis.cancel();
+
+ const u=new SpeechSynthesisUtterance(text);
+
+ u.lang=voice.lang;
+ u.voice=voice;
+ u.rate=speechRate;
+ u.pitch=.82;
+ u.volume=1;
+
+ showBubble(text);
+
+ u.onstart=()=>{
+   speaking=true;
+   status.textContent="AZƏRBAYCANCA DANIŞIR";
+   status.style.display="block";
+ };
+
+ u.onend=()=>{
+   speaking=false;
+   mouthAnimation(false);
+   status.style.display="none";
+ };
+
+ u.onerror=()=>{
+   speaking=false;
+   mouthAnimation(false);
+   status.style.display="none";
+ };
+
+ speechSynthesis.speak(u);
+
+ /* visual mouth timing */
+
+ const mouthLoop=()=>{
+   if(!speaking)return;
+   mouthAnimation(true);
+   requestAnimationFrame(mouthLoop);
+ };
+
+ mouthLoop();
+}
+
+/* ---------------- TAP FACE / BODY ---------------- */
+
+const raycaster=new THREE.Raycaster();
+const pointer=new THREE.Vector2();
+
+canvas.addEventListener("pointerdown",e=>{
+
+ pointer.x=(e.clientX/innerWidth)*2-1;
+ pointer.y=-(e.clientY/innerHeight)*2+1;
+
+ raycaster.setFromCamera(pointer,camera);
+
+ if(!player)return;
+
+ const hits=raycaster.intersectObject(player,true);
+
+ if(hits.length){
+
+   const phrase=
+    input.value.trim() ||
+    "Salam! Mən Azərbaycan dilində danışan süni intellekt futbolçuyam.";
+
+   speakAZ(phrase);
+ }
+
+});
+
+/* ---------------- RECORDING ---------------- */
 
 function startRecording(){
 
-  if(recorder && recorder.state==="recording") return;
+ if(recorder && recorder.state==="recording"){
+   recorder.stop();
+   return;
+ }
 
-  try{
+ chunks=[];
 
-    const stream=canvas.captureStream(30);
+ const videoStream=canvas.captureStream(30);
 
-    recorder=new MediaRecorder(
-      stream,
-      {
-        mimeType:
-          MediaRecorder.isTypeSupported("video/webm;codecs=vp9")
-          ? "video/webm;codecs=vp9"
-          : "video/webm"
-      }
-    );
+ let finalStream=videoStream;
 
-    chunks=[];
+ /*
+   Browser SpeechSynthesis audio is NOT exposed as a
+   MediaStream. Therefore we add a microphone only if
+   available as an optional audio track.
+ */
 
-    recorder.ondataavailable=e=>{
-      if(e.data.size>0) chunks.push(e.data);
-    };
+ navigator.mediaDevices?.getUserMedia({
+   audio:true
+ }).then(mic=>{
 
-    recorder.onstop=()=>{
+   finalStream=new MediaStream([
+     ...videoStream.getVideoTracks(),
+     ...mic.getAudioTracks()
+   ]);
 
-      recordedBlob=new Blob(
-        chunks,
-        {type:"video/webm"}
-      );
+   beginRecorder(finalStream,mic);
 
-      document.getElementById("rec")
-        .classList.remove("show");
-    };
+ }).catch(()=>{
 
-    recorder.start();
+   beginRecorder(videoStream,null);
 
-    document.getElementById("rec")
-      .classList.add("show");
+ });
 
-  }catch(e){
-
-    console.log("Recorder:",e);
-
-  }
 }
 
-function stopRecording(){
+function beginRecorder(stream,mic){
 
-  if(recorder && recorder.state==="recording"){
-    recorder.stop();
-  }
+ let mime="video/webm;codecs=vp9,opus";
 
-  speechSynthesis.cancel();
-  speaking=false;
+ if(!MediaRecorder.isTypeSupported(mime))
+   mime="video/webm;codecs=vp8,opus";
+
+ if(!MediaRecorder.isTypeSupported(mime))
+   mime="video/webm";
+
+ recorder=new MediaRecorder(stream,{
+   mimeType:mime,
+   videoBitsPerSecond:4500000
+ });
+
+ recorder.ondataavailable=e=>{
+   if(e.data.size)chunks.push(e.data);
+ };
+
+ recorder.onstop=()=>{
+
+   if(mic){
+     mic.getTracks().forEach(t=>t.stop());
+   }
+
+   lastVideo=new Blob(chunks,{type:mime});
+
+   document.getElementById("rec").textContent="● REC";
+
+   downloadVideo();
+ };
+
+ recorder.start(250);
+
+ document.getElementById("rec").textContent="■ STOP";
+
 }
 
-document.getElementById("recordBtn").onclick=()=>{
+/* ---------------- DOWNLOAD ---------------- */
 
-  if(speaking){
-    stopRecording();
-  }else{
-    startRecording();
-  }
+function downloadVideo(){
 
-};
+ if(!lastVideo)return;
 
-document.getElementById("stopBtn").onclick=()=>{
-  stopRecording();
-};
+ const url=URL.createObjectURL(lastVideo);
 
-/* ============================================================
-   SHARE
-   ============================================================ */
+ const a=document.createElement("a");
+ a.href=url;
+ a.download="ai-footballer-az.webm";
+ a.click();
 
-document.getElementById("shareBtn").onclick=async()=>{
-
-  if(!recordedBlob){
-
-    if(currentText){
-
-      const shareText=
-        "Virtual Pro AI Avatar\n\n"+
-        currentText;
-
-      if(navigator.share){
-
-        await navigator.share({
-          title:"Virtual Pro",
-          text:shareText
-        });
-
-      }else{
-
-        alert(
-          "Əvvəlcə avatarı danışdırın və videonu yaradın."
-        );
-
-      }
-
-    }else{
-
-      alert(
-        "Əvvəlcə avatarı danışdırın."
-      );
-
-    }
-
-    return;
-  }
-
-  const file=new File(
-    [recordedBlob],
-    "virtual-pro.webm",
-    {type:"video/webm"}
-  );
-
-  try{
-
-    if(
-      navigator.share &&
-      navigator.canShare &&
-      navigator.canShare({files:[file]})
-    ){
-
-      await navigator.share({
-        title:"Virtual Pro",
-        text:"AI Talking Avatar",
-        files:[file]
-      });
-
-    }else{
-
-      const url=URL.createObjectURL(recordedBlob);
-
-      const a=document.createElement("a");
-      a.href=url;
-      a.download="virtual-pro.webm";
-      a.click();
-
-      setTimeout(()=>{
-        URL.revokeObjectURL(url);
-      },3000);
-
-      alert(
-        "Video telefonunuza yadda saxlanıldı. WhatsApp və digər sosial şəbəkələrdən göndərə bilərsiniz."
-      );
-    }
-
-  }catch(e){
-    console.log(e);
-  }
-};
-
-/* ============================================================
-   FULLSCREEN
-   ============================================================ */
-
-document.getElementById("fullscreen").onclick=()=>{
-
-  if(!document.fullscreenElement){
-
-    document.documentElement.requestFullscreen?.();
-
-  }else{
-
-    document.exitFullscreen?.();
-
-  }
-};
-
-/* ============================================================
-   ANIMATION LOOP
-   ============================================================ */
-
-function animate(){
-
-  requestAnimationFrame(animate);
-
-  const t=clock.getElapsedTime();
-
-  animateBody(t);
-
-  /* blinking */
-
-  blinkTimer+=clock.getDelta();
-
-  if(t>nextBlink){
-
-    blink();
-
-    nextBlink=
-      t+2.2+Math.random()*4.5;
-  }
-
-  /* lipsync approximation */
-
-  if(speaking && currentText){
-
-    const elapsed=
-      performance.now()/1000-speechStarted;
-
-    const charRate=.085;
-
-    const index=
-      Math.floor(elapsed/charRate);
-
-    const ch=
-      currentText[index % currentText.length] || "";
-
-    const v=getViseme(ch);
-
-    const strength=
-      .45+
-      Math.abs(Math.sin(t*18))*.55;
-
-    applyViseme(v,strength);
-
-  }else{
-
-    applyViseme("REST",0);
-  }
-
-  /* subtle camera movement */
-
-  camera.position.x=
-    Math.sin(t*.18)*.035;
-
-  camera.position.y=
-    1.75+
-    Math.sin(t*.42)*.012;
-
-  camera.lookAt(
-    0,
-    .85,
-    0
-  );
-
-  ring.material.opacity=
-    .22+
-    Math.sin(t*1.7)*.06;
-
-  renderer.render(scene,camera);
+ setTimeout(()=>URL.revokeObjectURL(url),3000);
 }
 
-animate();
+/* ---------------- SHARE ---------------- */
 
-/* ============================================================
-   RESIZE
-   ============================================================ */
+async function shareVideo(){
 
-addEventListener("resize",()=>{
+ if(!lastVideo){
 
-  renderer.setSize(
-    innerWidth,
-    innerHeight
-  );
+   alert("Əvvəlcə REC ilə video hazırla.");
 
-  camera.aspect=
-    innerWidth/innerHeight;
+   return;
+ }
 
-  camera.updateProjectionMatrix();
+ const file=new File(
+   [lastVideo],
+   "AI-Footballer-AZ.webm",
+   {type:"video/webm"}
+ );
+
+ try{
+
+   if(
+     navigator.share &&
+     navigator.canShare &&
+     navigator.canShare({files:[file]})
+   ){
+
+     await navigator.share({
+       title:"AI Footballer AZ",
+       text:"Azərbaycan dilində danışan AI futbolçu",
+       files:[file]
+     });
+
+   }else{
+
+     downloadVideo();
+
+   }
+
+ }catch(e){
+
+   console.log(e);
+
+ }
+
+}
+
+/* ---------------- BUTTONS ---------------- */
+
+document.getElementById("speak").onclick=()=>{
+ speakAZ(input.value);
+};
+
+input.addEventListener("keydown",e=>{
+ if(e.key==="Enter")speakAZ(input.value);
+});
+
+document.querySelectorAll("[data-mode]").forEach(btn=>{
+
+ btn.onclick=()=>{
+
+   document.querySelectorAll("[data-mode]")
+    .forEach(x=>x.classList.remove("active"));
+
+   btn.classList.add("active");
+
+   playBestAnimation(btn.dataset.mode);
+
+ };
 
 });
 
-/* ============================================================
-   LOAD VOICES
-   ============================================================ */
+document.getElementById("rec").onclick=startRecording;
+document.getElementById("share").onclick=shareVideo;
+
+document.getElementById("full").onclick=async()=>{
+
+ try{
+
+   if(!document.fullscreenElement)
+     await document.documentElement.requestFullscreen();
+   else
+     await document.exitFullscreen();
+
+ }catch(e){}
+
+};
+
+/* ---------------- RESIZE ---------------- */
+
+addEventListener("resize",()=>{
+
+ camera.aspect=innerWidth/innerHeight;
+ camera.updateProjectionMatrix();
+
+ renderer.setSize(innerWidth,innerHeight);
+ renderer.setPixelRatio(Math.min(devicePixelRatio,1.7));
+
+});
+
+/* ---------------- LOOP ---------------- */
+
+clock=new THREE.Clock();
+
+function animate(){
+
+ requestAnimationFrame(animate);
+
+ const dt=Math.min(clock.getDelta(),.05);
+
+ if(mixer)mixer.update(dt);
+
+ proceduralMotion(dt);
+
+ /* natural body floating / weight */
+
+ if(player){
+
+   const bob=
+     selectedMode==="run" ? Math.abs(Math.sin(t*7.5))*.012 :
+     selectedMode==="walk" ? Math.abs(Math.sin(t*4.8))*.006 :
+     Math.sin(t*1.8)*.003;
+
+   player.position.y=bob;
+
+   softShadow.scale.x=
+     1.0-bob*2.5;
+
+   softShadow.scale.y=
+     1.0-bob*1.8;
+ }
+
+ renderer.render(scene,camera);
+
+}
+
+loadPlayer();
+animate();
+
+/* Android voice list may arrive asynchronously */
 
 speechSynthesis.onvoiceschanged=()=>{
-  speechSynthesis.getVoices();
+ speechSynthesis.getVoices();
 };
 
 </script>
-
 </body>
-</html>
+      </html>
