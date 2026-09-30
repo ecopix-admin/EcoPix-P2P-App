@@ -1,608 +1,531 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="az">
 <head>
-<meta charset="UTF-8">
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#050608">
-<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#070b12">
+<title>ARWORLD — Spatial Social</title>
 
-<title>SEEIT — AI Visual Search</title>
+<link rel="stylesheet"
+href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 
 <style>
-*{
-  box-sizing:border-box;
-  -webkit-tap-highlight-color:transparent;
-}
+*{box-sizing:border-box}
 
 html,body{
-  margin:0;
-  width:100%;
-  height:100%;
-  overflow:hidden;
-  background:#050608;
-  color:#fff;
-  font-family:
-    Inter,
-    system-ui,
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    sans-serif;
+margin:0;
+width:100%;
+height:100%;
+background:#070b12;
+color:#eef5ff;
+font-family:Inter,system-ui,Arial,sans-serif;
+overflow:hidden
 }
 
-button{
-  font:inherit;
+button,input,textarea,select{font:inherit}
+button{cursor:pointer;color:inherit}
+
+.app{
+height:100vh;
+display:flex;
+flex-direction:column
 }
 
-#app{
-  position:fixed;
-  inset:0;
-  background:#050608;
+header{
+height:62px;
+display:flex;
+align-items:center;
+justify-content:space-between;
+padding:0 14px;
+background:#080d16;
+border-bottom:1px solid #20304a;
+z-index:30
 }
 
-/* ================= CAMERA ================= */
+.logo{
+font-weight:950;
+letter-spacing:.08em;
+font-size:17px
+}
+
+.logo i{
+color:#51d8ff;
+font-style:normal
+}
+
+.headbtn,.btn{
+background:#111c2d;
+border:1px solid #2a3d59;
+border-radius:12px;
+padding:10px 12px
+}
+
+.primary{
+background:linear-gradient(135deg,#0daed7,#705cf2);
+border:0
+}
+
+.main{
+position:relative;
+flex:1;
+min-height:0
+}
+
+.view{
+position:absolute;
+inset:0;
+display:none
+}
+
+.view.on{
+display:block
+}
+
+/* CAMERA */
 
 #camera{
-  position:absolute;
-  inset:0;
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  background:#050608;
+position:absolute;
+width:100%;
+height:100%;
+object-fit:cover;
+background:#020509
 }
 
-.cameraShade{
-  position:absolute;
-  inset:0;
-  pointer-events:none;
-  background:
-    linear-gradient(
-      to bottom,
-      rgba(0,0,0,.62) 0%,
-      transparent 27%,
-      transparent 62%,
-      rgba(0,0,0,.76) 100%
-    );
+#shade{
+position:absolute;
+inset:0;
+background:
+linear-gradient(
+#0009,
+transparent 25%,
+transparent 72%,
+#000b
+);
+pointer-events:none
 }
 
-/* ================= HEADER ================= */
-
-.header{
-  position:absolute;
-  z-index:20;
-  top:0;
-  left:0;
-  right:0;
-  padding:
-    calc(15px + env(safe-area-inset-top))
-    18px
-    14px;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
+.top{
+position:absolute;
+top:12px;
+left:12px;
+right:12px;
+display:flex;
+justify-content:space-between;
+z-index:4
 }
 
-.brand{
-  font-size:25px;
-  font-weight:950;
-  letter-spacing:-1.4px;
+.status{
+padding:8px 11px;
+background:#07101dd9;
+border:1px solid #31445f;
+border-radius:99px;
+font-size:11px
 }
 
-.brand i{
-  font-style:normal;
-  color:#67f3a5;
+.reticle{
+position:absolute;
+left:50%;
+top:50%;
+transform:translate(-50%,-50%);
+width:min(72vw,390px);
+height:min(72vw,390px);
+border:1px solid #51d8ff80;
+border-radius:28px;
+box-shadow:0 0 0 9999px #0002;
+pointer-events:none
 }
 
-.cameraStatus{
-  display:flex;
-  align-items:center;
-  gap:7px;
-  padding:8px 12px;
-  border-radius:30px;
-  background:rgba(8,9,12,.48);
-  border:1px solid rgba(255,255,255,.13);
-  backdrop-filter:blur(18px);
-  font-size:12px;
-  color:#dce0e7;
+.reticle:before,
+.reticle:after{
+content:"";
+position:absolute;
+width:35px;
+height:35px;
+border:3px solid #51d8ff
 }
 
-.statusDot{
-  width:7px;
-  height:7px;
-  border-radius:50%;
-  background:#888;
+.reticle:before{
+left:-2px;
+top:-2px;
+border-right:0;
+border-bottom:0;
+border-radius:18px 0 0
 }
 
-.statusDot.live{
-  background:#67f3a5;
-  box-shadow:0 0 13px #67f3a5;
+.reticle:after{
+right:-2px;
+bottom:-2px;
+border-left:0;
+border-top:0;
+border-radius:0 0 18px
 }
 
-/* ================= SCAN FRAME ================= */
+/* AR OBJECT */
 
-.scanFrame{
-  position:absolute;
-  z-index:5;
-  left:50%;
-  top:46%;
-  transform:translate(-50%,-50%);
-  width:min(82vw,390px);
-  aspect-ratio:1/1;
-  pointer-events:none;
+.arobj{
+position:absolute;
+transform:translate(-50%,-50%);
+min-width:165px;
+max-width:250px;
+padding:11px 12px;
+border:1px solid #51d8ff77;
+border-radius:15px;
+background:#07101de8;
+backdrop-filter:blur(12px);
+box-shadow:0 12px 35px #0009;
+cursor:pointer
 }
 
-.scanCorner{
-  position:absolute;
-  width:42px;
-  height:42px;
-  border-color:#fff;
-  border-style:solid;
-  filter:drop-shadow(0 0 8px rgba(255,255,255,.3));
+.arobj b{
+font-size:13px
 }
 
-.tl{
-  left:0;
-  top:0;
-  border-width:3px 0 0 3px;
-  border-radius:18px 0 0 0;
+.arobj small{
+display:block;
+color:#a9bad1;
+margin-top:4px
 }
 
-.tr{
-  right:0;
-  top:0;
-  border-width:3px 3px 0 0;
-  border-radius:0 18px 0 0;
+.arobj em{
+display:block;
+color:#51d8ff;
+font-style:normal;
+font-size:10px;
+margin-top:6px
 }
 
-.bl{
-  left:0;
-  bottom:0;
-  border-width:0 0 3px 3px;
-  border-radius:0 0 0 18px;
+/* PANELS */
+
+.panel{
+position:absolute;
+left:10px;
+right:10px;
+bottom:10px;
+max-height:82%;
+overflow:auto;
+background:#09111ff5;
+border:1px solid #263954;
+border-radius:22px;
+padding:16px;
+z-index:20;
+backdrop-filter:blur(18px);
+display:none
 }
 
-.br{
-  right:0;
-  bottom:0;
-  border-width:0 3px 3px 0;
-  border-radius:0 0 18px 0;
+.panel.on{
+display:block
 }
 
-.scanHint{
-  position:absolute;
-  top:calc(100% + 18px);
-  left:50%;
-  transform:translateX(-50%);
-  white-space:nowrap;
-  font-size:13px;
-  color:rgba(255,255,255,.8);
-  text-shadow:0 2px 8px #000;
+.handle{
+width:42px;
+height:4px;
+background:#51627c;
+border-radius:8px;
+margin:0 auto 12px
 }
 
-/* ================= BOTTOM ================= */
-
-.bottom{
-  position:absolute;
-  z-index:20;
-  left:0;
-  right:0;
-  bottom:0;
-  padding:
-    16px
-    18px
-    calc(18px + env(safe-area-inset-bottom));
+.field{
+margin:9px 0
 }
 
-.scanButton{
-  width:100%;
-  height:64px;
-  border:0;
-  border-radius:21px;
-  background:#fff;
-  color:#050608;
-  font-size:18px;
-  font-weight:900;
-  letter-spacing:-.3px;
-  box-shadow:
-    0 12px 45px rgba(0,0,0,.35),
-    0 0 0 1px rgba(255,255,255,.2);
-  cursor:pointer;
-  transition:.18s transform;
+.field label{
+font-size:11px;
+color:#9badc5;
+display:block;
+margin-bottom:5px
 }
 
-.scanButton:active{
-  transform:scale(.97);
+.field input,
+.field textarea,
+.field select{
+width:100%;
+background:#07101d;
+border:1px solid #263954;
+color:#fff;
+border-radius:11px;
+padding:11px;
+outline:0
 }
 
-.scanButton.loading{
-  background:#67f3a5;
+.field textarea{
+min-height:82px;
+resize:vertical
 }
 
-.secondaryControls{
-  display:flex;
-  justify-content:center;
-  gap:12px;
-  margin-top:12px;
+.grid{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:8px
 }
 
-.circleButton{
-  width:51px;
-  height:51px;
-  border-radius:50%;
-  border:1px solid rgba(255,255,255,.18);
-  background:rgba(0,0,0,.52);
-  color:#fff;
-  backdrop-filter:blur(18px);
-  cursor:pointer;
-  font-size:20px;
+.full{
+width:100%
 }
 
-/* ================= RESULT SCREEN ================= */
+/* NAVIGATION */
 
-.resultScreen{
-  position:fixed;
-  z-index:100;
-  inset:0;
-  background:
-    radial-gradient(
-      circle at 50% 0%,
-      rgba(103,243,165,.09),
-      transparent 40%
-    ),
-    #08090c;
-
-  transform:translateY(100%);
-  transition:transform .34s cubic-bezier(.2,.8,.2,1);
-  overflow-y:auto;
-  overscroll-behavior:contain;
+.nav{
+height:70px;
+display:flex;
+justify-content:space-around;
+align-items:center;
+background:#080d16;
+border-top:1px solid #20304a;
+z-index:30
 }
 
-.resultScreen.open{
-  transform:translateY(0);
+.nav button{
+background:0;
+border:0;
+color:#8092ad;
+font-size:10px;
+display:flex;
+flex-direction:column;
+align-items:center;
+gap:3px
 }
 
-.resultHeader{
-  position:sticky;
-  top:0;
-  z-index:10;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  padding:
-    calc(14px + env(safe-area-inset-top))
-    16px
-    13px;
-  background:rgba(8,9,12,.82);
-  backdrop-filter:blur(22px);
-  border-bottom:1px solid rgba(255,255,255,.08);
+.nav button b{
+font-size:20px
 }
 
-.resultHeaderTitle{
-  font-size:18px;
-  font-weight:900;
+.nav button.on{
+color:#51d8ff
 }
 
-.closeResult{
-  width:40px;
-  height:40px;
-  border:0;
-  border-radius:50%;
-  background:rgba(255,255,255,.09);
-  color:#fff;
-  font-size:22px;
-  cursor:pointer;
+.fab{
+width:52px!important;
+height:52px;
+border-radius:17px!important;
+background:
+linear-gradient(
+135deg,
+#51d8ff,
+#725cf2
+)!important;
+color:white!important;
+font-size:26px!important
 }
 
-.resultContent{
-  padding:16px 16px 40px;
-  max-width:650px;
-  margin:auto;
+/* MAP */
+
+.searchbar{
+position:absolute;
+z-index:10;
+top:12px;
+left:12px;
+right:12px;
+display:flex;
+gap:7px
 }
 
-/* ================= RESULT IMAGE ================= */
-
-.resultImageBox{
-  position:relative;
-  width:100%;
-  height:min(54vh,480px);
-  border-radius:25px;
-  overflow:hidden;
-  background:#111318;
-  border:1px solid rgba(255,255,255,.08);
+.searchbar input{
+flex:1;
+background:#07101de8;
+border:1px solid #2a3d59;
+color:white;
+border-radius:14px;
+padding:12px
 }
 
-#resultImage{
-  width:100%;
-  height:100%;
-  object-fit:cover;
+.results{
+position:absolute;
+z-index:11;
+top:60px;
+left:12px;
+right:12px;
+max-height:45%;
+overflow:auto;
+background:#09111ff5;
+border:1px solid #263954;
+border-radius:15px;
+display:none
 }
 
-.imageBadge{
-  position:absolute;
-  left:12px;
-  top:12px;
-  padding:7px 10px;
-  border-radius:12px;
-  background:rgba(0,0,0,.58);
-  backdrop-filter:blur(14px);
-  font-size:11px;
-  color:#dfe4ea;
+.results.on{
+display:block
 }
 
-/* ================= AI RESULT ================= */
-
-.resultMain{
-  margin-top:17px;
+.result{
+padding:12px;
+border-bottom:1px solid #1d2a3e
 }
 
-.resultLabel{
-  font-size:29px;
-  line-height:1.05;
-  font-weight:950;
-  letter-spacing:-1.1px;
+.result small{
+display:block;
+color:#93a6c0;
+margin-top:4px
 }
 
-.resultDescription{
-  margin-top:8px;
-  color:#a8adb7;
-  font-size:13px;
-  line-height:1.5;
+#map{
+position:absolute;
+inset:0
 }
 
-.confidenceRow{
-  display:flex;
-  align-items:center;
-  gap:9px;
-  margin-top:15px;
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip{
+background:#0b1524;
+color:#fff
 }
 
-.confidenceBar{
-  flex:1;
-  height:7px;
-  background:#1c1f25;
-  border-radius:20px;
-  overflow:hidden;
+/* FEED */
+
+.feed{
+padding:14px;
+overflow:auto
 }
 
-.confidenceFill{
-  height:100%;
-  width:0%;
-  background:#67f3a5;
-  border-radius:20px;
-  transition:width .5s;
+.post{
+background:#0b1524;
+border:1px solid #243650;
+border-radius:20px;
+overflow:hidden;
+margin-bottom:14px
 }
 
-.confidenceText{
-  color:#67f3a5;
-  font-size:12px;
-  font-weight:800;
+.post img,
+.post video{
+width:100%;
+display:block;
+max-height:430px;
+object-fit:cover;
+background:#020509
 }
 
-/* ================= TAGS ================= */
-
-.tags{
-  display:flex;
-  flex-wrap:wrap;
-  gap:7px;
-  margin-top:15px;
+.body{
+padding:13px
 }
 
-.tag{
-  padding:8px 11px;
-  border-radius:13px;
-  background:#14171c;
-  border:1px solid rgba(255,255,255,.07);
-  color:#dce0e5;
-  font-size:11px;
+.meta{
+font-size:10px;
+color:#8ea1bb;
+margin-top:5px
 }
 
-/* ================= STORES ================= */
-
-.storeTitle{
-  margin-top:25px;
-  font-size:17px;
-  font-weight:900;
+.desc{
+font-size:13px;
+line-height:1.5;
+margin-top:8px;
+white-space:pre-wrap
 }
 
-.storeSub{
-  margin-top:5px;
-  color:#858b96;
-  font-size:12px;
+/* PROFILE */
+
+.profile{
+padding:16px;
+overflow:auto
 }
 
-.stores{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:9px;
-  margin-top:12px;
+.card{
+background:#0b1524;
+border:1px solid #243650;
+border-radius:20px;
+padding:17px
 }
 
-.store{
-  min-height:67px;
-  padding:11px;
-  border-radius:17px;
-  background:#111419;
-  border:1px solid rgba(255,255,255,.08);
-  color:#fff;
-  text-align:left;
-  cursor:pointer;
-  display:flex;
-  align-items:center;
-  gap:10px;
-  transition:.15s;
+.avatar{
+width:72px;
+height:72px;
+border-radius:23px;
+background:
+linear-gradient(
+135deg,
+#51d8ff,
+#725cf2
+);
+display:grid;
+place-items:center;
+font-size:28px;
+font-weight:900
 }
 
-.store:active{
-  transform:scale(.97);
+.row{
+display:flex;
+gap:12px;
+align-items:center
 }
 
-.storeIcon{
-  width:38px;
-  height:38px;
-  display:grid;
-  place-items:center;
-  border-radius:12px;
-  background:#1b1f26;
-  font-size:19px;
-  flex:none;
+.stats{
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:8px;
+margin:15px 0
 }
 
-.storeInfo{
-  min-width:0;
+.stat{
+background:#101d30;
+border-radius:13px;
+padding:10px;
+text-align:center
 }
 
-.storeName{
-  font-size:13px;
-  font-weight:850;
+.stat b{
+display:block;
+font-size:18px
 }
 
-.storeAction{
-  margin-top:3px;
-  color:#7f8793;
-  font-size:10px;
+.stat small{
+color:#8fa1ba
 }
 
-/* ================= SEARCH ================= */
-
-.searchQuery{
-  margin-top:24px;
-  padding:14px;
-  border-radius:17px;
-  background:#111419;
-  border:1px solid rgba(255,255,255,.08);
+.empty{
+text-align:center;
+padding:35px 12px;
+color:#8497b2
 }
 
-.searchLabel{
-  color:#7f8793;
-  font-size:10px;
-  text-transform:uppercase;
-  letter-spacing:1px;
+.muted{
+color:#91a4bf;
+font-size:12px
 }
-
-.searchText{
-  margin-top:7px;
-  font-size:13px;
-  color:#e9edf1;
-  word-break:break-word;
-}
-
-/* ================= RESCAN ================= */
-
-.rescan{
-  width:100%;
-  margin-top:14px;
-  height:58px;
-  border:0;
-  border-radius:18px;
-  background:#67f3a5;
-  color:#07100b;
-  font-size:16px;
-  font-weight:900;
-  cursor:pointer;
-}
-
-/* ================= TOAST ================= */
 
 .toast{
-  position:fixed;
-  z-index:500;
-  left:50%;
-  bottom:105px;
-  transform:translate(-50%,20px);
-  width:max-content;
-  max-width:calc(100vw - 35px);
-  padding:11px 15px;
-  border-radius:15px;
-  background:rgba(12,14,18,.9);
-  border:1px solid rgba(255,255,255,.1);
-  backdrop-filter:blur(18px);
-  color:#e8ebef;
-  font-size:12px;
-  opacity:0;
-  pointer-events:none;
-  transition:.25s;
+position:fixed;
+z-index:100;
+left:50%;
+bottom:82px;
+transform:translate(-50%,20px);
+background:#09111f;
+border:1px solid #334763;
+border-radius:13px;
+padding:10px 14px;
+font-size:12px;
+opacity:0;
+transition:.2s;
+pointer-events:none
 }
 
 .toast.show{
-  opacity:1;
-  transform:translate(-50%,0);
+opacity:1;
+transform:translate(-50%,0)
 }
 
-/* ================= LOADING ================= */
-
-.aiLoading{
-  position:fixed;
-  inset:0;
-  z-index:400;
-  display:none;
-  align-items:center;
-  justify-content:center;
-  background:rgba(4,5,7,.78);
-  backdrop-filter:blur(18px);
+#detailMedia,
+#detailVideo{
+display:none;
+width:100%;
+max-height:300px;
+object-fit:contain;
+border-radius:13px;
+background:#020509
 }
 
-.aiLoading.show{
-  display:flex;
+h2,h3{
+margin:0 0 8px
 }
 
-.loadingCard{
-  width:min(88vw,360px);
-  padding:25px;
-  border-radius:25px;
-  background:#101217;
-  border:1px solid rgba(255,255,255,.1);
-  text-align:center;
+@media(min-width:800px){
+
+.panel{
+left:auto;
+width:440px;
+right:18px;
+bottom:76px
 }
 
-.spinner{
-  width:42px;
-  height:42px;
-  margin:auto;
-  border-radius:50%;
-  border:3px solid #242831;
-  border-top-color:#67f3a5;
-  animation:spin .8s linear infinite;
+.nav{
+height:64px
 }
-
-@keyframes spin{
-  to{transform:rotate(360deg)}
-}
-
-.loadingTitle{
-  margin-top:17px;
-  font-size:18px;
-  font-weight:900;
-}
-
-.loadingText{
-  margin-top:7px;
-  color:#858b96;
-  font-size:12px;
-  line-height:1.5;
-}
-
-/* ================= ERROR ================= */
-
-.errorBox{
-  margin-top:15px;
-  padding:13px;
-  border-radius:15px;
-  background:#171419;
-  color:#ffb6bd;
-  font-size:12px;
-  line-height:1.5;
-}
-
-@media(min-width:700px){
-
-  .bottom{
-    max-width:650px;
-    margin:auto;
-  }
-
-  .scanFrame{
-    width:390px;
-  }
 
 }
 </style>
@@ -610,1298 +533,2304 @@ button{
 
 <body>
 
-<div id="app">
+<div class="app">
 
-  <video
-    id="camera"
-    autoplay
-    playsinline
-    muted
-  ></video>
+<header>
 
-  <div class="cameraShade"></div>
+<div class="logo">
+AR<i>WORLD</i>
+</div>
 
-  <header class="header">
+<div>
+<button class="headbtn"
+onclick="openMapSearch()">⌕</button>
 
-    <div class="brand">
-      SEE<i>IT</i>
-    </div>
+<button class="headbtn"
+onclick="show('profile')">◉</button>
+</div>
 
-    <div class="cameraStatus">
+</header>
 
-      <span
-        class="statusDot"
-        id="statusDot"
-      ></span>
 
-      <span id="statusText">
-        Kamera hazırlanır
-      </span>
+<div class="main">
 
-    </div>
+<!-- AR VIEW -->
 
-  </header>
+<section id="ar" class="view on">
 
-  <div class="scanFrame">
+<video
+id="camera"
+autoplay
+muted
+playsinline>
+</video>
 
-    <div class="scanCorner tl"></div>
-    <div class="scanCorner tr"></div>
-    <div class="scanCorner bl"></div>
-    <div class="scanCorner br"></div>
+<div id="shade"></div>
 
-    <div class="scanHint">
-      Məhsulu çərçivəyə gətir
-    </div>
+<div class="top">
 
-  </div>
+<div id="gps" class="status">
+GPS gözlənilir…
+</div>
 
-  <div class="bottom">
-
-    <button
-      class="scanButton"
-      id="scanButton"
-    >
-      📷 Məhsulu Skan Et
-    </button>
-
-    <div class="secondaryControls">
-
-      <button
-        class="circleButton"
-        id="galleryButton"
-        aria-label="Qalereya"
-      >
-        🖼️
-      </button>
-
-      <button
-        class="circleButton"
-        id="flipButton"
-        aria-label="Kameranı dəyiş"
-      >
-        🔄
-      </button>
-
-    </div>
-
-  </div>
+<div id="heading" class="status">
+Kompas —
+</div>
 
 </div>
 
-<input
-  type="file"
-  id="fileInput"
-  accept="image/*"
-/>
+<div class="reticle"></div>
 
-
-<!-- ================= RESULT ================= -->
-
-<section
-  class="resultScreen"
-  id="resultScreen"
->
-
-  <div class="resultHeader">
-
-    <div class="resultHeaderTitle">
-      AI nəticəsi
-    </div>
-
-    <button
-      class="closeResult"
-      id="closeResult"
-      aria-label="Bağla"
-    >
-      ×
-    </button>
-
-  </div>
-
-  <div class="resultContent">
-
-    <div class="resultImageBox">
-
-      <img
-        id="resultImage"
-        alt="Skan edilmiş məhsul"
-      >
-
-      <div class="imageBadge">
-        SEEIT AI
-      </div>
-
-    </div>
-
-    <div class="resultMain">
-
-      <div
-        class="resultLabel"
-        id="resultLabel"
-      >
-        Analiz edilir
-      </div>
-
-      <div
-        class="resultDescription"
-        id="resultDescription"
-      >
-        -
-      </div>
-
-      <div class="confidenceRow">
-
-        <div class="confidenceBar">
-          <div
-            class="confidenceFill"
-            id="confidenceFill"
-          ></div>
-        </div>
-
-        <div
-          class="confidenceText"
-          id="confidenceText"
-        >
-          --
-        </div>
-
-      </div>
-
-      <div
-        class="tags"
-        id="resultTags"
-      ></div>
-
-    </div>
-
-    <div class="storeTitle">
-      Harada axtarmaq istəyirsən?
-    </div>
-
-    <div class="storeSub">
-      Nəticəyə əsaslanan real mağaza axtarışlarını aç.
-    </div>
-
-    <div
-      class="stores"
-      id="stores"
-    ></div>
-
-    <div class="searchQuery">
-
-      <div class="searchLabel">
-        AI axtarış sorğusu
-      </div>
-
-      <div
-        class="searchText"
-        id="searchText"
-      >
-        -
-      </div>
-
-    </div>
-
-    <button
-      class="rescan"
-      id="rescanButton"
-    >
-      🔄 Yenidən Skan Et
-    </button>
-
-  </div>
+<div id="arObjects"></div>
 
 </section>
 
 
-<!-- ================= AI LOADING ================= -->
+<!-- MAP -->
 
-<div
-  class="aiLoading"
-  id="aiLoading"
->
+<section id="mapView" class="view">
 
-  <div class="loadingCard">
+<div id="map"></div>
 
-    <div class="spinner"></div>
+<div class="searchbar">
 
-    <div class="loadingTitle">
-      AI görüntünü analiz edir
-    </div>
+<input
+id="search"
+placeholder="Məkan, maşın, kafe, elan…">
 
-    <div
-      class="loadingText"
-      id="loadingText"
-    >
-      İlk skanda model hazırlanır. Sonrakı skanlar daha sürətli olacaq.
-    </div>
-
-  </div>
+<button
+class="btn primary"
+onclick="searchPosts()">
+Axtar
+</button>
 
 </div>
 
+<div id="results" class="results"></div>
+
+</section>
+
+
+<!-- FEED -->
+
+<section id="feed" class="view feed">
+
+<h2>
+Spatial Feed
+</h2>
+
 <div
-  class="toast"
-  id="toast"
-></div>
+class="muted"
+style="margin-bottom:14px">
+Koordinata bağlanmış real paylaşımlar
+</div>
+
+<div id="feedList"></div>
+
+</section>
 
 
-<script type="module">
+<!-- PROFILE -->
 
-import {
-  pipeline,
-  env
+<section id="profile" class="view profile">
+
+<div class="card">
+
+<div class="row">
+
+<div id="avatar" class="avatar">
+A
+</div>
+
+<div style="flex:1">
+
+<h2 id="pname">
+AR Explorer
+</h2>
+
+<div id="pbio" class="muted">
+Real dünya üçün rəqəmsal profil
+</div>
+
+</div>
+
+<button
+class="btn"
+onclick="editProfile()">
+Redaktə
+</button>
+
+</div>
+
+
+<div class="stats">
+
+<div class="stat">
+<b id="postsN">0</b>
+<small>AR obyekt</small>
+</div>
+
+<div class="stat">
+<b id="mediaN">0</b>
+<small>Media</small>
+</div>
+
+<div class="stat">
+<b id="placeN">0</b>
+<small>Məkan</small>
+</div>
+
+</div>
+
+
+<button
+class="btn primary full"
+onclick="openCreate()">
+＋ AR obyekt yerləşdir
+</button>
+
+<div style="height:8px"></div>
+
+<button
+class="btn full"
+onclick="exportData()">
+JSON ixrac et
+</button>
+
+</div>
+
+</section>
+
+
+<!-- CREATE -->
+
+<div id="create" class="panel">
+
+<div class="handle"></div>
+
+<h3>
+AR obyekt yerləşdir
+</h3>
+
+<div class="muted">
+Başlıq, mətn, şəkil/video və koordinat eyni obyektə bağlanır.
+</div>
+
+
+<div class="field">
+
+<label>
+Başlıq
+</label>
+
+<input
+id="title"
+maxlength="100"
+placeholder="Məs: Satılıq Mercedes E200">
+
+</div>
+
+
+<div class="field">
+
+<label>
+Kateqoriya
+</label>
+
+<select id="type">
+
+<option value="profile">
+👤 Profil
+</option>
+
+<option value="text">
+📝 Mətn
+</option>
+
+<option value="image">
+📷 Şəkil
+</option>
+
+<option value="video">
+🎥 Video
+</option>
+
+<option value="car">
+🚗 Avtomobil
+</option>
+
+<option value="business">
+🏪 Biznes
+</option>
+
+<option value="tourism">
+🏔️ Turizm
+</option>
+
+<option value="warning">
+⚠️ Xəbərdarlıq
+</option>
+
+<option value="service">
+🔧 Xidmət
+</option>
+
+</select>
+
+</div>
+
+
+<div class="field">
+
+<label>
+Təsvir
+</label>
+
+<textarea
+id="desc"
+maxlength="1500"
+placeholder="Ətraflı məlumat…">
+</textarea>
+
+</div>
+
+
+<div class="grid">
+
+<div class="field">
+
+<label>
+Latitude
+</label>
+
+<input
+id="lat"
+inputmode="decimal">
+
+</div>
+
+
+<div class="field">
+
+<label>
+Longitude
+</label>
+
+<input
+id="lng"
+inputmode="decimal">
+
+</div>
+
+</div>
+
+
+<div class="grid">
+
+<div class="field">
+
+<label>
+Radius, metr
+</label>
+
+<input
+id="radius"
+type="number"
+value="300"
+min="10"
+max="50000">
+
+</div>
+
+
+<div class="field">
+
+<label>
+Müddət
+</label>
+
+<select id="expiry">
+
+<option value="0">
+Müddətsiz
+</option>
+
+<option value="1">
+1 saat
+</option>
+
+<option value="24">
+24 saat
+</option>
+
+<option value="168">
+7 gün
+</option>
+
+<option value="720">
+30 gün
+</option>
+
+</select>
+
+</div>
+
+</div>
+
+
+<div class="field">
+
+<label>
+Telefon
+</label>
+
+<input
+id="phone"
+placeholder="+994…">
+
+</div>
+
+
+<div class="field">
+
+<label>
+Şəkil / video
+</label>
+
+<input
+id="media"
+type="file"
+accept="image/*,video/*">
+
+</div>
+
+
+<img
+id="imgPrev"
+style="
+display:none;
+width:100%;
+max-height:180px;
+object-fit:contain;
+border-radius:12px">
+
+<video
+id="vidPrev"
+controls
+playsinline
+style="
+display:none;
+width:100%;
+max-height:180px;
+border-radius:12px">
+</video>
+
+
+<div style="height:8px"></div>
+
+<div class="grid">
+
+<button
+class="btn"
+onclick="useGPS()">
+📍 Cari GPS
+</button>
+
+<button
+class="btn primary"
+onclick="savePost()">
+Yerləşdir
+</button>
+
+</div>
+
+<div style="height:7px"></div>
+
+<button
+class="btn full"
+onclick="closePanels()">
+Bağla
+</button>
+
+</div>
+
+
+<!-- DETAIL -->
+
+<div id="detail" class="panel">
+
+<div class="handle"></div>
+
+<h3 id="dtitle"></h3>
+
+<div id="dmeta" class="muted"></div>
+
+<div style="height:8px"></div>
+
+<img id="detailMedia">
+
+<video
+id="detailVideo"
+controls
+playsinline>
+</video>
+
+<div
+id="ddesc"
+class="desc">
+</div>
+
+<div style="height:10px"></div>
+
+<div class="grid">
+
+<button
+id="call"
+class="btn"
+style="display:none">
+📞 Zəng
+</button>
+
+<button
+id="route"
+class="btn">
+🧭 Marşrut
+</button>
+
+</div>
+
+<div style="height:7px"></div>
+
+<button
+class="btn full"
+onclick="closePanels()">
+Bağla
+</button>
+
+</div>
+
+
+<!-- PROFILE EDIT -->
+
+<div id="edit" class="panel">
+
+<div class="handle"></div>
+
+<h3>
+Profil
+</h3>
+
+<div class="field">
+
+<label>
+Ad
+</label>
+
+<input
+id="ename"
+maxlength="60">
+
+</div>
+
+
+<div class="field">
+
+<label>
+Bio
+</label>
+
+<textarea
+id="ebio"
+maxlength="300">
+</textarea>
+
+</div>
+
+
+<button
+class="btn primary full"
+onclick="saveProfile()">
+Yadda saxla
+</button>
+
+</div>
+
+
+</div>
+
+
+<!-- NAV -->
+
+<nav class="nav">
+
+<button
+class="on"
+data-v="ar"
+onclick="show('ar')">
+
+<b>⌾</b>
+SCAN
+
+</button>
+
+
+<button
+data-v="mapView"
+onclick="show('mapView')">
+
+<b>⌖</b>
+XƏRİTƏ
+
+</button>
+
+
+<button
+class="fab"
+onclick="openCreate()">
+＋
+</button>
+
+
+<button
+data-v="feed"
+onclick="show('feed')">
+
+<b>▤</b>
+FEED
+
+</button>
+
+
+<button
+data-v="profile"
+onclick="show('profile')">
+
+<b>◉</b>
+PROFİL
+
+</button>
+
+</nav>
+
+
+<div id="toast"></div>
+
+</div>
+
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+
+"use strict";
+
+
+/* ============================
+   ARWORLD LOCAL ENGINE
+============================ */
+
+const DB_NAME="ARWORLD_DATABASE";
+
+const STORE="posts";
+
+const PSTORE="profile";
+
+let db;
+
+let posts=[];
+
+let profile={
+name:"AR Explorer",
+bio:"Real dünya üçün rəqəmsal profil"
+};
+
+let pos=null;
+
+let heading=null;
+
+let stream=null;
+
+let map=null;
+
+let markers=[];
+
+let file=null;
+
+
+function $(id){
+return document.getElementById(id);
 }
-from
-"https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.3.0";
 
 
-/* =====================================================
-   SEEIT CONFIG
-===================================================== */
+/* ============================
+   SECURITY
+============================ */
 
-env.allowLocalModels = false;
-env.useBrowserCache = true;
+function esc(s){
 
-const MODEL =
-  "Xenova/clip-vit-base-patch32";
+return String(s??"")
+.replace(/[&<>"']/g,m=>({
 
+"&":"&amp;",
+"<":"&lt;",
+">":"&gt;",
+'"':"&quot;",
+"'":"&#39;"
 
-/*
-  Modelə verilən kateqoriyalar.
+}[m]));
 
-  Bunlar saxta məhsul deyil.
-  AI şəkli bu anlayışlarla müqayisə edir.
-*/
-
-const LABELS = [
-
-  "running sneakers",
-  "basketball sneakers",
-  "football shoes",
-  "hiking shoes",
-  "casual sneakers",
-  "formal dress shoes",
-  "leather shoes",
-  "boots",
-  "sandals",
-  "slippers",
-
-  "Nike sneakers",
-  "Adidas sneakers",
-  "Puma sneakers",
-  "New Balance sneakers",
-  "Jordan sneakers",
-  "Converse sneakers",
-  "Vans sneakers",
-  "Reebok sneakers",
-
-  "black sneakers",
-  "white sneakers",
-  "red sneakers",
-  "blue sneakers",
-  "green sneakers",
-
-  "modern sneakers",
-  "luxury sneakers",
-  "sports sneakers"
-
-];
+}
 
 
-/* =====================================================
-   DOM
-===================================================== */
+/* ============================
+   ICONS
+============================ */
 
-const camera =
-  document.getElementById("camera");
+function icon(type){
 
-const statusDot =
-  document.getElementById("statusDot");
+return({
 
-const statusText =
-  document.getElementById("statusText");
+profile:"👤",
+text:"📝",
+image:"📷",
+video:"🎥",
+car:"🚗",
+business:"🏪",
+tourism:"🏔️",
+warning:"⚠️",
+service:"🔧"
 
-const scanButton =
-  document.getElementById("scanButton");
+}[type]||"📍");
 
-const galleryButton =
-  document.getElementById("galleryButton");
-
-const flipButton =
-  document.getElementById("flipButton");
-
-const fileInput =
-  document.getElementById("fileInput");
-
-const resultScreen =
-  document.getElementById("resultScreen");
-
-const closeResult =
-  document.getElementById("closeResult");
-
-const rescanButton =
-  document.getElementById("rescanButton");
-
-const resultImage =
-  document.getElementById("resultImage");
-
-const resultLabel =
-  document.getElementById("resultLabel");
-
-const resultDescription =
-  document.getElementById("resultDescription");
-
-const confidenceFill =
-  document.getElementById("confidenceFill");
-
-const confidenceText =
-  document.getElementById("confidenceText");
-
-const resultTags =
-  document.getElementById("resultTags");
-
-const stores =
-  document.getElementById("stores");
-
-const searchText =
-  document.getElementById("searchText");
-
-const aiLoading =
-  document.getElementById("aiLoading");
-
-const loadingText =
-  document.getElementById("loadingText");
-
-const toast =
-  document.getElementById("toast");
+}
 
 
-/* =====================================================
-   STATE
-===================================================== */
-
-let stream = null;
-
-let facingMode = "environment";
-
-let classifier = null;
-
-let loadingAI = false;
-
-let scanning = false;
-
-let lastSearchQuery = "";
-
-let currentImageURL = null;
-
-
-/* =====================================================
+/* ============================
    TOAST
-===================================================== */
+============================ */
 
-let toastTimer;
+function toast(message){
 
-function showToast(text){
+const t=$("toast");
 
-  toast.textContent = text;
+t.textContent=message;
 
-  toast.classList.add("show");
+t.classList.add("show");
 
-  clearTimeout(toastTimer);
+clearTimeout(window.__toast);
 
-  toastTimer = setTimeout(()=>{
+window.__toast=setTimeout(()=>{
 
-    toast.classList.remove("show");
+t.classList.remove("show");
 
-  },2600);
-
-}
-
-
-/* =====================================================
-   CAMERA
-===================================================== */
-
-async function startCamera(){
-
-  try{
-
-    if(stream){
-
-      stream
-        .getTracks()
-        .forEach(track => track.stop());
-
-    }
-
-    stream =
-      await navigator.mediaDevices.getUserMedia({
-
-        audio:false,
-
-        video:{
-
-          facingMode:{
-            ideal:facingMode
-          },
-
-          width:{
-            ideal:1280
-          },
-
-          height:{
-            ideal:720
-          },
-
-          frameRate:{
-            ideal:30,
-            max:30
-          }
-
-        }
-
-      });
-
-
-    camera.srcObject = stream;
-
-
-    await camera.play();
-
-
-    statusDot.classList.add("live");
-
-    statusText.textContent =
-      "Kamera hazır";
-
-
-  }catch(error){
-
-    console.error(error);
-
-    statusText.textContent =
-      "Kamera icazəsi lazımdır";
-
-    showToast(
-      "Brauzerdə kamera icazəsini aktivləşdir."
-    );
-
-  }
+},2600);
 
 }
 
 
-/* =====================================================
-   OPEN CAMERA IMMEDIATELY
-===================================================== */
+/* ============================
+   INDEXED DB
+============================ */
 
-/*
-  ƏN VACİB SÜRƏT DƏYİŞİKLİYİ:
+function openDB(){
 
-  Kamera açılarkən AI modeli yüklənmir.
+return new Promise((resolve,reject)=>{
 
-  Ona görə istifadəçi kamera görüntüsünü
-  dərhal görür.
-*/
+const request=
+indexedDB.open(DB_NAME,1);
 
-startCamera();
+request.onupgradeneeded=e=>{
 
+const database=e.target.result;
 
-/* =====================================================
-   LOAD AI ONLY WHEN NEEDED
-===================================================== */
+if(!database.objectStoreNames.contains(STORE)){
 
-async function loadAI(){
-
-  if(classifier){
-
-    return true;
-
-  }
-
-  if(loadingAI){
-
-    return false;
-
-  }
-
-  loadingAI = true;
-
-  aiLoading.classList.add("show");
-
-  loadingText.textContent =
-    "Açıq mənbəli görmə modeli hazırlanır...";
-
-
-  try{
-
-    let device = "wasm";
-
-
-    if(
-      "gpu" in navigator
-    ){
-
-      device = "webgpu";
-
-    }
-
-
-    classifier =
-      await pipeline(
-
-        "zero-shot-image-classification",
-
-        MODEL,
-
-        {
-
-          device,
-
-          dtype:
-            device === "webgpu"
-              ? "q4"
-              : "q8"
-
-        }
-
-      );
-
-
-    loadingAI.classList.remove("show");
-
-    loadingAI = false;
-
-    return true;
-
-
-  }catch(error){
-
-    console.error(error);
-
-    loadingAI = false;
-
-    aiLoading.classList.remove("show");
-
-    showToast(
-      "AI modeli yüklənmədi. İnterneti yoxla."
-    );
-
-    return false;
-
-  }
+database.createObjectStore(
+STORE,
+{keyPath:"id"}
+);
 
 }
 
+if(!database.objectStoreNames.contains(PSTORE)){
 
-/* =====================================================
-   CAPTURE
-===================================================== */
-
-function captureCamera(){
-
-  const canvas =
-    document.createElement("canvas");
-
-
-  /*
-    Böyük 4K şəkil göndərmirik.
-
-    Daha kiçik şəkil =
-    daha az hesablama =
-    daha sürətli AI.
-  */
-
-  const targetWidth = 640;
-
-  const ratio =
-    camera.videoHeight /
-    camera.videoWidth;
-
-
-  canvas.width =
-    targetWidth;
-
-  canvas.height =
-    Math.round(
-      targetWidth * ratio
-    );
-
-
-  const ctx =
-    canvas.getContext("2d",{
-      alpha:false
-    });
-
-
-  ctx.drawImage(
-
-    camera,
-
-    0,
-    0,
-
-    canvas.width,
-    canvas.height
-
-  );
-
-
-  return canvas;
+database.createObjectStore(
+PSTORE,
+{keyPath:"id"}
+);
 
 }
-
-
-/* =====================================================
-   IMAGE FILE
-===================================================== */
-
-function fileToImage(file){
-
-  return new Promise((resolve,reject)=>{
-
-    const img =
-      new Image();
-
-    const url =
-      URL.createObjectURL(file);
-
-
-    img.onload = ()=>{
-
-      URL.revokeObjectURL(url);
-
-      resolve(img);
-
-    };
-
-
-    img.onerror = reject;
-
-    img.src = url;
-
-  });
-
-}
-
-
-/* =====================================================
-   IMAGE PREVIEW
-===================================================== */
-
-function showResultImage(source){
-
-  if(currentImageURL){
-
-    URL.revokeObjectURL(
-      currentImageURL
-    );
-
-    currentImageURL = null;
-
-  }
-
-
-  if(source instanceof HTMLCanvasElement){
-
-    resultImage.src =
-      source.toDataURL(
-        "image/jpeg",
-        .82
-      );
-
-  }else{
-
-    currentImageURL =
-      URL.createObjectURL(source);
-
-    resultImage.src =
-      currentImageURL;
-
-  }
-
-}
-
-
-/* =====================================================
-   CLEAN LABEL
-===================================================== */
-
-function cleanLabel(label){
-
-  return label
-
-    .replace(
-      /^a pair of /i,
-      ""
-    )
-
-    .replace(
-      /^a pair of /i,
-      ""
-    )
-
-    .replace(
-      /^a /i,
-      ""
-    )
-
-    .trim();
-
-}
-
-
-/* =====================================================
-   SEARCH QUERY
-===================================================== */
-
-function buildSearchQuery(label){
-
-  let q =
-    cleanLabel(label);
-
-
-  /*
-    Mağaza axtarışında daha faydalı
-    sorğu yaratmağa çalışırıq.
-  */
-
-  if(
-    q.toLowerCase()
-      .includes("sneaker")
-  ){
-
-    return q;
-
-  }
-
-
-  return q + " shoes";
-
-}
-
-
-/* =====================================================
-   STORE LINKS
-===================================================== */
-
-function createStoreLinks(query){
-
-  const q =
-    encodeURIComponent(query);
-
-
-  /*
-    Bunlar real mağaza/axtarış
-    səhifələrinə yönləndirmədir.
-
-    Konkret qiymət burada uydurulmur.
-  */
-
-  return [
-
-    {
-      name:"Google Shopping",
-      icon:"🛒",
-      url:
-        "https://www.google.com/search?tbm=shop&q="+q
-    },
-
-    {
-      name:"Google Images",
-      icon:"🔎",
-      url:
-        "https://www.google.com/search?tbm=isch&q="+q
-    },
-
-    {
-      name:"Amazon",
-      icon:"📦",
-      url:
-        "https://www.amazon.com/s?k="+q
-    },
-
-    {
-      name:"eBay",
-      icon:"🏷️",
-      url:
-        "https://www.ebay.com/sch/i.html?_nkw="+q
-    },
-
-    {
-      name:"AliExpress",
-      icon:"🛍️",
-      url:
-        "https://www.aliexpress.com/wholesale?SearchText="+q
-    },
-
-    {
-      name:"Temu",
-      icon:"🛒",
-      url:
-        "https://www.temu.com/search_result.html?search_key="+q
-    },
-
-    {
-      name:"Trendyol",
-      icon:"🛍️",
-      url:
-        "https://www.trendyol.com/sr?q="+q
-    },
-
-    {
-      name:"Bing Images",
-      icon:"🌐",
-      url:
-        "https://www.bing.com/images/search?q="+q
-    }
-
-  ];
-
-}
-
-
-/* =====================================================
-   RENDER STORES
-===================================================== */
-
-function renderStores(query){
-
-  stores.innerHTML = "";
-
-
-  const list =
-    createStoreLinks(query);
-
-
-  list.forEach(store=>{
-
-    const button =
-      document.createElement("button");
-
-    button.className =
-      "store";
-
-
-    button.innerHTML = `
-
-      <div class="storeIcon">
-        ${store.icon}
-      </div>
-
-      <div class="storeInfo">
-
-        <div class="storeName">
-          ${store.name}
-        </div>
-
-        <div class="storeAction">
-          Axtarışı aç →
-        </div>
-
-      </div>
-
-    `;
-
-
-    button.onclick = ()=>{
-
-      window.open(
-        store.url,
-        "_blank",
-        "noopener,noreferrer"
-      );
-
-    };
-
-
-    stores.appendChild(button);
-
-  });
-
-}
-
-
-/* =====================================================
-   DISPLAY RESULT
-===================================================== */
-
-function displayResult(output, source){
-
-  if(
-    !output ||
-    !output.length
-  ){
-
-    showToast(
-      "AI uyğun nəticə tapa bilmədi."
-    );
-
-    return;
-
-  }
-
-
-  const best =
-    output[0];
-
-
-  const label =
-    cleanLabel(best.label);
-
-
-  const percent =
-    Math.round(
-      best.score * 100
-    );
-
-
-  lastSearchQuery =
-    buildSearchQuery(label);
-
-
-  showResultImage(source);
-
-
-  resultLabel.textContent =
-    label
-      .charAt(0)
-      .toUpperCase()
-      +
-    label.slice(1);
-
-
-  resultDescription.textContent =
-    "AI görüntünü bu məhsul kateqoriyasına ən yaxın olaraq qiymətləndirdi. Konkret model/qiymət üçün mağaza axtarışlarından istifadə edə bilərsən.";
-
-
-  confidenceText.textContent =
-    percent + "%";
-
-
-  confidenceFill.style.width =
-    Math.min(percent,100) + "%";
-
-
-  resultTags.innerHTML = "";
-
-
-  output
-    .slice(0,5)
-    .forEach(item=>{
-
-      const tag =
-        document.createElement("div");
-
-      tag.className =
-        "tag";
-
-      tag.textContent =
-        cleanLabel(item.label)
-        +
-        " · "
-        +
-        Math.round(item.score*100)
-        +
-        "%";
-
-
-      resultTags.appendChild(tag);
-
-    });
-
-
-  searchText.textContent =
-    lastSearchQuery;
-
-
-  renderStores(
-    lastSearchQuery
-  );
-
-
-  resultScreen.classList.add("open");
-
-
-  setTimeout(()=>{
-
-    resultScreen.scrollTop = 0;
-
-  },50);
-
-}
-
-
-/* =====================================================
-   REAL AI SCAN
-===================================================== */
-
-async function scanSource(source){
-
-  if(scanning){
-
-    return;
-
-  }
-
-  scanning = true;
-
-
-  scanButton.classList.add(
-    "loading"
-  );
-
-  scanButton.textContent =
-    "🧠 AI analiz edir...";
-
-
-  const ready =
-    await loadAI();
-
-
-  if(!ready){
-
-    scanning = false;
-
-    scanButton.classList.remove(
-      "loading"
-    );
-
-    scanButton.textContent =
-      "📷 Məhsulu Skan Et";
-
-    return;
-
-  }
-
-
-  try{
-
-    statusText.textContent =
-      "AI analiz edir";
-
-
-    /*
-      Real zero-shot image classification.
-    */
-
-    const output =
-      await classifier(
-
-        source,
-
-        LABELS,
-
-        {
-          topk:5
-        }
-
-      );
-
-
-    displayResult(
-      output,
-      source
-    );
-
-
-  }catch(error){
-
-    console.error(error);
-
-    showToast(
-      "Şəkil analiz edilərkən xəta baş verdi."
-    );
-
-  }finally{
-
-    scanning = false;
-
-    scanButton.classList.remove(
-      "loading"
-    );
-
-    scanButton.textContent =
-      "📷 Məhsulu Skan Et";
-
-    statusText.textContent =
-      "Kamera hazır";
-
-  }
-
-}
-
-
-/* =====================================================
-   CAMERA SCAN BUTTON
-===================================================== */
-
-scanButton.onclick = async ()=>{
-
-  if(
-    !camera.videoWidth ||
-    !camera.videoHeight
-  ){
-
-    showToast(
-      "Kamera görüntüsü hələ hazır deyil."
-    );
-
-    return;
-
-  }
-
-
-  /*
-    Bir dəfə çəkilir.
-    Davamlı skan YOXDUR.
-  */
-
-  const frame =
-    captureCamera();
-
-
-  await scanSource(
-    frame
-  );
 
 };
 
 
-/* =====================================================
-   GALLERY
-===================================================== */
+request.onsuccess=e=>{
 
-galleryButton.onclick = ()=>{
+db=e.target.result;
 
-  fileInput.click();
+resolve();
+
+};
+
+request.onerror=()=>reject(request.error);
+
+});
+
+}
+
+
+function tx(store,mode,fn){
+
+return new Promise((resolve,reject)=>{
+
+const transaction=
+db.transaction(store,mode);
+
+const objectStore=
+transaction.objectStore(store);
+
+const request=fn(objectStore);
+
+request.onsuccess=()=>{
+resolve(request.result);
+};
+
+request.onerror=()=>{
+reject(request.error);
+};
+
+});
+
+}
+
+
+/* ============================
+   LOAD
+============================ */
+
+async function load(){
+
+posts=
+await tx(
+STORE,
+"readonly",
+s=>s.getAll()
+);
+
+const p=
+await tx(
+PSTORE,
+"readonly",
+s=>s.get("me")
+);
+
+if(p){
+
+profile=p.data;
+
+}
+
+ui();
+
+feed();
+
+}
+
+
+/* ============================
+   SAVE
+============================ */
+
+async function put(post){
+
+await tx(
+STORE,
+"readwrite",
+s=>s.put(post)
+);
+
+await load();
+
+}
+
+
+/* ============================
+   VIEW
+============================ */
+
+function show(id){
+
+document
+.querySelectorAll(".view")
+.forEach(x=>x.classList.remove("on"));
+
+$(id).classList.add("on");
+
+
+document
+.querySelectorAll(".nav button[data-v]")
+.forEach(b=>{
+
+b.classList.toggle(
+"on",
+b.dataset.v===id
+);
+
+});
+
+
+closePanels();
+
+
+if(id==="mapView"){
+
+setTimeout(initMap,80);
+
+}
+
+if(id==="feed"){
+
+feed();
+
+}
+
+if(id==="profile"){
+
+ui();
+
+}
+
+if(id==="ar"&&!stream){
+
+startAR();
+
+}
+
+}
+
+
+/* ============================
+   PANELS
+============================ */
+
+function closePanels(){
+
+document
+.querySelectorAll(".panel")
+.forEach(x=>x.classList.remove("on"));
+
+}
+
+
+function openCreate(){
+
+closePanels();
+
+$("create").classList.add("on");
+
+if(pos){
+
+$("lat").value=
+pos.lat.toFixed(7);
+
+$("lng").value=
+pos.lng.toFixed(7);
+
+}
+
+}
+
+
+function openMapSearch(){
+
+show("mapView");
+
+setTimeout(
+()=>$("search").focus(),
+100
+);
+
+}
+
+
+/* ============================
+   CAMERA + GPS
+============================ */
+
+async function startAR(){
+
+try{
+
+stream=
+await navigator.mediaDevices.getUserMedia({
+
+video:{
+
+facingMode:{
+ideal:"environment"
+},
+
+width:{
+ideal:1920
+},
+
+height:{
+ideal:1080
+
+}
+
+},
+
+audio:false
+
+});
+
+$("camera").srcObject=stream;
+
+}catch(e){
+
+toast(
+"Kamera üçün HTTPS və icazə lazımdır. GitHub Pages istifadə edin."
+);
+
+}
+
+
+if(navigator.geolocation){
+
+navigator.geolocation.watchPosition(
+
+p=>{
+
+pos={
+
+lat:p.coords.latitude,
+
+lng:p.coords.longitude,
+
+acc:p.coords.accuracy
 
 };
 
 
-fileInput.onchange = async ()=>{
-
-  const file =
-    fileInput.files[0];
-
-
-  if(!file){
-
-    return;
-
-  }
+$("gps").textContent=
+"GPS ±"+Math.round(
+p.coords.accuracy
+)+"m";
 
 
-  try{
+if(!$("lat").value){
 
-    const img =
-      await fileToImage(file);
+$("lat").value=
+pos.lat.toFixed(7);
 
+$("lng").value=
+pos.lng.toFixed(7);
 
-    await scanSource(
-      img
-    );
-
-
-  }catch(error){
-
-    console.error(error);
-
-    showToast(
-      "Şəkil açıla bilmədi."
-    );
-
-  }
+}
 
 
-  fileInput.value = "";
+renderAR();
 
-};
+if(map){
 
+drawMap();
 
-/* =====================================================
-   CAMERA FLIP
-===================================================== */
+}
 
-flipButton.onclick = async ()=>{
+},
 
-  facingMode =
-    facingMode === "environment"
-      ? "user"
-      : "environment";
+()=>{
 
+$("gps").textContent=
+"GPS icazəsi yoxdur";
 
-  statusText.textContent =
-    "Kamera dəyişdirilir...";
+},
 
+{
 
-  await startCamera();
+enableHighAccuracy:true,
 
-};
+maximumAge:2000,
 
+timeout:10000
 
-/* =====================================================
-   CLOSE RESULT
-===================================================== */
+}
 
-closeResult.onclick = ()=>{
+);
 
-  resultScreen.classList.remove(
-    "open"
-  );
-
-};
+}
 
 
-/* =====================================================
-   RESCAN
-===================================================== */
+/* ============================
+   COMPASS
+============================ */
 
-rescanButton.onclick = ()=>{
+if("DeviceOrientationEvent" in window){
 
-  resultScreen.classList.remove(
-    "open"
-  );
-
-
-  /*
-    Kamera əvvəlcədən açıqdır.
-    Buna görə yenidən kamera gözləməyə
-    ehtiyac yoxdur.
-  */
-
-  setTimeout(()=>{
-
-    showToast(
-      "Hazırdır. Yeni məhsulu çərçivəyə gətir."
-    );
-
-  },250);
-
-};
-
-
-/* =====================================================
-   CLEANUP
-===================================================== */
+let activate=()=>{
 
 window.addEventListener(
-  "pagehide",
-  ()=>{
-
-    if(stream){
-
-      stream
-        .getTracks()
-        .forEach(track=>{
-          track.stop();
-        });
-
-    }
-
-  }
+"deviceorientationabsolute",
+orient,
+true
 );
+
+};
+
+try{
+
+if(
+typeof DeviceOrientationEvent.requestPermission===
+"function"
+){
+
+DeviceOrientationEvent
+.requestPermission()
+.then(x=>{
+
+if(x==="granted"){
+
+activate();
+
+}
+
+})
+.catch(activate);
+
+}else{
+
+activate();
+
+}
+
+}catch(e){
+
+activate();
+
+}
+
+}
+
+
+renderAR();
+
+}
+
+
+/* ============================
+   ORIENTATION
+============================ */
+
+function orient(e){
+
+let h=null;
+
+
+if(
+typeof e.webkitCompassHeading===
+"number"
+){
+
+h=e.webkitCompassHeading;
+
+}
+
+else if(
+typeof e.alpha==="number"
+){
+
+h=(360-e.alpha)%360;
+
+}
+
+
+if(h!=null){
+
+heading=h;
+
+$("heading").textContent=
+"Kompas "+Math.round(h)+"°";
+
+renderAR();
+
+}
+
+}
+
+
+/* ============================
+   GEO MATH
+============================ */
+
+const rad=
+x=>x*Math.PI/180;
+
+
+function dist(a,b){
+
+const R=6371000;
+
+const d1=
+rad(b.lat-a.lat);
+
+const d2=
+rad(b.lng-a.lng);
+
+const x=
+Math.sin(d1/2)**2+
+Math.cos(rad(a.lat))*
+Math.cos(rad(b.lat))*
+Math.sin(d2/2)**2;
+
+return 2*R*
+Math.asin(
+Math.sqrt(x)
+);
+
+}
+
+
+function bear(a,b){
+
+const y=
+Math.sin(
+rad(b.lng-a.lng)
+)*
+Math.cos(
+rad(b.lat)
+);
+
+const x=
+Math.cos(rad(a.lat))*
+Math.sin(rad(b.lat))
+-
+Math.sin(rad(a.lat))*
+Math.cos(rad(b.lat))*
+Math.cos(
+rad(b.lng-a.lng)
+);
+
+return(
+Math.atan2(y,x)*
+180/Math.PI+
+360
+)%360;
+
+}
+
+
+function fd(n){
+
+return n<1000
+?
+Math.round(n)+" m"
+:
+(n/1000).toFixed(1)+" km";
+
+}
+
+
+/* ============================
+   AR RENDER
+============================ */
+
+function renderAR(){
+
+const box=$("arObjects");
+
+box.innerHTML="";
+
+if(!pos)return;
+
+
+posts
+
+.filter(p=>
+
+p.lat!=null&&
+p.lng!=null&&
+(!p.expiresAt||
+p.expiresAt>Date.now())
+
+)
+
+.forEach(p=>{
+
+const d=
+dist(pos,p);
+
+
+if(
+d>
+Number(p.radius||300)
+)return;
+
+
+let x=50;
+
+
+if(heading!=null){
+
+let delta=
+(
+bear(pos,p)
+-heading+
+540
+)%360-180;
+
+x=
+50+
+delta/55*42;
+
+}
+
+
+x=
+Math.max(
+8,
+Math.min(92,x)
+);
+
+
+let y=
+38+
+Math.min(
+35,
+d/
+Math.max(
+1,
+Number(p.radius||300)
+)*35
+);
+
+
+const el=
+document.createElement("div");
+
+
+el.className="arobj";
+
+
+el.style.left=
+x+"%";
+
+el.style.top=
+y+"%";
+
+
+el.innerHTML=`
+
+<b>
+${icon(p.type)}
+${esc(p.title)}
+</b>
+
+<small>
+${fd(d)}
+•
+${esc(p.author||"AR Explorer")}
+</small>
+
+<em>
+Detallara bax →
+</em>
+
+`;
+
+
+el.onclick=
+()=>detail(p.id);
+
+
+box.appendChild(el);
+
+});
+
+}
+
+
+/* ============================
+   CURRENT GPS
+============================ */
+
+function useGPS(){
+
+if(pos){
+
+$("lat").value=
+pos.lat.toFixed(7);
+
+$("lng").value=
+pos.lng.toFixed(7);
+
+toast(
+"Cari GPS əlavə edildi"
+);
+
+return;
+
+}
+
+
+navigator.geolocation?.getCurrentPosition(
+
+p=>{
+
+pos={
+
+lat:p.coords.latitude,
+
+lng:p.coords.longitude
+
+};
+
+useGPS();
+
+},
+
+()=>toast(
+"GPS icazəsi yoxdur"
+),
+
+{
+enableHighAccuracy:true
+}
+
+);
+
+}
+
+
+/* ============================
+   MEDIA PREVIEW
+============================ */
+
+$("media").onchange=e=>{
+
+file=
+e.target.files?.[0]||null;
+
+$("imgPrev").style.display="none";
+
+$("vidPrev").style.display="none";
+
+
+if(!file)return;
+
+
+const url=
+URL.createObjectURL(file);
+
+
+if(
+file.type.startsWith("video/")
+){
+
+$("vidPrev").src=url;
+
+$("vidPrev").style.display=
+"block";
+
+}else{
+
+$("imgPrev").src=url;
+
+$("imgPrev").style.display=
+"block";
+
+}
+
+};
+
+
+/* ============================
+   FILE -> DATA
+============================ */
+
+function dataURL(file){
+
+return new Promise(
+(resolve,reject)=>{
+
+const reader=
+new FileReader();
+
+reader.onload=()=>
+resolve(reader.result);
+
+reader.onerror=reject;
+
+reader.readAsDataURL(file);
+
+});
+
+}
+
+
+/* ============================
+   CREATE AR OBJECT
+============================ */
+
+async function savePost(){
+
+const title=
+$("title").value.trim();
+
+const lat=
++$("lat").value;
+
+const lng=
++$("lng").value;
+
+
+if(
+!title||
+!Number.isFinite(lat)||
+!Number.isFinite(lng)
+){
+
+toast(
+"Başlıq və düzgün koordinat tələb olunur"
+);
+
+return;
+
+}
+
+
+if(
+file&&
+file.size>
+25*1024*1024
+){
+
+toast(
+"Demo üçün media 25 MB-dan kiçik olmalıdır"
+);
+
+return;
+
+}
+
+
+let media=null;
+
+
+if(file){
+
+media={
+
+type:file.type,
+
+name:file.name,
+
+data:
+await dataURL(file)
+
+};
+
+}
+
+
+const hours=
++$("expiry").value;
+
+
+const post={
+
+id:
+crypto.randomUUID?
+crypto.randomUUID():
+Date.now()+"_"+Math.random(),
+
+title,
+
+type:
+$("type").value,
+
+desc:
+$("desc").value.trim(),
+
+lat,
+
+lng,
+
+radius:
+Math.max(
+10,
++$("radius").value||300
+),
+
+phone:
+$("phone").value.trim(),
+
+media,
+
+author:
+profile.name,
+
+createdAt:
+Date.now(),
+
+expiresAt:
+hours?
+Date.now()+
+hours*3600000:
+0
+
+};
+
+
+await put(post);
+
+
+file=null;
+
+$("media").value="";
+
+$("title").value="";
+
+$("desc").value="";
+
+$("phone").value="";
+
+closePanels();
+
+toast(
+"AR obyekt koordinata ilə yadda saxlanıldı"
+);
+
+renderAR();
+
+if(map){
+
+drawMap();
+
+}
+
+}
+
+
+/* ============================
+   FEED MEDIA
+============================ */
+
+function mediaHTML(p){
+
+if(!p.media)return"";
+
+
+if(
+p.media.type.startsWith("video/")
+){
+
+return`
+
+<video
+src="${p.media.data}"
+controls
+playsinline
+preload="metadata">
+</video>
+
+`;
+
+}
+
+
+return`
+
+<img
+src="${p.media.data}"
+loading="lazy">
+
+`;
+
+}
+
+
+/* ============================
+   FEED
+============================ */
+
+function feed(){
+
+const list=
+$("feedList");
+
+list.innerHTML="";
+
+
+const arr=
+posts
+
+.filter(p=>
+!p.expiresAt||
+p.expiresAt>Date.now()
+)
+
+.sort(
+(x,y)=>
+y.createdAt-x.createdAt
+);
+
+
+if(!arr.length){
+
+list.innerHTML=`
+
+<div class="empty">
+
+<b>
+Hələ paylaşım yoxdur
+</b>
+
+＋ ilə ilk AR obyektini yerləşdir.
+
+</div>
+
+`;
+
+return;
+
+}
+
+
+arr.forEach(p=>{
+
+const e=
+document.createElement("article");
+
+e.className="post";
+
+
+e.innerHTML=`
+
+${mediaHTML(p)}
+
+<div class="body">
+
+<b>
+${icon(p.type)}
+${esc(p.title)}
+</b>
+
+<div class="meta">
+
+${esc(p.author||"AR Explorer")}
+
+•
+
+${new Date(
+p.createdAt
+).toLocaleString("az-AZ")}
+
+•
+
+${p.lat.toFixed(5)},
+${p.lng.toFixed(5)}
+
+</div>
+
+
+${
+p.desc?
+`
+<div class="desc">
+${esc(p.desc)}
+</div>
+`
+:""
+}
+
+
+<div
+style="
+margin-top:10px;
+display:flex;
+gap:7px">
+
+<button
+class="btn"
+data-open="${p.id}">
+AR-da aç
+</button>
+
+<button
+class="btn"
+data-route="${p.id}">
+🧭 Marşrut
+</button>
+
+</div>
+
+</div>
+
+`;
+
+
+list.appendChild(e);
+
+});
+
+
+list
+.querySelectorAll("[data-open]")
+.forEach(b=>{
+
+b.onclick=
+()=>detail(b.dataset.open);
+
+});
+
+
+list
+.querySelectorAll("[data-route]")
+.forEach(b=>{
+
+b.onclick=
+()=>route(
+posts.find(
+p=>p.id===b.dataset.route
+)
+);
+
+});
+
+}
+
+
+/* ============================
+   DETAIL
+============================ */
+
+function detail(id){
+
+const p=
+posts.find(x=>x.id===id);
+
+if(!p)return;
+
+
+closePanels();
+
+
+$("dtitle").textContent=
+icon(p.type)+" "+p.title;
+
+
+$("dmeta").textContent=
+`${p.author||"AR Explorer"} • ${
+pos?fd(dist(pos,p)):"GPS yoxdur"
+} • ${p.lat.toFixed(6)}, ${p.lng.toFixed(6)}`;
+
+
+$("ddesc").textContent=
+p.desc||"";
+
+
+$("detailMedia").style.display=
+"none";
+
+$("detailVideo").style.display=
+"none";
+
+
+if(
+p.media?.type.startsWith("video/")
+){
+
+$("detailVideo").src=
+p.media.data;
+
+$("detailVideo").style.display=
+"block";
+
+}
+
+else if(p.media){
+
+$("detailMedia").src=
+p.media.data;
+
+$("detailMedia").style.display=
+"block";
+
+}
+
+
+$("call").style.display=
+p.phone?
+"block":
+"none";
+
+
+$("call").onclick=()=>{
+
+location.href=
+"tel:"+p.phone;
+
+};
+
+
+$("route").onclick=()=>route(p);
+
+
+$("detail").classList.add("on");
+
+}
+
+
+/* ============================
+   ROUTE
+============================ */
+
+function route(p){
+
+if(!p)return;
+
+window.open(
+
+"https://www.google.com/maps/dir/?api=1&destination="+
+encodeURIComponent(
+p.lat+","+p.lng
+),
+
+"_blank"
+
+);
+
+}
+
+
+/* ============================
+   MAP
+============================ */
+
+function initMap(){
+
+if(!map){
+
+map=
+L.map("map")
+.setView(
+
+pos?
+[pos.lat,pos.lng]:
+[40.4093,49.8671],
+
+pos?
+16:
+11
+
+);
+
+
+L.tileLayer(
+
+"https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+
+{
+
+maxZoom:19,
+
+attribution:
+"© OpenStreetMap contributors"
+
+}
+
+).addTo(map);
+
+}
+
+
+drawMap();
+
+}
+
+
+/* ============================
+   DRAW MAP
+============================ */
+
+function drawMap(){
+
+if(!map)return;
+
+
+markers.forEach(
+m=>map.removeLayer(m)
+);
+
+markers=[];
+
+
+if(pos){
+
+markers.push(
+
+L.marker(
+[pos.lat,pos.lng]
+)
+
+.addTo(map)
+
+.bindPopup(
+"📍 Siz buradasınız"
+)
+
+);
+
+}
+
+
+posts
+
+.filter(p=>
+
+p.lat!=null&&
+(!p.expiresAt||
+p.expiresAt>Date.now())
+
+)
+
+.forEach(p=>{
+
+const m=
+
+L.marker(
+[p.lat,p.lng]
+)
+
+.addTo(map)
+
+.bindPopup(`
+
+<b>
+${icon(p.type)}
+${esc(p.title)}
+</b>
+
+<br>
+
+<small>
+${esc(p.desc||"")}
+</small>
+
+<br>
+
+<button
+onclick="detail('${p.id}')">
+Ətraflı
+</button>
+
+`);
+
+markers.push(m);
+
+});
+
+}
+
+
+/* ============================
+   SEARCH
+============================ */
+
+function searchPosts(){
+
+const q=
+$("search")
+.value
+.trim()
+.toLowerCase();
+
+
+const box=
+$("results");
+
+
+if(!q){
+
+box.classList.remove("on");
+
+return;
+
+}
+
+
+const found=
+posts.filter(p=>
+
+(
+p.title+
+" "+
+p.desc+
+" "+
+p.type+
+" "+
+p.author
+)
+.toLowerCase()
+.includes(q)
+
+);
+
+
+if(!found.length){
+
+box.innerHTML=
+'<div class="result">Nəticə yoxdur.</div>';
+
+}
+
+else{
+
+box.innerHTML=
+found
+.slice(0,40)
+.map(p=>`
+
+<div
+class="result"
+onclick="focusPost('${p.id}')">
+
+<b>
+${icon(p.type)}
+${esc(p.title)}
+</b>
+
+<small>
+${esc(p.desc||"")}
+•
+${p.lat.toFixed(5)},
+${p.lng.toFixed(5)}
+</small>
+
+</div>
+
+`)
+.join("");
+
+}
+
+
+box.classList.add("on");
+
+}
+
+
+/* ============================
+   FOCUS
+============================ */
+
+function focusPost(id){
+
+const p=
+posts.find(
+x=>x.id===id
+);
+
+$("results")
+.classList.remove("on");
+
+
+if(map){
+
+map.setView(
+[p.lat,p.lng],
+18
+);
+
+}
+
+
+detail(id);
+
+}
+
+
+$("search").addEventListener(
+"keydown",
+e=>{
+
+if(e.key==="Enter"){
+
+searchPosts();
+
+}
+
+});
+
+
+/* ============================
+   PROFILE UI
+============================ */
+
+function ui(){
+
+$("pname").textContent=
+profile.name;
+
+$("pbio").textContent=
+profile.bio;
+
+$("avatar").textContent=
+(profile.name[0]||"A")
+.toUpperCase();
+
+
+$("postsN").textContent=
+posts.length;
+
+$("mediaN").textContent=
+posts.filter(
+p=>p.media
+).length;
+
+$("placeN").textContent=
+posts.filter(
+p=>
+Number.isFinite(p.lat)&&
+Number.isFinite(p.lng)
+).length;
+
+}
+
+
+/* ============================
+   EDIT PROFILE
+============================ */
+
+function editProfile(){
+
+closePanels();
+
+$("ename").value=
+profile.name;
+
+$("ebio").value=
+profile.bio;
+
+$("edit").classList.add("on");
+
+}
+
+
+async function saveProfile(){
+
+profile={
+
+name:
+$("ename").value.trim()||
+"AR Explorer",
+
+bio:
+$("ebio").value.trim()
+
+};
+
+
+await tx(
+
+PSTORE,
+"readwrite",
+
+s=>
+s.put({
+id:"me",
+data:profile
+})
+
+);
+
+
+ui();
+
+closePanels();
+
+toast(
+"Profil yadda saxlanıldı"
+);
+
+}
+
+
+/* ============================
+   EXPORT
+============================ */
+
+function exportData(){
+
+const data=
+JSON.stringify(
+
+{
+version:2,
+profile,
+posts
+},
+
+null,
+2
+
+);
+
+
+const a=
+document.createElement("a");
+
+
+a.href=
+URL.createObjectURL(
+
+new Blob(
+[data],
+{
+type:"application/json"
+}
+)
+
+);
+
+
+a.download=
+"arworld-export.json";
+
+
+a.click();
+
+}
+
+
+/* ============================
+   BOOT
+============================ */
+
+(async()=>{
+
+try{
+
+await openDB();
+
+await load();
+
+startAR();
+
+}
+
+catch(e){
+
+console.error(e);
+
+toast(
+"Yaddaş sistemi açıla bilmədi"
+);
+
+}
+
+})();
 
 </script>
 
