@@ -1,1598 +1,863 @@
-<!DOCTYPE html><html lang="az">
+<!DOCTYPE html>
+<html lang="az">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#050507">
-<title>LiveAZ — Live Streaming</title><style>
-*{
-    box-sizing:border-box;
-    -webkit-tap-highlight-color:transparent;
-}
+<title>SEEIT — Show Me</title>
 
+<style>
+*{box-sizing:border-box}
 html,body{
-    margin:0;
-    padding:0;
-    width:100%;
-    height:100%;
-    overflow:hidden;
-    background:#000;
-    color:#fff;
-    font-family:Arial,Helvetica,sans-serif;
+  margin:0;
+  width:100%;
+  height:100%;
+  overflow:hidden;
+  background:#050507;
+  color:#fff;
+  font-family:Inter,Arial,sans-serif;
+}
+body{position:relative}
+
+#camera{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  background:#08090c;
 }
 
-button,input{
-    font:inherit;
+#shade{
+  position:absolute;
+  inset:0;
+  background:
+    linear-gradient(to bottom,rgba(0,0,0,.65),transparent 24%),
+    linear-gradient(to top,rgba(0,0,0,.8),transparent 45%);
+  pointer-events:none;
 }
 
-button{
-    border:0;
-    color:#fff;
-    cursor:pointer;
-}
-
-#app{
-    position:relative;
-    width:100%;
-    height:100%;
-    overflow:hidden;
-    background:#050507;
-}
-
-/* VIDEO */
-
-#video{
-    position:absolute;
-    inset:0;
-    width:100%;
-    height:100%;
-    object-fit:cover;
-    background:
-        radial-gradient(circle at 50% 35%,#30303a 0,#101014 35%,#030303 75%);
-    z-index:1;
-}
-
-#videoMirror{
-    transform:scaleX(-1);
-}
-
-/* DARK GRADIENTS */
-
-.gradientTop{
-    position:absolute;
-    left:0;
-    right:0;
-    top:0;
-    height:170px;
-    z-index:4;
-    pointer-events:none;
-    background:linear-gradient(
-        to bottom,
-        rgba(0,0,0,.72),
-        rgba(0,0,0,.25),
-        transparent
-    );
-}
-
-.gradientBottom{
-    position:absolute;
-    left:0;
-    right:0;
-    bottom:0;
-    height:360px;
-    z-index:4;
-    pointer-events:none;
-    background:linear-gradient(
-        to top,
-        rgba(0,0,0,.90),
-        rgba(0,0,0,.60),
-        transparent
-    );
-}
-
-/* TOP BAR */
-
-.topbar{
-    position:absolute;
-    top:0;
-    left:0;
-    right:0;
-    z-index:10;
-    padding:14px 12px;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-}
-
-.liveInfo{
-    display:flex;
-    align-items:center;
-    gap:9px;
-}
-
-.liveBadge{
-    display:flex;
-    align-items:center;
-    gap:6px;
-    padding:7px 10px;
-    border-radius:9px;
-    background:rgba(255,25,70,.92);
-    font-size:12px;
-    font-weight:800;
-    box-shadow:0 4px 15px rgba(255,0,60,.25);
-}
-
-.liveDot{
-    width:7px;
-    height:7px;
-    background:white;
-    border-radius:50%;
-    animation:pulse 1.2s infinite;
-}
-
-@keyframes pulse{
-    50%{opacity:.35;transform:scale(.7)}
-}
-
-.viewerBox{
-    display:flex;
-    align-items:center;
-    gap:5px;
-    padding:7px 10px;
-    border-radius:9px;
-    background:rgba(0,0,0,.48);
-    backdrop-filter:blur(12px);
-    font-size:12px;
-}
-
-.topActions{
-    display:flex;
-    gap:7px;
-}
-
-.iconBtn{
-    width:38px;
-    height:38px;
-    border-radius:50%;
-    background:rgba(0,0,0,.45);
-    backdrop-filter:blur(12px);
-    font-size:18px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-}
-
-/* PROFILE */
-
-.profile{
-    position:absolute;
-    left:14px;
-    bottom:175px;
-    z-index:11;
-    display:flex;
-    align-items:center;
-    gap:10px;
-}
-
-.avatar{
-    width:44px;
-    height:44px;
-    border-radius:50%;
-    border:2px solid #fff;
-    object-fit:cover;
-    background:#222;
-}
-
-.profileText{
-    display:flex;
-    flex-direction:column;
-    gap:3px;
-}
-
-.username{
-    font-size:15px;
-    font-weight:800;
-}
-
-.followBtn{
-    width:max-content;
-    padding:4px 11px;
-    border-radius:6px;
-    background:#ff174f;
-    font-size:11px;
-    font-weight:700;
-}
-
-/* CHAT */
-
-.chat{
-    position:absolute;
-    left:12px;
-    bottom:77px;
-    width:min(72%,370px);
-    height:245px;
-    z-index:12;
-    display:flex;
-    flex-direction:column;
-    justify-content:flex-end;
-    overflow:hidden;
-    pointer-events:none;
-}
-
-.messages{
-    display:flex;
-    flex-direction:column;
-    gap:7px;
-    overflow:hidden;
-}
-
-.msg{
-    width:max-content;
-    max-width:100%;
-    padding:6px 10px;
-    border-radius:14px;
-    background:rgba(0,0,0,.38);
-    backdrop-filter:blur(8px);
-    font-size:13px;
-    line-height:1.3;
-    animation:messageIn .25s ease;
-}
-
-.msg b{
-    color:#ffd84d;
-    margin-right:4px;
-}
-
-@keyframes messageIn{
-    from{opacity:0;transform:translateY(10px)}
-    to{opacity:1;transform:translateY(0)}
-}
-
-/* INPUT */
-
-.inputArea{
-    position:absolute;
-    left:10px;
-    right:10px;
-    bottom:13px;
-    z-index:20;
-    display:flex;
-    align-items:center;
-    gap:7px;
-}
-
-.chatInput{
-    min-width:0;
-    flex:1;
-    height:46px;
-    border:1px solid rgba(255,255,255,.18);
-    outline:none;
-    border-radius:24px;
-    padding:0 17px;
-    color:white;
-    background:rgba(0,0,0,.48);
-    backdrop-filter:blur(18px);
-}
-
-.chatInput::placeholder{
-    color:rgba(255,255,255,.65);
-}
-
-.actionCircle{
-    width:46px;
-    height:46px;
-    flex:0 0 46px;
-    border-radius:50%;
-    background:rgba(0,0,0,.50);
-    backdrop-filter:blur(15px);
-    font-size:21px;
-}
-
-/* RIGHT ACTIONS */
-
-.rightActions{
-    position:absolute;
-    right:10px;
-    bottom:75px;
-    z-index:15;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    gap:14px;
-}
-
-.sideAction{
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    gap:3px;
-    font-size:11px;
-    text-shadow:0 2px 5px #000;
-}
-
-.sideIcon{
-    width:48px;
-    height:48px;
-    border-radius:50%;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-size:25px;
-    background:rgba(0,0,0,.38);
-    backdrop-filter:blur(10px);
-}
-
-.likeCount{
-    font-weight:700;
-}
-
-/* HEARTS */
-
-#hearts{
-    position:absolute;
-    right:70px;
-    bottom:80px;
-    width:130px;
-    height:430px;
-    z-index:30;
-    pointer-events:none;
-    overflow:visible;
-}
-
-.heart{
-    position:absolute;
-    bottom:0;
-    font-size:28px;
-    animation:heartFly 2.5s cubic-bezier(.15,.7,.25,1) forwards;
-    filter:drop-shadow(0 4px 8px rgba(255,0,80,.4));
-}
-
-@keyframes heartFly{
-    0%{
-        opacity:0;
-        transform:translate(0,0) scale(.5) rotate(0);
-    }
-    10%{opacity:1}
-    100%{
-        opacity:0;
-        transform:translate(
-            var(--x),
-            -390px
-        ) scale(1.45) rotate(var(--r));
-    }
-}
-
-/* GIFTS */
-
-.giftPanel{
-    position:absolute;
-    right:10px;
-    bottom:145px;
-    z-index:40;
-    width:220px;
-    padding:10px;
-    border-radius:16px;
-    background:rgba(12,12,18,.85);
-    backdrop-filter:blur(18px);
-    border:1px solid rgba(255,255,255,.12);
-    display:none;
-}
-
-.giftPanel.open{
-    display:block;
-    animation:panelIn .2s ease;
-}
-
-@keyframes panelIn{
-    from{opacity:0;transform:translateY(10px) scale(.96)}
-    to{opacity:1;transform:none}
-}
-
-.giftTitle{
-    font-weight:800;
-    font-size:14px;
-    margin-bottom:9px;
-}
-
-.gifts{
-    display:grid;
-    grid-template-columns:repeat(4,1fr);
-    gap:6px;
-}
-
-.gift{
-    padding:9px 2px;
-    border-radius:10px;
-    background:rgba(255,255,255,.07);
-    font-size:22px;
-}
-
-.gift small{
-    display:block;
-    margin-top:3px;
-    font-size:9px;
-    opacity:.75;
-}
-
-/* GIFT ANIMATION */
-
-.giftFly{
-    position:absolute;
-    left:50%;
-    top:55%;
-    z-index:100;
-    font-size:70px;
-    animation:giftFly 1.5s ease-out forwards;
-    pointer-events:none;
-}
-
-@keyframes giftFly{
-    0%{
-        opacity:0;
-        transform:translate(-50%,-50%) scale(.3);
-    }
-    20%{opacity:1}
-    100%{
-        opacity:0;
-        transform:translate(-50%,-280px) scale(1.4);
-    }
-}
-
-/* CAMERA OFF */
-
-.cameraOff{
-    position:absolute;
-    inset:0;
-    z-index:2;
-    display:none;
-    align-items:center;
-    justify-content:center;
-    flex-direction:column;
-    background:
-        radial-gradient(circle,#24242d,#050507 65%);
-}
-
-.cameraOff.show{
-    display:flex;
-}
-
-.cameraOff .bigAvatar{
-    width:95px;
-    height:95px;
-    border-radius:50%;
-    object-fit:cover;
-    border:3px solid rgba(255,255,255,.8);
-}
-
-.cameraOff p{
-    margin-top:12px;
-    font-weight:700;
-}
-
-/* SETTINGS */
-
-.settings{
-    position:absolute;
-    top:62px;
-    right:10px;
-    z-index:50;
-    width:240px;
-    border-radius:16px;
-    background:rgba(12,12,17,.92);
-    backdrop-filter:blur(20px);
-    border:1px solid rgba(255,255,255,.12);
-    padding:8px;
-    display:none;
-}
-
-.settings.open{
-    display:block;
-}
-
-.setting{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    padding:13px 10px;
-    border-radius:10px;
-    font-size:13px;
-}
-
-.setting:hover{
-    background:rgba(255,255,255,.08);
-}
-
-.toggle{
-    width:40px;
-    height:22px;
-    border-radius:20px;
-    background:#555;
-    position:relative;
-}
-
-.toggle.on{
-    background:#ff1750;
-}
-
-.toggle:after{
-    content:"";
-    position:absolute;
-    top:3px;
-    left:3px;
-    width:16px;
-    height:16px;
-    border-radius:50%;
-    background:white;
-    transition:.2s;
-}
-
-.toggle.on:after{
-    left:21px;
-}
-
-/* START SCREEN */
-
-.startScreen{
-    position:absolute;
-    inset:0;
-    z-index:200;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    flex-direction:column;
-    background:
-        radial-gradient(circle at 50% 25%,#28172a,#09090d 50%,#020203);
-    text-align:center;
-    padding:25px;
+.top{
+  position:absolute;
+  top:0;
+  left:0;
+  right:0;
+  padding:calc(15px + env(safe-area-inset-top)) 18px 15px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  z-index:5;
 }
 
 .logo{
-    font-size:39px;
-    font-weight:900;
-    letter-spacing:-2px;
-    background:linear-gradient(90deg,#ff174f,#ff5b9a,#8d6bff);
-    -webkit-background-clip:text;
-    color:transparent;
+  font-size:24px;
+  font-weight:900;
+  letter-spacing:-1px;
 }
 
-.logoSub{
-    color:#aaa;
-    font-size:13px;
-    margin:7px 0 28px;
+.logo span{color:#72f5b0}
+
+.status{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  background:rgba(0,0,0,.45);
+  border:1px solid rgba(255,255,255,.12);
+  padding:8px 12px;
+  border-radius:30px;
+  backdrop-filter:blur(14px);
+  font-size:12px;
 }
 
-.startBtn{
-    padding:14px 35px;
-    border-radius:28px;
-    background:linear-gradient(90deg,#ff174f,#ff3b79);
-    font-weight:800;
-    font-size:15px;
-    box-shadow:0 10px 35px rgba(255,20,75,.28);
+.dot{
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  background:#777;
 }
 
-.permission{
-    margin-top:14px;
-    color:#777;
-    font-size:11px;
-    max-width:290px;
-    line-height:1.5;
+.dot.active{
+  background:#5cff9d;
+  box-shadow:0 0 12px #5cff9d;
 }
 
-/* TOAST */
-
-.toast{
-    position:absolute;
-    left:50%;
-    top:50%;
-    z-index:300;
-    transform:translate(-50%,-50%) scale(.9);
-    padding:12px 17px;
-    border-radius:13px;
-    background:rgba(0,0,0,.78);
-    backdrop-filter:blur(15px);
-    opacity:0;
-    pointer-events:none;
-    transition:.25s;
-    font-size:13px;
-    text-align:center;
+.center{
+  position:absolute;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  width:min(78vw,420px);
+  aspect-ratio:1;
+  border-radius:32px;
+  border:1px solid rgba(255,255,255,.35);
+  box-shadow:
+    0 0 0 9999px rgba(0,0,0,.05),
+    0 0 40px rgba(114,245,176,.12);
+  pointer-events:none;
 }
 
-.toast.show{
-    opacity:1;
-    transform:translate(-50%,-50%) scale(1);
+.corner{
+  position:absolute;
+  width:32px;
+  height:32px;
+  border-color:#fff;
+  border-style:solid;
 }
 
-/* RESPONSIVE */
+.c1{top:-2px;left:-2px;border-width:3px 0 0 3px;border-radius:15px 0 0 0}
+.c2{top:-2px;right:-2px;border-width:3px 3px 0 0;border-radius:0 15px 0 0}
+.c3{bottom:-2px;left:-2px;border-width:0 0 3px 3px;border-radius:0 0 0 15px}
+.c4{bottom:-2px;right:-2px;border-width:0 3px 3px 0;border-radius:0 0 15px 0}
 
-@media(min-width:700px){
-    #app{
-        max-width:480px;
-        margin:auto;
-        box-shadow:0 0 80px rgba(0,0,0,.8);
-    }
+.scan{
+  position:absolute;
+  left:7%;
+  right:7%;
+  top:10%;
+  height:2px;
+  background:#72f5b0;
+  box-shadow:0 0 16px #72f5b0;
+  opacity:.8;
+  animation:scan 2.8s linear infinite;
 }
 
-@media(max-height:650px){
-    .profile{bottom:145px}
-    .chat{height:190px;bottom:62px}
-    .rightActions{bottom:60px}
+@keyframes scan{
+  0%{top:8%}
+  50%{top:92%}
+  100%{top:8%}
 }
-</style></head><body><div id="app"><video id="video" autoplay muted playsinline></video>
 
-<div class="cameraOff" id="cameraOff">
-    <img class="bigAvatar"
-         src="https://i.pravatar.cc/200?img=12"
-         alt="">
-    <p>Kamera söndürülüb</p>
+.bottom{
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:0;
+  padding:20px 18px calc(20px + env(safe-area-inset-bottom));
+  z-index:5;
+}
+
+.result{
+  width:min(620px,100%);
+  margin:auto;
+  background:rgba(7,8,11,.76);
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:25px;
+  padding:15px;
+  backdrop-filter:blur(22px);
+  box-shadow:0 15px 50px rgba(0,0,0,.35);
+  transition:.25s;
+}
+
+.result.hidden{
+  opacity:0;
+  transform:translateY(25px);
+  pointer-events:none;
+}
+
+.resultTitle{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:8px;
+}
+
+.resultTitle strong{
+  font-size:21px;
+  letter-spacing:-.5px;
+}
+
+.conf{
+  font-size:12px;
+  color:#72f5b0;
+}
+
+.sub{
+  color:#aeb3bd;
+  font-size:13px;
+  margin-bottom:14px;
+}
+
+.tags{
+  display:flex;
+  gap:7px;
+  flex-wrap:wrap;
+  margin-bottom:14px;
+}
+
+.tag{
+  padding:7px 10px;
+  border-radius:12px;
+  background:rgba(255,255,255,.08);
+  color:#ddd;
+  font-size:12px;
+}
+
+.actions{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+}
+
+.btn{
+  border:0;
+  border-radius:15px;
+  padding:13px 10px;
+  font-weight:800;
+  color:#fff;
+  background:rgba(255,255,255,.1);
+  cursor:pointer;
+}
+
+.btn.primary{
+  background:#72f5b0;
+  color:#07100b;
+}
+
+.controls{
+  display:flex;
+  justify-content:center;
+  gap:13px;
+  margin-top:12px;
+}
+
+.round{
+  width:55px;
+  height:55px;
+  border-radius:50%;
+  border:1px solid rgba(255,255,255,.18);
+  background:rgba(0,0,0,.52);
+  color:white;
+  font-size:21px;
+  backdrop-filter:blur(14px);
+  cursor:pointer;
+}
+
+.round.main{
+  width:68px;
+  height:68px;
+  background:#fff;
+  color:#000;
+  font-size:27px;
+}
+
+#loading{
+  position:absolute;
+  inset:0;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  z-index:20;
+  background:#050507;
+  transition:.4s;
+}
+
+#loading.hide{
+  opacity:0;
+  pointer-events:none;
+}
+
+.spinner{
+  width:48px;
+  height:48px;
+  border:3px solid rgba(255,255,255,.15);
+  border-top-color:#72f5b0;
+  border-radius:50%;
+  animation:spin 1s linear infinite;
+  margin-bottom:18px;
+}
+
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.loadTitle{
+  font-size:21px;
+  font-weight:900;
+}
+
+.loadText{
+  color:#969ba5;
+  font-size:13px;
+  margin-top:7px;
+  text-align:center;
+  max-width:300px;
+  line-height:1.5;
+}
+
+#file{
+  display:none;
+}
+
+#message{
+  position:absolute;
+  top:82px;
+  left:50%;
+  transform:translateX(-50%);
+  z-index:10;
+  background:rgba(0,0,0,.65);
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:15px;
+  padding:10px 14px;
+  font-size:12px;
+  color:#ddd;
+  backdrop-filter:blur(15px);
+  opacity:0;
+  transition:.25s;
+  pointer-events:none;
+}
+
+#message.show{opacity:1}
+
+@media(max-width:420px){
+  .center{width:82vw}
+  .resultTitle strong{font-size:18px}
+}
+</style>
+</head>
+
+<body>
+
+<video id="camera" autoplay playsinline muted></video>
+<div id="shade"></div>
+
+<div id="loading">
+  <div class="spinner"></div>
+  <div class="loadTitle">SEEIT AI hazırlanır</div>
+  <div class="loadText">
+    Açıq mənbəli görmə modeli yüklənir.
+    İlk dəfə bir qədər vaxt tələb edə bilər.
+  </div>
 </div>
 
-<div class="gradientTop"></div>
-<div class="gradientBottom"></div>
+<div id="message"></div>
 
-<!-- TOP -->
-<div class="topbar">
-
-    <div class="liveInfo">
-        <div class="liveBadge">
-            <span class="liveDot"></span>
-            CANLI
-        </div>
-
-        <div class="viewerBox">
-            👥 <span id="viewers">27</span>
-        </div>
-    </div>
-
-    <div class="topActions">
-        <button class="iconBtn" onclick="shareLive()">↗</button>
-        <button class="iconBtn" onclick="toggleSettings()">⋯</button>
-    </div>
-
+<div class="top">
+  <div class="logo">SEE<span>IT</span></div>
+  <div class="status">
+    <div class="dot" id="dot"></div>
+    <span id="statusText">AI hazırlanır</span>
+  </div>
 </div>
 
-<!-- PROFILE -->
-<div class="profile">
-
-    <img class="avatar"
-         src="https://i.pravatar.cc/100?img=12"
-         alt="Avatar">
-
-    <div class="profileText">
-        <div class="username">
-            @LiveAZ
-            ✓
-        </div>
-
-        <button class="followBtn" id="followBtn"
-                onclick="followHost()">
-            + İzl ə
-        </button>
-    </div>
-
+<div class="center">
+  <div class="corner c1"></div>
+  <div class="corner c2"></div>
+  <div class="corner c3"></div>
+  <div class="corner c4"></div>
+  <div class="scan"></div>
 </div>
 
-<!-- CHAT -->
-<div class="chat">
-    <div class="messages" id="messages"></div>
-</div>
+<div class="bottom">
 
-<!-- RIGHT -->
-<div class="rightActions">
+  <div class="result hidden" id="result">
 
-    <div class="sideAction">
-        <button class="sideIcon"
-                onclick="sendHeart()">❤️</button>
-        <span class="likeCount" id="likes">1.2K</span>
+    <div class="resultTitle">
+      <strong id="mainLabel">Analiz edilir...</strong>
+      <span class="conf" id="confidence">--</span>
     </div>
 
-    <div class="sideAction">
-        <button class="sideIcon"
-                onclick="toggleGift()">🎁</button>
-        <span>Hədiyyə</span>
+    <div class="sub" id="description">
+      Kameranı obyektə tut.
     </div>
 
-    <div class="sideAction">
-        <button class="sideIcon"
-                onclick="switchCamera()">🔄</button>
-        <span>Kamera</span>
+    <div class="tags" id="tags"></div>
+
+    <div class="actions">
+      <button class="btn primary" id="shopBtn">
+        🛒 Məhsulu axtar
+      </button>
+
+      <button class="btn" id="imageSearchBtn">
+        🔎 Şəkillərdə axtar
+      </button>
     </div>
 
-    <div class="sideAction">
-        <button class="sideIcon"
-                onclick="toggleCamera()">📹</button>
-        <span>Kamera</span>
-    </div>
+  </div>
 
-    <div class="sideAction">
-        <button class="sideIcon"
-                onclick="toggleMic()">🎙️</button>
-        <span>Mikrofon</span>
-    </div>
+  <div class="controls">
 
-</div>
-
-<!-- HEARTS -->
-<div id="hearts"></div>
-
-<!-- GIFT PANEL -->
-<div class="giftPanel" id="giftPanel">
-
-    <div class="giftTitle">
-        🎁 Hədiyyə göndər
-    </div>
-
-    <div class="gifts">
-
-        <button class="gift" onclick="sendGift('🌹')">
-            🌹
-            <small>Rose</small>
-        </button>
-
-        <button class="gift" onclick="sendGift('❤️')">
-            ❤️
-            <small>Love</small>
-        </button>
-
-        <button class="gift" onclick="sendGift('💎')">
-            💎
-            <small>Diamond</small>
-        </button>
-
-        <button class="gift" onclick="sendGift('👑')">
-            👑
-            <small>Crown</small>
-        </button>
-
-        <button class="gift" onclick="sendGift('🚗')">
-            🚗
-            <small>Car</small>
-        </button>
-
-        <button class="gift" onclick="sendGift('🚀')">
-            🚀
-            <small>Rocket</small>
-        </button>
-
-        <button class="gift" onclick="sendGift('🎂')">
-            🎂
-            <small>Cake</small>
-        </button>
-
-        <button class="gift" onclick="sendGift('🔥')">
-            🔥
-            <small>Fire</small>
-        </button>
-
-    </div>
-
-</div>
-
-<!-- CHAT INPUT -->
-<div class="inputArea">
-
-    <input
-        id="chatInput"
-        class="chatInput"
-        maxlength="120"
-        autocomplete="off"
-        placeholder="Canlı söhbətə qoşul..."
-    >
-
-    <button class="actionCircle"
-            onclick="sendMessage()">
-        ➤
+    <button class="round" id="gallery">
+      🖼️
     </button>
 
-</div>
-
-<!-- SETTINGS -->
-<div class="settings" id="settings">
-
-    <div class="setting">
-        <span>💬 Chatı göstər</span>
-        <div class="toggle on" onclick="toggleChat(this)"></div>
-    </div>
-
-    <div class="setting">
-        <span>🔊 Səs</span>
-        <div class="toggle on" id="soundToggle"
-             onclick="toggleSound(this)"></div>
-    </div>
-
-    <div class="setting"
-         onclick="reportLive()">
-        <span>🚩 Canlı yayımı bildir</span>
-        <span>›</span>
-    </div>
-
-    <div class="setting"
-         onclick="showToast('Moderator rejimi aktivdir')">
-        <span>🛡️ Moderator</span>
-        <span>›</span>
-    </div>
-
-</div>
-
-<!-- START -->
-<div class="startScreen" id="startScreen">
-
-    <div class="logo">LiveAZ</div>
-
-    <div class="logoSub">
-        Professional Live Streaming
-    </div>
-
-    <button class="startBtn"
-            onclick="startLive()">
-        🔴 CANLIYA BAŞLA
+    <button class="round main" id="analyze">
+      ◉
     </button>
 
-    <div class="permission">
-        Kamera və mikrofon icazəsi tələb olunur.
-        Bu demo WebRTC kamera bağlantısından istifadə edir.
-    </div>
+    <button class="round" id="flip">
+      🔄
+    </button>
+
+  </div>
 
 </div>
 
-<!-- TOAST -->
-<div class="toast" id="toast"></div>
+<input type="file" id="file" accept="image/*">
 
-</div><script>
+<script type="module">
 
-/* =========================================================
-   LIVEAZ — WEBRTC LOCAL LIVE ENGINE
-   ========================================================= */
+import { pipeline, env }
+from "https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.3.0";
 
+/* ----------------------------------------------------
+   CONFIG
+---------------------------------------------------- */
+
+env.allowLocalModels = false;
+env.useBrowserCache = true;
+
+const MODEL = "Xenova/clip-vit-base-patch32";
+
+/*
+  CLIP-i konkret məhsul bazası kimi təqdim etmirik.
+  Bu etiketlər real AI modelinə verilir.
+*/
+const LABELS = [
+
+  "a pair of running shoes",
+  "a pair of sneakers",
+  "a pair of basketball shoes",
+  "a pair of football boots",
+  "a pair of hiking shoes",
+  "a pair of leather shoes",
+  "a pair of formal dress shoes",
+  "a pair of casual shoes",
+  "a pair of boots",
+  "a pair of sandals",
+  "a pair of slippers",
+
+  "Nike sneakers",
+  "Adidas sneakers",
+  "Puma sneakers",
+  "New Balance sneakers",
+  "Jordan sneakers",
+  "Converse sneakers",
+  "Vans sneakers",
+  "Reebok sneakers",
+
+  "a black shoe",
+  "a white shoe",
+  "a red shoe",
+  "a blue shoe",
+  "a green shoe",
+  "a colorful shoe",
+
+  "a modern sneaker",
+  "a vintage sneaker",
+  "a luxury shoe",
+  "a sports shoe"
+];
+
+/* ----------------------------------------------------
+   DOM
+---------------------------------------------------- */
+
+const video = document.getElementById("camera");
+const loading = document.getElementById("loading");
+const statusText = document.getElementById("statusText");
+const dot = document.getElementById("dot");
+
+const result = document.getElementById("result");
+const mainLabel = document.getElementById("mainLabel");
+const confidence = document.getElementById("confidence");
+const description = document.getElementById("description");
+const tags = document.getElementById("tags");
+
+const analyzeBtn = document.getElementById("analyze");
+const galleryBtn = document.getElementById("gallery");
+const flipBtn = document.getElementById("flip");
+const fileInput = document.getElementById("file");
+
+const shopBtn = document.getElementById("shopBtn");
+const imageSearchBtn = document.getElementById("imageSearchBtn");
+
+const message = document.getElementById("message");
+
+let classifier = null;
 let stream = null;
-let cameraEnabled = true;
-let micEnabled = true;
-let frontCamera = true;
-let followed = false;
-let chatEnabled = true;
-let soundEnabled = true;
-let likeNumber = 1200;
-let viewerNumber = 27;
+let facingMode = "environment";
+let lastResult = null;
+let analyzing = false;
 
-const video =
-    document.getElementById("video");
+/* ----------------------------------------------------
+   MESSAGE
+---------------------------------------------------- */
 
-const startScreen =
-    document.getElementById("startScreen");
+let messageTimer;
 
-const cameraOff =
-    document.getElementById("cameraOff");
+function showMessage(text){
 
-const messages =
-    document.getElementById("messages");
+  message.textContent = text;
+  message.classList.add("show");
 
-const chatInput =
-    document.getElementById("chatInput");
+  clearTimeout(messageTimer);
 
-const hearts =
-    document.getElementById("hearts");
-
-/* =========================================================
-   START LIVE
-   ========================================================= */
-
-async function startLive(){
-
-    try{
-
-        stream =
-            await navigator.mediaDevices.getUserMedia({
-
-                video:{
-                    facingMode:
-                        frontCamera
-                        ? "user"
-                        : "environment",
-
-                    width:{
-                        ideal:1280
-                    },
-
-                    height:{
-                        ideal:1920
-                    }
-                },
-
-                audio:{
-                    echoCancellation:true,
-                    noiseSuppression:true,
-                    autoGainControl:true
-                }
-
-            });
-
-        video.srcObject = stream;
-
-        if(frontCamera){
-            video.classList.add("videoMirror");
-        }
-
-        startScreen.style.display = "none";
-
-        addMessage(
-            "LiveAZ",
-            "Canlı yayım başladı! 🎉"
-        );
-
-        addMessage(
-            "Sistem",
-            "Kamera və mikrofon aktivdir."
-        );
-
-        showToast(
-            "Canlı yayım başladı"
-        );
-
-        startViewerSimulation();
-
-    }catch(error){
-
-        console.error(error);
-
-        showToast(
-            "Kamera/mikrofon icazəsi verilmədi."
-        );
-
-    }
-
+  messageTimer = setTimeout(()=>{
+    message.classList.remove("show");
+  },2600);
 }
 
-/* =========================================================
+/* ----------------------------------------------------
    CAMERA
-   ========================================================= */
+---------------------------------------------------- */
 
-async function switchCamera(){
+async function startCamera(){
 
-    if(!stream){
-        showToast("Əvvəlcə canlıya başlayın.");
-        return;
+  try{
+
+    if(stream){
+      stream.getTracks().forEach(track => track.stop());
     }
 
-    frontCamera = !frontCamera;
+    stream = await navigator.mediaDevices.getUserMedia({
 
-    stream.getTracks().forEach(
-        track => track.stop()
-    );
-
-    try{
-
-        stream =
-            await navigator.mediaDevices.getUserMedia({
-
-                video:{
-                    facingMode:
-                        frontCamera
-                        ? "user"
-                        : "environment",
-
-                    width:{
-                        ideal:1280
-                    },
-
-                    height:{
-                        ideal:1920
-                    }
-                },
-
-                audio:{
-                    echoCancellation:true,
-                    noiseSuppression:true
-                }
-
-            });
-
-        video.srcObject = stream;
-
-        if(frontCamera){
-            video.classList.add("videoMirror");
-        }else{
-            video.classList.remove("videoMirror");
+      video:{
+        facingMode:{
+          ideal:facingMode
+        },
+        width:{
+          ideal:1280
+        },
+        height:{
+          ideal:720
         }
+      },
 
-        showToast(
-            frontCamera
-            ? "Ön kamera"
-            : "Arxa kamera"
-        );
+      audio:false
 
-    }catch(e){
+    });
 
-        showToast(
-            "Kamera dəyişdirilə bilmədi."
-        );
+    video.srcObject = stream;
 
+    dot.classList.add("active");
+    statusText.textContent = "Kamera aktiv";
+
+  }catch(error){
+
+    console.error(error);
+
+    statusText.textContent = "Kamera açılmadı";
+
+    showMessage(
+      "Kameraya icazə verilmədi. Brauzerdə kamera icazəsini aç."
+    );
+  }
+}
+
+/* ----------------------------------------------------
+   AI MODEL
+---------------------------------------------------- */
+
+async function loadAI(){
+
+  try{
+
+    statusText.textContent = "AI yüklənir";
+
+    /*
+      WebGPU dəstəklənirsə istifadə olunur.
+      Alınmasa WASM/CPU fallback işləyəcək.
+    */
+
+    let device = "wasm";
+
+    if("gpu" in navigator){
+      device = "webgpu";
     }
 
+    classifier = await pipeline(
+      "zero-shot-image-classification",
+      MODEL,
+      {
+        device,
+        dtype: device === "webgpu" ? "q4" : "q8"
+      }
+    );
+
+    statusText.textContent = "AI hazır";
+    dot.classList.add("active");
+
+    loading.classList.add("hide");
+
+    showMessage(
+      "Hazırdır. Ayaqqabını çərçivəyə gətir."
+    );
+
+    await startCamera();
+
+  }catch(error){
+
+    console.error(error);
+
+    loading.querySelector(".loadTitle").textContent =
+      "AI yüklənmədi";
+
+    loading.querySelector(".loadText").textContent =
+      "İnternet bağlantısını yoxla və səhifəni yenilə.";
+
+  }
 }
 
-/* =========================================================
-   CAMERA ON/OFF
-   ========================================================= */
+/* ----------------------------------------------------
+   CAPTURE CAMERA FRAME
+---------------------------------------------------- */
 
-function toggleCamera(){
+function captureFrame(){
 
-    if(!stream){
-        showToast("Əvvəlcə canlıya başlayın.");
-        return;
+  const canvas = document.createElement("canvas");
+
+  const maxWidth = 768;
+
+  const ratio = video.videoHeight / video.videoWidth;
+
+  canvas.width = maxWidth;
+  canvas.height = Math.round(maxWidth * ratio);
+
+  const ctx = canvas.getContext("2d");
+
+  ctx.drawImage(
+    video,
+    0,
+    0,
+    canvas.width,
+    canvas.height
+  );
+
+  return canvas;
+}
+
+/* ----------------------------------------------------
+   IMAGE ANALYSIS
+---------------------------------------------------- */
+
+async function analyzeImage(source){
+
+  if(!classifier){
+    showMessage("AI hələ hazır deyil.");
+    return;
+  }
+
+  if(analyzing){
+    return;
+  }
+
+  analyzing = true;
+
+  analyzeBtn.textContent = "…";
+
+  statusText.textContent = "Görüntü analiz edilir";
+
+  try{
+
+    /*
+      REAL MODEL INFERENCE.
+      Burada saxta nəticə yoxdur.
+    */
+
+    const output = await classifier(
+      source,
+      LABELS,
+      {
+        topk:6
+      }
+    );
+
+    console.log("AI RESULT:",output);
+
+    if(!output || !output.length){
+      throw new Error("No AI result");
     }
 
-    cameraEnabled = !cameraEnabled;
+    const best = output[0];
 
-    stream.getVideoTracks().forEach(
-        track => {
-            track.enabled =
-                cameraEnabled;
-        }
+    lastResult = best;
+
+    displayResult(output);
+
+  }catch(error){
+
+    console.error(error);
+
+    showMessage(
+      "Şəkil analiz edilə bilmədi."
     );
 
-    cameraOff.classList.toggle(
-        "show",
-        !cameraEnabled
-    );
+  }finally{
 
-    showToast(
-        cameraEnabled
-        ? "Kamera aktivdir"
-        : "Kamera söndürülüb"
-    );
+    analyzing = false;
 
+    analyzeBtn.textContent = "◉";
+
+    statusText.textContent = "AI hazır";
+
+  }
 }
 
-/* =========================================================
-   MICROPHONE
-   ========================================================= */
+/* ----------------------------------------------------
+   RESULT UI
+---------------------------------------------------- */
 
-function toggleMic(){
+function cleanLabel(label){
 
-    if(!stream){
-        showToast("Əvvəlcə canlıya başlayın.");
-        return;
-    }
-
-    micEnabled = !micEnabled;
-
-    stream.getAudioTracks().forEach(
-        track => {
-            track.enabled =
-                micEnabled;
-        }
-    );
-
-    showToast(
-        micEnabled
-        ? "Mikrofon aktivdir"
-        : "Mikrofon söndürülüb"
-    );
-
+  return label
+    .replace(/^a pair of /i,"")
+    .replace(/^a /i,"")
+    .replace(/^an /i,"")
+    .trim();
 }
 
-/* =========================================================
-   HEARTS
-   ========================================================= */
+function displayResult(output){
 
-function sendHeart(){
+  const best = output[0];
 
-    likeNumber++;
+  const label = cleanLabel(best.label);
 
-    document.getElementById("likes")
-        .textContent =
-        formatNumber(likeNumber);
+  const percent = Math.round(best.score * 100);
 
-    createHeart();
+  mainLabel.textContent =
+    label.charAt(0).toUpperCase() + label.slice(1);
 
+  confidence.textContent =
+    percent + "% AI uyğunluğu";
+
+  description.textContent =
+    "Görüntü açıq mənbəli CLIP modeli ilə analiz edildi.";
+
+  tags.innerHTML = "";
+
+  output.slice(0,5).forEach(item=>{
+
+    const el = document.createElement("div");
+
+    el.className = "tag";
+
+    el.textContent =
+      `${cleanLabel(item.label)} · ${Math.round(item.score*100)}%`;
+
+    tags.appendChild(el);
+
+  });
+
+  result.classList.remove("hidden");
+
+  showMessage(
+    "AI nəticəni tapdı."
+  );
 }
 
-function createHeart(){
+/* ----------------------------------------------------
+   PRODUCT SEARCH
+---------------------------------------------------- */
 
-    const heart =
-        document.createElement("div");
+function getSearchTerm(){
 
-    heart.className = "heart";
+  if(!lastResult){
+    return "shoes";
+  }
 
-    const heartTypes =
-        ["❤️","💗","💖","💕","💓"];
-
-    heart.textContent =
-        heartTypes[
-            Math.floor(
-                Math.random() *
-                heartTypes.length
-            )
-        ];
-
-    heart.style.left =
-        (20 + Math.random()*80) + "px";
-
-    heart.style.setProperty(
-        "--x",
-        ((Math.random()*120)-60)+"px"
-    );
-
-    heart.style.setProperty(
-        "--r",
-        ((Math.random()*60)-30)+"deg"
-    );
-
-    heart.style.animationDuration =
-        (1.8 + Math.random()*1.3)+"s";
-
-    hearts.appendChild(heart);
-
-    setTimeout(
-        ()=>heart.remove(),
-        3500
-    );
-
+  return cleanLabel(lastResult.label);
 }
 
-/* Double tap */
+shopBtn.onclick = ()=>{
 
-let lastTap = 0;
+  const q = encodeURIComponent(
+    getSearchTerm()
+  );
 
-document.getElementById("app")
-.addEventListener("touchend",function(e){
+  /*
+    Bu real axtarışdır.
+    Saxta məhsul kartları yaratmırıq.
+  */
 
-    const now =
-        Date.now();
+  window.open(
+    "https://www.google.com/search?tbm=shop&q=" + q,
+    "_blank"
+  );
+};
 
-    if(
-        now-lastTap < 300 &&
-        e.target === video
-    ){
-        sendHeart();
-        sendHeart();
-    }
+imageSearchBtn.onclick = ()=>{
 
-    lastTap = now;
+  const q = encodeURIComponent(
+    getSearchTerm()
+  );
 
-});
+  window.open(
+    "https://www.google.com/search?tbm=isch&q=" + q,
+    "_blank"
+  );
+};
 
-/* =========================================================
-   CHAT FILTER
-   ========================================================= */
+/* ----------------------------------------------------
+   ANALYZE CAMERA
+---------------------------------------------------- */
 
-const bannedWords = [
+analyzeBtn.onclick = async ()=>{
 
-    "spam",
-    "scam",
-    "porno",
-    "fuck",
-    "idiot"
+  if(!video.videoWidth){
 
-];
+    showMessage("Kamera görüntüsü hələ hazır deyil.");
 
-function containsBadWord(text){
+    return;
+  }
 
-    const normalized =
-        text
-        .toLowerCase()
-        .replace(/[^\p{L}\p{N}\s]/gu," ");
+  const frame = captureFrame();
 
-    return bannedWords.some(
-        word =>
-        normalized.includes(word)
-    );
+  await analyzeImage(frame);
+};
 
-}
+/* ----------------------------------------------------
+   GALLERY
+---------------------------------------------------- */
 
-/* =========================================================
-   SEND MESSAGE
-   ========================================================= */
+galleryBtn.onclick = ()=>{
 
-function sendMessage(){
+  fileInput.click();
 
-    if(!chatEnabled){
-        return;
-    }
+};
 
-    let text =
-        chatInput.value.trim();
+fileInput.onchange = async ()=>{
 
-    if(!text){
-        return;
-    }
+  const file = fileInput.files[0];
 
-    if(containsBadWord(text)){
+  if(!file){
+    return;
+  }
 
-        showToast(
-            "Mesaj filtr tərəfindən bloklandı."
-        );
+  const image = new Image();
 
-        chatInput.value = "";
+  image.onload = async ()=>{
 
-        return;
-    }
+    await analyzeImage(image);
 
-    addMessage(
-        "Siz",
-        text
-    );
+    URL.revokeObjectURL(image.src);
 
-    chatInput.value = "";
+  };
 
-}
+  image.src = URL.createObjectURL(file);
 
-/* ENTER */
+};
 
-chatInput.addEventListener(
-    "keydown",
-    function(e){
+/* ----------------------------------------------------
+   CAMERA SWITCH
+---------------------------------------------------- */
 
-        if(e.key === "Enter"){
-            sendMessage();
-        }
+flipBtn.onclick = async ()=>{
 
-    }
-);
+  facingMode =
+    facingMode === "environment"
+      ? "user"
+      : "environment";
 
-/* =========================================================
-   ADD MESSAGE
-   ========================================================= */
+  await startCamera();
 
-function addMessage(
-    username,
-    text
-){
+};
 
-    const message =
-        document.createElement("div");
+/* ----------------------------------------------------
+   START
+---------------------------------------------------- */
 
-    message.className =
-        "msg";
+loadAI();
 
-    const safeUser =
-        escapeHTML(username);
+</script>
 
-    const safeText =
-        escapeHTML(text);
-
-    message.innerHTML =
-        `<b>${safeUser}</b>${safeText}`;
-
-    messages.appendChild(message);
-
-    while(messages.children.length > 12){
-        messages.firstChild.remove();
-    }
-
-    messages.scrollTop =
-        messages.scrollHeight;
-
-}
-
-/* =========================================================
-   ESCAPE HTML
-   ========================================================= */
-
-function escapeHTML(text){
-
-    return text
-        .replace(/&/g,"&amp;")
-        .replace(/</g,"&lt;")
-        .replace(/>/g,"&gt;")
-        .replace(/"/g,"&quot;")
-        .replace(/'/g,"&#039;");
-
-}
-
-/* =========================================================
-   DEMO CHAT
-   ========================================================= */
-
-const demoMessages = [
-
-    ["Murad","Salam 👋"],
-    ["Aysel","Canlı çox yaxşıdır ❤️"],
-    ["Elvin","Salam Bakı!"],
-    ["Nigar","Necəsiniz? 😊"],
-    ["Rauf","🔥🔥🔥"],
-    ["Kamran","Yeni qoşuldum"],
-    ["Leyla","Gözəl yayım 👍"]
-
-];
-
-let demoIndex = 0;
-
-function startDemoChat(){
-
-    setInterval(function(){
-
-        if(!chatEnabled){
-            return;
-        }
-
-        const item =
-            demoMessages[
-                demoIndex %
-                demoMessages.length
-            ];
-
-        addMessage(
-            item[0],
-            item[1]
-        );
-
-        demoIndex++;
-
-    },4200);
-
-}
-
-/* =========================================================
-   VIEWER SIMULATION
-   ========================================================= */
-
-function startViewerSimulation(){
-
-    setInterval(function(){
-
-        const change =
-            Math.random() > .5
-            ? 1
-            : -1;
-
-        viewerNumber += change;
-
-        if(viewerNumber < 20){
-            viewerNumber = 20;
-        }
-
-        document.getElementById(
-            "viewers"
-        ).textContent =
-            viewerNumber;
-
-    },3000);
-
-}
-
-/* =========================================================
-   FOLLOW
-   ========================================================= */
-
-function followHost(){
-
-    followed = !followed;
-
-    const btn =
-        document.getElementById(
-            "followBtn"
-        );
-
-    if(followed){
-
-        btn.textContent =
-            "✓ İzlənilir";
-
-        btn.style.background =
-            "rgba(255,255,255,.20)";
-
-        showToast(
-            "LiveAZ izlənilir ❤️"
-        );
-
-    }else{
-
-        btn.textContent =
-            "+ İzlə";
-
-        btn.style.background =
-            "#ff174f";
-
-    }
-
-}
-
-/* =========================================================
-   GIFTS
-   ========================================================= */
-
-function toggleGift(){
-
-    document
-        .getElementById("giftPanel")
-        .classList.toggle("open");
-
-}
-
-function sendGift(icon){
-
-    document
-        .getElementById("giftPanel")
-        .classList.remove("open");
-
-    const gift =
-        document.createElement("div");
-
-    gift.className =
-        "giftFly";
-
-    gift.textContent =
-        icon;
-
-    document
-        .getElementById("app")
-        .appendChild(gift);
-
-    setTimeout(
-        ()=>gift.remove(),
-        1600
-    );
-
-    addMessage(
-        "Siz",
-        icon + " hədiyyə göndərdi!"
-    );
-
-}
-
-/* =========================================================
-   SETTINGS
-   ========================================================= */
-
-function toggleSettings(){
-
-    document
-        .getElementById("settings")
-        .classList.toggle("open");
-
-}
-
-function toggleChat(element){
-
-    chatEnabled =
-        !chatEnabled;
-
-    element.classList.toggle(
-        "on",
-        chatEnabled
-    );
-
-    document
-        .querySelector(".chat")
-        .style.display =
-        chatEnabled
-        ? "flex"
-        : "none";
-
-}
-
-function toggleSound(element){
-
-    soundEnabled =
-        !soundEnabled;
-
-    element.classList.toggle(
-        "on",
-        soundEnabled
-    );
-
-}
-
-/* =========================================================
-   SHARE
-   ========================================================= */
-
-async function shareLive(){
-
-    const shareData = {
-
-        title:"LiveAZ",
-
-        text:
-        "LiveAZ canlı yayımına qoşul!",
-
-        url:
-        window.location.href
-
-    };
-
-    try{
-
-        if(
-            navigator.share
-        ){
-
-            await navigator.share(
-                shareData
-            );
-
-        }else{
-
-            await navigator.clipboard.writeText(
-                window.location.href
-            );
-
-            showToast(
-                "Canlı linki kopyalandı."
-            );
-
-        }
-
-    }catch(e){}
-
-}
-
-/* =========================================================
-   REPORT
-   ========================================================= */
-
-function reportLive(){
-
-    showToast(
-        "Şikayət qeydə alındı."
-    );
-
-}
-
-/* =========================================================
-   TOAST
-   ========================================================= */
-
-let toastTimer;
-
-function showToast(text){
-
-    const toast =
-        document.getElementById(
-            "toast"
-        );
-
-    toast.textContent =
-        text;
-
-    toast.classList.add(
-        "show"
-    );
-
-    clearTimeout(toastTimer);
-
-    toastTimer =
-        setTimeout(
-            ()=>{
-                toast.classList.remove(
-                    "show"
-                );
-            },
-            2200
-        );
-
-}
-
-/* =========================================================
-   FORMAT NUMBERS
-   ========================================================= */
-
-function formatNumber(number){
-
-    if(number >= 1000000){
-
-        return (
-            number/1000000
-        ).toFixed(1)+"M";
-
-    }
-
-    if(number >= 1000){
-
-        return (
-            number/1000
-        ).toFixed(1)+"K";
-
-    }
-
-    return String(number);
-
-}
-
-/* =========================================================
-   START DEMO
-   ========================================================= */
-
-startDemoChat();
-
-</script></body>
-      </html>
+</body>
+</html>
