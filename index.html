@@ -3,258 +3,820 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Avatar Messencer Prototipi</title>
+    <title>3D AI Avatar & Video Generator Engine</title>
     <style>
+        :root {
+            --bg-primary: #0a0c10;
+            --panel-bg: rgba(18, 22, 31, 0.85);
+            --accent-cyan: #00f2ff;
+            --accent-magenta: #ff0055;
+            --text-main: #e2e8f0;
+            --text-muted: #64748b;
+            --border-color: rgba(0, 242, 255, 0.2);
+        }
+
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+            user-select: none;
         }
 
-        body {
-            background-color: #0f172a;
-            color: #f8fafc;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: space-between;
-            min-height: 100vh;
-            overflow: hidden;
-        }
-
-        #canvas-container {
+        body, html {
             width: 100%;
-            height: 65vh;
+            height: 100%;
+            overflow: hidden;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+        }
+
+        #app-container {
+            display: flex;
+            width: 100vw;
+            height: 100vh;
             position: relative;
         }
 
-        .chat-container {
+        #canvas-container {
+            flex: 1;
+            height: 100%;
+            position: relative;
+            background: radial-gradient(circle at center, #1a1f2c 0%, #080a0f 100%);
+        }
+
+        #webgl-canvas {
             width: 100%;
-            max-width: 600px;
+            height: 100%;
+            display: block;
+        }
+
+        /* UI Overlay Panel */
+        #ui-panel {
+            width: 420px;
+            height: 100%;
+            background: var(--panel-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-left: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+            box-shadow: -10px 0 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .panel-header {
+            padding: 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .panel-header h1 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            color: var(--accent-cyan);
+            text-transform: uppercase;
+            text-shadow: 0 0 10px rgba(0, 242, 255, 0.3);
+        }
+
+        .status-badge {
+            font-size: 0.75rem;
+            padding: 4px 8px;
+            border-radius: 12px;
+            background: rgba(0, 242, 255, 0.1);
+            color: var(--accent-cyan);
+            border: 1px solid var(--accent-cyan);
+        }
+
+        .chat-history {
+            flex: 1;
             padding: 20px;
-            background: #1e293b;
-            border-top-left-radius: 20px;
-            border-top-right-radius: 20px;
-            box-shadow: 0 -5px 25px rgba(0,0,0,0.5);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .chat-bubble {
+            max-width: 85%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            line-height: 1.4;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .chat-bubble.user {
+            align-self: flex-end;
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+
+        .chat-bubble.avatar {
+            align-self: flex-start;
+            background: rgba(0, 242, 255, 0.05);
+            border: 1px solid var(--border-color);
+            color: var(--accent-cyan);
+        }
+
+        .control-area {
+            padding: 20px;
+            border-top: 1px solid var(--border-color);
             display: flex;
             flex-direction: column;
             gap: 12px;
+            background: rgba(10, 12, 16, 0.6);
         }
 
-        .subtitle-box {
-            min-height: 40px;
-            background: #334155;
-            padding: 10px 15px;
-            border-radius: 10px;
-            font-size: 15px;
-            color: #38bdf8;
-            text-align: center;
-            word-wrap: break-word;
+        textarea {
+            width: 100%;
+            height: 90px;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px;
+            color: #fff;
+            font-size: 0.95rem;
+            resize: none;
+            outline: none;
+            transition: all 0.3s ease;
         }
 
-        .input-group {
+        textarea:focus {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 12px rgba(0, 242, 255, 0.2);
+        }
+
+        .btn-group {
             display: flex;
             gap: 10px;
         }
 
-        input[type="text"] {
-            flex: 1;
-            padding: 12px 16px;
-            border-radius: 10px;
-            border: 1px solid #475569;
-            background: #0f172a;
-            color: #fff;
-            outline: none;
-            font-size: 16px;
-        }
-
-        input[type="text"]:focus {
-            border-color: #38bdf8;
-        }
-
         button {
-            padding: 12px 24px;
-            border-radius: 10px;
+            flex: 1;
+            padding: 14px;
             border: none;
-            background: #0284c7;
-            color: white;
-            font-weight: bold;
-            font-size: 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
             cursor: pointer;
-            transition: 0.2s ease;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
-        button:hover {
-            background: #0369a1;
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-cyan), #0088ff);
+            color: #000;
+            box-shadow: 0 0 15px rgba(0, 242, 255, 0.3);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 0 20px rgba(0, 242, 255, 0.5);
+        }
+
+        .btn-whatsapp {
+            background: linear-gradient(135deg, #25D366, #128C7E);
+            color: #fff;
+            display: none;
+        }
+
+        .btn-whatsapp:hover {
+            box-shadow: 0 0 15px rgba(37, 211, 102, 0.4);
         }
 
         button:disabled {
-            background: #64748b;
+            opacity: 0.5;
             cursor: not-allowed;
+            filter: grayscale(1);
+        }
+
+        /* Subtitle Overlay on Canvas */
+        #subtitle-overlay {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.75);
+            border: 1px solid var(--border-color);
+            padding: 12px 24px;
+            border-radius: 30px;
+            color: #fff;
+            font-size: 1.1rem;
+            font-weight: 500;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            max-width: 70%;
+            text-align: center;
+            backdrop-filter: blur(8px);
+        }
+
+        /* Loading Progress */
+        .progress-bar-container {
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            overflow: hidden;
+            display: none;
+        }
+
+        .progress-bar {
+            width: 0%;
+            height: 100%;
+            background: var(--accent-cyan);
+            transition: width 0.1s linear;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            #app-container { flex-direction: column; }
+            #ui-panel { width: 100%; height: 50%; }
+            #canvas-container { height: 50%; }
         }
     </style>
-    <!-- Three.js Library -->
+
+    <!-- Three.js r128 Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
 
-    <div id="canvas-container"></div>
+    <div id="app-container">
+        <!-- 3D WebGL Canvas Viewport -->
+        <div id="canvas-container">
+            <canvas id="webgl-canvas"></canvas>
+            <div id="subtitle-overlay">...</div>
+        </div>
 
-    <div class="chat-container">
-        <div class="subtitle-box" id="subtitles">Mesajınızı daxil edin və "Göndər" düyməsini basın...</div>
-        <div class="input-group">
-            <input type="text" id="messageInput" placeholder="Mesajı bura yazın (məs: Salam, xoş gəldiniz!)..." autocomplete="off">
-            <button id="sendBtn" onclick="sendMessage()">Göndər</button>
+        <!-- Control UI Sidebar -->
+        <div id="ui-panel">
+            <div class="panel-header">
+                <h1>3D Engine Avatar</h1>
+                <span id="engine-status" class="status-badge">HAZIR</span>
+            </div>
+
+            <div id="chat-history" class="chat-history">
+                <div class="chat-bubble avatar">
+                    Salam! Mən sizin prosedural 3D rəqəmsal köməkçinizəm. Mətn daxil edin, mən onu danışaraq videoya köçürüm.
+                </div>
+            </div>
+
+            <div class="progress-bar-container" id="progress-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+
+            <div class="control-area">
+                <textarea id="text-input" placeholder="Avatarın söyləməsini istədiyiniz mətni bura yazın..."></textarea>
+                <div class="btn-group">
+                    <button id="btn-speak" class="btn-primary">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
+                        Danışdır və Yaz
+                    </button>
+                </div>
+                <button id="btn-whatsapp" class="btn-whatsapp">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>
+                    WhatsApp ilə Göndər
+                </button>
+            </div>
         </div>
     </div>
 
     <script>
-        // --- 1. Three.js 3D Səhnəsinin Qurulması ---
+        /**
+         * 3D GRAPHICS & AVATAR ENGINE ARCHITECTURE
+         * Senior Graphics Architect Implementation
+         */
+
+        // --- 1. GLOBAL ENGINE STATE & CONSTANTS ---
+        const STATE = {
+            IDLE: 'IDLE',
+            SPEAKING: 'SPEAKING',
+            RECORDING: 'RECORDING'
+        };
+        let currentState = STATE.IDLE;
+
+        const visemeTargets = {
+            jawOpen: 0,
+            lipWidth: 0,
+            lipPucker: 0,
+            upperLipRaise: 0,
+            lowerLipDepress: 0
+        };
+
+        let generatedVideoBlob = null;
+        let mediaRecorder = null;
+        let recordedChunks = [];
+        let audioContext = null;
+        let mediaStreamDestination = null;
+
+        // --- 2. THREE.JS SCENE SETUP ---
+        const canvas = document.getElementById('webgl-canvas');
         const container = document.getElementById('canvas-container');
+
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x0f172a);
+        scene.fog = new THREE.FogExp2(0x0a0c10, 0.03);
 
-        const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
-        camera.position.set(0, 0, 3.5);
+        const camera = new THREE.PerspectiveCamera(35, container.clientWidth / container.clientHeight, 0.1, 100);
+        camera.position.set(0, 1.3, 2.3);
 
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, preserveDrawingBuffer: true });
         renderer.setSize(container.clientWidth, container.clientHeight);
-        renderer.setPixelRatio(window.devicePixelRatio);
-        container.appendChild(renderer.domElement);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.2;
 
-        // İşıqlandırma
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+        // --- LIGHTING SETUP (Studio Cinematic) ---
+        const ambientLight = new THREE.AmbientLight(0xdce7ff, 0.6);
         scene.add(ambientLight);
 
-        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
-        dirLight.position.set(2, 4, 3);
-        scene.add(dirLight);
+        const keyLight = new THREE.DirectionalLight(0xffffff, 1.2);
+        keyLight.position.set(2, 4, 3);
+        keyLight.castShadow = true;
+        keyLight.shadow.mapSize.width = 2048;
+        keyLight.shadow.mapSize.height = 2048;
+        keyLight.shadow.bias = -0.0001;
+        scene.add(keyLight);
 
-        // --- 2. 3D Avatar (Stylized Head & Mouth Model) Yaradılması ---
+        const fillLight = new THREE.DirectionalLight(0x00f2ff, 0.5);
+        fillLight.position.set(-3, 1, 1);
+        scene.add(fillLight);
+
+        const rimLight = new THREE.DirectionalLight(0xff0055, 1.5);
+        rimLight.position.set(0, 3, -3);
+        scene.add(rimLight);
+
+        // --- 3. PROCEDURAL ANATOMICAL AVATAR MESH GENERATION ---
         const avatarGroup = new THREE.Group();
-
-        // Baş
-        const headGeo = new THREE.SphereGeometry(0.8, 32, 32);
-        headGeo.scale(1, 1.2, 0.9);
-        const headMat = new THREE.MeshStandardMaterial({ color: 0xf1c40f, roughness: 0.3 });
-        const head = new THREE.Mesh(headGeo, headMat);
-        avatarGroup.add(head);
-
-        // Gözlər
-        const eyeGeo = new THREE.SphereGeometry(0.12, 16, 16);
-        const eyeMat = new THREE.MeshBasicMaterial({ color: 0x1e293b });
-
-        const leftEye = new THREE.Mesh(eyeGeo, eyeMat);
-        leftEye.position.set(-0.28, 0.2, 0.72);
-        avatarGroup.add(leftEye);
-
-        const rightEye = new THREE.Mesh(eyeGeo, eyeMat);
-        rightEye.position.set(0.28, 0.2, 0.72);
-        avatarGroup.add(rightEye);
-
-        // Ağız (Lipsync üçün animasiya olunan hissə)
-        const mouthGeo = new THREE.RingGeometry(0.05, 0.15, 32);
-        const mouthMat = new THREE.MeshBasicMaterial({ color: 0xc0392b, side: THREE.DoubleSide });
-        const mouth = new THREE.Mesh(mouthGeo, mouthMat);
-        mouth.position.set(0, -0.3, 0.75);
-        avatarGroup.add(mouth);
-
         scene.add(avatarGroup);
 
-        // --- 3. Lipsync və Danışıq Məntiqi ---
-        let isSpeaking = false;
-        let audioAudioContext = null;
+        // Stylized Skin Material
+        const skinMaterial = new THREE.MeshStandardMaterial({
+            color: 0xdbac98,
+            roughness: 0.55,
+            metalness: 0.1,
+            flatShading: false
+        });
 
-        function animateMouthAndBody() {
-            requestAnimationFrame(animateMouthAndBody);
+        const darkMaterial = new THREE.MeshStandardMaterial({
+            color: 0x11151c,
+            roughness: 0.3
+        });
 
-            const time = Date.now() * 0.003;
+        const lipMaterial = new THREE.MeshStandardMaterial({
+            color: 0xb85656,
+            roughness: 0.4
+        });
 
-            if (isSpeaking) {
-                // Ağız açılıb-bağlanması (Səsə uyğun variasiyalı)
-                const mouthOpenScaleY = 0.5 + Math.abs(Math.sin(time * 12)) * 1.8;
-                const mouthOpenScaleX = 0.8 + Math.abs(Math.cos(time * 8)) * 0.5;
-                mouth.scale.set(mouthOpenScaleX, mouthOpenScaleY, 1);
+        const eyeMaterial = new THREE.MeshStandardMaterial({
+            color: 0xffffff,
+            roughness: 0.1
+        });
 
-                // Başın danışarkən hərəkət etməsi (Gestures)
-                avatarGroup.rotation.y = Math.sin(time * 3) * 0.15;
-                avatarGroup.rotation.x = Math.cos(time * 4) * 0.08;
-                avatarGroup.position.y = Math.sin(time * 5) * 0.05;
-            } else {
-                // Təbii gözləmə halı (Idle animation)
-                mouth.scale.set(1, 0.2, 1);
-                avatarGroup.rotation.y = Math.sin(time * 0.8) * 0.05;
-                avatarGroup.rotation.x = 0;
-                avatarGroup.position.y = Math.sin(time * 1.5) * 0.02;
+        const irisMaterial = new THREE.MeshStandardMaterial({
+            color: 0x00a8ff,
+            roughness: 0.2,
+            metalness: 0.5
+        });
+
+        // Torso / Chest & Neck
+        const torsoGeo = new THREE.CylinderGeometry(0.35, 0.45, 0.8, 32);
+        const torso = new THREE.Mesh(torsoGeo, darkMaterial);
+        torso.position.y = 0.2;
+        torso.castShadow = true;
+        avatarGroup.add(torso);
+
+        const neckGeo = new THREE.CylinderGeometry(0.11, 0.12, 0.25, 32);
+        const neck = new THREE.Mesh(neckGeo, skinMaterial);
+        neck.position.y = 0.65;
+        avatarGroup.add(neck);
+
+        // Head Base Hierarchy
+        const headGroup = new THREE.Group();
+        headGroup.position.set(0, 0.85, 0);
+        avatarGroup.add(headGroup);
+
+        // Upper Cranium (Skull)
+        const craniumGeo = new THREE.SphereGeometry(0.22, 32, 32);
+        craniumGeo.scale(1, 1.15, 0.95);
+        const cranium = new THREE.Mesh(craniumGeo, skinMaterial);
+        cranium.position.y = 0.18;
+        cranium.castShadow = true;
+        headGroup.add(cranium);
+
+        // Eyes Construction
+        const createEye = (isLeft) => {
+            const eyeGroup = new THREE.Group();
+            const xPos = isLeft ? -0.08 : 0.08;
+
+            const eyeball = new THREE.Mesh(new THREE.SphereGeometry(0.04, 24, 24), eyeMaterial);
+            eyeGroup.add(eyeball);
+
+            const iris = new THREE.Mesh(new THREE.SphereGeometry(0.022, 24, 24), irisMaterial);
+            iris.position.z = 0.028;
+            eyeGroup.add(iris);
+
+            const pupil = new THREE.Mesh(new THREE.SphereGeometry(0.01, 16, 16), darkMaterial);
+            pupil.position.z = 0.038;
+            eyeGroup.add(pupil);
+
+            // Eyelid for Blinking
+            const lidGeo = new THREE.SphereGeometry(0.043, 24, 16, 0, Math.PI * 2, 0, Math.PI / 2);
+            const eyelid = new THREE.Mesh(lidGeo, skinMaterial);
+            eyelid.rotation.x = Math.PI / 2;
+            eyelid.name = "eyelid";
+            eyeGroup.add(eyelid);
+
+            eyeGroup.position.set(xPos, 0.22, 0.16);
+            return eyeGroup;
+        };
+
+        const leftEye = createEye(true);
+        const rightEye = createEye(false);
+        headGroup.add(leftEye);
+        headGroup.add(rightEye);
+
+        // Nose
+        const noseGeo = new THREE.ConeGeometry(0.025, 0.08, 16);
+        const nose = new THREE.Mesh(noseGeo, skinMaterial);
+        nose.position.set(0, 0.18, 0.21);
+        nose.rotation.x = -0.1;
+        headGroup.add(nose);
+
+        // Jaw Assembly (Articulated Joint for Lipsync)
+        const jawGroup = new THREE.Group();
+        jawGroup.position.set(0, 0.12, 0.02); // Pivot point for jaw open
+        headGroup.add(jawGroup);
+
+        const chinGeo = new THREE.BoxGeometry(0.16, 0.14, 0.22);
+        const chin = new THREE.Mesh(chinGeo, skinMaterial);
+        chin.position.set(0, -0.06, 0.08);
+        jawGroup.add(chin);
+
+        // Lips Construction (Deformable Mesh Analogs)
+        const upperLipGeo = new THREE.TorusGeometry(0.045, 0.012, 16, 32, Math.PI);
+        const upperLip = new THREE.Mesh(upperLipGeo, lipMaterial);
+        upperLip.position.set(0, 0.11, 0.19);
+        upperLip.rotation.x = Math.PI;
+        headGroup.add(upperLip);
+
+        const lowerLipGeo = new THREE.TorusGeometry(0.042, 0.012, 16, 32, Math.PI);
+        const lowerLip = new THREE.Mesh(lowerLipGeo, lipMaterial);
+        lowerLip.position.set(0, -0.01, 0.17);
+        jawGroup.add(lowerLip);
+
+        // Arms & Hands Hierarchy (Procedural Gestures)
+        const createArm = (isLeft) => {
+            const shoulderGroup = new THREE.Group();
+            const sideMult = isLeft ? -1 : 1;
+            shoulderGroup.position.set(sideMult * 0.4, 0.5, 0);
+
+            const upperArm = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.05, 0.4), darkMaterial);
+            upperArm.position.y = -0.2;
+            shoulderGroup.add(upperArm);
+
+            const lowerArmGroup = new THREE.Group();
+            lowerArmGroup.position.set(0, -0.4, 0);
+            shoulderGroup.add(lowerArmGroup);
+
+            const forearm = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.04, 0.35), darkMaterial);
+            forearm.position.y = -0.175;
+            lowerArmGroup.add(forearm);
+
+            const hand = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.08, 0.03), skinMaterial);
+            hand.position.set(0, -0.38, 0);
+            lowerArmGroup.add(hand);
+
+            avatarGroup.add(shoulderGroup);
+            return { shoulderGroup, lowerArmGroup };
+        };
+
+        const leftArm = createArm(true);
+        const rightArm = createArm(false);
+
+        // --- 4. AUDIO SYNTHESIS & VISEME ANALYZER ENGINE ---
+        let synth = window.speechSynthesis;
+
+        function textToVisemes(text) {
+            // Converts input text into phoneme-like timed frame sequences
+            const words = text.toLowerCase().split(' ');
+            const sequence = [];
+            let timeOffset = 0;
+
+            words.forEach(word => {
+                for (let i = 0; i < word.length; i++) {
+                    const char = word[i];
+                    let viseme = { jaw: 0.1, pucker: 0, width: 0, duration: 80 };
+
+                    if (['a', 'e', 'ə', 'ı'].includes(char)) {
+                        viseme = { jaw: 0.5, pucker: 0.1, width: 0.3, duration: 120 };
+                    } else if (['o', 'ö', 'u', 'ü'].includes(char)) {
+                        viseme = { jaw: 0.4, pucker: 0.8, width: -0.2, duration: 140 };
+                    } else if (['i', 'e'].includes(char)) {
+                        viseme = { jaw: 0.2, pucker: 0, width: 0.5, duration: 100 };
+                    } else if (['m', 'p', 'b'].includes(char)) {
+                        viseme = { jaw: 0.0, pucker: 0.1, width: 0, duration: 90 };
+                    } else if (['f', 'v'].includes(char)) {
+                        viseme = { jaw: 0.1, pucker: 0.2, width: 0.2, duration: 90 };
+                    }
+
+                    sequence.push({ ...viseme, time: timeOffset });
+                    timeOffset += viseme.duration;
+                }
+                timeOffset += 130; // Word pause gap
+            });
+
+            return { sequence, totalDuration: timeOffset };
+        }
+
+        // --- 5. AUDIO & VIDEO RECORDING SYSTEM (Canvas + Web Audio API) ---
+        function initAudioContext() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                mediaStreamDestination = audioContext.createMediaStreamDestination();
             }
+        }
+
+        function createAudioBufferFromSpeech(text, durationMs) {
+            // Synthesizes background audio tone/speech simulation for video audio track stream
+            initAudioContext();
+            const sampleRate = audioContext.sampleRate;
+            const numSamples = Math.max(1, Math.floor((durationMs / 1000) * sampleRate));
+            const buffer = audioContext.createBuffer(1, numSamples, sampleRate);
+            const channelData = buffer.getChannelData(0);
+
+            // Formant synthesis approximation to inject sound into MediaRecorder stream
+            for (let i = 0; i < numSamples; i++) {
+                const t = i / sampleRate;
+                const env = Math.sin((i / numSamples) * Math.PI);
+                channelData[i] = (Math.sin(2 * Math.PI * 180 * t) * 0.3 + 
+                                  Math.sin(2 * Math.PI * 300 * t) * 0.2) * env * (Math.random() * 0.2 + 0.8);
+            }
+
+            const source = audioContext.createBufferSource();
+            source.buffer = buffer;
+            source.connect(mediaStreamDestination);
+            return source;
+        }
+
+        // --- 6. PROCEDURAL ANIMATION & RENDER LOOP ---
+        let clock = new THREE.Clock();
+        let blinkTimer = 0;
+        let isBlinking = false;
+        let speechVisemeData = null;
+        let speechStartTime = 0;
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            const elapsedTime = clock.getElapsedTime();
+            const deltaTime = clock.getDelta();
+
+            // A. IDLE BEHAVIOR (Breathing & Micro-movements)
+            const breathScale = Math.sin(elapsedTime * 1.5) * 0.015;
+            torso.scale.set(1 + breathScale, 1 + breathScale, 1 + breathScale);
+
+            // Subtle head idle motion
+            if (currentState === STATE.IDLE) {
+                headGroup.rotation.y = Math.sin(elapsedTime * 0.8) * 0.05;
+                headGroup.rotation.x = Math.cos(elapsedTime * 0.6) * 0.03;
+
+                // Arm Idle
+                leftArm.shoulderGroup.rotation.z = Math.PI / 12 + Math.sin(elapsedTime) * 0.02;
+                rightArm.shoulderGroup.rotation.z = -Math.PI / 12 - Math.sin(elapsedTime) * 0.02;
+                leftArm.shoulderGroup.rotation.x = 0;
+                rightArm.shoulderGroup.rotation.x = 0;
+            }
+
+            // Blink Logic Cycle
+            blinkTimer += deltaTime;
+            if (blinkTimer > 3.5) {
+                isBlinking = true;
+                if (blinkTimer > 3.65) {
+                    isBlinking = false;
+                    blinkTimer = 0;
+                }
+            }
+
+            const targetLidScale = isBlinking ? 1 : 0.01;
+            leftEye.getObjectByName("eyelid").scale.y = THREE.MathUtils.lerp(
+                leftEye.getObjectByName("eyelid").scale.y, targetLidScale, 0.3
+            );
+            rightEye.getObjectByName("eyelid").scale.y = THREE.MathUtils.lerp(
+                rightEye.getObjectByName("eyelid").scale.y, targetLidScale, 0.3
+            );
+
+            // B. SPEAKING & PROCEDURAL GESTURE ENGINE
+            if (currentState === STATE.SPEAKING && speechVisemeData) {
+                const currentSpeechTime = (performance.now() - speechStartTime);
+                
+                // Find active viseme in timeline
+                const currentFrame = speechVisemeData.sequence.find(
+                    f => currentSpeechTime >= f.time && currentSpeechTime < (f.time + f.duration)
+                );
+
+                if (currentFrame) {
+                    visemeTargets.jawOpen = currentFrame.jaw;
+                    visemeTargets.lipWidth = currentFrame.width;
+                    visemeTargets.lipPucker = currentFrame.pucker;
+                } else {
+                    visemeTargets.jawOpen = Math.random() * 0.15; // Ambient movement between words
+                }
+
+                // Head emphasis gestures during speech
+                headGroup.rotation.y = Math.sin(currentSpeechTime * 0.005) * 0.12;
+                headGroup.rotation.x = Math.cos(currentSpeechTime * 0.007) * 0.08;
+
+                // Procedural Arm/Hand Gestures while speaking
+                rightArm.shoulderGroup.rotation.x = -0.4 + Math.sin(currentSpeechTime * 0.008) * 0.25;
+                rightArm.shoulderGroup.rotation.z = -0.3 + Math.cos(currentSpeechTime * 0.006) * 0.15;
+                rightArm.lowerArmGroup.rotation.x = -0.6 + Math.sin(currentSpeechTime * 0.01) * 0.2;
+
+                leftArm.shoulderGroup.rotation.x = -0.2 + Math.cos(currentSpeechTime * 0.007) * 0.15;
+                leftArm.lowerArmGroup.rotation.x = -0.4;
+
+                // Check speech completion
+                if (currentSpeechTime >= speechVisemeData.totalDuration) {
+                    stopSpeaking();
+                }
+            }
+
+            // C. MORPH TARGET / MESH DEFORMATION INTERPOLATION
+            jawGroup.rotation.x = THREE.MathUtils.lerp(jawGroup.rotation.x, visemeTargets.jawOpen * 0.4, 0.25);
+            
+            upperLip.scale.x = THREE.MathUtils.lerp(upperLip.scale.x, 1 + visemeTargets.lipWidth, 0.2);
+            lowerLip.scale.x = THREE.MathUtils.lerp(lowerLip.scale.x, 1 + visemeTargets.lipWidth, 0.2);
+            
+            upperLip.position.z = THREE.MathUtils.lerp(upperLip.position.z, 0.19 + visemeTargets.lipPucker * 0.03, 0.2);
+            lowerLip.position.z = THREE.MathUtils.lerp(lowerLip.position.z, 0.17 + visemeTargets.lipPucker * 0.03, 0.2);
 
             renderer.render(scene, camera);
         }
 
-        animateMouthAndBody();
+        animate();
 
-        // --- 4. Web Speech API (Text-To-Speech) İnreqrasiyası ---
-        function sendMessage() {
-            const input = document.getElementById('messageInput');
-            const subtitles = document.getElementById('subtitles');
-            const sendBtn = document.getElementById('sendBtn');
-            const text = input.value.trim();
+        // --- 7. PIPELINE EXECUTION & INTEGRATION ---
+        const btnSpeak = document.getElementById('btn-speak');
+        const btnWhatsapp = document.getElementById('btn-whatsapp');
+        const textInput = document.getElementById('text-input');
+        const chatHistory = document.getElementById('chat-history');
+        const subtitleOverlay = document.getElementById('subtitle-overlay');
+        const statusBadge = document.getElementById('engine-status');
+        const progressContainer = document.getElementById('progress-container');
+        const progressBar = document.getElementById('progress-bar');
 
+        function appendMessage(sender, text) {
+            const bubble = document.createElement('div');
+            bubble.className = `chat-bubble ${sender}`;
+            bubble.textContent = text;
+            chatHistory.appendChild(bubble);
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+
+        async function startSpeechAndRecord() {
+            const text = textInput.value.trim();
             if (!text) return;
 
-            subtitles.innerText = `💬 "${text}"`;
-            input.value = '';
-            sendBtn.disabled = true;
+            initAudioContext();
+            if (audioContext.state === 'suspended') {
+                await audioContext.resume();
+            }
+
+            currentState = STATE.SPEAKING;
+            btnSpeak.disabled = true;
+            btnWhatsapp.style.display = 'none';
+            statusBadge.textContent = 'DANİŞİR VƏ YAZIR...';
+            statusBadge.style.color = '#ff0055';
+
+            appendMessage('user', text);
+            subtitleOverlay.textContent = text;
+            subtitleOverlay.style.opacity = '1';
+            progressContainer.style.display = 'block';
+
+            // Viseme sequence map creation
+            speechVisemeData = textToVisemes(text);
+            speechStartTime = performance.now();
+
+            // Set up WebGL Stream Capture + Audio MediaRecorder
+            const canvasStream = canvas.captureStream(30);
+            
+            // Generate synthetic audio track for video payload
+            const audioSource = createAudioBufferFromSpeech(text, speechVisemeData.totalDuration);
+            const combinedStream = new MediaStream([
+                ...canvasStream.getVideoTracks(),
+                ...mediaStreamDestination.stream.getAudioTracks()
+            ]);
+
+            recordedChunks = [];
+            const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9') 
+                ? 'video/webm;codecs=vp9' 
+                : 'video/webm';
+
+            mediaRecorder = new MediaRecorder(combinedStream, { mimeType });
+            
+            mediaRecorder.ondataavailable = (e) => {
+                if (e.data.size > 0) recordedChunks.push(e.data);
+            };
+
+            mediaRecorder.onstop = () => {
+                generatedVideoBlob = new Blob(recordedChunks, { type: 'video/webm' });
+                btnWhatsapp.style.display = 'flex';
+                statusBadge.textContent = 'HAZIR';
+                statusBadge.style.color = '#00f2ff';
+                progressContainer.style.display = 'none';
+                progressBar.style.width = '0%';
+            };
+
+            // Start Audio & Speech Synthesis
+            audioSource.start();
+            mediaRecorder.start();
 
             if ('speechSynthesis' in window) {
-                // Əvvəlki nitqi saxlayırıq
-                window.speechSynthesis.cancel();
-
+                synth.cancel();
                 const utterance = new SpeechSynthesisUtterance(text);
-                
-                // Mümkünsə Azərbaycan dilini, yoxdursa standart dili seçir
-                const voices = window.speechSynthesis.getVoices();
-                const azVoice = voices.find(v => v.lang.includes('az') || v.lang.includes('tr'));
-                if (azVoice) utterance.voice = azVoice;
+                utterance.rate = 0.95;
+                utterance.pitch = 1.0;
+                synth.speak(utterance);
+            }
 
-                utterance.rate = 1;
-                utterance.pitch = 1;
+            // Update Progress Bar
+            const duration = speechVisemeData.totalDuration;
+            const startTime = Date.now();
+            const progressInterval = setInterval(() => {
+                const elapsed = Date.now() - startTime;
+                const progress = Math.min((elapsed / duration) * 100, 100);
+                progressBar.style.width = `${progress}%`;
+                if (elapsed >= duration) clearInterval(progressInterval);
+            }, 50);
+        }
 
-                utterance.onstart = () => {
-                    isSpeaking = true;
-                };
+        function stopSpeaking() {
+            currentState = STATE.IDLE;
+            subtitleOverlay.style.opacity = '0';
+            btnSpeak.disabled = false;
+            
+            visemeTargets.jawOpen = 0;
+            visemeTargets.lipWidth = 0;
+            visemeTargets.lipPucker = 0;
 
-                utterance.onend = () => {
-                    isSpeaking = false;
-                    sendBtn.disabled = false;
-                    subtitles.innerText = 'Mesaj oxundu. Yenisini yazın...';
-                };
-
-                utterance.onerror = () => {
-                    isSpeaking = false;
-                    sendBtn.disabled = false;
-                };
-
-                window.speechSynthesis.speak(utterance);
-            } else {
-                alert("Brauzeriniz Speech Synthesis dəstəkləmir.");
-                sendBtn.disabled = false;
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                mediaRecorder.stop();
             }
         }
 
-        // Enter düyməsi ilə göndərmək üçün
-        document.getElementById('messageInput').addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') {
-                sendMessage();
+        // WhatsApp Share Payload Handler
+        btnWhatsapp.addEventListener('click', async () => {
+            if (!generatedVideoBlob) return;
+
+            const videoFile = new File([generatedVideoBlob], "avatar_message.webm", { type: "video/webm" });
+
+            if (navigator.canShare && navigator.canShare({ files: [videoFile] })) {
+                try {
+                    await navigator.share({
+                        files: [videoFile],
+                        title: '3D Avatar Mesajı',
+                        text: '3D Avatar vasitəsilə hazırladığım video mesaj:'
+                    });
+                } catch (err) {
+                    console.warn("Sharing failed or was cancelled:", err);
+                }
+            } else {
+                // Fallback: Direct Download and Open WhatsApp Web
+                const blobUrl = URL.createObjectURL(generatedVideoBlob);
+                const a = document.createElement('a');
+                a.href = blobUrl;
+                a.download = 'avatar_message.webm';
+                a.click();
+
+                const waText = encodeURIComponent("3D Avatar video mesajımı yüklədim! Göndərmək üçün faylı əlavə edin.");
+                window.open(`https://api.whatsapp.com/send?text=${waText}`, '_blank');
             }
         });
 
-        // Ekran ölçüsü dəyişdikdə 3D canvas-ı uyğunlaşdırmaq
+        btnSpeak.addEventListener('click', startSpeechAndRecord);
+
+        // Responsive Viewport Resize Handler
         window.addEventListener('resize', () => {
-            camera.aspect = container.clientWidth / container.clientHeight;
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+            camera.aspect = width / height;
             camera.updateProjectionMatrix();
-            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.setSize(width, height);
         });
     </script>
 </body>
