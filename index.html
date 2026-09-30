@@ -2,1855 +2,1412 @@
 <html lang="az">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Neon Avatar AI</title>
+<meta name="viewport"
+      content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 
-<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+<title>VIRTUAL PRO — AI Talking Avatar</title>
 
 <style>
 *{
-    box-sizing:border-box;
-    -webkit-tap-highlight-color:transparent;
-}
-
-:root{
-    --bg:#070910;
-    --panel:#0d111d;
-    --panel2:#111827;
-    --line:#253047;
-    --cyan:#00eaff;
-    --violet:#8b5cf6;
-    --pink:#ff3cac;
-    --green:#27f5a0;
-    --text:#e9f4ff;
-    --muted:#8090a8;
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+  -webkit-tap-highlight-color:transparent;
 }
 
 html,body{
-    width:100%;
-    height:100%;
-    margin:0;
-    overflow:hidden;
-    background:var(--bg);
-    color:var(--text);
-    font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  width:100%;
+  height:100%;
+  overflow:hidden;
+  background:#050609;
+  font-family:Inter,Arial,sans-serif;
+  color:white;
 }
 
 body{
-    background:
-      radial-gradient(circle at 20% 10%,rgba(0,234,255,.08),transparent 30%),
-      radial-gradient(circle at 85% 20%,rgba(139,92,246,.09),transparent 35%),
-      #070910;
+  position:fixed;
+  inset:0;
 }
 
-.app{
-    width:100%;
-    height:100%;
-    display:grid;
-    grid-template-columns:minmax(0,1fr) 380px;
-    gap:12px;
-    padding:12px;
+#app{
+  position:fixed;
+  inset:0;
+  overflow:hidden;
+  background:
+    radial-gradient(circle at 50% 20%,#182133 0%,#080a0f 45%,#030405 100%);
 }
 
-.stage{
-    position:relative;
-    min-width:0;
-    min-height:0;
-    border:1px solid rgba(0,234,255,.15);
-    border-radius:24px;
-    overflow:hidden;
-    background:#05070d;
-    box-shadow:
-        inset 0 0 60px rgba(0,0,0,.65),
-        0 0 40px rgba(0,234,255,.04);
+#scene{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  display:block;
 }
 
-#avatarCanvas{
-    position:absolute;
-    inset:0;
-    width:100%;
-    height:100%;
-    display:block;
-}
+/* ---------- TOP UI ---------- */
 
-.hud{
-    position:absolute;
-    left:18px;
-    right:18px;
-    top:18px;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    pointer-events:none;
+.top{
+  position:absolute;
+  left:0;
+  right:0;
+  top:0;
+  padding:
+    calc(env(safe-area-inset-top) + 14px)
+    16px 10px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  z-index:20;
+  pointer-events:none;
 }
 
 .brand{
-    padding:9px 13px;
-    border:1px solid rgba(0,234,255,.22);
-    border-radius:12px;
-    background:rgba(5,9,17,.65);
-    backdrop-filter:blur(12px);
-    box-shadow:0 8px 30px rgba(0,0,0,.25);
+  pointer-events:auto;
+  display:flex;
+  align-items:center;
+  gap:10px;
 }
 
-.brand b{
-    color:var(--cyan);
-    letter-spacing:2px;
-    font-size:12px;
+.logo{
+  width:42px;
+  height:42px;
+  border-radius:14px;
+  display:grid;
+  place-items:center;
+  font-size:21px;
+  background:rgba(255,255,255,.09);
+  border:1px solid rgba(255,255,255,.14);
+  box-shadow:
+    0 10px 35px rgba(0,0,0,.35),
+    inset 0 1px rgba(255,255,255,.08);
+  backdrop-filter:blur(20px);
+}
+
+.brandText b{
+  display:block;
+  font-size:13px;
+  letter-spacing:2px;
+}
+
+.brandText span{
+  display:block;
+  font-size:9px;
+  opacity:.5;
+  letter-spacing:1.5px;
+  margin-top:3px;
+}
+
+.topActions{
+  display:flex;
+  gap:8px;
+  pointer-events:auto;
+}
+
+.iconBtn{
+  width:42px;
+  height:42px;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:14px;
+  background:rgba(0,0,0,.28);
+  color:#fff;
+  font-size:17px;
+  backdrop-filter:blur(20px);
+}
+
+/* ---------- AVATAR INFO ---------- */
+
+.avatarInfo{
+  position:absolute;
+  z-index:10;
+  left:18px;
+  bottom:164px;
+  pointer-events:none;
+  transition:.3s;
 }
 
 .status{
-    display:flex;
-    align-items:center;
-    gap:8px;
-    padding:8px 12px;
-    border:1px solid rgba(39,245,160,.2);
-    border-radius:20px;
-    background:rgba(5,9,17,.65);
-    backdrop-filter:blur(12px);
-    font-size:11px;
-    color:#b7c7da;
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  padding:7px 11px;
+  border-radius:20px;
+  background:rgba(0,0,0,.32);
+  border:1px solid rgba(255,255,255,.1);
+  backdrop-filter:blur(16px);
+  font-size:10px;
+  color:#bfc7d4;
 }
 
 .dot{
-    width:7px;
-    height:7px;
-    border-radius:50%;
-    background:var(--green);
-    box-shadow:0 0 12px var(--green);
+  width:7px;
+  height:7px;
+  border-radius:50%;
+  background:#39ff9b;
+  box-shadow:0 0 12px #39ff9b;
 }
+
+.name{
+  margin-top:9px;
+  font-size:25px;
+  font-weight:800;
+  letter-spacing:-1px;
+}
+
+.role{
+  opacity:.48;
+  font-size:11px;
+  margin-top:3px;
+}
+
+/* ---------- SUBTITLE ---------- */
 
 .subtitle{
-    position:absolute;
-    left:7%;
-    right:7%;
-    bottom:25px;
-    min-height:48px;
-    padding:12px 18px;
-    text-align:center;
-    border-radius:15px;
-    border:1px solid rgba(0,234,255,.15);
-    background:rgba(4,7,14,.72);
-    backdrop-filter:blur(15px);
-    color:#f1f7ff;
-    font-size:14px;
-    line-height:1.45;
-    box-shadow:0 12px 35px rgba(0,0,0,.35);
+  position:absolute;
+  z-index:12;
+  left:50%;
+  transform:translateX(-50%);
+  bottom:145px;
+  width:min(88%,680px);
+  text-align:center;
+  pointer-events:none;
 }
 
-.panel{
-    min-width:0;
-    min-height:0;
-    display:flex;
-    flex-direction:column;
-    border:1px solid rgba(139,92,246,.16);
-    border-radius:24px;
-    overflow:hidden;
-    background:
-      linear-gradient(145deg,rgba(17,24,39,.96),rgba(7,10,18,.98));
-    box-shadow:
-      inset 1px 1px 0 rgba(255,255,255,.025),
-      0 20px 50px rgba(0,0,0,.35);
+.subtitleText{
+  display:inline-block;
+  padding:8px 15px;
+  border-radius:16px;
+  background:rgba(0,0,0,.34);
+  border:1px solid rgba(255,255,255,.08);
+  backdrop-filter:blur(18px);
+  font-size:14px;
+  line-height:1.45;
+  text-shadow:0 2px 12px #000;
 }
 
-.panel-head{
-    padding:18px;
-    border-bottom:1px solid var(--line);
+/* ---------- BOTTOM ---------- */
+
+.bottom{
+  position:absolute;
+  z-index:30;
+  left:0;
+  right:0;
+  bottom:0;
+  padding:
+    10px 14px
+    calc(env(safe-area-inset-bottom) + 12px);
+  background:linear-gradient(
+    to top,
+    rgba(3,4,6,.97),
+    rgba(3,4,6,.72),
+    transparent
+  );
 }
 
-.panel-head h1{
-    margin:0;
-    font-size:18px;
-    letter-spacing:.3px;
+.inputRow{
+  display:flex;
+  gap:8px;
+  max-width:800px;
+  margin:auto;
 }
 
-.panel-head p{
-    margin:5px 0 0;
-    color:var(--muted);
-    font-size:11px;
+#textInput{
+  min-width:0;
+  flex:1;
+  height:52px;
+  border:none;
+  outline:none;
+  color:white;
+  padding:0 17px;
+  border-radius:18px;
+  background:rgba(255,255,255,.075);
+  border:1px solid rgba(255,255,255,.1);
+  backdrop-filter:blur(25px);
+  font-size:14px;
 }
 
-.chat{
-    flex:1;
-    min-height:0;
-    overflow:auto;
-    padding:15px;
-    display:flex;
-    flex-direction:column;
-    gap:10px;
+#textInput::placeholder{
+  color:rgba(255,255,255,.4);
 }
 
-.chat::-webkit-scrollbar{
-    width:4px;
+.speakBtn{
+  width:58px;
+  height:52px;
+  border:none;
+  border-radius:18px;
+  color:white;
+  font-size:20px;
+  background:linear-gradient(135deg,#246bff,#7a42ff);
+  box-shadow:
+    0 8px 28px rgba(73,82,255,.35);
 }
 
-.chat::-webkit-scrollbar-thumb{
-    background:#26334b;
-    border-radius:10px;
+.speakBtn:active{
+  transform:scale(.94);
 }
 
-.msg{
-    max-width:88%;
-    padding:11px 13px;
-    border-radius:16px;
-    font-size:13px;
-    line-height:1.4;
-    animation:msgIn .25s ease;
+.shareRow{
+  display:flex;
+  justify-content:center;
+  gap:8px;
+  margin-top:8px;
 }
 
-.msg.user{
-    align-self:flex-end;
-    background:linear-gradient(135deg,#164e63,#123047);
-    border:1px solid rgba(0,234,255,.18);
+.smallBtn{
+  border:1px solid rgba(255,255,255,.1);
+  color:#fff;
+  background:rgba(255,255,255,.06);
+  padding:8px 13px;
+  border-radius:13px;
+  font-size:10px;
+  backdrop-filter:blur(15px);
 }
 
-.msg.avatar{
-    align-self:flex-start;
-    background:#111827;
-    border:1px solid rgba(139,92,246,.15);
+/* ---------- RECORDING ---------- */
+
+.rec{
+  position:absolute;
+  z-index:25;
+  top:80px;
+  left:50%;
+  transform:translateX(-50%);
+  display:none;
+  align-items:center;
+  gap:7px;
+  padding:7px 12px;
+  border-radius:20px;
+  background:rgba(255,30,60,.15);
+  border:1px solid rgba(255,60,80,.3);
+  font-size:10px;
+  backdrop-filter:blur(15px);
 }
 
-@keyframes msgIn{
-    from{opacity:0;transform:translateY(6px)}
-    to{opacity:1;transform:none}
+.rec.show{
+  display:flex;
 }
 
-.controls{
-    padding:14px;
-    border-top:1px solid var(--line);
-    background:rgba(4,7,14,.45);
+.recDot{
+  width:7px;
+  height:7px;
+  background:#ff334f;
+  border-radius:50%;
+  animation:pulse 1s infinite;
 }
 
-textarea{
-    width:100%;
-    height:90px;
-    resize:none;
-    outline:none;
-    border:1px solid #26334b;
-    border-radius:16px;
-    padding:13px;
-    color:var(--text);
-    background:#090e18;
-    font:13px/1.45 inherit;
-    box-shadow:inset 0 2px 12px rgba(0,0,0,.3);
+@keyframes pulse{
+  50%{opacity:.25}
 }
 
-textarea:focus{
-    border-color:rgba(0,234,255,.5);
-    box-shadow:
-      0 0 0 2px rgba(0,234,255,.05),
-      inset 0 2px 12px rgba(0,0,0,.3);
+/* ---------- TAP TO TALK ---------- */
+
+.tapHint{
+  position:absolute;
+  z-index:9;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+  pointer-events:none;
+  opacity:.25;
+  font-size:10px;
+  letter-spacing:2px;
+  transition:opacity .5s;
 }
 
-.actions{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:8px;
-    margin-top:9px;
+.tapHint.hide{
+  opacity:0;
 }
 
-button{
-    border:0;
-    outline:none;
-    cursor:pointer;
-    color:white;
-    border-radius:13px;
-    min-height:43px;
-    padding:0 13px;
-    font-weight:700;
-    font-size:12px;
-    transition:.18s ease;
-}
+/* ---------- LANDSCAPE ---------- */
 
-button:active{
-    transform:scale(.97);
-}
+@media(min-width:800px){
+  .avatarInfo{
+    bottom:125px;
+    left:30px;
+  }
 
-.speak{
-    background:linear-gradient(135deg,#00a9bd,#006dff);
-    box-shadow:0 7px 25px rgba(0,174,255,.18);
-}
+  .subtitle{
+    bottom:105px;
+  }
 
-.stop{
-    background:#171d2a;
-    border:1px solid #2b3850;
-}
-
-.share{
-    display:none;
-    margin-top:8px;
-    width:100%;
-    background:linear-gradient(135deg,#12b76a,#087f52);
-}
-
-.share.show{
-    display:block;
-}
-
-.progress-wrap{
-    margin-top:10px;
-    height:5px;
-    overflow:hidden;
-    border-radius:10px;
-    background:#1a2333;
-}
-
-.progress{
-    width:0%;
-    height:100%;
-    background:linear-gradient(90deg,var(--cyan),var(--violet),var(--pink));
-    box-shadow:0 0 15px rgba(0,234,255,.7);
-    transition:width .08s linear;
-}
-
-.meta{
-    margin-top:7px;
-    display:flex;
-    justify-content:space-between;
-    color:#63728b;
-    font-size:10px;
-}
-
-@media(max-width:850px){
-    .app{
-        grid-template-columns:1fr;
-        grid-template-rows:55vh 45vh;
-        padding:7px;
-        gap:7px;
-    }
-
-    .panel{
-        border-radius:18px;
-    }
-
-    .stage{
-        border-radius:18px;
-    }
-
-    .panel-head{
-        padding:10px 13px;
-    }
-
-    .panel-head h1{
-        font-size:15px;
-    }
-
-    .chat{
-        padding:9px 12px;
-    }
-
-    textarea{
-        height:62px;
-    }
-
-    .controls{
-        padding:9px;
-    }
+  .bottom{
+    padding-bottom:20px;
+  }
 }
 </style>
 </head>
 
 <body>
 
-<div class="app">
+<div id="app">
 
-    <section class="stage">
-        <canvas id="avatarCanvas"></canvas>
+<canvas id="scene"></canvas>
 
-        <div class="hud">
-            <div class="brand">
-                <b>NEON AVATAR</b>
-            </div>
+<div class="top">
+  <div class="brand">
+    <div class="logo">✦</div>
+    <div class="brandText">
+      <b>VIRTUAL PRO</b>
+      <span>AI DIGITAL HUMAN</span>
+    </div>
+  </div>
 
-            <div class="status">
-                <span class="dot" id="statusDot"></span>
-                <span id="statusText">READY</span>
-            </div>
-        </div>
+  <div class="topActions">
+    <button class="iconBtn" id="fullscreen">⛶</button>
+  </div>
+</div>
 
-        <div class="subtitle" id="subtitle">
-            Salam! Mən sizin 3D avatar köməkçinizəm.
-        </div>
-    </section>
+<div class="rec" id="rec">
+  <div class="recDot"></div>
+  RECORDING
+</div>
 
-    <aside class="panel">
+<div class="avatarInfo">
+  <div class="status">
+    <span class="dot"></span>
+    ONLINE · READY
+  </div>
 
-        <div class="panel-head">
-            <h1>Avatar Chat</h1>
-            <p>Speech • Viseme • Gesture • Video</p>
-        </div>
+  <div class="name">Virtual Pro</div>
+  <div class="role">AI Football Presenter</div>
+</div>
 
-        <div class="chat" id="chat">
-            <div class="msg avatar">
-                Salam! Mən mətninizi danışa, dodaq hərəkətlərini sinxronlaşdıra və jestlərlə müşayiət edə bilərəm.
-            </div>
-        </div>
+<div class="subtitle">
+  <span class="subtitleText" id="subtitle"></span>
+</div>
 
-        <div class="controls">
+<div class="tapHint" id="tapHint">
+  TAP AVATAR TO SPEAK
+</div>
 
-            <textarea
-                id="message"
-                maxlength="1200"
-                placeholder="Avatarın deməsini istədiyiniz mətni yazın..."
-            ></textarea>
+<div class="bottom">
 
-            <div class="actions">
-                <button class="speak" id="speakBtn">
-                    ▶ DANIŞDIR + VİDEO
-                </button>
+  <div class="inputRow">
 
-                <button class="stop" id="stopBtn">
-                    ■ DAYANDIR
-                </button>
-            </div>
+    <input
+      id="textInput"
+      type="text"
+      autocomplete="off"
+      placeholder="Avatarın danışacağı mətni yaz..."
+    >
 
-            <button class="share" id="shareBtn">
-                WhatsApp ilə Göndər
-            </button>
+    <button class="speakBtn" id="speak">
+      🎙
+    </button>
 
-            <div class="progress-wrap">
-                <div class="progress" id="progress"></div>
-            </div>
+  </div>
 
-            <div class="meta">
-                <span id="recordState">Video hazır deyil</span>
-                <span id="counter">0 / 1200</span>
-            </div>
+  <div class="shareRow">
+    <button class="smallBtn" id="recordBtn">
+      🎥 Video
+    </button>
 
-        </div>
-    </aside>
+    <button class="smallBtn" id="shareBtn">
+      📤 WhatsApp / Paylaş
+    </button>
+
+    <button class="smallBtn" id="stopBtn">
+      ■ Stop
+    </button>
+  </div>
 
 </div>
 
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+
 <script>
-"use strict";
+/* ============================================================
+   VIRTUAL PRO
+   SINGLE FILE 3D DIGITAL HUMAN
+   ============================================================ */
 
-/* =========================================================
-   BASIC DOM
-========================================================= */
-
-const canvas = document.getElementById("avatarCanvas");
-const subtitle = document.getElementById("subtitle");
-const chat = document.getElementById("chat");
-const message = document.getElementById("message");
-const speakBtn = document.getElementById("speakBtn");
-const stopBtn = document.getElementById("stopBtn");
-const shareBtn = document.getElementById("shareBtn");
-const progress = document.getElementById("progress");
-const statusText = document.getElementById("statusText");
-const recordState = document.getElementById("recordState");
-const counter = document.getElementById("counter");
-const statusDot = document.getElementById("statusDot");
-
-message.addEventListener("input",()=>{
-    counter.textContent = message.value.length + " / 1200";
-});
-
-/* =========================================================
-   THREE.JS SCENE
-========================================================= */
-
-const scene = new THREE.Scene();
-
-scene.background = new THREE.Color(0x05070d);
-
-scene.fog = new THREE.FogExp2(0x05070d,0.035);
-
-const camera = new THREE.PerspectiveCamera(
-    34,
-    1,
-    .1,
-    100
-);
-
-camera.position.set(0,1.25,6.8);
+const canvas = document.getElementById("scene");
 
 const renderer = new THREE.WebGLRenderer({
-    canvas,
-    antialias:true,
-    alpha:false,
-    preserveDrawingBuffer:false
+  canvas,
+  antialias:true,
+  alpha:false,
+  preserveDrawingBuffer:true
 });
 
-renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+renderer.setPixelRatio(Math.min(devicePixelRatio,1.7));
+renderer.setSize(innerWidth,innerHeight);
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
-
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.15;
 
-/* =========================================================
-   LIGHTING
-========================================================= */
+const scene = new THREE.Scene();
 
-const ambient = new THREE.AmbientLight(0x8ea4c8,.8);
+scene.background = new THREE.Color(0x05070b);
+
+const camera = new THREE.PerspectiveCamera(
+  38,
+  innerWidth/innerHeight,
+  .1,
+  100
+);
+
+camera.position.set(0,1.75,5.7);
+
+const clock = new THREE.Clock();
+
+/* ============================================================
+   LIGHTING
+   ============================================================ */
+
+const ambient = new THREE.HemisphereLight(
+  0x9bb8ff,
+  0x090b10,
+  1.8
+);
+
 scene.add(ambient);
 
-const keyLight = new THREE.DirectionalLight(0xffffff,2.4);
-keyLight.position.set(-3,5,5);
-keyLight.castShadow = true;
-keyLight.shadow.mapSize.width = 2048;
-keyLight.shadow.mapSize.height = 2048;
-keyLight.shadow.camera.near = .1;
-keyLight.shadow.camera.far = 20;
-keyLight.shadow.camera.left = -5;
-keyLight.shadow.camera.right = 5;
-keyLight.shadow.camera.top = 7;
-keyLight.shadow.camera.bottom = -4;
-scene.add(keyLight);
+const key = new THREE.DirectionalLight(
+  0xffffff,
+  3.1
+);
 
-const fillLight = new THREE.DirectionalLight(0x4488ff,1.15);
-fillLight.position.set(4,2,2);
-scene.add(fillLight);
+key.position.set(-3,5,4);
+key.castShadow=true;
 
-const rimLight = new THREE.DirectionalLight(0x00eaff,2.6);
-rimLight.position.set(0,4,-5);
-scene.add(rimLight);
+key.shadow.mapSize.width=1024;
+key.shadow.mapSize.height=1024;
 
-/* =========================================================
+scene.add(key);
+
+const rim = new THREE.DirectionalLight(
+  0x5e83ff,
+  3
+);
+
+rim.position.set(4,3,-4);
+scene.add(rim);
+
+const warm = new THREE.PointLight(
+  0xff9b6b,
+  2.2,
+  8
+);
+
+warm.position.set(-3,2,2);
+scene.add(warm);
+
+/* ============================================================
    MATERIALS
-========================================================= */
+   ============================================================ */
 
-function mat(color,rough=.45,metal=.05){
-    return new THREE.MeshStandardMaterial({
-        color,
-        roughness:rough,
-        metalness:metal
-    });
+function mat(color,rough=.55,metal=0){
+  return new THREE.MeshStandardMaterial({
+    color,
+    roughness:rough,
+    metalness:metal
+  });
 }
 
-const skin = mat(0xd89b78,.65,0);
-const skinDark = mat(0x9d6048,.7,0);
-const shirt = mat(0x101b30,.5,.35);
-const shirt2 = mat(0x16284a,.45,.35);
-const black = mat(0x050609,.3,.15);
-const eyeWhite = mat(0xf5f8ff,.18,0);
-const irisMat = mat(0x26e8ff,.15,.4);
-const mouthDark = mat(0x210b12,.8,0);
-const lipMat = mat(0x9e4053,.45,.05);
+const skin = mat(0xb87857,.72);
+const skinDark = mat(0x8c4d38,.8);
+const hairMat = mat(0x171311,.72);
+const white = mat(0xf0f0ed,.42);
+const black = mat(0x090b10,.3);
+const shirtMat = mat(0x11151d,.42);
+const pantsMat = mat(0x080b11,.7);
 
-/* =========================================================
+/* ============================================================
    AVATAR ROOT
-========================================================= */
+   ============================================================ */
 
 const avatar = new THREE.Group();
-avatar.position.y = -1.45;
+avatar.position.y = -1.65;
 scene.add(avatar);
 
-/* =========================================================
-   TORSO
-========================================================= */
-
 const torso = new THREE.Group();
+torso.position.y=2.0;
 avatar.add(torso);
 
-const torsoMesh = new THREE.Mesh(
-    new THREE.CapsuleGeometry(1.05,1.35,12,32),
-    shirt
+/* ============================================================
+   TORSO
+   ============================================================ */
+
+const chestGeo = new THREE.SphereGeometry(1,32,24);
+chestGeo.scale(.92,1.08,.52);
+
+const chest = new THREE.Mesh(chestGeo,shirtMat);
+chest.castShadow=true;
+torso.add(chest);
+
+/* neck */
+
+const neck = new THREE.Mesh(
+  new THREE.CylinderGeometry(.25,.31,.5,24),
+  skin
 );
 
-torsoMesh.scale.set(1.18,.95,.72);
-torsoMesh.position.y = -.25;
-torsoMesh.castShadow = true;
-torsoMesh.receiveShadow = true;
-torso.add(torsoMesh);
-
-const collar = new THREE.Mesh(
-    new THREE.TorusGeometry(.36,.075,12,32),
-    shirt2
-);
-
-collar.rotation.x = Math.PI/2;
-collar.position.set(0,.52,.63);
-collar.scale.set(1.25,.8,1);
-collar.castShadow = true;
-torso.add(collar);
-
-/* =========================================================
-   NECK
-========================================================= */
-
-const neck = new THREE.Group();
-neck.position.y = .75;
+neck.position.y=1.05;
+neck.castShadow=true;
 torso.add(neck);
 
-const neckMesh = new THREE.Mesh(
-    new THREE.CylinderGeometry(.36,.43,.75,32),
-    skinDark
-);
-
-neckMesh.castShadow = true;
-neck.add(neckMesh);
-
-/* =========================================================
+/* ============================================================
    HEAD
-========================================================= */
+   ============================================================ */
 
 const head = new THREE.Group();
-head.position.set(0,1.43,.05);
-neck.add(head);
+head.position.y=3.02;
+torso.add(head);
 
-const skull = new THREE.Mesh(
-    new THREE.SphereGeometry(1.02,48,32),
-    skin
-);
+/* skull */
 
-skull.scale.set(.93,1.12,.86);
-skull.castShadow = true;
-skull.receiveShadow = true;
+const skullGeo = new THREE.SphereGeometry(1,48,36);
+skullGeo.scale(.76,.91,.70);
+
+const skull = new THREE.Mesh(skullGeo,skin);
+skull.castShadow=true;
 head.add(skull);
 
-/* ears */
+/* jaw */
 
-function createEar(side){
-    const ear = new THREE.Mesh(
-        new THREE.SphereGeometry(.22,24,16),
-        skin
-    );
+const jaw = new THREE.Group();
+jaw.position.set(0,-.24,.03);
+head.add(jaw);
 
-    ear.scale.set(.48,1,.55);
-    ear.position.set(side*.9,.03,0);
-    ear.castShadow = true;
+const jawGeo = new THREE.SphereGeometry(.67,40,24);
+jawGeo.scale(1,.48,.78);
 
-    head.add(ear);
-}
+const jawMesh = new THREE.Mesh(jawGeo,skin);
+jawMesh.castShadow=true;
+jaw.add(jawMesh);
 
-createEar(-1);
-createEar(1);
-
-/* =========================================================
+/* ============================================================
    HAIR
-========================================================= */
+   ============================================================ */
 
 const hair = new THREE.Mesh(
-    new THREE.SphereGeometry(1.02,32,20,0,Math.PI*2,0,Math.PI*.48),
-    black
+  new THREE.SphereGeometry(.78,32,22,0,Math.PI*2,0,Math.PI*.48),
+  hairMat
 );
 
-hair.scale.set(.96,.95,.9);
-hair.position.y = .42;
-hair.rotation.x = -.05;
+hair.scale.set(1.01,1.05,1);
+hair.position.y=.28;
 head.add(hair);
 
-/* =========================================================
-   EYES
-========================================================= */
+/* side hair */
 
-const eyes = [];
+for(let side of [-1,1]){
+  const h = new THREE.Mesh(
+    new THREE.SphereGeometry(.18,18,14),
+    hairMat
+  );
+
+  h.scale.set(.75,2.3,.8);
+  h.position.set(side*.67,.02,-.02);
+  head.add(h);
+}
+
+/* ============================================================
+   EYES
+   ============================================================ */
 
 function createEye(side){
 
-    const eyeGroup = new THREE.Group();
+  const group = new THREE.Group();
 
-    eyeGroup.position.set(side*.36,.23,.79);
+  group.position.set(side*.29,.10,.635);
 
-    const white = new THREE.Mesh(
-        new THREE.SphereGeometry(.185,24,18),
-        eyeWhite
-    );
+  const whiteEye = new THREE.Mesh(
+    new THREE.SphereGeometry(.115,24,18),
+    white
+  );
 
-    white.scale.set(1,.78,.6);
-    white.castShadow = true;
-    eyeGroup.add(white);
+  whiteEye.scale.z=.5;
+  group.add(whiteEye);
 
-    const iris = new THREE.Mesh(
-        new THREE.SphereGeometry(.095,20,16),
-        irisMat
-    );
+  const iris = new THREE.Mesh(
+    new THREE.SphereGeometry(.055,20,16),
+    mat(0x35281d,.3)
+  );
 
-    iris.position.set(0,0,.145);
-    eyeGroup.add(iris);
+  iris.position.z=.075;
+  group.add(iris);
 
-    const pupil = new THREE.Mesh(
-        new THREE.SphereGeometry(.044,16,12),
-        black
-    );
+  const pupil = new THREE.Mesh(
+    new THREE.SphereGeometry(.025,16,12),
+    black
+  );
 
-    pupil.position.set(0,0,.22);
-    eyeGroup.add(pupil);
+  pupil.position.z=.105;
+  group.add(pupil);
 
-    head.add(eyeGroup);
-    eyes.push({
-        group:eyeGroup,
-        white,
-        iris,
-        pupil,
-        side
-    });
+  const lid = new THREE.Mesh(
+    new THREE.SphereGeometry(.13,20,10,0,Math.PI*2,0,Math.PI*.42),
+    skin
+  );
+
+  lid.scale.set(1.05,.7,.35);
+  lid.position.y=.04;
+  lid.visible=false;
+
+  group.add(lid);
+
+  head.add(group);
+
+  return {
+    group,
+    lid,
+    iris,
+    pupil
+  };
 }
 
-createEye(-1);
-createEye(1);
+const eyeL=createEye(-1);
+const eyeR=createEye(1);
 
-/* =========================================================
+/* ============================================================
    EYEBROWS
-========================================================= */
+   ============================================================ */
 
-const brows = [];
+function brow(side){
 
-function createBrow(side){
+  const b = new THREE.Mesh(
+    new THREE.BoxGeometry(.27,.045,.06),
+    hairMat
+  );
 
-    const brow = new THREE.Mesh(
-        new THREE.BoxGeometry(.32,.065,.07),
-        black
-    );
+  b.position.set(side*.29,.29,.63);
+  b.rotation.z=side*.12;
+  head.add(b);
 
-    brow.position.set(side*.36,.51,.83);
-    brow.rotation.z = side*.08;
-
-    head.add(brow);
-    brows.push(brow);
+  return b;
 }
 
-createBrow(-1);
-createBrow(1);
+const browL=brow(-1);
+const browR=brow(1);
 
-/* =========================================================
+/* ============================================================
    NOSE
-========================================================= */
+   ============================================================ */
 
 const nose = new THREE.Mesh(
-    new THREE.SphereGeometry(.16,20,20),
-    skinDark
+  new THREE.ConeGeometry(.12,.38,20),
+  skinDark
 );
 
-nose.scale.set(.7,1.45,.8);
-nose.position.set(0,-.02,.88);
+nose.rotation.x=Math.PI/2;
+nose.position.set(0,.0,.72);
 head.add(nose);
 
-/* =========================================================
+/* ============================================================
    MOUTH SYSTEM
-========================================================= */
+   ============================================================ */
 
 const mouth = new THREE.Group();
-mouth.position.set(0,-.40,.82);
+
+mouth.position.set(0,-.28,.70);
 head.add(mouth);
-
-const jaw = new THREE.Group();
-jaw.position.y = 0;
-mouth.add(jaw);
-
-const mouthCavity = new THREE.Mesh(
-    new THREE.SphereGeometry(.34,32,20),
-    mouthDark
-);
-
-mouthCavity.scale.set(1,.42,.3);
-mouthCavity.position.z = .02;
-jaw.add(mouthCavity);
-
-/* teeth */
-
-const teeth = new THREE.Mesh(
-    new THREE.BoxGeometry(.48,.12,.08),
-    eyeWhite
-);
-
-teeth.position.set(0,.08,.28);
-teeth.visible = false;
-jaw.add(teeth);
 
 /* upper lip */
 
 const upperLip = new THREE.Mesh(
-    new THREE.SphereGeometry(.24,24,16),
-    lipMat
+  new THREE.SphereGeometry(.17,24,12),
+  skinDark
 );
 
-upperLip.scale.set(1.65,.27,.32);
-upperLip.position.set(0,.045,.31);
-upperLip.castShadow = true;
+upperLip.scale.set(1.4,.35,.32);
+upperLip.position.y=.025;
 mouth.add(upperLip);
 
 /* lower lip */
 
 const lowerLip = new THREE.Mesh(
-    new THREE.SphereGeometry(.23,24,16),
-    lipMat
+  new THREE.SphereGeometry(.18,24,12),
+  skinDark
 );
 
-lowerLip.scale.set(1.65,.30,.32);
-lowerLip.position.set(0,-.065,.32);
-lowerLip.castShadow = true;
+lowerLip.scale.set(1.45,.35,.35);
+lowerLip.position.y=-.045;
 mouth.add(lowerLip);
 
-/* mouth corners */
+/* teeth */
 
-const cornerL = new THREE.Mesh(
-    new THREE.SphereGeometry(.065,16,12),
-    lipMat
+const teeth = new THREE.Mesh(
+  new THREE.BoxGeometry(.28,.08,.035),
+  white
 );
 
-const cornerR = cornerL.clone();
+teeth.position.z=.045;
+teeth.visible=false;
+mouth.add(teeth);
 
-cornerL.position.set(-.38,-.005,.31);
-cornerR.position.set(.38,-.005,.31);
+/* mouth cavity */
 
-mouth.add(cornerL,cornerR);
+const cavity = new THREE.Mesh(
+  new THREE.SphereGeometry(.17,24,16),
+  black
+);
 
-/* =========================================================
-   ARMS / HAND HIERARCHY
-========================================================= */
+cavity.scale.set(1.5,.65,.3);
+cavity.position.z=.025;
+mouth.add(cavity);
+
+/* ============================================================
+   SHOULDERS / ARMS
+   ============================================================ */
+
+function capsule(length,radius,material){
+
+  const g=new THREE.CapsuleGeometry(
+    radius,
+    length,
+    8,
+    16
+  );
+
+  const m=new THREE.Mesh(g,material);
+  m.castShadow=true;
+
+  return m;
+}
 
 function createArm(side){
 
-    const shoulder = new THREE.Group();
-    shoulder.position.set(side*1.02,.2,0);
-    torso.add(shoulder);
+  const shoulder=new THREE.Group();
+  shoulder.position.set(side*.9,2.35,0);
+  torso.add(shoulder);
 
-    const upper = new THREE.Group();
-    shoulder.add(upper);
+  const upper=capsule(.72,.17,shirtMat);
+  upper.position.y=-.38;
+  shoulder.add(upper);
 
-    const upperMesh = new THREE.Mesh(
-        new THREE.CapsuleGeometry(.20,.72,8,16),
-        shirt2
-    );
+  const elbow=new THREE.Group();
+  elbow.position.y=-.72;
+  shoulder.add(elbow);
 
-    upperMesh.position.y = -.38;
-    upperMesh.castShadow = true;
-    upper.add(upperMesh);
+  const fore=capsule(.67,.145,skin);
+  fore.position.y=-.34;
+  elbow.add(fore);
 
-    const elbow = new THREE.Group();
-    elbow.position.y = -.78;
-    upper.add(elbow);
+  const hand=new THREE.Mesh(
+    new THREE.SphereGeometry(.18,20,16),
+    skin
+  );
 
-    const fore = new THREE.Mesh(
-        new THREE.CapsuleGeometry(.17,.65,8,16),
-        skin
-    );
+  hand.scale.set(.8,1.15,.7);
+  hand.position.y=-.7;
+  elbow.add(hand);
 
-    fore.position.y = -.34;
-    fore.castShadow = true;
-    elbow.add(fore);
-
-    const hand = new THREE.Group();
-    hand.position.y = -.72;
-    elbow.add(hand);
-
-    const palm = new THREE.Mesh(
-        new THREE.SphereGeometry(.19,20,16),
-        skin
-    );
-
-    palm.scale.set(.85,1.25,.65);
-    palm.castShadow = true;
-    hand.add(palm);
-
-    return {
-        shoulder,
-        upper,
-        elbow,
-        hand
-    };
+  return {
+    shoulder,
+    elbow,
+    hand
+  };
 }
 
-const leftArm = createArm(-1);
-const rightArm = createArm(1);
+const leftArm=createArm(-1);
+const rightArm=createArm(1);
 
-/* =========================================================
-   BACKGROUND
-========================================================= */
+/* ============================================================
+   WAIST + LEGS
+   ============================================================ */
 
-const floor = new THREE.Mesh(
-    new THREE.CircleGeometry(8,64),
-    new THREE.MeshStandardMaterial({
-        color:0x070b14,
-        roughness:.9,
-        metalness:.05
-    })
+const waist=new THREE.Mesh(
+  new THREE.CylinderGeometry(.52,.63,.42,28),
+  pantsMat
 );
 
-floor.rotation.x = -Math.PI/2;
-floor.position.y = -2.55;
-floor.receiveShadow = true;
-scene.add(floor);
+waist.position.y=.75;
+torso.add(waist);
 
-const ring = new THREE.Mesh(
-    new THREE.TorusGeometry(2.4,.012,12,100),
-    new THREE.MeshBasicMaterial({
-        color:0x00eaff,
-        transparent:true,
-        opacity:.32
-    })
+function leg(side){
+
+  const g=new THREE.Group();
+  g.position.set(side*.34,.35,0);
+  avatar.add(g);
+
+  const thigh=capsule(.82,.22,pantsMat);
+  thigh.position.y=-.48;
+  g.add(thigh);
+
+  const shin=capsule(.78,.18,pantsMat);
+  shin.position.y=-1.3;
+  g.add(shin);
+
+  const shoe=new THREE.Mesh(
+    new THREE.SphereGeometry(.22,24,16),
+    black
+  );
+
+  shoe.scale.set(1.45,.65,1.9);
+  shoe.position.set(0,-1.78,.12);
+  g.add(shoe);
+
+  return g;
+}
+
+const legL=leg(-1);
+const legR=leg(1);
+
+/* ============================================================
+   GROUND
+   ============================================================ */
+
+const ground=new THREE.Mesh(
+  new THREE.CircleGeometry(5,64),
+  new THREE.MeshStandardMaterial({
+    color:0x06080c,
+    roughness:.82,
+    metalness:.15
+  })
 );
 
-ring.rotation.x = Math.PI/2;
-ring.position.y = -2.53;
+ground.rotation.x=-Math.PI/2;
+ground.position.y=-3.05;
+ground.receiveShadow=true;
+scene.add(ground);
+
+/* glow ring */
+
+const ring=new THREE.Mesh(
+  new THREE.RingGeometry(1.3,1.35,64),
+  new THREE.MeshBasicMaterial({
+    color:0x315fff,
+    transparent:true,
+    opacity:.32,
+    side:THREE.DoubleSide
+  })
+);
+
+ring.rotation.x=-Math.PI/2;
+ring.position.y=-3.03;
 scene.add(ring);
 
-/* =========================================================
-   ANIMATION STATE
-========================================================= */
+/* ============================================================
+   FACE ANIMATION
+   ============================================================ */
 
-const clock = new THREE.Clock();
+let speaking=false;
+let speechStarted=0;
+let speechEnd=0;
+let currentText="";
+let visemeIndex=0;
 
-let speaking = false;
-let recording = false;
-let destroyed = false;
+let blinkTimer=0;
+let nextBlink=2+Math.random()*4;
 
-let currentViseme = "REST";
-let targetViseme = "REST";
+function blink(){
 
-let mouthOpen = 0;
-let targetMouthOpen = 0;
+  eyeL.lid.visible=true;
+  eyeR.lid.visible=true;
 
-let blinkValue = 0;
-let blinkTarget = 0;
-
-let gestureIntensity = 0;
-let targetGestureIntensity = 0;
-
-let speechStart = 0;
-let speechDuration = 1;
-
-let recorder = null;
-let recordedChunks = [];
-let recordedBlob = null;
-let recordedUrl = null;
-
-let currentUtterance = null;
-
-/* =========================================================
-   VISeme ENGINE
-========================================================= */
-
-const visemes = {
-    A:{open:.72,width:1.12,lower:-.16,upper:.035},
-    E:{open:.48,width:1.35,lower:-.09,upper:.02},
-    I:{open:.32,width:1.30,lower:-.06,upper:.015},
-    O:{open:.68,width:.92,lower:-.13,upper:.025},
-    U:{open:.45,width:.82,lower:-.10,upper:.02},
-    M:{open:.06,width:1.05,lower:-.02,upper:.015},
-    P:{open:.05,width:1.0,lower:-.02,upper:.015},
-    B:{open:.08,width:1.0,lower:-.025,upper:.015},
-    F:{open:.22,width:1.08,lower:-.055,upper:.01},
-    S:{open:.18,width:1.28,lower:-.04,upper:.02},
-    L:{open:.28,width:1.18,lower:-.055,upper:.02},
-    REST:{open:.04,width:1,lower:0,upper:0}
-};
-
-function classifyViseme(ch){
-
-    ch = ch.toUpperCase();
-
-    if(/[AƏÁÀ]/.test(ch)) return "A";
-    if(/[EƏ]/.test(ch)) return "E";
-    if(/[İI]/.test(ch)) return "I";
-    if(/[OÖ]/.test(ch)) return "O";
-    if(/[UÜ]/.test(ch)) return "U";
-
-    if(/[MMP]/.test(ch)) return "M";
-    if(ch==="B") return "B";
-    if(/[FV]/.test(ch)) return "F";
-    if(/[SZŞÇJ]/.test(ch)) return "S";
-    if(/[LR]/.test(ch)) return "L";
-
-    return "REST";
+  setTimeout(()=>{
+    eyeL.lid.visible=false;
+    eyeR.lid.visible=false;
+  },100);
 }
 
-function getSpeechCharacter(){
+/* ============================================================
+   VISEMES
+   ============================================================ */
 
-    if(!speaking || !currentUtterance) return "REST";
+function getViseme(ch){
 
-    const text = currentUtterance.text || "";
+  ch=ch.toLowerCase();
 
-    if(!text.length) return "REST";
+  if("aə".includes(ch)) return "A";
+  if("oö".includes(ch)) return "O";
+  if("eə".includes(ch)) return "E";
+  if("uü".includes(ch)) return "U";
+  if("bmp".includes(ch)) return "M";
+  if("fv".includes(ch)) return "F";
 
-    const elapsed = performance.now() - speechStart;
-
-    const ratio = Math.max(
-        0,
-        Math.min(1,elapsed/speechDuration)
-    );
-
-    const approximateIndex = Math.min(
-        text.length-1,
-        Math.floor(ratio*text.length)
-    );
-
-    let ch = text[approximateIndex] || "";
-
-    if(ch===" " || /[,.!?;:]/.test(ch)){
-        return "REST";
-    }
-
-    return classifyViseme(ch);
+  return "REST";
 }
 
-/* =========================================================
-   BLINK
-========================================================= */
+function applyViseme(v,amount){
 
-let nextBlink = performance.now()+2500;
+  let open=.015;
 
-function updateBlink(now){
+  if(v==="A") open=.16*amount;
+  if(v==="O") open=.13*amount;
+  if(v==="E") open=.075*amount;
+  if(v==="U") open=.09*amount;
+  if(v==="M") open=.015;
+  if(v==="F") open=.035*amount;
 
-    if(now > nextBlink && blinkTarget===0){
-        blinkTarget = 1;
-        nextBlink = now + 2800 + Math.random()*3500;
-    }
+  jaw.rotation.x=-open*.75;
 
-    if(blinkTarget===1 && blinkValue>.94){
-        blinkTarget = 0;
-    }
+  upperLip.scale.y=.35+open*.8;
+  lowerLip.scale.y=.35+open*.8;
 
-    blinkValue +=
-        (blinkTarget-blinkValue)*
-        Math.min(1,clock.getDelta()*13);
+  mouth.scale.x=1+Math.sin(amount*Math.PI)*.04;
+
+  teeth.visible=amount>.35 && open>.04;
 }
 
-/* =========================================================
-   PROCEDURAL ANIMATION
-========================================================= */
+/* ============================================================
+   SPEAKING GESTURES
+   ============================================================ */
 
-function animateAvatar(now){
+function animateBody(t){
 
-    const t = now*.001;
+  const breath=Math.sin(t*1.4)*.018;
 
-    /* breathing */
+  chest.scale.y=1+breath;
+  torso.position.y=2+breath;
 
-    const breath =
-        Math.sin(t*1.8)*.035 +
-        Math.sin(t*.7)*.012;
+  if(speaking){
 
-    torsoMesh.scale.y =
-        .95 + breath;
+    const wave=Math.sin(t*5.2);
 
-    /* head idle */
+    head.rotation.y=
+      Math.sin(t*1.15)*.035;
 
-    const speakingHead =
-        speaking ? Math.sin(t*8.2)*.012 : 0;
+    head.rotation.z=
+      Math.sin(t*.9)*.018;
 
-    head.rotation.y =
-        Math.sin(t*.55)*.025 +
-        speakingHead;
+    leftArm.shoulder.rotation.z=
+      -.15 + Math.sin(t*2.1)*.08;
 
-    head.rotation.z =
-        Math.sin(t*.73)*.012;
+    rightArm.shoulder.rotation.z=
+      .15 - Math.sin(t*2.1)*.08;
 
-    head.position.y =
-        1.43 + Math.sin(t*1.4)*.018;
+    leftArm.elbow.rotation.z=
+      -.12 + Math.sin(t*3.0)*.12;
 
-    /* blink */
+    rightArm.elbow.rotation.z=
+      .12 - Math.sin(t*2.7)*.15;
 
-    const eyeScale =
-        Math.max(.06,1-blinkValue*.94);
+    leftArm.hand.rotation.z=
+      Math.sin(t*4)*.2;
 
-    eyes.forEach(e=>{
-        e.white.scale.y = .78*eyeScale;
-        e.iris.scale.y = eyeScale;
-        e.pupil.scale.y = eyeScale;
-    });
+    rightArm.hand.rotation.z=
+      Math.sin(t*4.3)*.2;
 
-    /* eyebrows */
+    browL.rotation.z=
+      -.12+Math.sin(t*2)*.03;
 
-    brows[0].rotation.z =
-        -.08 - gestureIntensity*.08;
+    browR.rotation.z=
+      .12-Math.sin(t*2)*.03;
 
-    brows[1].rotation.z =
-        .08 + gestureIntensity*.08;
+  }else{
 
-    /* speaking gesture */
+    head.rotation.y=
+      Math.sin(t*.45)*.025;
 
-    targetGestureIntensity = speaking ? 1 : 0;
+    head.rotation.z=
+      Math.sin(t*.35)*.01;
 
-    gestureIntensity +=
-        (targetGestureIntensity-gestureIntensity)*.08;
+    leftArm.shoulder.rotation.z=
+      -.15+Math.sin(t*.8)*.015;
 
-    const g = gestureIntensity;
+    rightArm.shoulder.rotation.z=
+      .15-Math.sin(t*.8)*.015;
 
-    leftArm.shoulder.rotation.z =
-        -.10 + Math.sin(t*2.1)*.10*g;
-
-    rightArm.shoulder.rotation.z =
-        .10 - Math.sin(t*2.1+1.1)*.10*g;
-
-    leftArm.upper.rotation.x =
-        Math.sin(t*2.7)*.16*g;
-
-    rightArm.upper.rotation.x =
-        Math.sin(t*2.7+1.2)*.16*g;
-
-    leftArm.elbow.rotation.z =
-        -.15 + Math.sin(t*3.2+1)*.18*g;
-
-    rightArm.elbow.rotation.z =
-        .15 + Math.sin(t*3.2)*.18*g;
-
-    leftArm.hand.position.z =
-        Math.sin(t*2.1)*.15*g;
-
-    rightArm.hand.position.z =
-        Math.cos(t*2.0)*.15*g;
-
-    /* more expressive gesture on speech */
-
-    if(speaking){
-
-        const emphasis =
-            Math.pow(
-                Math.max(0,Math.sin(t*5.5)),
-                3
-            );
-
-        leftArm.shoulder.rotation.x =
-            -.16*emphasis;
-
-        rightArm.shoulder.rotation.x =
-            -.16*emphasis;
-
-        head.rotation.x =
-            Math.sin(t*3.1)*.025;
-    }
-
-    /* viseme */
-
-    targetViseme = getSpeechCharacter();
-
-    const data =
-        visemes[targetViseme] ||
-        visemes.REST;
-
-    targetMouthOpen =
-        data.open;
-
-    mouthOpen +=
-        (targetMouthOpen-mouthOpen)*.22;
-
-    jaw.rotation.x =
-        mouthOpen*.34;
-
-    jaw.position.y =
-        -mouthOpen*.025;
-
-    mouthCavity.scale.y =
-        .42 + mouthOpen*.22;
-
-    upperLip.scale.x =
-        1.65*data.width;
-
-    lowerLip.scale.x =
-        1.65*data.width;
-
-    upperLip.position.y =
-        .045 + data.upper;
-
-    lowerLip.position.y =
-        -.065 + data.lower;
-
-    cornerL.position.x =
-        -.38*data.width;
-
-    cornerR.position.x =
-        .38*data.width;
-
-    teeth.visible =
-        speaking && mouthOpen>.38;
-
-    teeth.scale.y =
-        .7 + mouthOpen*.35;
-
-    /* eye movement */
-
-    eyes.forEach((e,i)=>{
-
-        const look =
-            Math.sin(t*.8+i*.4)*.025;
-
-        e.iris.position.x = look;
-        e.pupil.position.x = look;
-    });
-
-    /* floor ring */
-
-    ring.rotation.z = t*.15;
-    ring.material.opacity =
-        .25 + Math.sin(t*2)*.05;
+    leftArm.elbow.rotation.z=-.1;
+    rightArm.elbow.rotation.z=.1;
+  }
 }
 
-/* =========================================================
-   RENDER LOOP
-========================================================= */
+/* ============================================================
+   SPEECH SYNTHESIS
+   ============================================================ */
 
-function resize(){
+const input=document.getElementById("textInput");
+const speakBtn=document.getElementById("speak");
+const subtitle=document.getElementById("subtitle");
 
-    const rect =
-        canvas.getBoundingClientRect();
-
-    const w =
-        Math.max(1,rect.width);
-
-    const h =
-        Math.max(1,rect.height);
-
-    renderer.setSize(w,h,false);
-
-    camera.aspect = w/h;
-    camera.updateProjectionMatrix();
-}
-
-window.addEventListener("resize",resize);
-
-resize();
-
-let lastFrame = performance.now();
-
-function render(now){
-
-    if(destroyed) return;
-
-    const dt =
-        Math.min(.05,(now-lastFrame)/1000);
-
-    lastFrame = now;
-
-    animateAvatar(now);
-
-    renderer.render(scene,camera);
-
-    updateProgress();
-
-    requestAnimationFrame(render);
-}
-
-requestAnimationFrame(render);
-
-/* =========================================================
-   SPEECH VOICE
-========================================================= */
+let utterance=null;
 
 function chooseVoice(){
 
-    const voices =
-        speechSynthesis.getVoices();
+  const voices=speechSynthesis.getVoices();
 
-    if(!voices.length) return null;
-
-    const preferred = [
-        "az-AZ",
-        "tr-TR",
-        "ru-RU",
-        "en-US"
-    ];
-
-    for(const lang of preferred){
-
-        const v =
-            voices.find(x=>
-                x.lang.toLowerCase()===
-                lang.toLowerCase()
-            );
-
-        if(v) return v;
-    }
-
-    const az =
-        voices.find(x=>
-            x.lang.toLowerCase().startsWith("az")
-        );
-
-    return az || voices[0];
-}
-
-speechSynthesis.onvoiceschanged = ()=>{
-    chooseVoice();
-};
-
-/* =========================================================
-   TEXT TIMING
-========================================================= */
-
-function estimateSpeechDuration(text){
-
-    const clean =
-        text.trim();
-
-    const words =
-        clean ?
-        clean.split(/\s+/).length :
-        1;
-
-    /*
-      SpeechSynthesis does not expose exact timing.
-      This estimate keeps the viseme animation synchronized
-      approximately with normal speaking speed.
-    */
-
-    const base =
-        Math.max(
-            1.2,
-            words / 2.25
-        );
-
-    return base*1000;
-}
-
-/* =========================================================
-   CHAT
-========================================================= */
-
-function addMessage(text,type){
-
-    const div =
-        document.createElement("div");
-
-    div.className =
-        "msg " + type;
-
-    div.textContent = text;
-
-    chat.appendChild(div);
-
-    chat.scrollTop =
-        chat.scrollHeight;
-}
-
-/* =========================================================
-   RECORDER
-========================================================= */
-
-function getSupportedMime(){
-
-    const types = [
-        "video/webm;codecs=vp9",
-        "video/webm;codecs=vp8",
-        "video/webm"
-    ];
-
-    for(const type of types){
-
-        if(
-            typeof MediaRecorder !== "undefined" &&
-            MediaRecorder.isTypeSupported(type)
-        ){
-            return type;
-        }
-    }
-
-    return "";
-}
-
-function startRecording(){
-
-    if(!canvas.captureStream){
-        recordState.textContent =
-            "Canvas recording dəstəklənmir";
-        return false;
-    }
-
-    if(typeof MediaRecorder==="undefined"){
-        recordState.textContent =
-            "MediaRecorder dəstəklənmir";
-        return false;
-    }
-
-    const stream =
-        canvas.captureStream(30);
-
-    const mime =
-        getSupportedMime();
-
-    try{
-
-        recorder =
-            mime ?
-            new MediaRecorder(
-                stream,
-                {
-                    mimeType:mime,
-                    videoBitsPerSecond:5000000
-                }
-            ) :
-            new MediaRecorder(stream);
-
-    }catch(error){
-
-        console.error(error);
-
-        recordState.textContent =
-            "Recorder başlatılmadı";
-
-        return false;
-    }
-
-    recordedChunks = [];
-
-    recorder.ondataavailable = e=>{
-
-        if(e.data && e.data.size>0){
-            recordedChunks.push(e.data);
-        }
-    };
-
-    recorder.onstop = ()=>{
-
-        if(recordedUrl){
-            URL.revokeObjectURL(recordedUrl);
-        }
-
-        const finalType =
-            recorder.mimeType ||
-            "video/webm";
-
-        recordedBlob =
-            new Blob(
-                recordedChunks,
-                {type:finalType}
-            );
-
-        recordedUrl =
-            URL.createObjectURL(recordedBlob);
-
-        recording = false;
-
-        recordState.textContent =
-            "Video hazır • " +
-            Math.round(recordedBlob.size/1024) +
-            " KB";
-
-        shareBtn.classList.add("show");
-        statusText.textContent = "READY";
-        statusDot.style.background =
-            "var(--green)";
-
-        progress.style.width="100%";
-    };
-
-    recorder.start(250);
-
-    recording = true;
-
-    recordState.textContent =
-        "Video yazılır...";
-
-    shareBtn.classList.remove("show");
-
-    return true;
-}
-
-function stopRecording(){
-
-    if(
-        recorder &&
-        recorder.state !== "inactive"
-    ){
-        recorder.stop();
-    }
-}
-
-/* =========================================================
-   PROGRESS
-========================================================= */
-
-function updateProgress(){
-
-    if(!speaking){
-
-        if(!recording){
-            return;
-        }
-
-        return;
-    }
-
-    const elapsed =
-        performance.now()-speechStart;
-
-    const p =
-        Math.max(
-            0,
-            Math.min(
-                100,
-                elapsed/speechDuration*100
-            )
-        );
-
-    progress.style.width =
-        p.toFixed(1)+"%";
-}
-
-/* =========================================================
-   SPEECH
-========================================================= */
-
-function stopEverything(){
-
-    speaking = false;
-
-    try{
-        speechSynthesis.cancel();
-    }catch(e){}
-
-    currentUtterance = null;
-
-    targetViseme = "REST";
-    targetMouthOpen = 0;
-
-    subtitle.textContent =
-        "Danışıq dayandırıldı.";
-
-    statusText.textContent =
-        "READY";
-
-    statusDot.style.background =
-        "var(--green)";
-
-    if(recorder){
-        stopRecording();
-    }
+  return voices.find(v=>/az|tr|ru|en/i.test(v.lang))
+      || voices[0];
 }
 
 function speakText(text){
 
-    if(!text.trim()) return;
+  if(!text.trim()) return;
 
-    if(!("speechSynthesis" in window)){
+  speechSynthesis.cancel();
 
-        alert(
-            "Bu brauzerdə SpeechSynthesis dəstəklənmir."
-        );
+  currentText=text;
 
-        return;
-    }
+  subtitle.textContent=text;
 
-    stopEverything();
+  utterance=new SpeechSynthesisUtterance(text);
 
-    addMessage(text,"user");
+  const voice=chooseVoice();
 
-    subtitle.textContent = text;
+  if(voice){
+    utterance.voice=voice;
+    utterance.lang=voice.lang;
+  }else{
+    utterance.lang="az-AZ";
+  }
 
-    const utter =
-        new SpeechSynthesisUtterance(text);
+  utterance.rate=.91;
+  utterance.pitch=.92;
+  utterance.volume=1;
 
-    currentUtterance = utter;
+  utterance.onstart=()=>{
 
-    const voice =
-        chooseVoice();
+    speaking=true;
+    speechStarted=performance.now()/1000;
 
-    if(voice){
-        utter.voice = voice;
-        utter.lang = voice.lang;
-    }else{
-        utter.lang = "az-AZ";
-    }
+    startRecording();
 
-    utter.rate = .92;
-    utter.pitch = 1.0;
-    utter.volume = 1;
+    document.getElementById("tapHint")
+      .classList.add("hide");
+  };
 
-    speechStart =
-        performance.now();
+  utterance.onend=()=>{
 
-    speechDuration =
-        estimateSpeechDuration(text);
-
-    speaking = true;
-
-    statusText.textContent =
-        "SPEAKING";
-
-    statusDot.style.background =
-        "var(--cyan)";
-
-    progress.style.width="0%";
-
-    const started =
-        startRecording();
-
-    /*
-      Recording failure does NOT prevent speech.
-    */
-
-    utter.onstart = ()=>{
-
-        speaking = true;
-
-        speechStart =
-            performance.now();
-
-        statusText.textContent =
-            "SPEAKING";
-    };
-
-    utter.onboundary = event=>{
-
-        /*
-          boundary events are used as a stronger timing
-          signal when the browser exposes them.
-        */
-
-        if(
-            typeof event.charIndex === "number" &&
-            text.length>0
-        ){
-
-            const ratio =
-                event.charIndex/text.length;
-
-            speechStart =
-                performance.now() -
-                ratio*speechDuration;
-        }
-    };
-
-    utter.onerror = event=>{
-
-        console.warn(
-            "Speech synthesis:",
-            event.error
-        );
-
-        speaking = false;
-
-        subtitle.textContent =
-            "Speech xətası baş verdi.";
-
-        statusText.textContent =
-            "ERROR";
-
-        statusDot.style.background =
-            "#ff4d6d";
-
-        stopRecording();
-    };
-
-    utter.onend = ()=>{
-
-        speaking = false;
-
-        targetViseme = "REST";
-        targetMouthOpen = 0;
-
-        subtitle.textContent =
-            text;
-
-        statusText.textContent =
-            "READY";
-
-        statusDot.style.background =
-            "var(--green)";
-
-        /*
-          Give MediaRecorder a moment to flush
-          its final frame.
-        */
-
-        setTimeout(()=>{
-            stopRecording();
-        },180);
-    };
-
-    try{
-
-        speechSynthesis.speak(utter);
-
-    }catch(error){
-
-        console.error(error);
-
-        speaking = false;
-
-        stopRecording();
-
-        alert(
-            "SpeechSynthesis işə salınmadı."
-        );
-    }
-}
-
-/* =========================================================
-   BUTTONS
-========================================================= */
-
-speakBtn.addEventListener("click",()=>{
-
-    const text =
-        message.value.trim();
-
-    if(!text){
-
-        message.focus();
-        return;
-    }
-
-    speakText(text);
-});
-
-stopBtn.addEventListener("click",()=>{
-    stopEverything();
-});
-
-message.addEventListener("keydown",e=>{
-
-    if(
-        e.key==="Enter" &&
-        !e.shiftKey
-    ){
-
-        e.preventDefault();
-
-        speakBtn.click();
-    }
-});
-
-/* =========================================================
-   WEB SHARE / WHATSAPP
-========================================================= */
-
-async function shareVideo(){
-
-    if(!recordedBlob){
-        return;
-    }
-
-    const filename =
-        "neon-avatar-" +
-        Date.now() +
-        ".webm";
-
-    const file =
-        new File(
-            [recordedBlob],
-            filename,
-            {type:recordedBlob.type}
-        );
-
-    /*
-      Android Chrome can share the actual file
-      through Web Share when file sharing is supported.
-    */
-
-    if(
-        navigator.share &&
-        navigator.canShare &&
-        navigator.canShare({files:[file]})
-    ){
-
-        try{
-
-            await navigator.share({
-                title:"Neon Avatar",
-                text:"3D Avatar videosu",
-                files:[file]
-            });
-
-            return;
-
-        }catch(error){
-
-            if(error.name==="AbortError"){
-                return;
-            }
-
-            console.warn(
-                "Web Share failed:",
-                error
-            );
-        }
-    }
-
-    /*
-      Fallback:
-      download/open video. WhatsApp can then receive
-      the saved WebM file manually.
-    */
-
-    if(recordedUrl){
-
-        const a =
-            document.createElement("a");
-
-        a.href = recordedUrl;
-        a.download = filename;
-
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-
-        recordState.textContent =
-            "Video yadda saxlanıldı — WhatsApp-da əlavə edin.";
-    }
-}
-
-shareBtn.addEventListener(
-    "click",
-    shareVideo
-);
-
-/* =========================================================
-   INITIAL STATE
-========================================================= */
-
-window.addEventListener("load",()=>{
-
-    resize();
+    speaking=false;
+    applyViseme("REST",0);
 
     setTimeout(()=>{
+      if(recorder && recorder.state==="recording"){
+        recorder.stop();
+      }
+    },500);
+  };
 
-        const intro =
-            "Salam! Mətninizi yazın və DANIŞDIR düyməsinə basın.";
+  utterance.onerror=()=>{
 
-        subtitle.textContent = intro;
+    speaking=false;
+    applyViseme("REST",0);
+  };
 
-    },300);
+  speechSynthesis.speak(utterance);
+}
+
+/* ============================================================
+   CLICK
+   ============================================================ */
+
+speakBtn.onclick=()=>{
+
+  const text=input.value.trim();
+
+  if(text){
+    speakText(text);
+  }else{
+    speakText(
+      "Salam! Mən Virtual Pro adlı süni intellekt avatarıyam. Mən sizin yazdığınız mətnləri danışan animasiya şəklinə çevirə bilirəm."
+    );
+  }
+};
+
+input.addEventListener("keydown",e=>{
+  if(e.key==="Enter"){
+    speakBtn.click();
+  }
+});
+
+/* ============================================================
+   TAP AVATAR
+   ============================================================ */
+
+canvas.addEventListener("pointerup",()=>{
+
+  if(speaking) return;
+
+  const text=input.value.trim();
+
+  if(text){
+    speakText(text);
+  }else{
+    speakText(
+      "Salam! Mən hazıram. Aşağıdakı xanaya mətn yazın və mən onu danışan animasiyaya çevirim."
+    );
+  }
+});
+
+/* ============================================================
+   RECORDING
+   ============================================================ */
+
+let recorder=null;
+let chunks=[];
+let recordedBlob=null;
+
+function startRecording(){
+
+  if(recorder && recorder.state==="recording") return;
+
+  try{
+
+    const stream=canvas.captureStream(30);
+
+    recorder=new MediaRecorder(
+      stream,
+      {
+        mimeType:
+          MediaRecorder.isTypeSupported("video/webm;codecs=vp9")
+          ? "video/webm;codecs=vp9"
+          : "video/webm"
+      }
+    );
+
+    chunks=[];
+
+    recorder.ondataavailable=e=>{
+      if(e.data.size>0) chunks.push(e.data);
+    };
+
+    recorder.onstop=()=>{
+
+      recordedBlob=new Blob(
+        chunks,
+        {type:"video/webm"}
+      );
+
+      document.getElementById("rec")
+        .classList.remove("show");
+    };
+
+    recorder.start();
+
+    document.getElementById("rec")
+      .classList.add("show");
+
+  }catch(e){
+
+    console.log("Recorder:",e);
+
+  }
+}
+
+function stopRecording(){
+
+  if(recorder && recorder.state==="recording"){
+    recorder.stop();
+  }
+
+  speechSynthesis.cancel();
+  speaking=false;
+}
+
+document.getElementById("recordBtn").onclick=()=>{
+
+  if(speaking){
+    stopRecording();
+  }else{
+    startRecording();
+  }
+
+};
+
+document.getElementById("stopBtn").onclick=()=>{
+  stopRecording();
+};
+
+/* ============================================================
+   SHARE
+   ============================================================ */
+
+document.getElementById("shareBtn").onclick=async()=>{
+
+  if(!recordedBlob){
+
+    if(currentText){
+
+      const shareText=
+        "Virtual Pro AI Avatar\n\n"+
+        currentText;
+
+      if(navigator.share){
+
+        await navigator.share({
+          title:"Virtual Pro",
+          text:shareText
+        });
+
+      }else{
+
+        alert(
+          "Əvvəlcə avatarı danışdırın və videonu yaradın."
+        );
+
+      }
+
+    }else{
+
+      alert(
+        "Əvvəlcə avatarı danışdırın."
+      );
+
+    }
+
+    return;
+  }
+
+  const file=new File(
+    [recordedBlob],
+    "virtual-pro.webm",
+    {type:"video/webm"}
+  );
+
+  try{
+
+    if(
+      navigator.share &&
+      navigator.canShare &&
+      navigator.canShare({files:[file]})
+    ){
+
+      await navigator.share({
+        title:"Virtual Pro",
+        text:"AI Talking Avatar",
+        files:[file]
+      });
+
+    }else{
+
+      const url=URL.createObjectURL(recordedBlob);
+
+      const a=document.createElement("a");
+      a.href=url;
+      a.download="virtual-pro.webm";
+      a.click();
+
+      setTimeout(()=>{
+        URL.revokeObjectURL(url);
+      },3000);
+
+      alert(
+        "Video telefonunuza yadda saxlanıldı. WhatsApp və digər sosial şəbəkələrdən göndərə bilərsiniz."
+      );
+    }
+
+  }catch(e){
+    console.log(e);
+  }
+};
+
+/* ============================================================
+   FULLSCREEN
+   ============================================================ */
+
+document.getElementById("fullscreen").onclick=()=>{
+
+  if(!document.fullscreenElement){
+
+    document.documentElement.requestFullscreen?.();
+
+  }else{
+
+    document.exitFullscreen?.();
+
+  }
+};
+
+/* ============================================================
+   ANIMATION LOOP
+   ============================================================ */
+
+function animate(){
+
+  requestAnimationFrame(animate);
+
+  const t=clock.getElapsedTime();
+
+  animateBody(t);
+
+  /* blinking */
+
+  blinkTimer+=clock.getDelta();
+
+  if(t>nextBlink){
+
+    blink();
+
+    nextBlink=
+      t+2.2+Math.random()*4.5;
+  }
+
+  /* lipsync approximation */
+
+  if(speaking && currentText){
+
+    const elapsed=
+      performance.now()/1000-speechStarted;
+
+    const charRate=.085;
+
+    const index=
+      Math.floor(elapsed/charRate);
+
+    const ch=
+      currentText[index % currentText.length] || "";
+
+    const v=getViseme(ch);
+
+    const strength=
+      .45+
+      Math.abs(Math.sin(t*18))*.55;
+
+    applyViseme(v,strength);
+
+  }else{
+
+    applyViseme("REST",0);
+  }
+
+  /* subtle camera movement */
+
+  camera.position.x=
+    Math.sin(t*.18)*.035;
+
+  camera.position.y=
+    1.75+
+    Math.sin(t*.42)*.012;
+
+  camera.lookAt(
+    0,
+    .85,
+    0
+  );
+
+  ring.material.opacity=
+    .22+
+    Math.sin(t*1.7)*.06;
+
+  renderer.render(scene,camera);
+}
+
+animate();
+
+/* ============================================================
+   RESIZE
+   ============================================================ */
+
+addEventListener("resize",()=>{
+
+  renderer.setSize(
+    innerWidth,
+    innerHeight
+  );
+
+  camera.aspect=
+    innerWidth/innerHeight;
+
+  camera.updateProjectionMatrix();
 
 });
 
-/* =========================================================
-   PAGE VISIBILITY EDGE CASE
-========================================================= */
+/* ============================================================
+   LOAD VOICES
+   ============================================================ */
 
-document.addEventListener(
-    "visibilitychange",
-    ()=>{
-
-        if(document.hidden && speaking){
-
-            /*
-              Do not destroy recording automatically.
-              SpeechSynthesis behavior is browser dependent.
-            */
-
-            statusText.textContent =
-                "BACKGROUND";
-        }
-
-        if(!document.hidden && speaking){
-
-            statusText.textContent =
-                "SPEAKING";
-        }
-    }
-);
-
-/* =========================================================
-   SAFETY / CLEANUP
-========================================================= */
-
-window.addEventListener(
-    "beforeunload",
-    ()=>{
-
-        destroyed = true;
-
-        try{
-            speechSynthesis.cancel();
-        }catch(e){}
-
-        if(
-            recorder &&
-            recorder.state!=="inactive"
-        ){
-            recorder.stop();
-        }
-
-        if(recordedUrl){
-            URL.revokeObjectURL(recordedUrl);
-        }
-    }
-);
+speechSynthesis.onvoiceschanged=()=>{
+  speechSynthesis.getVoices();
+};
 
 </script>
+
 </body>
-    </html>
+</html>
