@@ -2,1009 +2,559 @@
 <html lang="az">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>AI Futbolçu Mesajı</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>AZAvatar — Danışan Avatar</title>
 
 <style>
-*{box-sizing:border-box}
-html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#020409;color:#fff;font-family:Arial}
-#app{position:fixed;inset:0}
-canvas{position:absolute;inset:0;width:100%;height:100%}
-
-#top{
- position:absolute;z-index:20;top:14px;left:14px;right:14px;
- display:flex;justify-content:space-between;pointer-events:none
-}
-.logo{font-weight:900;font-size:17px;text-shadow:0 3px 15px #000}
-.state{
- background:#0009;border:1px solid #ffffff20;border-radius:20px;
- padding:7px 12px;font-size:11px;backdrop-filter:blur(12px)
+*{
+  box-sizing:border-box;
+  -webkit-tap-highlight-color:transparent;
 }
 
-#words{
- position:absolute;z-index:15;top:10%;left:4%;right:4%;
- height:42%;display:flex;align-items:flex-end;
- justify-content:center;flex-direction:column;
- pointer-events:none;overflow:hidden
-}
-.word{
- align-self:center;
- font-size:clamp(20px,6vw,34px);
- font-weight:900;
- margin:3px;
- padding:5px 13px;
- border-radius:14px;
- background:#07101ddf;
- border:1px solid #ffffff20;
- box-shadow:0 5px 25px #0009;
- animation:appear .45s ease forwards
-}
-@keyframes appear{
- from{opacity:0;transform:translateY(45px) scale(.5)}
- to{opacity:1;transform:translateY(0) scale(1)}
+html,body{
+  margin:0;
+  width:100%;
+  height:100%;
+  overflow:hidden;
+  font-family:Inter,Arial,sans-serif;
+  background:#050507;
+  color:#fff;
 }
 
-#mouthText{
- position:absolute;z-index:16;
- left:50%;top:49%;
- transform:translate(-50%,-50%);
- font-size:18px;font-weight:900;
- opacity:0;pointer-events:none;
- text-shadow:0 3px 12px #000
-}
-#mouthText.fly{
- animation:fly .8s ease forwards
-}
-@keyframes fly{
- 0%{opacity:0;transform:translate(-50%,-50%) scale(.3)}
- 15%{opacity:1;transform:translate(-50%,-65%) scale(1)}
- 100%{opacity:0;transform:translate(-50%,-360%) scale(.8)}
+body{
+  display:flex;
+  justify-content:center;
 }
 
-#panel{
- position:absolute;z-index:30;
- left:10px;right:10px;bottom:10px;
- padding:11px;border-radius:22px;
- background:#060d16e8;
- border:1px solid #ffffff18;
- backdrop-filter:blur(20px);
- box-shadow:0 15px 60px #000b
+.app{
+  width:100%;
+  max-width:520px;
+  height:100dvh;
+  position:relative;
+  overflow:hidden;
+  background:
+    radial-gradient(circle at 50% 0%,#34205c 0%,transparent 35%),
+    linear-gradient(160deg,#07070a,#101018 55%,#050507);
 }
+
+/* HEADER */
+
+.header{
+  position:absolute;
+  z-index:20;
+  top:0;
+  left:0;
+  width:100%;
+  padding:17px 18px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.logo{
+  font-weight:900;
+  font-size:21px;
+  letter-spacing:-.8px;
+}
+
+.logo span{
+  color:#9d7cff;
+}
+
+.pro{
+  font-size:11px;
+  padding:7px 11px;
+  border-radius:20px;
+  background:rgba(255,255,255,.09);
+  border:1px solid rgba(255,255,255,.13);
+  color:#d8ccff;
+}
+
+/* STAGE */
+
+.stage{
+  position:absolute;
+  top:64px;
+  left:12px;
+  right:12px;
+  bottom:205px;
+  border-radius:30px;
+  overflow:hidden;
+  background:
+    radial-gradient(circle at 50% 20%,rgba(145,99,255,.38),transparent 35%),
+    linear-gradient(145deg,#17131f,#07080d);
+  border:1px solid rgba(255,255,255,.12);
+  box-shadow:
+    0 30px 80px rgba(0,0,0,.5),
+    inset 0 0 80px rgba(255,255,255,.03);
+}
+
+/* canvas preview */
+
+#preview{
+  width:100%;
+  height:100%;
+  display:block;
+}
+
+/* UPLOAD */
+
+.upload{
+  position:absolute;
+  inset:0;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  flex-direction:column;
+  gap:15px;
+  z-index:5;
+  cursor:pointer;
+}
+
+.uploadIcon{
+  width:76px;
+  height:76px;
+  border-radius:25px;
+  display:grid;
+  place-items:center;
+  font-size:33px;
+  background:rgba(255,255,255,.09);
+  border:1px solid rgba(255,255,255,.15);
+  box-shadow:0 20px 50px #0008;
+}
+
+.uploadTitle{
+  font-size:19px;
+  font-weight:800;
+}
+
+.uploadSub{
+  font-size:12px;
+  color:#999;
+}
+
+#fileInput{
+  display:none;
+}
+
+/* EFFECT LABEL */
+
+.liveBadge{
+  position:absolute;
+  top:17px;
+  left:17px;
+  z-index:8;
+  padding:7px 10px;
+  border-radius:20px;
+  background:#0008;
+  backdrop-filter:blur(10px);
+  font-size:10px;
+  letter-spacing:.5px;
+  color:#ddd;
+}
+
+/* WORD */
+
+.wordPreview{
+  position:absolute;
+  z-index:9;
+  left:50%;
+  top:44%;
+  transform:translate(-50%,-50%);
+  pointer-events:none;
+  font-size:22px;
+  font-weight:900;
+  text-align:center;
+  text-shadow:0 3px 20px #000;
+}
+
+/* CONTROLS */
+
+.controls{
+  position:absolute;
+  left:12px;
+  right:12px;
+  bottom:0;
+  height:195px;
+  padding:12px 5px 15px;
+  z-index:20;
+}
+
+.inputBox{
+  width:100%;
+  display:flex;
+  gap:8px;
+  background:rgba(255,255,255,.07);
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:18px;
+  padding:6px;
+  backdrop-filter:blur(18px);
+}
+
 textarea{
- width:100%;height:65px;resize:none;outline:0;
- border:1px solid #ffffff18;border-radius:14px;
- background:#02050a;color:#fff;padding:11px;
- font-size:16px
+  flex:1;
+  height:47px;
+  border:0;
+  outline:0;
+  resize:none;
+  background:transparent;
+  color:white;
+  padding:13px;
+  font-size:14px;
+  font-family:inherit;
 }
-.buttons{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-top:8px}
-button{
- height:45px;border:0;border-radius:13px;
- color:#fff;font-weight:900;font-size:12px
-}
-#play{background:linear-gradient(135deg,#126bff,#5735ff)}
-#rec{background:linear-gradient(135deg,#dc1745,#ff4264)}
-#share{background:linear-gradient(135deg,#00a85a,#16d078)}
-#status{text-align:center;color:#9da9b9;font-size:11px;padding-top:8px}
 
-#loading{
- position:absolute;z-index:100;inset:0;
- display:flex;flex-direction:column;
- justify-content:center;align-items:center;
- background:#020409;gap:14px
+textarea::placeholder{
+  color:#777;
 }
-.loader{
- width:45px;height:45px;border-radius:50%;
- border:3px solid #ffffff18;
- border-top-color:#3c82ff;
- animation:spin 1s linear infinite
+
+.send{
+  width:48px;
+  border:0;
+  border-radius:14px;
+  background:#8e6cff;
+  color:white;
+  font-size:20px;
+  font-weight:bold;
 }
-@keyframes spin{to{transform:rotate(360deg)}}
+
+.templates{
+  display:flex;
+  gap:7px;
+  overflow-x:auto;
+  padding:9px 0;
+  scrollbar-width:none;
+}
+
+.templates::-webkit-scrollbar{
+  display:none;
+}
+
+.template{
+  flex:0 0 auto;
+  padding:8px 12px;
+  border-radius:20px;
+  background:#ffffff0d;
+  border:1px solid #ffffff12;
+  color:#bbb;
+  font-size:11px;
+}
+
+.avatarRow{
+  display:flex;
+  gap:8px;
+  overflow-x:auto;
+  scrollbar-width:none;
+}
+
+.avatarRow::-webkit-scrollbar{
+  display:none;
+}
+
+.avatar{
+  flex:0 0 auto;
+  padding:9px 13px;
+  border-radius:15px;
+  background:#ffffff08;
+  border:1px solid #ffffff10;
+  color:#aaa;
+  font-size:11px;
+}
+
+.avatar.active{
+  background:#8e6cff22;
+  border-color:#8e6cff;
+  color:white;
+}
+
+.buttons{
+  display:flex;
+  gap:8px;
+  margin-top:9px;
+}
+
+.mainBtn{
+  flex:1;
+  height:48px;
+  border:0;
+  border-radius:16px;
+  font-size:14px;
+  font-weight:800;
+  color:white;
+  background:linear-gradient(135deg,#8f70ff,#6545dc);
+  box-shadow:0 12px 30px #7456ff33;
+}
+
+.recordBtn{
+  width:54px;
+  border:1px solid #ffffff15;
+  border-radius:16px;
+  background:#ffffff0a;
+  color:white;
+  font-size:20px;
+}
+
+/* recording */
+
+.recording{
+  animation:pulse 1s infinite;
+}
+
+@keyframes pulse{
+  50%{
+    box-shadow:0 0 0 8px #ff304422;
+  }
+}
+
+/* SHARE */
+
+.sharePanel{
+  position:absolute;
+  z-index:50;
+  left:15px;
+  right:15px;
+  bottom:15px;
+  padding:15px;
+  border-radius:22px;
+  background:#15151dcc;
+  border:1px solid #ffffff16;
+  backdrop-filter:blur(25px);
+  display:none;
+}
+
+.sharePanel.show{
+  display:block;
+}
+
+.shareTitle{
+  font-size:14px;
+  font-weight:800;
+  margin-bottom:10px;
+}
+
+.shareButtons{
+  display:flex;
+  gap:8px;
+}
+
+.shareBtn{
+  flex:1;
+  height:42px;
+  border:0;
+  border-radius:13px;
+  background:#ffffff0d;
+  color:white;
+}
+
+.closeShare{
+  margin-top:9px;
+  width:100%;
+  height:34px;
+  border:0;
+  border-radius:12px;
+  background:#ffffff08;
+  color:#999;
+}
+
+/* TOAST */
+
+.toast{
+  position:absolute;
+  z-index:100;
+  left:50%;
+  bottom:215px;
+  transform:translateX(-50%) translateY(15px);
+  padding:10px 15px;
+  background:#19191f;
+  border:1px solid #ffffff15;
+  border-radius:20px;
+  font-size:12px;
+  opacity:0;
+  pointer-events:none;
+  transition:.3s;
+  white-space:nowrap;
+}
+
+.toast.show{
+  opacity:1;
+  transform:translateX(-50%) translateY(0);
+}
 </style>
 </head>
 
 <body>
 
-<div id="app">
+<div class="app">
 
-<div id="loading">
- <div class="loader"></div>
- <b>Futbolçu hazırlanır...</b>
+  <div class="header">
+    <div class="logo">AZ<span>Avatar</span></div>
+    <div class="pro">CREATE • SHARE • VIRAL</div>
+  </div>
+
+  <div class="stage">
+
+    <canvas id="preview"></canvas>
+
+    <div class="liveBadge">● AVATAR STUDIO</div>
+
+    <div class="upload" id="uploadArea">
+      <div class="uploadIcon">＋</div>
+      <div class="uploadTitle">Şəklini əlavə et</div>
+      <div class="uploadSub">Selfie və ya portret seç</div>
+    </div>
+
+  </div>
+
+  <div class="controls">
+
+    <div class="inputBox">
+      <textarea id="message"
+        maxlength="120"
+        placeholder="Avatarın nə desin? Məsələn: Salam! Səni görməyə çox şadam ❤️"></textarea>
+
+      <button class="send" onclick="playAvatar()">▶</button>
+    </div>
+
+    <div class="templates">
+      <button class="template" onclick="setText('Salam! Səni görməyə çox şadam ❤️')">❤️ Salam</button>
+      <button class="template" onclick="setText('Ad günün mübarək! 🎂🎉')">🎂 Ad günü</button>
+      <button class="template" onclick="setText('Səni gözləyirəm! 😎')">😎 Gözləyirəm</button>
+      <button class="template" onclick="setText('Bu gün əla gün olacaq! 🔥')">🔥 Motivasiya</button>
+      <button class="template" onclick="setText('Mənə bax! 😂')">😂 Gülməli</button>
+    </div>
+
+    <div class="avatarRow">
+      <button class="avatar active" data-style="cinema">🎬 Cinema</button>
+      <button class="avatar" data-style="football">⚽ Football</button>
+      <button class="avatar" data-style="king">👑 King</button>
+      <button class="avatar" data-style="hero">🦸 Hero</button>
+      <button class="avatar" data-style="robot">🤖 Robot</button>
+    </div>
+
+    <div class="buttons">
+      <button class="mainBtn" onclick="playAvatar()">✨ AVATARI DANIŞDIR</button>
+      <button class="recordBtn" id="recordBtn" onclick="recordVideo()">●</button>
+    </div>
+
+  </div>
+
+  <div class="sharePanel" id="sharePanel">
+    <div class="shareTitle">🎉 Video hazırdır</div>
+
+    <div class="shareButtons">
+      <button class="shareBtn" onclick="shareVideo()">📤 Paylaş</button>
+      <button class="shareBtn" onclick="downloadVideo()">⬇️ Yadda saxla</button>
+    </div>
+
+    <button class="closeShare" onclick="closeShare()">Bağla</button>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <input id="fileInput" type="file" accept="image/*">
+
 </div>
 
-<div id="top">
- <div class="logo">⚽ AI FUTBOLÇU</div>
- <div class="state" id="state">HAZIR</div>
-</div>
+<script>
 
-<div id="words"></div>
-<div id="mouthText"></div>
+const canvas = document.getElementById("preview");
+const ctx = canvas.getContext("2d");
 
-<div id="panel">
+const fileInput = document.getElementById("fileInput");
+const uploadArea = document.getElementById("uploadArea");
+const messageInput = document.getElementById("message");
+const toast = document.getElementById("toast");
 
-<textarea id="text"
-placeholder="Futbolçunun deyəcəyi cümləni yaz...">Salam! Necəsən? Sənə gözəl bir gün arzulayıram!</textarea>
+let image = null;
+let currentStyle = "cinema";
+let speaking = false;
+let currentWords = [];
+let wordIndex = 0;
+let wordStart = 0;
+let lastVideoBlob = null;
+let recorder = null;
+let chunks = [];
 
-<div class="buttons">
- <button id="play">▶ ANİMASİYA</button>
- <button id="rec">● REC</button>
- <button id="share">↗ WHATSAPP</button>
-</div>
+let animationStart = 0;
 
-<div id="status">Mesajı yaz və ANİMASİYA düyməsinə bas.</div>
+canvas.width = 720;
+canvas.height = 1280;
 
-</div>
-</div>
 
-<script type="importmap">
-{
- "imports":{
-  "three":"https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js",
-  "three/addons/":"https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/"
- }
-}
-</script>
+/* =========================
+   IMAGE UPLOAD
+========================= */
 
-<script type="module">
+uploadArea.onclick = () => fileInput.click();
 
-import * as THREE from "three";
-import {GLTFLoader} from
-"https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/loaders/GLTFLoader.js";
+fileInput.onchange = e => {
 
-/*
-=========================================================
- FUTBOLÇU MODELİ
-=========================================================
+  const file = e.target.files[0];
 
-BURAYA REALİSTİK GLB MODELİN URL-sini qoyuruq.
+  if(!file) return;
 
-Modeldə bunlar varsa avtomatik istifadə olunur:
-- Idle
-- Walk
-- Run
-- Talk
-- Gesture
-- Wave
-- Football animations
+  const reader = new FileReader();
 
-Model URL-ni dəyişmək kifayətdir.
-*/
+  reader.onload = () => {
 
-const PLAYER_MODEL =
-"https://cdn.jsdelivr.net/gh/MisterYI/deevid-mixamo-assets@main/char/Y_Bot.glb";
+    image = new Image();
 
+    image.onload = () => {
 
-/* SCENE */
+      uploadArea.style.display = "none";
 
-const scene=new THREE.Scene();
+      showToast("Şəkil əlavə edildi ✓");
 
-scene.background=new THREE.Color(0x020409);
+      draw();
 
-scene.fog=new THREE.Fog(
- 0x020409,
- 4,
- 11
-);
+    };
 
+    image.src = reader.result;
 
-/* CAMERA */
-
-const camera=new THREE.PerspectiveCamera(
- 36,
- innerWidth/innerHeight,
- .01,
- 100
-);
-
-camera.position.set(
- 0,1.5,4
-);
-
-camera.lookAt(
- 0,1.15,0
-);
-
-
-/* RENDERER */
-
-const renderer=new THREE.WebGLRenderer({
- antialias:true,
- preserveDrawingBuffer:true
-});
-
-renderer.setPixelRatio(
- Math.min(devicePixelRatio,1.5)
-);
-
-renderer.setSize(
- innerWidth,
- innerHeight
-);
-
-renderer.shadowMap.enabled=true;
-renderer.shadowMap.type=
-THREE.PCFSoftShadowMap;
-
-renderer.outputColorSpace=
-THREE.SRGBColorSpace;
-
-document
-.getElementById("app")
-.appendChild(renderer.domElement);
-
-
-/* LIGHTING */
-
-scene.add(
- new THREE.HemisphereLight(
-  0xbdd5ff,
-  0x111111,
-  2.2
- )
-);
-
-const key=
-new THREE.DirectionalLight(
- 0xffffff,
- 4
-);
-
-key.position.set(
- -3,5,4
-);
-
-key.castShadow=true;
-
-key.shadow.mapSize.set(
- 1024,1024
-);
-
-scene.add(key);
-
-const blue=
-new THREE.PointLight(
- 0x237dff,
- 30,
- 8
-);
-
-blue.position.set(
- 3,2.5,-2
-);
-
-scene.add(blue);
-
-const red=
-new THREE.PointLight(
- 0xff164e,
- 20,
- 7
-);
-
-red.position.set(
- -3,1.5,-1
-);
-
-scene.add(red);
-
-
-/* FIELD */
-
-const field=
-new THREE.Mesh(
- new THREE.CircleGeometry(
-  2.4,96
- ),
- new THREE.MeshStandardMaterial({
-  color:0x07100b,
-  roughness:.95
- })
-);
-
-field.rotation.x=-Math.PI/2;
-field.receiveShadow=true;
-
-scene.add(field);
-
-
-/* FIELD RING */
-
-const ring=
-new THREE.Mesh(
- new THREE.RingGeometry(
-  1.1,1.8,96
- ),
- new THREE.MeshBasicMaterial({
-  color:0x21659b,
-  transparent:true,
-  opacity:.25,
-  side:THREE.DoubleSide
- })
-);
-
-ring.rotation.x=-Math.PI/2;
-ring.position.y=.005;
-
-scene.add(ring);
-
-
-/* FOOTBALL */
-
-const ball=
-new THREE.Mesh(
- new THREE.SphereGeometry(
-  .13,32,32
- ),
- new THREE.MeshStandardMaterial({
-  color:0xffffff,
-  roughness:.55
- })
-);
-
-ball.position.set(
- .55,.13,.15
-);
-
-ball.castShadow=true;
-
-scene.add(ball);
-
-
-/* PLAYER */
-
-let player=null;
-let mixer=null;
-let actions={};
-let currentAction=null;
-
-const loader=new GLTFLoader();
-
-loader.load(
- PLAYER_MODEL,
-
- gltf=>{
-
-  player=gltf.scene;
-
-  player.scale.setScalar(1.55);
-
-  player.traverse(
-   object=>{
-
-    if(object.isMesh){
-
-     object.castShadow=true;
-     object.receiveShadow=true;
-
-     if(object.material){
-
-      object.material.roughness=.68;
-      object.material.metalness=.02;
-
-     }
-    }
-
-   }
-  );
-
-  scene.add(player);
-
-  mixer=
-  new THREE.AnimationMixer(
-   player
-  );
-
-  gltf.animations.forEach(
-   clip=>{
-
-    actions[clip.name]=
-    mixer.clipAction(clip);
-
-   }
-  );
-
-  console.log(
-   "Model animations:",
-   Object.keys(actions)
-  );
-
-  const idle=findAnimation([
-   "idle",
-   "breath",
-   "standing"
-  ]);
-
-  if(idle)
-   playAnimation(idle);
-  else{
-
-   const first=
-   Object.keys(actions)[0];
-
-   if(first)
-    playAnimation(first);
-
-  }
-
-  document
-   .getElementById("loading")
-   .style.display="none";
-
-  status(
-   "Futbolçu hazırdır."
-  );
-
- },
-
- error=>{
-
-  console.error(error);
-
-  document
-   .getElementById("loading")
-   .innerHTML=
-   `
-   <div style="font-size:40px">⚠️</div>
-   <b>3D model yüklənmədi</b>
-   <small style="color:#999">
-   İnternet bağlantısını yoxla.
-   </small>
-   `;
-
- }
-);
-
-
-/* ANIMATION SEARCH */
-
-function findAnimation(patterns){
-
- const names=
- Object.keys(actions);
-
- for(const pattern of patterns){
-
-  const found=
-  names.find(
-   name=>
-   new RegExp(
-    pattern,
-    "i"
-   ).test(name)
-  );
-
-  if(found)
-   return found;
- }
-
- return null;
-}
-
-
-/* PLAY ANIMATION */
-
-function playAnimation(name){
-
- if(!actions[name])
-  return;
-
- const next=
- actions[name];
-
- if(currentAction===next)
-  return;
-
- if(currentAction)
-  currentAction.fadeOut(.25);
-
- next.reset();
-
- next.fadeIn(.3);
-
- next.play();
-
- currentAction=next;
-}
-
-
-/* GESTURE */
-
-function gesture(){
-
- const anim=
- findAnimation([
-  "talk",
-  "talking",
-  "gesture",
-  "wave",
-  "waving",
-  "hello",
-  "hand",
-  "standing"
- ]);
-
- if(anim){
-
-  playAnimation(anim);
-
-  setTimeout(()=>{
-
-   const idle=
-   findAnimation([
-    "idle",
-    "breath",
-    "standing"
-   ]);
-
-   if(idle)
-    playAnimation(idle);
-
-  },2200);
-
- }
-
-}
-
-
-/* WORD MESSAGE */
-
-let timer=null;
-
-function animateMessage(){
-
- const text=
- document
- .getElementById("text")
- .value
- .trim();
-
- if(!text){
-
-  status("Mesaj yaz.");
-
-  return;
- }
-
- clearTimeout(timer);
-
- const container=
- document.getElementById("words");
-
- container.innerHTML="";
-
- const words=
- text
- .replace(/\s+/g," ")
- .split(" ")
- .filter(Boolean);
-
- gesture();
-
- let index=0;
-
- function nextWord(){
-
-  if(index>=words.length){
-
-   status(
-    "Mesaj tamamlandı."
-   );
-
-   return;
-  }
-
-  const word=
-  words[index++];
-
-  /* söz ağızdan çıxır */
-
-  const mouth=
-  document.getElementById(
-   "mouthText"
-  );
-
-  mouth.classList.remove("fly");
-
-  void mouth.offsetWidth;
-
-  mouth.textContent=word;
-
-  mouth.classList.add("fly");
-
-
-  /* baş üzərində söz */
-
-  const el=
-  document.createElement(
-   "div"
-  );
-
-  el.className="word";
-
-  el.textContent=word;
-
-  container.appendChild(el);
-
-
-  /* əvvəlki sözlər yuxarı qalxır */
-
-  const children=
-  [...container.children];
-
-  children.forEach(
-   (item,i)=>{
-
-    const y=
-    (children.length-1-i)*40;
-
-    item.style.transform=
-    `translateY(-${y}px) scale(${Math.max(.75,1-y/500)})`;
-
-    item.style.opacity=
-    Math.max(
-     .25,
-     1-y/350
-    );
-
-   }
-  );
-
-
-  if(children.length>7)
-   container.removeChild(
-    children[0]
-   );
-
-
-  timer=
-  setTimeout(
-   nextWord,
-   260+
-   Math.min(
-    word.length*20,
-    300
-   )
-  );
-
- }
-
- nextWord();
-
- status(
-  "Futbolçu danışır..."
- );
-
-}
-
-
-/* PLAY */
-
-document
-.getElementById("play")
-.onclick=
-animateMessage;
-
-
-/* TOUCH PLAYER */
-
-const raycaster=
-new THREE.Raycaster();
-
-const pointer=
-new THREE.Vector2();
-
-renderer.domElement
-.addEventListener(
- "pointerdown",
- event=>{
-
-  if(!player)
-   return;
-
-  pointer.x=
-   event.clientX/
-   innerWidth*2-1;
-
-  pointer.y=
-   -(event.clientY/
-     innerHeight)*2+1;
-
-  raycaster.setFromCamera(
-   pointer,
-   camera
-  );
-
-  const hits=
-  raycaster.intersectObject(
-   player,
-   true
-  );
-
-  if(hits.length)
-   animateMessage();
-
- }
-);
-
-
-/* RECORD */
-
-let recorder=null;
-let chunks=[];
-let videoBlob=null;
-
-document
-.getElementById("rec")
-.onclick=
-()=>{
-
- if(
-  recorder &&
-  recorder.state==="recording"
- ){
-
-  recorder.stop();
-
-  return;
- }
-
- chunks=[];
-
- const stream=
- renderer.domElement
- .captureStream(30);
-
- let options={};
-
- if(
-  MediaRecorder
-  .isTypeSupported(
-   "video/webm;codecs=vp9"
-  )
- ){
-
-  options={
-   mimeType:
-   "video/webm;codecs=vp9"
   };
 
- }
-
- recorder=
- new MediaRecorder(
-  stream,
-  options
- );
-
- recorder.ondataavailable=
- e=>{
-
-  if(e.data.size)
-   chunks.push(e.data);
-
- };
-
- recorder.onstop=()=>{
-
-  videoBlob=
-  new Blob(
-   chunks,
-   {
-    type:"video/webm"
-   }
-  );
-
-  document
-   .getElementById("rec")
-   .textContent="● REC";
-
-  document
-   .getElementById("state")
-   .textContent="HAZIR";
-
-  status(
-   "Video hazırdır."
-  );
-
- };
-
- recorder.start();
-
- document
-  .getElementById("rec")
-  .textContent="■ STOP";
-
- document
-  .getElementById("state")
-  .textContent="● REC";
-
- status(
-  "10 saniyəlik video yazılır..."
- );
-
- setTimeout(()=>{
-
-  if(
-   recorder &&
-   recorder.state==="recording"
-  )
-   recorder.stop();
-
- },10000);
+  reader.readAsDataURL(file);
 
 };
 
 
-/* SHARE WHATSAPP / TELEGRAM */
+/* =========================
+   TEXT
+========================= */
 
-document
-.getElementById("share")
-.onclick=
-async()=>{
+function setText(text){
 
- if(!videoBlob){
+  messageInput.value = text;
 
-  status(
-   "Əvvəlcə REC ilə video yarat."
-  );
-
-  return;
- }
-
- const file=
- new File(
-  [videoBlob],
-  "AI-Futbolcu.webm",
-  {
-   type:"video/webm"
-  }
- );
-
- try{
-
-  if(
-   navigator.share &&
-   navigator.canShare &&
-   navigator.canShare({
-    files:[file]
-   })
-  ){
-
-   await navigator.share({
-
-    title:
-    "AI Futbolçu",
-
-    text:
-    "AI futbolçu animasiya mesajı",
-
-    files:[file]
-
-   });
-
-   status(
-    "WhatsApp / Telegram seçə bilərsən."
-   );
-
-  }else{
-
-   download();
-
-  }
-
- }catch(error){
-
-  if(
-   error.name!=="AbortError"
-  )
-   download();
-
- }
-
-};
-
-
-/* DOWNLOAD */
-
-function download(){
-
- const url=
- URL.createObjectURL(
-  videoBlob
- );
-
- const a=
- document.createElement("a");
-
- a.href=url;
-
- a.download=
- "AI-Futbolcu.webm";
-
- a.click();
-
- setTimeout(
-  ()=>{
-   URL.revokeObjectURL(url);
-  },
-  2000
- );
-
- status(
-  "Video telefona endirildi."
- );
+  playAvatar();
 
 }
 
 
-/* STATUS */
+/* =========================
+   STYLE
+========================= */
 
-function status(text){
+document.querySelectorAll(".avatar").forEach(btn => {
 
- document
-  .getElementById("status")
-  .textContent=text;
+  btn.onclick = () => {
 
-}
+    document.querySelectorAll(".avatar")
+      .forEach(x => x.classList.remove("active"));
 
+    btn.classList.add("active");
 
-/* RESIZE */
+    currentStyle = btn.dataset.style;
 
-addEventListener(
- "resize",
- ()=>{
+    draw();
 
-  camera.aspect=
-   innerWidth/
-   innerHeight;
+  };
 
-  camera.updateProjectionMatrix();
-
-  renderer.setSize(
-   innerWidth,
-   innerHeight
-  );
-
- }
-);
+});
 
 
-/* LOOP */
+/* =========================
+   START SPEECH
+========================= */
 
-const clock=
-new THREE.Clock();
-
-function loop(){
-
- requestAnimationFrame(loop);
-
- const delta=
- clock.getDelta();
-
- if(mixer)
-  mixer.update(delta);
-
- if(player){
-
-  const t=
-   performance.now()*.0003;
-
-  player.rotation.y=
-   Math.sin(t)*.025;
-
- }
-
- ring.rotation.z+=.0007;
-
- renderer.render(
-  scene,
-  camera
- );
-
-}
-
-loop();
-
-</script>
-
-</body>
-</html>
+function
