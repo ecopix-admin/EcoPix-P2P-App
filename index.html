@@ -8,22 +8,22 @@
 <title>ARWORLD — Spatial Social</title>
 
 <link rel="stylesheet"
-      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 
 <style>
 :root{
   --bg:#050a12;
   --panel:#0b1422;
-  --panel2:#101d2e;
-  --line:#243750;
+  --panel2:#101d2d;
+  --line:#263b57;
   --text:#f4f7fb;
-  --muted:#9aaac0;
-  --cyan:#42d9ff;
+  --muted:#9eacc0;
+  --cyan:#45dcff;
   --blue:#328dff;
-  --purple:#7057ff;
-  --green:#3ee28b;
-  --danger:#ff526b;
-  --navH:76px;
+  --purple:#7658ff;
+  --green:#42df91;
+  --red:#ff526d;
+  --nav:78px;
 }
 
 *{
@@ -32,13 +32,12 @@
 }
 
 html,body{
-  margin:0;
-  padding:0;
   width:100%;
   height:100%;
+  margin:0;
   overflow:hidden;
-  background:var(--bg);
-  color:var(--text);
+  background:#050a12;
+  color:white;
   font-family:Arial,Helvetica,sans-serif;
 }
 
@@ -50,9 +49,8 @@ select{
 }
 
 button{
+  color:white;
   border:0;
-  color:var(--text);
-  cursor:pointer;
   touch-action:manipulation;
 }
 
@@ -60,10 +58,11 @@ button{
   position:fixed;
   inset:0;
   overflow:hidden;
-  background:#050a12;
 }
 
-/* HEADER */
+/* =====================================================
+   HEADER
+===================================================== */
 
 .header{
   position:absolute;
@@ -73,10 +72,8 @@ button{
   right:0;
   height:78px;
   padding:
-    max(10px,env(safe-area-inset-top))
-    18px
-    10px
-    22px;
+    max(8px,env(safe-area-inset-top))
+    16px 8px 20px;
   display:flex;
   align-items:center;
   justify-content:space-between;
@@ -86,39 +83,37 @@ button{
 }
 
 .logo{
-  font-size:29px;
+  font-size:28px;
   font-weight:900;
-  letter-spacing:.5px;
+  letter-spacing:.4px;
 }
 
 .logo span{
   color:var(--cyan);
 }
 
-.header-actions{
+.headerBtns{
   display:flex;
   gap:8px;
 }
 
-.icon-btn{
-  width:52px;
-  height:52px;
-  border-radius:18px;
+.iconBtn{
+  width:51px;
+  height:51px;
+  border-radius:17px;
   background:#0c1828;
-  border:1px solid #243650;
-  display:flex;
-  align-items:center;
-  justify-content:center;
+  border:1px solid #253a56;
   font-size:22px;
 }
 
-/* CAMERA */
+/* =====================================================
+   AR CAMERA
+===================================================== */
 
-#cameraView{
+#arView{
   position:absolute;
   inset:0;
   background:#000;
-  overflow:hidden;
 }
 
 #camera{
@@ -134,114 +129,151 @@ button{
   inset:0;
   pointer-events:none;
   background:
-    linear-gradient(
-      to bottom,
-      rgba(0,0,0,.45) 0%,
-      transparent 25%,
-      transparent 70%,
-      rgba(0,0,0,.5) 100%
-    );
+  linear-gradient(
+    to bottom,
+    rgba(0,0,0,.42),
+    transparent 27%,
+    transparent 72%,
+    rgba(0,0,0,.50)
+  );
 }
 
-/* STATUS */
+/* =====================================================
+   STATUS
+===================================================== */
 
-.statusRow{
+.status{
   position:absolute;
-  z-index:20;
+  z-index:40;
   top:92px;
-  left:18px;
-  right:18px;
+  left:15px;
+  right:15px;
   display:flex;
   justify-content:space-between;
   pointer-events:none;
 }
 
-.status{
-  padding:13px 17px;
-  border-radius:25px;
-  background:rgba(8,20,35,.82);
-  border:1px solid #263d5b;
+.statusItem{
+  background:rgba(7,18,31,.84);
+  border:1px solid #29415e;
+  border-radius:24px;
+  padding:12px 15px;
+  font-size:13px;
   backdrop-filter:blur(12px);
-  font-size:15px;
 }
 
-/* AR OBJECTS */
+/* =====================================================
+   AR CROSSHAIR
+===================================================== */
+
+.crosshair{
+  position:absolute;
+  z-index:15;
+  left:50%;
+  top:50%;
+  width:44px;
+  height:44px;
+  transform:translate(-50%,-50%);
+  pointer-events:none;
+  opacity:.35;
+}
+
+.crosshair:before,
+.crosshair:after{
+  content:"";
+  position:absolute;
+  background:#fff;
+}
+
+.crosshair:before{
+  width:2px;
+  height:44px;
+  left:21px;
+  top:0;
+}
+
+.crosshair:after{
+  height:2px;
+  width:44px;
+  left:0;
+  top:21px;
+}
+
+/* =====================================================
+   AR OBJECTS
+===================================================== */
 
 #arObjects{
   position:absolute;
-  inset:78px 0 var(--navH) 0;
-  z-index:10;
+  z-index:25;
+  inset:78px 0 var(--nav) 0;
   pointer-events:none;
 }
 
-.ar-card{
+.arObject{
   position:absolute;
-  min-width:190px;
-  max-width:250px;
-  padding:12px;
-  border-radius:17px;
-  background:rgba(7,16,28,.90);
-  border:1px solid rgba(66,217,255,.5);
-  box-shadow:0 10px 35px rgba(0,0,0,.4);
-  backdrop-filter:blur(14px);
-  pointer-events:auto;
+  width:min(270px,68vw);
   transform:translate(-50%,-50%);
-  animation:pop .2s ease;
+  padding:13px;
+  border-radius:19px;
+  background:rgba(6,15,27,.92);
+  border:1px solid rgba(69,220,255,.55);
+  box-shadow:
+    0 12px 40px rgba(0,0,0,.48),
+    0 0 30px rgba(69,220,255,.07);
+  backdrop-filter:blur(15px);
+  pointer-events:auto;
+  will-change:left,top,transform;
 }
 
-@keyframes pop{
-  from{
-    opacity:0;
-    transform:translate(-50%,-50%) scale(.85);
-  }
-  to{
-    opacity:1;
-    transform:translate(-50%,-50%) scale(1);
-  }
+.arObject.stable{
+  animation:none;
 }
 
-.ar-title{
-  font-weight:800;
-  font-size:16px;
-  margin-bottom:5px;
+.arName{
+  font-weight:900;
+  font-size:17px;
 }
 
-.ar-meta{
-  color:var(--muted);
-  font-size:12px;
-  margin-bottom:7px;
-}
-
-.ar-desc{
-  color:#d9e2ee;
-  font-size:13px;
-  line-height:1.35;
-}
-
-.ar-distance{
+.arType{
   color:var(--cyan);
+  font-size:12px;
+  margin-top:4px;
+}
+
+.arBio{
+  color:#d3dce8;
+  font-size:12px;
+  line-height:1.35;
+  margin-top:7px;
+}
+
+.arDistance{
+  color:#aabbd0;
   font-size:12px;
   margin-top:8px;
 }
 
-.ar-open{
-  margin-top:9px;
+.arOpen{
   width:100%;
-  padding:9px;
-  border-radius:11px;
-  background:#13263c;
-  border:1px solid #29425f;
+  min-height:42px;
+  margin-top:9px;
+  border-radius:12px;
+  background:#14283e;
+  border:1px solid #2c4665;
 }
 
-/* BOTTOM NAV */
+/* =====================================================
+   BOTTOM NAV
+===================================================== */
 
 .bottomNav{
   position:absolute;
-  z-index:200;
+  z-index:500;
   left:0;
   right:0;
   bottom:0;
-  height:var(--navH);
+  height:var(--nav);
   padding-bottom:env(safe-area-inset-bottom);
   background:rgba(4,9,17,.97);
   border-top:1px solid rgba(255,255,255,.08);
@@ -250,10 +282,9 @@ button{
   align-items:center;
 }
 
-.navBtn{
-  position:relative;
+.nav{
   width:20%;
-  height:68px;
+  height:70px;
   background:transparent;
   color:#7889a3;
   display:flex;
@@ -263,36 +294,36 @@ button{
   gap:4px;
 }
 
-.navBtn .ico{
-  font-size:23px;
-}
-
-.navBtn span:last-child{
-  font-size:10px;
-}
-
-.navBtn.active{
+.nav.active{
   color:var(--cyan);
 }
 
-.addBtn{
-  width:66px;
-  height:54px;
-  margin-top:-14px;
-  border-radius:23px;
-  background:linear-gradient(135deg,#1cb8ed,#7358ff);
-  font-size:34px;
-  color:white;
-  box-shadow:0 8px 25px rgba(61,150,255,.35);
+.navIcon{
+  font-size:22px;
 }
 
-/* VIEWS */
+.navText{
+  font-size:10px;
+}
+
+.add{
+  width:66px;
+  height:55px;
+  margin-top:-13px;
+  border-radius:22px;
+  background:linear-gradient(110deg,#1dbbea,#7358ff);
+  font-size:34px;
+  box-shadow:0 9px 30px rgba(55,130,255,.35);
+}
+
+/* =====================================================
+   VIEWS
+===================================================== */
 
 .view{
   position:absolute;
   inset:0;
   display:none;
-  z-index:50;
   background:var(--bg);
 }
 
@@ -300,114 +331,151 @@ button{
   display:block;
 }
 
-/* MAP */
-
-#map{
-  position:absolute;
-  inset:78px 0 var(--navH) 0;
-}
-
-.leaflet-control-attribution{
-  font-size:8px!important;
-}
-
-/* GENERAL PAGE */
-
 .page{
   position:absolute;
-  inset:78px 0 var(--navH) 0;
+  inset:78px 0 var(--nav) 0;
   overflow-y:auto;
-  padding:20px 16px 35px;
-  -webkit-overflow-scrolling:touch;
+  padding:18px 15px 35px;
 }
 
 .pageTitle{
   font-size:25px;
   font-weight:900;
-  margin-bottom:16px;
+  margin-bottom:17px;
 }
 
-/* FEED CARD */
+/* =====================================================
+   MAP
+===================================================== */
 
-.feedCard{
+#map{
+  position:absolute;
+  inset:78px 0 var(--nav) 0;
+}
+
+/* =====================================================
+   CARDS
+===================================================== */
+
+.card{
   background:#0c1726;
-  border:1px solid #223650;
+  border:1px solid #233953;
   border-radius:20px;
-  margin-bottom:14px;
   overflow:hidden;
+  margin-bottom:14px;
 }
 
-.feedMedia{
+.cardBody{
+  padding:15px;
+}
+
+.cardTitle{
+  font-size:19px;
+  font-weight:900;
+}
+
+.cardMeta{
+  color:var(--cyan);
+  font-size:12px;
+  margin-top:5px;
+}
+
+.cardText{
+  color:#cbd5e2;
+  line-height:1.45;
+  font-size:14px;
+  margin-top:9px;
+}
+
+.mediaGrid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:4px;
+  background:#000;
+}
+
+.mediaGrid img,
+.mediaGrid video{
   width:100%;
-  max-height:260px;
+  height:170px;
   object-fit:cover;
   display:block;
 }
 
-.feedBody{
-  padding:15px;
-}
-
-.feedTitle{
-  font-size:18px;
-  font-weight:800;
-}
-
-.feedMeta{
-  margin-top:5px;
-  color:var(--muted);
-  font-size:12px;
-}
-
-.feedDesc{
-  margin-top:9px;
-  color:#c9d3e0;
-  line-height:1.4;
-}
-
-/* PROFILE */
+/* =====================================================
+   PROFILE
+===================================================== */
 
 .profileBox{
   background:#0c1726;
-  border:1px solid #223650;
-  border-radius:22px;
+  border:1px solid #233953;
+  border-radius:23px;
   padding:20px;
 }
 
 .avatar{
-  width:80px;
-  height:80px;
+  width:78px;
+  height:78px;
   border-radius:50%;
-  background:linear-gradient(135deg,#24c9ef,#7657ff);
+  background:linear-gradient(135deg,#1cc6ed,#7658ff);
   display:flex;
   align-items:center;
   justify-content:center;
-  font-size:30px;
+  font-size:29px;
   font-weight:900;
-  margin-bottom:14px;
 }
 
 .profileName{
-  font-size:24px;
+  font-size:25px;
   font-weight:900;
+  margin-top:14px;
+}
+
+.username{
+  color:var(--cyan);
+  margin-top:4px;
 }
 
 .profileBio{
-  color:var(--muted);
-  margin-top:7px;
+  color:#c7d1df;
+  line-height:1.5;
+  margin-top:13px;
 }
 
-/* MODAL BACKDROP */
+.profileArticle{
+  color:#c7d1df;
+  line-height:1.6;
+  white-space:pre-wrap;
+  margin-top:18px;
+}
+
+.socialRow{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:15px;
+}
+
+.social{
+  padding:10px 13px;
+  border-radius:13px;
+  background:#14253a;
+  border:1px solid #2b4461;
+  font-size:13px;
+}
+
+/* =====================================================
+   MODAL
+===================================================== */
 
 .modal{
   position:fixed;
   inset:0;
-  z-index:1000;
-  background:rgba(0,0,0,.62);
-  backdrop-filter:blur(4px);
+  z-index:2000;
+  background:rgba(0,0,0,.64);
+  backdrop-filter:blur(5px);
   display:none;
   align-items:flex-end;
-  justify-content:center;
   pointer-events:none;
 }
 
@@ -416,33 +484,28 @@ button{
   pointer-events:auto;
 }
 
-/* CREATE SHEET */
-
 .sheet{
-  position:relative;
-  width:min(100%,680px);
-  max-height:78dvh;
-  min-height:0;
+  width:min(100%,700px);
+  max-height:82dvh;
   background:
     linear-gradient(
       180deg,
-      #0d1828 0%,
-      #09121f 100%
+      #0d1828,
+      #09121f
     );
-  border:1px solid #243b59;
+  border:1px solid #29415f;
   border-bottom:0;
   border-radius:28px 28px 0 0;
-  box-shadow:0 -20px 70px rgba(0,0,0,.6);
   overflow:hidden;
   display:flex;
   flex-direction:column;
-  padding-bottom:env(safe-area-inset-bottom);
+  box-shadow:0 -20px 80px rgba(0,0,0,.65);
 }
 
-.sheetHeader{
+.sheetHead{
   flex:0 0 auto;
   position:relative;
-  padding:15px 54px 12px 20px;
+  padding:13px 58px 13px 20px;
   border-bottom:1px solid rgba(255,255,255,.08);
 }
 
@@ -450,8 +513,8 @@ button{
   width:42px;
   height:5px;
   border-radius:10px;
-  background:#4a5b70;
-  margin:0 auto 12px;
+  background:#46586e;
+  margin:0 auto 10px;
 }
 
 .sheetTitle{
@@ -459,49 +522,46 @@ button{
   font-weight:900;
 }
 
-.closeBtn{
+.close{
   position:absolute;
-  right:14px;
-  top:14px;
-  width:44px;
-  height:44px;
+  right:13px;
+  top:13px;
+  width:45px;
+  height:45px;
   border-radius:15px;
-  background:#162438;
-  border:1px solid #2b415e;
-  font-size:23px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  z-index:10;
+  background:#17263a;
+  border:1px solid #2b4360;
+  font-size:24px;
 }
 
 .sheetBody{
-  flex:1 1 auto;
+  flex:1;
   min-height:0;
   overflow-y:auto;
-  padding:16px 18px 16px;
+  padding:16px 17px;
   -webkit-overflow-scrolling:touch;
 }
 
-.formGrid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:12px;
+.sheetFoot{
+  flex:0 0 auto;
+  padding:10px 17px 14px;
+  border-top:1px solid rgba(255,255,255,.08);
+  background:#091321;
 }
+
+/* =====================================================
+   FORM
+===================================================== */
 
 .field{
   margin-bottom:13px;
 }
 
-.field.full{
-  grid-column:1/-1;
-}
-
 .field label{
   display:block;
-  color:#a5b5ca;
-  font-size:14px;
-  margin:0 0 8px;
+  color:#a7b6ca;
+  font-size:13px;
+  margin-bottom:7px;
 }
 
 .input,
@@ -509,18 +569,18 @@ button{
 .textarea{
   width:100%;
   min-height:54px;
-  border-radius:17px;
-  border:1px solid #29415f;
+  border-radius:16px;
+  border:1px solid #2a4260;
   background:#07111e;
   color:white;
   outline:none;
-  padding:0 16px;
+  padding:0 15px;
   font-size:16px;
 }
 
 .textarea{
-  min-height:90px;
-  padding:13px 16px;
+  min-height:105px;
+  padding:13px 15px;
   resize:none;
 }
 
@@ -528,144 +588,138 @@ button{
 .select:focus,
 .textarea:focus{
   border-color:var(--cyan);
-  box-shadow:0 0 0 3px rgba(66,217,255,.08);
+  box-shadow:0 0 0 3px rgba(69,220,255,.07);
 }
 
-.select{
-  appearance:auto;
-}
-
-.fileBox{
-  position:relative;
-  border:1px solid #29415f;
-  border-radius:17px;
-  background:#07111e;
-  padding:11px;
-}
-
-.fileBox input{
-  width:100%;
-  color:#cdd7e4;
-}
-
-.mediaPreview{
-  display:none;
-  margin-top:10px;
-  width:100%;
-  max-height:150px;
-  object-fit:contain;
-  border-radius:13px;
-  background:#000;
-}
-
-.gpsRow{
+.grid2{
   display:grid;
   grid-template-columns:1fr 1fr;
   gap:10px;
-  margin-top:3px;
 }
 
-.actionBtn{
-  min-height:55px;
-  border-radius:17px;
+.button{
+  min-height:53px;
+  border-radius:16px;
   background:#14253a;
   border:1px solid #2b4462;
-  font-weight:700;
-  font-size:16px;
+  font-weight:800;
+  padding:0 13px;
 }
 
-.actionBtn:active{
+.button:active{
   transform:scale(.98);
 }
 
-.placeBtn{
+.primary{
   width:100%;
   min-height:60px;
   border-radius:18px;
-  background:linear-gradient(100deg,#19b9eb,#7059ff);
-  font-size:18px;
-  font-weight:900;
-  box-shadow:0 9px 25px rgba(70,120,255,.25);
-}
-
-.placeBtn:disabled{
-  opacity:.5;
-  filter:grayscale(.4);
-}
-
-.bottomActions{
-  flex:0 0 auto;
-  padding:10px 18px 14px;
-  background:#091321;
-  border-top:1px solid rgba(255,255,255,.08);
-}
-
-/* DETAIL */
-
-.detailSheet{
-  max-height:82dvh;
-}
-
-.detailBody{
-  overflow-y:auto;
-  padding:18px;
-}
-
-.detailMedia{
-  width:100%;
-  max-height:300px;
-  border-radius:17px;
-  object-fit:cover;
-  background:#000;
-  display:block;
-  margin-bottom:15px;
-}
-
-.detailTitle{
-  font-size:24px;
+  background:linear-gradient(105deg,#17bce9,#7358ff);
+  font-size:17px;
   font-weight:900;
 }
 
-.detailText{
-  margin-top:10px;
-  color:#c4cfdd;
-  line-height:1.5;
-}
-
-.detailActions{
+.locationRow{
   display:grid;
   grid-template-columns:1fr 1fr;
-  gap:10px;
-  margin-top:18px;
+  gap:9px;
 }
 
-.detailBtn{
-  min-height:55px;
-  border-radius:16px;
-  background:#14253a;
-  border:1px solid #2c4564;
+.fileActions{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:7px;
+}
+
+.fileAction{
+  min-height:52px;
+  border-radius:14px;
+  background:#13243a;
+  border:1px solid #2a435f;
+  font-size:12px;
   font-weight:800;
 }
 
-.primary{
-  background:linear-gradient(100deg,#16bde9,#6e5cff);
+.fileInput{
+  display:none;
 }
 
-/* TOAST */
+.selectedMedia{
+  margin-top:9px;
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:5px;
+}
+
+.selectedMedia img,
+.selectedMedia video{
+  width:100%;
+  height:90px;
+  object-fit:cover;
+  border-radius:10px;
+  background:#000;
+}
+
+/* =====================================================
+   DETAIL / SPATIAL PROFILE
+===================================================== */
+
+.detailMedia{
+  width:100%;
+  border-radius:18px;
+  max-height:320px;
+  object-fit:cover;
+  background:#000;
+}
+
+.detailName{
+  font-size:26px;
+  font-weight:900;
+  margin-top:15px;
+}
+
+.detailUsername{
+  color:var(--cyan);
+  margin-top:4px;
+}
+
+.detailBio{
+  color:#cbd5e1;
+  line-height:1.5;
+  margin-top:13px;
+}
+
+.detailArticle{
+  color:#cbd5e1;
+  line-height:1.65;
+  white-space:pre-wrap;
+  margin-top:17px;
+}
+
+.detailButtons{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:9px;
+  margin-top:18px;
+}
+
+/* =====================================================
+   TOAST
+===================================================== */
 
 #toast{
   position:fixed;
-  z-index:3000;
+  z-index:5000;
   left:50%;
-  bottom:calc(var(--navH) + 16px);
-  transform:translateX(-50%) translateY(20px);
+  bottom:calc(var(--nav) + 14px);
+  transform:translate(-50%,20px);
+  width:max-content;
   max-width:90%;
-  padding:13px 18px;
+  padding:13px 17px;
   border-radius:15px;
-  background:#101f32;
-  border:1px solid #304964;
-  box-shadow:0 12px 40px rgba(0,0,0,.45);
-  color:white;
+  background:#102036;
+  border:1px solid #2c4562;
+  box-shadow:0 12px 40px rgba(0,0,0,.5);
   opacity:0;
   pointer-events:none;
   transition:.25s;
@@ -674,31 +728,33 @@ button{
 
 #toast.show{
   opacity:1;
-  transform:translateX(-50%) translateY(0);
+  transform:translate(-50%,0);
 }
 
-/* LOADING */
+/* =====================================================
+   LOADING
+===================================================== */
 
-.loading{
+#loading{
   position:fixed;
   inset:0;
-  z-index:5000;
-  background:rgba(3,8,14,.8);
+  z-index:6000;
   display:none;
   align-items:center;
   justify-content:center;
+  background:rgba(2,7,12,.75);
   backdrop-filter:blur(5px);
 }
 
-.loading.show{
+#loading.show{
   display:flex;
 }
 
-.loaderBox{
-  background:#0d1b2c;
-  border:1px solid #29405d;
+.loader{
   padding:22px;
   border-radius:20px;
+  background:#0d1c2e;
+  border:1px solid #29415e;
   text-align:center;
 }
 
@@ -706,75 +762,66 @@ button{
   width:38px;
   height:38px;
   border-radius:50%;
-  border:4px solid #243a54;
+  border:4px solid #243b55;
   border-top-color:var(--cyan);
   animation:spin .8s linear infinite;
   margin:auto auto 12px;
 }
 
 @keyframes spin{
-  to{transform:rotate(360deg)}
+  to{
+    transform:rotate(360deg);
+  }
 }
 
-/* SEARCH */
+/* =====================================================
+   SEARCH
+===================================================== */
 
-.searchBox{
+.search{
   position:absolute;
-  z-index:300;
+  z-index:150;
   top:88px;
   left:15px;
   right:15px;
   display:none;
 }
 
-.searchBox.show{
+.search.show{
   display:block;
 }
 
-.searchInput{
+.search input{
   width:100%;
-  height:54px;
+  height:55px;
   border-radius:17px;
-  background:rgba(8,17,29,.95);
-  border:1px solid #2a4564;
+  border:1px solid #2a4563;
+  background:rgba(7,16,29,.96);
   color:white;
   padding:0 17px;
   outline:none;
 }
 
-/* MOBILE */
+/* =====================================================
+   RESPONSIVE
+===================================================== */
 
 @media(max-width:500px){
-  .header{
-    height:76px;
-  }
 
-  .logo{
-    font-size:27px;
-  }
-
-  .icon-btn{
-    width:50px;
-    height:50px;
-  }
-
-  .formGrid{
+  .grid2{
     grid-template-columns:1fr 1fr;
   }
 
   .sheet{
-    max-height:76dvh;
+    max-height:80dvh;
   }
 
-  .input,
-  .select{
-    min-height:52px;
-  }
 }
 
 @media(max-height:700px){
+
   .sheet{
-    max-height:72dvh;
+    max-height:74dvh;
   }
 
   .sheetBody{
@@ -784,6 +831,7 @@ button{
   .field{
     margin-bottom:9px;
   }
+
 }
 </style>
 </head>
@@ -792,765 +840,1127 @@ button{
 
 <div id="app">
 
-  <!-- CAMERA -->
-  <section id="cameraView">
+<!-- =====================================================
+     AR CAMERA
+===================================================== -->
 
-    <video id="camera"
-           autoplay
-           playsinline
-           muted></video>
+<section id="arView">
 
-    <div class="cameraShade"></div>
+  <video
+    id="camera"
+    autoplay
+    muted
+    playsinline>
+  </video>
 
-    <div class="statusRow">
-      <div class="status" id="gpsStatus">GPS gözlənilir...</div>
-      <div class="status" id="compassStatus">Kompas --°</div>
+  <div class="cameraShade"></div>
+
+  <div class="status">
+    <div class="statusItem" id="gpsStatus">
+      GPS gözlənilir...
     </div>
 
-    <div id="arObjects"></div>
+    <div class="statusItem" id="compassStatus">
+      Kompas --°
+    </div>
+  </div>
 
-    <div class="searchBox" id="searchBox">
-      <input id="searchInput"
-             class="searchInput"
-             placeholder="ARWORLD-də axtar...">
+  <div class="crosshair"></div>
+
+  <div id="arObjects"></div>
+
+  <div class="search" id="searchBox">
+    <input
+      id="searchInput"
+      placeholder="ARWORLD-də axtar...">
+  </div>
+
+</section>
+
+
+<!-- =====================================================
+     MAP
+===================================================== -->
+
+<section id="mapView" class="view">
+  <div id="map"></div>
+</section>
+
+
+<!-- =====================================================
+     FEED
+===================================================== -->
+
+<section id="feedView" class="view">
+
+  <div class="page">
+
+    <div class="pageTitle">
+      Yaxınlıqdakı dünya
     </div>
 
-  </section>
+    <div id="feedList"></div>
 
-  <!-- MAP -->
-  <section id="mapView" class="view">
-    <div id="map"></div>
-  </section>
+  </div>
 
-  <!-- FEED -->
-  <section id="feedView" class="view">
-    <div class="page">
-      <div class="pageTitle">Yaxınlıqdakı obyektlər</div>
-      <div id="feedList"></div>
+</section>
+
+
+<!-- =====================================================
+     MY PROFILE
+===================================================== -->
+
+<section id="profileView" class="view">
+
+  <div class="page">
+
+    <div class="pageTitle">
+      Mənim profilim
     </div>
-  </section>
 
-  <!-- PROFILE -->
-  <section id="profileView" class="view">
-    <div class="page">
-      <div class="pageTitle">Profil</div>
+    <div class="profileBox">
 
-      <div class="profileBox">
-        <div class="avatar" id="avatarLetter">A</div>
-        <div class="profileName" id="profileName">ARWORLD istifadəçisi</div>
-        <div class="profileBio" id="profileBio">
-          Fiziki dünyada rəqəmsal iz burax.
-        </div>
-
-        <button class="actionBtn"
-                style="width:100%;margin-top:18px"
-                id="editProfileBtn">
-          ✏️ Profili redaktə et
-        </button>
+      <div class="avatar"
+           id="myAvatar">
+        A
       </div>
-    </div>
-  </section>
 
-  <!-- HEADER -->
-  <header class="header">
+      <div class="profileName"
+           id="myName">
+        ARWORLD istifadəçisi
+      </div>
 
-    <div class="logo">
-      AR<span>WORLD</span>
-    </div>
+      <div class="username"
+           id="myUsername">
+        @arworld
+      </div>
 
-    <div class="header-actions">
+      <div class="profileBio"
+           id="myBio">
+        Fiziki dünyada rəqəmsal iz burax.
+      </div>
 
-      <button class="icon-btn"
-              id="searchBtn"
-              aria-label="Axtar">
-        ⌕
+      <button
+        class="button"
+        style="width:100%;margin-top:18px"
+        id="editMyProfile">
+        ✏️ Profili redaktə et
       </button>
 
-      <button class="icon-btn"
-              id="refreshBtn"
-              aria-label="Yenilə">
-        ◎
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- =====================================================
+     HEADER
+===================================================== -->
+
+<header class="header">
+
+  <div class="logo">
+    AR<span>WORLD</span>
+  </div>
+
+  <div class="headerBtns">
+
+    <button
+      class="iconBtn"
+      id="searchBtn">
+      ⌕
+    </button>
+
+    <button
+      class="iconBtn"
+      id="refreshBtn">
+      ↻
+    </button>
+
+  </div>
+
+</header>
+
+
+<!-- =====================================================
+     CREATE SPATIAL PROFILE
+===================================================== -->
+
+<div class="modal" id="createModal">
+
+  <div class="sheet">
+
+    <div class="sheetHead">
+
+      <div class="handle"></div>
+
+      <div class="sheetTitle">
+        🌍 Dünyaya yerləşdir
+      </div>
+
+      <button
+        class="close"
+        id="closeCreate">
+        ×
       </button>
 
     </div>
 
-  </header>
 
-  <!-- CREATE MODAL -->
-  <div class="modal" id="createModal">
+    <div class="sheetBody">
 
-    <div class="sheet">
+      <!-- TYPE -->
 
-      <div class="sheetHeader">
+      <div class="field">
 
-        <div class="handle"></div>
+        <label>
+          Bu nədir?
+        </label>
 
-        <div class="sheetTitle">
-          🌍 Dünyaya obyekt yerləşdir
+        <select
+          id="objectType"
+          class="select">
+
+          <option value="person">
+            👤 Şəxsi profil
+          </option>
+
+          <option value="business">
+            🏪 Biznes / mağaza
+          </option>
+
+          <option value="service">
+            🛠️ Usta / xidmət
+          </option>
+
+          <option value="car">
+            🚗 Avtomobil
+          </option>
+
+          <option value="place">
+            📍 Məkan
+          </option>
+
+          <option value="tourism">
+            🏔️ Turizm
+          </option>
+
+          <option value="event">
+            🎉 Tədbir
+          </option>
+
+          <option value="warning">
+            ⚠️ Xəbərdarlıq
+          </option>
+
+          <option value="information">
+            ℹ️ Məlumat
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <!-- NAME -->
+
+      <div class="field">
+
+        <label>
+          Ad / başlıq
+        </label>
+
+        <input
+          id="objectName"
+          class="input"
+          placeholder="Məsələn: Şamxal Təmir Tikinti">
+
+      </div>
+
+
+      <!-- USERNAME -->
+
+      <div class="field">
+
+        <label>
+          İstifadəçi adı
+        </label>
+
+        <input
+          id="objectUsername"
+          class="input"
+          placeholder="@istifadeci">
+
+      </div>
+
+
+      <!-- BIO -->
+
+      <div class="field">
+
+        <label>
+          Qısa bio
+        </label>
+
+        <textarea
+          id="objectBio"
+          class="textarea"
+          placeholder="Özünüzü və ya obyektinizi qısa təqdim edin..."></textarea>
+
+      </div>
+
+
+      <!-- ARTICLE -->
+
+      <div class="field">
+
+        <label>
+          📖 Haqqında / məqalə
+        </label>
+
+        <textarea
+          id="objectArticle"
+          class="textarea"
+          style="min-height:145px"
+          placeholder="Burada özünüz, biznesiniz, xidmətiniz, məkanınız və s. haqqında geniş məlumat yaza bilərsiniz..."></textarea>
+
+      </div>
+
+
+      <!-- PHONE -->
+
+      <div class="field">
+
+        <label>
+          Telefon
+        </label>
+
+        <input
+          id="objectPhone"
+          class="input"
+          type="tel"
+          placeholder="+994 50 000 00 00">
+
+      </div>
+
+
+      <!-- WHATSAPP -->
+
+      <div class="field">
+
+        <label>
+          WhatsApp
+        </label>
+
+        <input
+          id="objectWhatsapp"
+          class="input"
+          type="tel"
+          placeholder="+994500000000">
+
+      </div>
+
+
+      <!-- SOCIAL -->
+
+      <div class="field">
+
+        <label>
+          Sosial şəbəkə / sayt
+        </label>
+
+        <input
+          id="objectSocial"
+          class="input"
+          placeholder="Instagram, TikTok, sayt və s.">
+
+      </div>
+
+
+      <!-- LOCATION -->
+
+      <div class="field">
+
+        <label>
+          📍 Dəqiq yerləşmə
+        </label>
+
+        <div class="grid2">
+
+          <input
+            id="objectLat"
+            class="input"
+            type="number"
+            step="any"
+            placeholder="Latitude">
+
+          <input
+            id="objectLng"
+            class="input"
+            type="number"
+            step="any"
+            placeholder="Longitude">
+
         </div>
 
-        <button class="closeBtn"
-                id="closeCreate">
-          ×
+      </div>
+
+
+      <div class="locationRow">
+
+        <button
+          class="button"
+          id="currentGPS">
+          📍 Cari GPS
+        </button>
+
+        <button
+          class="button"
+          id="pickMap">
+          🗺️ Xəritə
         </button>
 
       </div>
 
-      <div class="sheetBody">
 
-        <div class="formGrid">
+      <!-- RADIUS -->
 
-          <div class="field full">
-            <label>Başlıq</label>
-            <input id="postTitle"
-                   class="input"
-                   placeholder="Məsələn: Satılır — Mercedes">
-          </div>
+      <div class="field"
+           style="margin-top:13px">
 
-          <div class="field">
-            <label>Kateqoriya</label>
+        <label>
+          Görünmə radiusu
+        </label>
 
-            <select id="postType"
-                    class="select">
+        <select
+          id="objectRadius"
+          class="select">
 
-              <option value="general">📍 Ümumi</option>
-              <option value="car">🚗 Avtomobil</option>
-              <option value="business">🏪 Mağaza / Biznes</option>
-              <option value="service">🛠️ Xidmət</option>
-              <option value="tourism">🏔️ Turizm</option>
-              <option value="warning">⚠️ Xəbərdarlıq</option>
-              <option value="person">👤 İnsan</option>
+          <option value="50">
+            50 metr
+          </option>
 
-            </select>
-          </div>
+          <option value="100">
+            100 metr
+          </option>
 
-          <div class="field">
-            <label>Radius, metr</label>
+          <option value="300" selected>
+            300 metr
+          </option>
 
-            <input id="postRadius"
-                   class="input"
-                   type="number"
-                   min="1"
-                   max="10000"
-                   value="300">
-          </div>
+          <option value="500">
+            500 metr
+          </option>
 
-          <div class="field full">
-            <label>Açıqlama</label>
+          <option value="1000">
+            1 km
+          </option>
 
-            <textarea id="postDesc"
-                      class="textarea"
-                      placeholder="Bu obyekt haqqında məlumat..."></textarea>
-          </div>
+          <option value="5000">
+            5 km
+          </option>
 
-          <div class="field full">
-            <label>Telefon</label>
-
-            <input id="postPhone"
-                   class="input"
-                   type="tel"
-                   placeholder="+994 50 000 00 00">
-          </div>
-
-          <div class="field">
-            <label>Enlik (Latitude)</label>
-
-            <input id="postLat"
-                   class="input"
-                   type="number"
-                   step="any"
-                   placeholder="40.4093">
-          </div>
-
-          <div class="field">
-            <label>Uzunluq (Longitude)</label>
-
-            <input id="postLng"
-                   class="input"
-                   type="number"
-                   step="any"
-                   placeholder="49.8671">
-          </div>
-
-          <div class="field full">
-
-            <label>
-              📍 Yerləşmə
-            </label>
-
-            <div class="gpsRow">
-
-              <button type="button"
-                      class="actionBtn"
-                      id="currentGps">
-                📍 Cari GPS
-              </button>
-
-              <button type="button"
-                      class="actionBtn"
-                      id="mapPick">
-                🗺️ Xəritədə seç
-              </button>
-
-            </div>
-
-          </div>
-
-          <div class="field full">
-
-            <label>
-              Şəkil / video
-            </label>
-
-            <div class="fileBox">
-
-              <input id="mediaFile"
-                     type="file"
-                     accept="image/*,video/*">
-
-              <img id="imagePreview"
-                   class="mediaPreview">
-
-              <video id="videoPreview"
-                     class="mediaPreview"
-                     controls
-                     playsinline></video>
-
-            </div>
-
-          </div>
-
-          <div class="field">
-
-            <label>Müddət</label>
-
-            <select id="postExpiry"
-                    class="select">
-
-              <option value="0">
-                Müddətsiz
-              </option>
-
-              <option value="1">
-                1 saat
-              </option>
-
-              <option value="24">
-                24 saat
-              </option>
-
-              <option value="72">
-                3 gün
-              </option>
-
-              <option value="168">
-                7 gün
-              </option>
-
-            </select>
-
-          </div>
-
-        </div>
+        </select>
 
       </div>
 
-      <div class="bottomActions">
 
-        <button type="button"
-                class="placeBtn"
-                id="placeBtn">
-          📍 YERLƏŞDİR
-        </button>
+      <!-- MEDIA -->
+
+      <div class="field">
+
+        <label>
+          📸 Şəkil və video
+        </label>
+
+        <div class="fileActions">
+
+          <button
+            class="fileAction"
+            id="galleryBtn">
+            🖼️ Qalereya
+          </button>
+
+          <button
+            class="fileAction"
+            id="photoCameraBtn">
+            📷 Şəkil çək
+          </button>
+
+          <button
+            class="fileAction"
+            id="videoCameraBtn">
+            🎥 Video çək
+          </button>
+
+        </div>
+
+        <input
+          id="galleryInput"
+          class="fileInput"
+          type="file"
+          accept="image/*,video/*"
+          multiple>
+
+        <input
+          id="photoCameraInput"
+          class="fileInput"
+          type="file"
+          accept="image/*"
+          capture="environment">
+
+        <input
+          id="videoCameraInput"
+          class="fileInput"
+          type="file"
+          accept="video/*"
+          capture="environment">
+
+        <div
+          id="selectedMedia"
+          class="selectedMedia">
+        </div>
 
       </div>
 
     </div>
 
-  </div>
 
-  <!-- DETAIL MODAL -->
-  <div class="modal" id="detailModal">
+    <div class="sheetFoot">
 
-    <div class="sheet detailSheet">
-
-      <div class="sheetHeader">
-
-        <div class="handle"></div>
-
-        <div class="sheetTitle">
-          Obyekt
-        </div>
-
-        <button class="closeBtn"
-                id="closeDetail">
-          ×
-        </button>
-
-      </div>
-
-      <div class="detailBody"
-           id="detailBody">
-      </div>
+      <button
+        class="primary"
+        id="placeObject">
+        📍 DƏQİQ YERLƏŞDİR
+      </button>
 
     </div>
 
   </div>
-
-  <!-- PROFILE MODAL -->
-  <div class="modal" id="profileModal">
-
-    <div class="sheet">
-
-      <div class="sheetHeader">
-
-        <div class="handle"></div>
-
-        <div class="sheetTitle">
-          Profil
-        </div>
-
-        <button class="closeBtn"
-                id="closeProfile">
-          ×
-        </button>
-
-      </div>
-
-      <div class="sheetBody">
-
-        <div class="field">
-
-          <label>Ad</label>
-
-          <input id="profileNameInput"
-                 class="input"
-                 placeholder="Adınız">
-
-        </div>
-
-        <div class="field">
-
-          <label>Bio</label>
-
-          <textarea id="profileBioInput"
-                    class="textarea"
-                    placeholder="Haqqınızda..."></textarea>
-
-        </div>
-
-      </div>
-
-      <div class="bottomActions">
-
-        <button class="placeBtn"
-                id="saveProfile">
-          PROFİLİ SAXLA
-        </button>
-
-      </div>
-
-    </div>
-
-  </div>
-
-  <!-- LOADING -->
-
-  <div class="loading"
-       id="loading">
-
-    <div class="loaderBox">
-
-      <div class="spinner"></div>
-
-      <div id="loadingText">
-        Gözləyin...
-      </div>
-
-    </div>
-
-  </div>
-
-  <!-- TOAST -->
-
-  <div id="toast"></div>
-
-  <!-- BOTTOM NAV -->
-
-  <nav class="bottomNav">
-
-    <button class="navBtn active"
-            data-view="ar">
-      <div class="ico">◎</div>
-      <span>Scan</span>
-    </button>
-
-    <button class="navBtn"
-            data-view="map">
-      <div class="ico">⌖</div>
-      <span>Xəritə</span>
-    </button>
-
-    <button class="navBtn"
-            id="addButton">
-      <div class="addBtn">＋</div>
-    </button>
-
-    <button class="navBtn"
-            data-view="feed">
-      <div class="ico">▤</div>
-      <span>Lent</span>
-    </button>
-
-    <button class="navBtn"
-            data-view="profile">
-      <div class="ico">◉</div>
-      <span>Profil</span>
-    </button>
-
-  </nav>
 
 </div>
+
+
+<!-- =====================================================
+     SPATIAL PROFILE DETAIL
+===================================================== -->
+
+<div class="modal" id="detailModal">
+
+  <div class="sheet">
+
+    <div class="sheetHead">
+
+      <div class="handle"></div>
+
+      <div class="sheetTitle">
+        Spatial Profile
+      </div>
+
+      <button
+        class="close"
+        id="closeDetail">
+        ×
+      </button>
+
+    </div>
+
+    <div
+      class="sheetBody"
+      id="detailBody">
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- =====================================================
+     MY PROFILE EDIT
+===================================================== -->
+
+<div class="modal" id="profileModal">
+
+  <div class="sheet">
+
+    <div class="sheetHead">
+
+      <div class="handle"></div>
+
+      <div class="sheetTitle">
+        Mənim profilim
+      </div>
+
+      <button
+        class="close"
+        id="closeProfile">
+        ×
+      </button>
+
+    </div>
+
+    <div class="sheetBody">
+
+      <div class="field">
+
+        <label>
+          Ad
+        </label>
+
+        <input
+          id="myNameInput"
+          class="input">
+
+      </div>
+
+      <div class="field">
+
+        <label>
+          İstifadəçi adı
+        </label>
+
+        <input
+          id="myUsernameInput"
+          class="input">
+
+      </div>
+
+      <div class="field">
+
+        <label>
+          Bio
+        </label>
+
+        <textarea
+          id="myBioInput"
+          class="textarea"></textarea>
+
+      </div>
+
+    </div>
+
+    <div class="sheetFoot">
+
+      <button
+        class="primary"
+        id="saveMyProfile">
+        PROFİLİ SAXLA
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- =====================================================
+     LOADING
+===================================================== -->
+
+<div id="loading">
+
+  <div class="loader">
+
+    <div class="spinner"></div>
+
+    <div id="loadingText">
+      Gözləyin...
+    </div>
+
+  </div>
+
+</div>
+
+
+<div id="toast"></div>
+
+
+<!-- =====================================================
+     NAV
+===================================================== -->
+
+<nav class="bottomNav">
+
+  <button
+    class="nav active"
+    data-view="ar">
+
+    <div class="navIcon">◎</div>
+    <div class="navText">Scan</div>
+
+  </button>
+
+  <button
+    class="nav"
+    data-view="map">
+
+    <div class="navIcon">⌖</div>
+    <div class="navText">Xəritə</div>
+
+  </button>
+
+  <button
+    class="nav"
+    id="addBtn">
+
+    <div class="add">
+      ＋
+    </div>
+
+  </button>
+
+  <button
+    class="nav"
+    data-view="feed">
+
+    <div class="navIcon">▤</div>
+    <div class="navText">Dünya</div>
+
+  </button>
+
+  <button
+    class="nav"
+    data-view="profile">
+
+    <div class="navIcon">◉</div>
+    <div class="navText">Profil</div>
+
+  </button>
+
+</nav>
+
+</div>
+
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
-/* =========================================================
-   ARWORLD
-   SINGLE FILE MOBILE SPATIAL SOCIAL PROTOTYPE
-========================================================= */
 
-const $ = id => document.getElementById(id);
+/* =====================================================
+   DATABASE
+===================================================== */
 
-let db = null;
-let posts = [];
-let profile = {
+let db;
+
+let spatialObjects = [];
+
+let myProfile = {
   name:"ARWORLD istifadəçisi",
+  username:"@arworld",
   bio:"Fiziki dünyada rəqəmsal iz burax."
 };
 
 let userLat = null;
 let userLng = null;
-let userAccuracy = null;
+let gpsAccuracy = null;
 
-let heading = 0;
+let smoothLat = null;
+let smoothLng = null;
+
+let rawHeading = 0;
+let smoothHeading = 0;
+
 let cameraStream = null;
-let map = null;
-let mapMarkers = [];
 
-let selectedMedia = null;
-let selectedMediaType = null;
+let map = null;
+let markers = [];
+
+let selectedFiles = [];
 
 let activeView = "ar";
 
-/* =========================================================
-   TOAST
-========================================================= */
 
-function toast(message){
+/* =====================================================
+   HELPERS
+===================================================== */
 
-  const el = $("toast");
+const $ = id =>
+  document.getElementById(id);
 
-  el.textContent = message;
-  el.classList.add("show");
+
+function toast(text){
+
+  const t = $("toast");
+
+  t.textContent = text;
+
+  t.classList.add("show");
 
   clearTimeout(window.toastTimer);
 
-  window.toastTimer = setTimeout(()=>{
-    el.classList.remove("show");
-  },2800);
+  window.toastTimer =
+    setTimeout(
+      ()=>{
+        t.classList.remove("show");
+      },
+      2800
+    );
+
 }
 
 
-/* =========================================================
-   LOADING
-========================================================= */
+function loading(show,text){
 
-function loading(show,text="Gözləyin..."){
+  $("loadingText").textContent =
+    text || "Gözləyin...";
 
-  $("loadingText").textContent = text;
+  $("loading")
+    .classList.toggle(
+      "show",
+      show
+    );
 
-  if(show)
-    $("loading").classList.add("show");
-  else
-    $("loading").classList.remove("show");
 }
 
 
-/* =========================================================
+function escapeHTML(v){
+
+  return String(v || "")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+
+}
+
+
+function typeName(type){
+
+  const a = {
+
+    person:"👤 Şəxsi profil",
+
+    business:"🏪 Biznes",
+
+    service:"🛠️ Xidmət",
+
+    car:"🚗 Avtomobil",
+
+    place:"📍 Məkan",
+
+    tourism:"🏔️ Turizm",
+
+    event:"🎉 Tədbir",
+
+    warning:"⚠️ Xəbərdarlıq",
+
+    information:"ℹ️ Məlumat"
+
+  };
+
+  return a[type] || "📍 Obyekt";
+
+}
+
+
+/* =====================================================
    INDEXED DB
-========================================================= */
+===================================================== */
 
 function openDB(){
 
-  return new Promise((resolve,reject)=>{
+  return new Promise(
+    (resolve,reject)=>{
 
-    const request =
-      indexedDB.open("ARWORLD_DATABASE_V2",1);
-
-    request.onupgradeneeded = event => {
-
-      const database = event.target.result;
-
-      if(!database.objectStoreNames.contains("posts")){
-
-        database.createObjectStore(
-          "posts",
-          {keyPath:"id"}
+      const req =
+        indexedDB.open(
+          "ARWORLD_SPATIAL_V3",
+          1
         );
 
-      }
+      req.onupgradeneeded =
+        e=>{
 
-      if(!database.objectStoreNames.contains("profile")){
+          const d =
+            e.target.result;
 
-        database.createObjectStore(
-          "profile",
-          {keyPath:"id"}
-        );
+          if(
+            !d.objectStoreNames.contains(
+              "objects"
+            )
+          ){
 
-      }
+            d.createObjectStore(
+              "objects",
+              {keyPath:"id"}
+            );
 
-    };
+          }
 
-    request.onsuccess = event => {
+          if(
+            !d.objectStoreNames.contains(
+              "profile"
+            )
+          ){
 
-      db = event.target.result;
+            d.createObjectStore(
+              "profile",
+              {keyPath:"id"}
+            );
 
-      resolve();
+          }
 
-    };
+        };
 
-    request.onerror = () => reject(request.error);
+      req.onsuccess =
+        e=>{
 
-  });
+          db =
+            e.target.result;
+
+          resolve();
+
+        };
+
+      req.onerror =
+        ()=>{
+          reject(req.error);
+        };
+
+    }
+  );
 
 }
 
 
-function savePost(post){
+function saveObject(obj){
 
-  return new Promise((resolve,reject)=>{
+  return new Promise(
+    (resolve,reject)=>{
 
-    const tx =
-      db.transaction("posts","readwrite");
+      const tx =
+        db.transaction(
+          "objects",
+          "readwrite"
+        );
 
-    tx.objectStore("posts").put(post);
+      tx.objectStore(
+        "objects"
+      ).put(obj);
 
-    tx.oncomplete = resolve;
-    tx.onerror = () => reject(tx.error);
+      tx.oncomplete =
+        resolve;
 
-  });
+      tx.onerror =
+        ()=>reject(tx.error);
+
+    }
+  );
 
 }
 
 
-function getPosts(){
+function loadObjects(){
 
-  return new Promise((resolve,reject)=>{
+  return new Promise(
+    (resolve,reject)=>{
 
-    const tx =
-      db.transaction("posts","readonly");
+      const tx =
+        db.transaction(
+          "objects",
+          "readonly"
+        );
 
-    const request =
-      tx.objectStore("posts").getAll();
+      const req =
+        tx.objectStore(
+          "objects"
+        ).getAll();
 
-    request.onsuccess =
-      () => resolve(request.result || []);
+      req.onsuccess =
+        ()=>{
+          resolve(
+            req.result || []
+          );
+        };
 
-    request.onerror =
-      () => reject(request.error);
+      req.onerror =
+        ()=>reject(req.error);
 
-  });
+    }
+  );
 
 }
 
 
 function saveProfile(){
 
-  return new Promise((resolve,reject)=>{
+  return new Promise(
+    (resolve,reject)=>{
 
-    const tx =
-      db.transaction("profile","readwrite");
+      const tx =
+        db.transaction(
+          "profile",
+          "readwrite"
+        );
 
-    tx.objectStore("profile").put({
-      id:"me",
-      ...profile
-    });
-
-    tx.oncomplete = resolve;
-    tx.onerror = () => reject(tx.error);
-
-  });
-
-}
-
-
-function getProfile(){
-
-  return new Promise((resolve,reject)=>{
-
-    const tx =
-      db.transaction("profile","readonly");
-
-    const request =
-      tx.objectStore("profile").get("me");
-
-    request.onsuccess =
-      () => resolve(request.result || null);
-
-    request.onerror =
-      () => reject(request.error);
-
-  });
-
-}
-
-
-/* =========================================================
-   INITIALIZATION
-========================================================= */
-
-async function init(){
-
-  try{
-
-    await openDB();
-
-    const savedProfile =
-      await getProfile();
-
-    if(savedProfile){
-
-      profile = savedProfile;
-
-    }
-
-    posts = await getPosts();
-
-    cleanExpired();
-
-    updateProfileUI();
-
-    startGPS();
-
-    startCompass();
-
-    startCamera();
-
-    renderFeed();
-
-  }catch(error){
-
-    console.error(error);
-
-    toast("Sistem başladılarkən xəta baş verdi.");
-
-  }
-
-}
-
-
-function cleanExpired(){
-
-  const now = Date.now();
-
-  posts = posts.filter(post=>{
-
-    if(!post.expiresAt)
-      return true;
-
-    return post.expiresAt > now;
-
-  });
-
-}
-
-
-/* =========================================================
-   CAMERA
-========================================================= */
-
-async function startCamera(){
-
-  if(!navigator.mediaDevices ||
-     !navigator.mediaDevices.getUserMedia){
-
-    toast("Bu brauzer kamera girişini dəstəkləmir.");
-
-    return;
-
-  }
-
-  try{
-
-    cameraStream =
-      await navigator.mediaDevices.getUserMedia({
-        video:{
-          facingMode:{
-            ideal:"environment"
-          }
-        },
-        audio:false
+      tx.objectStore(
+        "profile"
+      ).put({
+        id:"me",
+        ...myProfile
       });
 
-    $("camera").srcObject =
-      cameraStream;
+      tx.oncomplete =
+        resolve;
 
-  }catch(error){
+      tx.onerror =
+        ()=>reject(tx.error);
 
-    console.error(error);
-
-    toast(
-      "Kamera açılmadı. HTTPS və kamera icazəsini yoxlayın."
-    );
-
-  }
+    }
+  );
 
 }
 
 
-/* =========================================================
-   GPS
-========================================================= */
+function loadProfile(){
+
+  return new Promise(
+    (resolve,reject)=>{
+
+      const tx =
+        db.transaction(
+          "profile",
+          "readonly"
+        );
+
+      const req =
+        tx.objectStore(
+          "profile"
+        ).get("me");
+
+      req.onsuccess =
+        ()=>{
+          resolve(req.result);
+        };
+
+      req.onerror =
+        ()=>reject(req.error);
+
+    }
+  );
+
+}
+
+
+/* =====================================================
+   GPS — STABILIZED
+===================================================== */
 
 function startGPS(){
 
   if(!navigator.geolocation){
 
-    $("gpsStatus").textContent =
-      "GPS yoxdur";
+    toast("GPS dəstəklənmir.");
 
     return;
 
   }
 
+
   navigator.geolocation.watchPosition(
 
-    position=>{
+    pos=>{
+
+      const lat =
+        pos.coords.latitude;
+
+      const lng =
+        pos.coords.longitude;
+
+      gpsAccuracy =
+        pos.coords.accuracy;
+
+
+      /*
+        Qəfil GPS sıçrayışlarını
+        dərhal ekrana tətbiq etmirik.
+      */
+
+      if(
+        smoothLat !== null &&
+        smoothLng !== null
+      ){
+
+        const jump =
+          distanceMeters(
+            smoothLat,
+            smoothLng,
+            lat,
+            lng
+          );
+
+        /*
+          GPS bir anda 80+ metr sıçrayırsa
+          onu səhv ölçü kimi qəbul edirik.
+        */
+
+        if(
+          jump >
+          Math.max(
+            80,
+            gpsAccuracy * 4
+          )
+        ){
+
+          return;
+
+        }
+
+      }
+
+
+      /*
+        Güclü low-pass filter.
+        GPS hərəkət etdikcə yavaş-yavaş
+        yeni mövqeyə keçir.
+      */
+
+      if(smoothLat === null){
+
+        smoothLat = lat;
+        smoothLng = lng;
+
+      }else{
+
+        const alpha =
+          gpsAccuracy <= 8
+            ? 0.18
+            : 0.08;
+
+        smoothLat =
+          smoothLat +
+          (lat-smoothLat)*alpha;
+
+        smoothLng =
+          smoothLng +
+          (lng-smoothLng)*alpha;
+
+      }
+
 
       userLat =
-        position.coords.latitude;
+        smoothLat;
 
       userLng =
-        position.coords.longitude;
+        smoothLng;
 
-      userAccuracy =
-        position.coords.accuracy;
 
       $("gpsStatus").textContent =
         "GPS ±" +
-        Math.round(userAccuracy) +
+        Math.round(gpsAccuracy || 0) +
         "m";
+
 
       updateAR();
 
-      updateMapUser();
+      updateMap();
 
     },
 
     error=>{
-
-      console.warn(error);
 
       $("gpsStatus").textContent =
         "GPS icazəsi lazımdır";
@@ -1559,7 +1969,7 @@ function startGPS(){
 
     {
       enableHighAccuracy:true,
-      maximumAge:3000,
+      maximumAge:1500,
       timeout:15000
     }
 
@@ -1568,65 +1978,131 @@ function startGPS(){
 }
 
 
-/* =========================================================
-   COMPASS
-========================================================= */
+/* =====================================================
+   COMPASS — STABILIZED
+===================================================== */
 
 function startCompass(){
 
   window.addEventListener(
     "deviceorientationabsolute",
-    handleOrientation,
+    orientationHandler,
     true
   );
 
   window.addEventListener(
     "deviceorientation",
-    handleOrientation,
+    orientationHandler,
     true
   );
 
 }
 
 
-function handleOrientation(event){
+function circularDifference(a,b){
+
+  return (
+    (a-b+540)%360
+  )-180;
+
+}
+
+
+function orientationHandler(e){
 
   let h = null;
 
+
   if(
-    typeof event.webkitCompassHeading ===
+    typeof e.webkitCompassHeading ===
     "number"
   ){
 
-    h = event.webkitCompassHeading;
+    h =
+      e.webkitCompassHeading;
 
   }else if(
-    typeof event.alpha === "number"
+    typeof e.alpha ===
+    "number"
   ){
 
-    h = 360 - event.alpha;
+    h =
+      360-e.alpha;
 
   }
+
 
   if(h === null)
     return;
 
-  heading =
-    (h + 360) % 360;
+
+  h =
+    (h+360)%360;
+
+
+  rawHeading = h;
+
+
+  /*
+    Kompasın qəfil 5-20 dərəcə
+    sıçramasını yumşaldırıq.
+  */
+
+  const diff =
+    circularDifference(
+      h,
+      smoothHeading
+    );
+
+
+  /*
+    Çox kiçik sensor dəyişmələrini
+    tamamilə nəzərə almırıq.
+  */
+
+  if(
+    Math.abs(diff) < 0.8
+  ){
+
+    return;
+
+  }
+
+
+  /*
+    Yavaş keçid.
+    Obyektlər ekranda əsə-əsə
+    hərəkət etməsin.
+  */
+
+  const alpha =
+    Math.abs(diff) > 25
+      ? 0.20
+      : 0.07;
+
+
+  smoothHeading =
+    (
+      smoothHeading +
+      diff * alpha +
+      360
+    ) % 360;
+
 
   $("compassStatus").textContent =
     "Kompas " +
-    Math.round(heading) +
+    Math.round(smoothHeading) +
     "°";
+
 
   updateAR();
 
 }
 
 
-/* =========================================================
-   GEO MATH
-========================================================= */
+/* =====================================================
+   GEO
+===================================================== */
 
 function distanceMeters(
   lat1,
@@ -1638,31 +2114,30 @@ function distanceMeters(
   const R = 6371000;
 
   const p1 =
-    lat1 * Math.PI / 180;
+    lat1*Math.PI/180;
 
   const p2 =
-    lat2 * Math.PI / 180;
+    lat2*Math.PI/180;
 
   const dp =
-    (lat2-lat1) *
-    Math.PI / 180;
+    (lat2-lat1)*Math.PI/180;
 
   const dl =
-    (lon2-lon1) *
-    Math.PI / 180;
+    (lon2-lon1)*Math.PI/180;
 
   const a =
-    Math.sin(dp/2) ** 2 +
-    Math.cos(p1) *
-    Math.cos(p2) *
-    Math.sin(dl/2) ** 2;
+    Math.sin(dp/2)**2 +
+    Math.cos(p1)*
+    Math.cos(p2)*
+    Math.sin(dl/2)**2;
 
-  return 2 *
-    R *
+  return (
+    2*R*
     Math.atan2(
       Math.sqrt(a),
       Math.sqrt(1-a)
-    );
+    )
+  );
 
 }
 
@@ -1675,46 +2150,46 @@ function bearingTo(
 ){
 
   const p1 =
-    lat1 * Math.PI / 180;
+    lat1*Math.PI/180;
 
   const p2 =
-    lat2 * Math.PI / 180;
+    lat2*Math.PI/180;
 
   const dl =
-    (lon2-lon1) *
-    Math.PI / 180;
+    (lon2-lon1)*Math.PI/180;
 
   const y =
-    Math.sin(dl) * Math.cos(p2);
+    Math.sin(dl)*
+    Math.cos(p2);
 
   const x =
-    Math.cos(p1) *
+    Math.cos(p1)*
     Math.sin(p2) -
-    Math.sin(p1) *
-    Math.cos(p2) *
+    Math.sin(p1)*
+    Math.cos(p2)*
     Math.cos(dl);
 
   return (
-    Math.atan2(y,x) *
-    180 / Math.PI +
+    Math.atan2(y,x)*
+    180/Math.PI+
     360
-  ) % 360;
+  )%360;
 
 }
 
 
-function angleDifference(a,b){
+function angleDiff(a,b){
 
   return (
     (a-b+540)%360
-  ) - 180;
+  )-180;
 
 }
 
 
-/* =========================================================
-   AR RENDER
-========================================================= */
+/* =====================================================
+   AR RENDER — STABLE
+===================================================== */
 
 function updateAR(){
 
@@ -1724,127 +2199,296 @@ function updateAR(){
   if(!container)
     return;
 
-  container.innerHTML = "";
 
-  if(userLat === null ||
-     userLng === null)
+  if(
+    userLat === null ||
+    userLng === null
+  ){
+
+    container.innerHTML = "";
+
     return;
 
-  cleanExpired();
+  }
 
-  posts.forEach(post=>{
+
+  const visible =
+    spatialObjects.filter(
+      obj=>{
+
+        const d =
+          distanceMeters(
+            userLat,
+            userLng,
+            obj.lat,
+            obj.lng
+          );
+
+        return d <=
+          Number(obj.radius || 300);
+
+      }
+    );
+
+
+  /*
+    DOM elementlərini hər GPS/kompas
+    dəyişməsində silib yenidən yaratmırıq.
+    Bu, titrəmənin əsas səbəblərindən
+    birini aradan qaldırır.
+  */
+
+  const existing =
+    new Map();
+
+  [...container.children]
+    .forEach(el=>{
+      existing.set(
+        el.dataset.id,
+        el
+      );
+    });
+
+
+  const used =
+    new Set();
+
+
+  visible.forEach(obj=>{
 
     const distance =
       distanceMeters(
         userLat,
         userLng,
-        post.lat,
-        post.lng
+        obj.lat,
+        obj.lng
       );
 
-    const radius =
-      Number(post.radius || 300);
-
-    if(distance > radius)
-      return;
 
     const bearing =
       bearingTo(
         userLat,
         userLng,
-        post.lat,
-        post.lng
+        obj.lat,
+        obj.lng
       );
+
 
     const diff =
-      angleDifference(
+      angleDiff(
         bearing,
-        heading
+        smoothHeading
       );
 
+
     /*
-      Web AR approximation:
-      - horizontal position from compass
-      - vertical position from distance
+      Görüş bucağı.
     */
 
-    if(Math.abs(diff) > 75)
+    if(
+      Math.abs(diff)>78
+    ){
+
+      const old =
+        existing.get(obj.id);
+
+      if(old)
+        old.style.display =
+          "none";
+
       return;
+
+    }
+
+
+    let card =
+      existing.get(obj.id);
+
+
+    if(!card){
+
+      card =
+        document.createElement(
+          "div"
+        );
+
+      card.className =
+        "arObject stable";
+
+      card.dataset.id =
+        obj.id;
+
+      card.innerHTML = `
+
+        <div class="arName"></div>
+
+        <div class="arType"></div>
+
+        <div class="arBio"></div>
+
+        <div class="arDistance"></div>
+
+        <button class="arOpen">
+          PROFİLİ AÇ
+        </button>
+
+      `;
+
+      card.querySelector(
+        ".arOpen"
+      ).onclick =
+        ()=>{
+          openDetail(obj);
+        };
+
+      container.appendChild(card);
+
+    }
+
+
+    card.style.display =
+      "block";
+
+
+    /*
+      Ekranda üfüqi yerləşmə.
+    */
 
     const x =
       50 +
-      (diff / 75) * 43;
+      diff/78*42;
 
-    const y =
+
+    /*
+      Uzaq obyekt bir qədər
+      yuxarıda görünür.
+    */
+
+    const radius =
+      Number(obj.radius || 300);
+
+    const normalized =
       Math.min(
-        72,
-        Math.max(
-          25,
-          34 + distance / Math.max(radius,1) * 34
-        )
+        1,
+        distance/
+        Math.max(radius,1)
       );
 
-    const card =
-      document.createElement("div");
 
-    card.className =
-      "ar-card";
+    const y =
+      43 +
+      normalized*18;
+
+
+    /*
+      CSS transform sabit qalır.
+      Sadəcə left/top dəyişir.
+    */
 
     card.style.left =
-      x + "%";
+      x+"%";
 
     card.style.top =
-      y + "%";
+      y+"%";
 
-    card.innerHTML = `
 
-      <div class="ar-title">
-        ${escapeHTML(post.title)}
-      </div>
+    card.querySelector(
+      ".arName"
+    ).textContent =
+      obj.name;
 
-      <div class="ar-meta">
-        ${typeName(post.type)}
-        · ${Math.round(distance)} m
-      </div>
 
-      <div class="ar-desc">
-        ${escapeHTML(
-          (post.desc || "").slice(0,100)
-        )}
-      </div>
+    card.querySelector(
+      ".arType"
+    ).textContent =
+      typeName(obj.type);
 
-      <div class="ar-distance">
-        ${Math.round(bearing)}°
-        · ${formatDistance(distance)}
-      </div>
 
-      <button class="ar-open">
-        Aç
-      </button>
+    card.querySelector(
+      ".arBio"
+    ).textContent =
+      (obj.bio || "")
+        .slice(0,90);
 
-    `;
 
-    card.querySelector(".ar-open")
-      .addEventListener("click",()=>{
+    card.querySelector(
+      ".arDistance"
+    ).textContent =
+      Math.round(distance)+" m · "+
+      Math.round(bearing)+"°";
 
-        openDetail(post);
 
-      });
-
-    container.appendChild(card);
+    used.add(obj.id);
 
   });
+
+
+  existing.forEach(
+    (el,id)=>{
+
+      if(!used.has(id)){
+
+        el.remove();
+
+      }
+
+    }
+  );
 
 }
 
 
-/* =========================================================
-   CREATE OBJECT
-========================================================= */
+/* =====================================================
+   CAMERA
+===================================================== */
+
+async function startCamera(){
+
+  try{
+
+    cameraStream =
+      await navigator.mediaDevices
+      .getUserMedia({
+
+        video:{
+          facingMode:{
+            ideal:"environment"
+          },
+          width:{
+            ideal:1280
+          },
+          height:{
+            ideal:720
+          }
+        },
+
+        audio:false
+
+      });
+
+
+    $("camera").srcObject =
+      cameraStream;
+
+
+  }catch(e){
+
+    toast(
+      "Kamera icazəsi verilməyib."
+    );
+
+  }
+
+}
+
+
+/* =====================================================
+   CREATE
+===================================================== */
 
 function openCreate(){
 
-  resetCreateForm();
+  resetCreate();
 
   $("createModal")
     .classList.add("show");
@@ -1852,190 +2496,407 @@ function openCreate(){
 }
 
 
-function closeCreate(){
+function resetCreate(){
 
-  $("createModal")
-    .classList.remove("show");
+  $("objectType").value =
+    "person";
+
+  $("objectName").value =
+    "";
+
+  $("objectUsername").value =
+    "";
+
+  $("objectBio").value =
+    "";
+
+  $("objectArticle").value =
+    "";
+
+  $("objectPhone").value =
+    "";
+
+  $("objectWhatsapp").value =
+    "";
+
+  $("objectSocial").value =
+    "";
+
+  $("objectRadius").value =
+    "300";
+
+
+  $("objectLat").value =
+    userLat !== null
+      ? userLat.toFixed(7)
+      : "";
+
+  $("objectLng").value =
+    userLng !== null
+      ? userLng.toFixed(7)
+      : "";
+
+
+  selectedFiles = [];
+
+  renderSelectedMedia();
 
 }
 
 
-function resetCreateForm(){
-
-  $("postTitle").value = "";
-  $("postDesc").value = "";
-  $("postPhone").value = "";
-  $("postLat").value =
-    userLat !== null ? userLat.toFixed(6) : "";
-  $("postLng").value =
-    userLng !== null ? userLng.toFixed(6) : "";
-  $("postRadius").value = 300;
-  $("postType").value = "general";
-  $("postExpiry").value = "0";
-
-  selectedMedia = null;
-  selectedMediaType = null;
-
-  $("imagePreview").style.display =
-    "none";
-
-  $("videoPreview").style.display =
-    "none";
-
-  $("imagePreview").src = "";
-  $("videoPreview").src = "";
-
-}
-
-
-$("currentGps").addEventListener(
+$("addBtn")
+.addEventListener(
   "click",
-  getCurrentGPS
+  openCreate
 );
 
 
-function getCurrentGPS(){
-
-  if(!navigator.geolocation){
-
-    toast("Bu cihaz GPS-i dəstəkləmir.");
-
-    return;
-
+$("closeCreate")
+.addEventListener(
+  "click",
+  ()=>{
+    $("createModal")
+      .classList.remove("show");
   }
+);
 
-  toast("GPS koordinatı alınır...");
 
-  navigator.geolocation.getCurrentPosition(
+/* =====================================================
+   LOCATION
+===================================================== */
 
-    position=>{
+$("currentGPS")
+.addEventListener(
+  "click",
+  ()=>{
 
-      userLat =
-        position.coords.latitude;
-
-      userLng =
-        position.coords.longitude;
-
-      userAccuracy =
-        position.coords.accuracy;
-
-      $("postLat").value =
-        userLat.toFixed(7);
-
-      $("postLng").value =
-        userLng.toFixed(7);
-
-      $("gpsStatus").textContent =
-        "GPS ±" +
-        Math.round(userAccuracy) +
-        "m";
+    if(
+      userLat === null ||
+      userLng === null
+    ){
 
       toast(
-        "📍 Cari GPS koordinatı götürüldü"
+        "GPS hələ müəyyən edilməyib."
       );
 
-    },
+      return;
 
-    error=>{
-
-      console.error(error);
-
-      toast(
-        "GPS alınmadı. Telefonun məkan icazəsini açın."
-      );
-
-    },
-
-    {
-      enableHighAccuracy:true,
-      maximumAge:0,
-      timeout:15000
     }
 
+
+    $("objectLat").value =
+      userLat.toFixed(7);
+
+    $("objectLng").value =
+      userLng.toFixed(7);
+
+
+    toast(
+      "📍 Cari GPS götürüldü."
+    );
+
+  }
+);
+
+
+$("pickMap")
+.addEventListener(
+  "click",
+  ()=>{
+
+    if(!map){
+
+      switchView("map");
+
+      setTimeout(
+        ()=>{
+          initMap();
+          enableMapPicker();
+        },
+        300
+      );
+
+    }else{
+
+      $("createModal")
+        .classList.remove("show");
+
+      switchView("map");
+
+      enableMapPicker();
+
+    }
+
+  }
+);
+
+
+let pickingLocation = false;
+
+
+function enableMapPicker(){
+
+  pickingLocation = true;
+
+  toast(
+    "🗺️ Xəritədə istədiyiniz nöqtəyə toxunun."
   );
 
 }
 
 
-/* =========================================================
-   MEDIA
-========================================================= */
+function mapPickHandler(e){
 
-$("mediaFile").addEventListener(
-  "change",
-  handleMedia
-);
-
-
-function handleMedia(event){
-
-  const file =
-    event.target.files[0];
-
-  if(!file)
+  if(!pickingLocation)
     return;
 
-  if(file.size > 20 * 1024 * 1024){
 
-    toast(
-      "Fayl maksimum 20 MB ola bilər."
-    );
+  const lat =
+    e.latlng.lat;
 
-    event.target.value = "";
+  const lng =
+    e.latlng.lng;
 
-    return;
 
-  }
+  $("objectLat").value =
+    lat.toFixed(7);
 
-  const reader =
-    new FileReader();
+  $("objectLng").value =
+    lng.toFixed(7);
 
-  reader.onload = ()=>{
 
-    selectedMedia =
-      reader.result;
+  pickingLocation =
+    false;
 
-    selectedMediaType =
-      file.type.startsWith("video")
-        ? "video"
-        : "image";
 
-    if(selectedMediaType === "image"){
+  toast(
+    "📍 Dəqiq xəritə nöqtəsi seçildi."
+  );
 
-      $("imagePreview").src =
-        selectedMedia;
 
-      $("imagePreview").style.display =
-        "block";
-
-      $("videoPreview").style.display =
-        "none";
-
-    }else{
-
-      $("videoPreview").src =
-        selectedMedia;
-
-      $("videoPreview").style.display =
-        "block";
-
-      $("imagePreview").style.display =
-        "none";
-
-    }
-
-  };
-
-  reader.readAsDataURL(file);
+  $("createModal")
+    .classList.add("show");
 
 }
 
 
-/* =========================================================
-   PLACE
-========================================================= */
+/* =====================================================
+   MEDIA
+===================================================== */
 
-$("placeBtn").addEventListener(
+$("galleryBtn")
+.addEventListener(
+  "click",
+  ()=>{
+    $("galleryInput").click();
+  }
+);
+
+
+$("photoCameraBtn")
+.addEventListener(
+  "click",
+  ()=>{
+    $("photoCameraInput").click();
+  }
+);
+
+
+$("videoCameraBtn")
+.addEventListener(
+  "click",
+  ()=>{
+    $("videoCameraInput").click();
+  }
+);
+
+
+$("galleryInput")
+.addEventListener(
+  "change",
+  e=>{
+    addFiles(
+      [...e.target.files]
+    );
+    e.target.value="";
+  }
+);
+
+
+$("photoCameraInput")
+.addEventListener(
+  "change",
+  e=>{
+    addFiles(
+      [...e.target.files]
+    );
+    e.target.value="";
+  }
+);
+
+
+$("videoCameraInput")
+.addEventListener(
+  "change",
+  e=>{
+    addFiles(
+      [...e.target.files]
+    );
+    e.target.value="";
+  }
+);
+
+
+function addFiles(files){
+
+  files.forEach(
+    file=>{
+
+      if(
+        !file.type.startsWith("image/") &&
+        !file.type.startsWith("video/")
+      )
+        return;
+
+
+      /*
+        Local prototip üçün fayl limiti.
+      */
+
+      if(
+        file.size >
+        15*1024*1024
+      ){
+
+        toast(
+          file.name+
+          " 15 MB-dan böyükdür."
+        );
+
+        return;
+
+      }
+
+
+      if(
+        selectedFiles.length>=6
+      ){
+
+        toast(
+          "Maksimum 6 media faylı."
+        );
+
+        return;
+
+      }
+
+
+      selectedFiles.push(file);
+
+    }
+  );
+
+
+  renderSelectedMedia();
+
+}
+
+
+function renderSelectedMedia(){
+
+  const box =
+    $("selectedMedia");
+
+  box.innerHTML = "";
+
+
+  selectedFiles.forEach(
+    file=>{
+
+      const url =
+        URL.createObjectURL(file);
+
+
+      let el;
+
+
+      if(
+        file.type.startsWith("video/")
+      ){
+
+        el =
+          document.createElement(
+            "video"
+          );
+
+        el.controls = true;
+
+      }else{
+
+        el =
+          document.createElement(
+            "img"
+          );
+
+      }
+
+
+      el.src =
+        url;
+
+      box.appendChild(el);
+
+    }
+  );
+
+}
+
+
+function filesToData(files){
+
+  return Promise.all(
+    files.map(
+      file=>
+        new Promise(
+          resolve=>{
+
+            const reader =
+              new FileReader();
+
+            reader.onload =
+              ()=>{
+                resolve({
+
+                  data:
+                    reader.result,
+
+                  type:
+                    file.type,
+
+                  name:
+                    file.name
+
+                });
+              };
+
+            reader.readAsDataURL(
+              file
+            );
+
+          }
+        )
+    )
+  );
+
+}
+
+
+/* =====================================================
+   PLACE OBJECT
+===================================================== */
+
+$("placeObject")
+.addEventListener(
   "click",
   placeObject
 );
@@ -2043,67 +2904,78 @@ $("placeBtn").addEventListener(
 
 async function placeObject(){
 
-  const title =
-    $("postTitle").value.trim();
+  const name =
+    $("objectName")
+      .value
+      .trim();
 
-  const desc =
-    $("postDesc").value.trim();
+  const username =
+    $("objectUsername")
+      .value
+      .trim();
 
-  const lat =
-    parseFloat($("postLat").value);
+  const bio =
+    $("objectBio")
+      .value
+      .trim();
 
-  const lng =
-    parseFloat($("postLng").value);
-
-  const radius =
-    parseInt($("postRadius").value) || 300;
+  const article =
+    $("objectArticle")
+      .value
+      .trim();
 
   const type =
-    $("postType").value;
+    $("objectType").value;
 
   const phone =
-    $("postPhone").value.trim();
+    $("objectPhone")
+      .value
+      .trim();
 
-  const expiryHours =
-    parseInt($("postExpiry").value) || 0;
+  const whatsapp =
+    $("objectWhatsapp")
+      .value
+      .trim();
 
+  const social =
+    $("objectSocial")
+      .value
+      .trim();
 
-  /* VALIDATION */
-
-  if(!title){
-
-    toast(
-      "Əvvəlcə obyektə başlıq yazın."
+  const lat =
+    parseFloat(
+      $("objectLat").value
     );
 
-    $("postTitle").focus();
+  const lng =
+    parseFloat(
+      $("objectLng").value
+    );
+
+  const radius =
+    parseInt(
+      $("objectRadius").value
+    );
+
+
+  if(!name){
+
+    toast(
+      "Ad / başlıq yazın."
+    );
 
     return;
 
   }
+
 
   if(
     !Number.isFinite(lat) ||
-    !Number.isFinite(lng) ||
-    lat < -90 ||
-    lat > 90 ||
-    lng < -180 ||
-    lng > 180
+    !Number.isFinite(lng)
   ){
 
     toast(
-      "📍 Düzgün GPS koordinatı seçilməyib."
-    );
-
-    return;
-
-  }
-
-
-  if(radius < 1){
-
-    toast(
-      "Radius minimum 1 metr olmalıdır."
+      "📍 Əvvəlcə dəqiq yer seçin."
     );
 
     return;
@@ -2113,40 +2985,42 @@ async function placeObject(){
 
   loading(
     true,
-    "Obyekt yerləşdirilir..."
+    "Media hazırlanır..."
   );
 
 
   try{
 
-    let expiresAt = 0;
-
-    if(expiryHours > 0){
-
-      expiresAt =
-        Date.now() +
-        expiryHours * 60 * 60 * 1000;
-
-    }
+    const media =
+      await filesToData(
+        selectedFiles
+      );
 
 
-    const post = {
+    const object = {
 
       id:
-        "post_" +
-        Date.now() +
-        "_" +
+        "spatial_"+Date.now()+
+        "_"+
         Math.random()
-          .toString(36)
-          .slice(2),
-
-      title,
+        .toString(36)
+        .slice(2),
 
       type,
 
-      desc,
+      name,
+
+      username,
+
+      bio,
+
+      article,
 
       phone,
+
+      whatsapp,
+
+      social,
 
       lat,
 
@@ -2154,16 +3028,10 @@ async function placeObject(){
 
       radius,
 
-      expiresAt,
-
-      media:
-        selectedMedia || null,
-
-      mediaType:
-        selectedMediaType || null,
+      media,
 
       author:
-        profile.name,
+        myProfile.name,
 
       createdAt:
         Date.now()
@@ -2171,22 +3039,15 @@ async function placeObject(){
     };
 
 
-    await savePost(post);
+    await saveObject(
+      object
+    );
 
 
-    posts.push(post);
+    spatialObjects.push(
+      object
+    );
 
-
-    /* UPDATE EVERYTHING */
-
-    updateAR();
-
-    renderFeed();
-
-    renderMapMarkers();
-
-
-    /* CLOSE PANEL */
 
     $("createModal")
       .classList.remove("show");
@@ -2195,29 +3056,26 @@ async function placeObject(){
     loading(false);
 
 
+    updateAR();
+
+    renderFeed();
+
+    renderMapMarkers();
+
+
     toast(
-      "✅ Obyekt real olaraq yerləşdirildi!"
+      "🌍 Profil dəqiq koordinata yerləşdirildi."
     );
 
 
-    /*
-      If user is currently looking at
-      the location, AR will update.
-    */
+  }catch(e){
 
-    setTimeout(()=>{
-      updateAR();
-    },300);
-
-
-  }catch(error){
-
-    console.error(error);
+    console.error(e);
 
     loading(false);
 
     toast(
-      "Obyekti yadda saxlamaq mümkün olmadı."
+      "Yerləşdirmə zamanı xəta baş verdi."
     );
 
   }
@@ -2225,62 +3083,111 @@ async function placeObject(){
 }
 
 
-/* =========================================================
-   DETAIL
-========================================================= */
+/* =====================================================
+   DETAIL SPATIAL PROFILE
+===================================================== */
 
-function openDetail(post){
+function openDetail(obj){
 
   const body =
     $("detailBody");
 
   let mediaHTML = "";
 
-  if(post.media){
 
-    if(post.mediaType === "video"){
+  if(
+    obj.media &&
+    obj.media.length
+  ){
 
-      mediaHTML = `
-        <video
-          class="detailMedia"
-          controls
-          playsinline
-          src="${post.media}">
-        </video>
-      `;
+    mediaHTML =
+      `<div class="mediaGrid">`+
+      obj.media
+      .map(
+        m=>{
 
-    }else{
+          if(
+            m.type.startsWith("video/")
+          ){
 
-      mediaHTML = `
-        <img
-          class="detailMedia"
-          src="${post.media}">
-      `;
+            return `
+              <video
+                controls
+                playsinline
+                src="${m.data}">
+              </video>
+            `;
 
-    }
+          }
+
+          return `
+            <img
+              src="${m.data}">
+          `;
+
+        }
+      )
+      .join("")+
+      `</div>`;
 
   }
 
 
-  let callButton = "";
+  let buttons = "";
 
-  if(post.phone){
 
-    callButton = `
+  if(obj.phone){
+
+    buttons += `
       <button
-        class="detailBtn primary"
-        onclick="callNumber('${escapeAttribute(post.phone)}')">
-        ☎️ Zəng et
+        class="button primary"
+        onclick="window.location.href='tel:${obj.phone}'">
+        ☎️ Zəng
       </button>
     `;
 
-  }else{
+  }
 
-    callButton = `
+
+  if(obj.whatsapp){
+
+    const number =
+      obj.whatsapp
+        .replace(/\D/g,"");
+
+    buttons += `
       <button
-        class="detailBtn"
-        disabled>
-        Telefon yoxdur
+        class="button"
+        onclick="window.open(
+          'https://wa.me/${number}',
+          '_blank'
+        )">
+        💬 WhatsApp
+      </button>
+    `;
+
+  }
+
+
+  buttons += `
+    <button
+      class="button"
+      onclick="openRoute(
+        ${obj.lat},
+        ${obj.lng}
+      )">
+      🧭 Marşrut
+    </button>
+  `;
+
+
+  if(obj.social){
+
+    buttons += `
+      <button
+        class="button"
+        onclick="openSocial('${escapeHTML(obj.social)}')">
+        🔗 Sosial / sayt
       </button>
     `;
 
@@ -2291,32 +3198,50 @@ function openDetail(post){
 
     ${mediaHTML}
 
-    <div class="detailTitle">
-      ${escapeHTML(post.title)}
+    <div class="detailName">
+      ${escapeHTML(obj.name)}
     </div>
 
-    <div class="feedMeta">
-      ${typeName(post.type)}
-      · ${formatCoordinates(post.lat,post.lng)}
+    <div class="detailUsername">
+      ${escapeHTML(obj.username || "")}
     </div>
 
-    <div class="detailText">
-      ${escapeHTML(post.desc || "Açıqlama yoxdur.")}
+    <div style="margin-top:8px;color:#45dcff;font-size:13px">
+      ${typeName(obj.type)}
     </div>
 
-    <div class="detailActions">
+    <div class="detailBio">
+      ${escapeHTML(obj.bio || "")}
+    </div>
 
-      ${callButton}
+    ${
+      obj.article
+      ?
+      `
+      <div class="detailArticle">
+        ${escapeHTML(obj.article)}
+      </div>
+      `
+      :
+      ""
+    }
 
-      <button
-        class="detailBtn primary"
-        onclick="openRoute(${post.lat},${post.lng})">
-        🧭 Marşrut
-      </button>
+    <div style="
+      margin-top:15px;
+      color:#8fa1b7;
+      font-size:12px">
 
+      📍 ${Number(obj.lat).toFixed(7)},
+      ${Number(obj.lng).toFixed(7)}
+
+    </div>
+
+    <div class="detailButtons">
+      ${buttons}
     </div>
 
   `;
+
 
   $("detailModal")
     .classList.add("show");
@@ -2324,39 +3249,57 @@ function openDetail(post){
 }
 
 
-function closeDetail(){
-
-  $("detailModal")
-    .classList.remove("show");
-
-}
-
-
-window.callNumber =
-function(phone){
-
-  window.location.href =
-    "tel:" +
-    phone.replace(/[^\d+]/g,"");
-
-};
+$("closeDetail")
+.addEventListener(
+  "click",
+  ()=>{
+    $("detailModal")
+      .classList.remove("show");
+  }
+);
 
 
 window.openRoute =
 function(lat,lng){
 
   const url =
-    "https://www.google.com/maps/dir/?api=1&destination=" +
-    encodeURIComponent(lat + "," + lng);
+    "https://www.google.com/maps/dir/?api=1&destination="+
+    encodeURIComponent(
+      lat+","+lng
+    );
 
-  window.open(url,"_blank");
+  window.open(
+    url,
+    "_blank"
+  );
 
 };
 
 
-/* =========================================================
+window.openSocial =
+function(url){
+
+  if(
+    !/^https?:\/\//i.test(url)
+  ){
+
+    url =
+      "https://"+
+      url;
+
+  }
+
+  window.open(
+    url,
+    "_blank"
+  );
+
+};
+
+
+/* =====================================================
    FEED
-========================================================= */
+===================================================== */
 
 function renderFeed(){
 
@@ -2365,25 +3308,24 @@ function renderFeed(){
 
   list.innerHTML = "";
 
-  cleanExpired();
 
-  if(posts.length === 0){
+  if(!spatialObjects.length){
 
     list.innerHTML = `
 
       <div class="profileBox">
 
-        <div style="font-size:42px">
+        <div style="font-size:45px">
           🌍
         </div>
 
         <h3>
-          Hələ obyekt yoxdur
+          Dünya hələ boşdur
         </h3>
 
         <div class="profileBio">
-          ＋ düyməsinə basaraq fiziki dünyaya
-          ilk rəqəmsal obyektini yerləşdir.
+          ＋ düyməsinə bas və ilk
+          spatial profilini yerləşdir.
         </div>
 
       </div>
@@ -2395,105 +3337,108 @@ function renderFeed(){
   }
 
 
-  const sorted =
-    [...posts]
-      .sort(
-        (a,b)=>
-          b.createdAt -
-          a.createdAt
-      );
+  [...spatialObjects]
+    .sort(
+      (a,b)=>
+        b.createdAt-a.createdAt
+    )
+    .forEach(
+      obj=>{
+
+        const card =
+          document.createElement(
+            "div"
+          );
+
+        card.className =
+          "card";
 
 
-  sorted.forEach(post=>{
+        let media = "";
 
-    let media = "";
+        if(
+          obj.media &&
+          obj.media.length
+        ){
 
-    if(post.media &&
-       post.mediaType === "image"){
+          media =
+            `<div class="mediaGrid">`+
+            obj.media
+            .slice(0,4)
+            .map(
+              m=>
 
-      media = `
-        <img
-          class="feedMedia"
-          src="${post.media}">
-      `;
+              m.type.startsWith("video/")
+              ?
+              `<video
+                muted
+                src="${m.data}">
+              </video>`
+              :
+              `<img
+                src="${m.data}">`
 
-    }
+            )
+            .join("")+
+            `</div>`;
 
-    if(post.media &&
-       post.mediaType === "video"){
-
-      media = `
-        <video
-          class="feedMedia"
-          controls
-          playsinline
-          src="${post.media}">
-        </video>
-      `;
-
-    }
-
-
-    const card =
-      document.createElement("div");
-
-    card.className =
-      "feedCard";
-
-    card.innerHTML = `
-
-      ${media}
-
-      <div class="feedBody">
-
-        <div class="feedTitle">
-          ${escapeHTML(post.title)}
-        </div>
-
-        <div class="feedMeta">
-          ${typeName(post.type)}
-        </div>
-
-        <div class="feedDesc">
-          ${escapeHTML(
-            post.desc || ""
-          )}
-        </div>
-
-        <button
-          class="actionBtn"
-          style="width:100%;margin-top:12px">
-          📍 AR-da aç
-        </button>
-
-      </div>
-
-    `;
-
-    card.querySelector("button")
-      .addEventListener(
-        "click",
-        ()=>{
-          switchView("ar");
-          openDetail(post);
         }
-      );
 
-    list.appendChild(card);
 
-  });
+        card.innerHTML = `
+
+          ${media}
+
+          <div class="cardBody">
+
+            <div class="cardTitle">
+              ${escapeHTML(obj.name)}
+            </div>
+
+            <div class="cardMeta">
+              ${typeName(obj.type)}
+            </div>
+
+            <div class="cardText">
+              ${escapeHTML(obj.bio || "")}
+            </div>
+
+            <button
+              class="button"
+              style="width:100%;margin-top:13px">
+              🌍 Spatial profilə bax
+            </button>
+
+          </div>
+
+        `;
+
+
+        card.querySelector(
+          "button"
+        ).onclick =
+          ()=>{
+            openDetail(obj);
+          };
+
+
+        list.appendChild(card);
+
+      }
+    );
 
 }
 
 
-/* =========================================================
+/* =====================================================
    MAP
-========================================================= */
+===================================================== */
 
 function initMap(){
 
   if(map)
     return;
+
 
   map =
     L.map("map")
@@ -2505,6 +3450,7 @@ function initMap(){
         15
       );
 
+
   L.tileLayer(
     "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
     {
@@ -2513,20 +3459,14 @@ function initMap(){
     }
   ).addTo(map);
 
-  renderMapMarkers();
 
-}
-
-
-function updateMapUser(){
-
-  if(!map)
-    return;
-
-  map.setView(
-    [userLat,userLng],
-    map.getZoom()
+  map.on(
+    "click",
+    mapPickHandler
   );
+
+
+  renderMapMarkers();
 
 }
 
@@ -2536,43 +3476,48 @@ function renderMapMarkers(){
   if(!map)
     return;
 
-  mapMarkers.forEach(
-    marker=>marker.remove()
+
+  markers.forEach(
+    m=>m.remove()
   );
 
-  mapMarkers = [];
+  markers = [];
 
 
-  posts.forEach(post=>{
+  spatialObjects.forEach(
+    obj=>{
 
-    const marker =
-      L.marker([
-        post.lat,
-        post.lng
-      ]).addTo(map);
+      const marker =
+        L.marker([
+          obj.lat,
+          obj.lng
+        ]).addTo(map);
 
-    marker.bindPopup(`
 
-      <b>
-        ${escapeHTML(post.title)}
-      </b>
+      marker.bindPopup(`
 
-      <br>
+        <b>
+          ${escapeHTML(obj.name)}
+        </b>
 
-      ${typeName(post.type)}
+        <br>
 
-      <br><br>
+        ${typeName(obj.type)}
 
-      <button
-        onclick='window.openPostFromMap("${post.id}")'>
-        Aç
-      </button>
+        <br><br>
 
-    `);
+        <button
+          onclick="openMapObject('${obj.id}')">
+          Profilə bax
+        </button>
 
-    mapMarkers.push(marker);
+      `);
 
-  });
+
+      markers.push(marker);
+
+    }
+  );
 
 
   if(
@@ -2580,594 +3525,452 @@ function renderMapMarkers(){
     userLng !== null
   ){
 
-    const userMarker =
+    const me =
       L.circleMarker(
-        [userLat,userLng],
+        [
+          userLat,
+          userLng
+        ],
         {
           radius:8,
-          color:"#42d9ff",
-          fillColor:"#42d9ff",
-          fillOpacity:.8
+          color:"#45dcff",
+          fillColor:"#45dcff",
+          fillOpacity:.9
         }
       ).addTo(map);
 
-    userMarker.bindPopup(
+
+    me.bindPopup(
       "📍 Sizin mövqeyiniz"
     );
 
-    mapMarkers.push(userMarker);
+
+    markers.push(me);
 
   }
 
 }
 
 
-window.openPostFromMap =
+window.openMapObject =
 function(id){
 
-  const post =
-    posts.find(p=>p.id===id);
+  const obj =
+    spatialObjects.find(
+      x=>x.id===id
+    );
 
-  if(post)
-    openDetail(post);
+  if(obj)
+    openDetail(obj);
 
 };
 
 
-/* =========================================================
-   VIEW NAVIGATION
-========================================================= */
+function updateMap(){
+
+  if(!map)
+    return;
+
+}
+
+
+/* =====================================================
+   NAVIGATION
+===================================================== */
 
 function switchView(view){
 
-  activeView = view;
+  activeView =
+    view;
 
 
-  document.querySelectorAll(
-    ".view"
-  ).forEach(v=>{
-    v.classList.remove("active");
-  });
+  $("arView").style.display =
+    view==="ar"
+      ? "block"
+      : "none";
 
 
-  if(view === "ar"){
+  document
+    .querySelectorAll(".view")
+    .forEach(
+      v=>{
+        v.classList.remove(
+          "active"
+        );
+      }
+    );
 
-    $("cameraView").style.display =
-      "block";
 
-  }else{
+  if(view==="map"){
 
-    $("cameraView").style.display =
-      "none";
+    $("mapView")
+      .classList.add("active");
 
-    if(view === "map"){
 
-      $("mapView")
-        .classList.add("active");
-
-      setTimeout(()=>{
+    setTimeout(
+      ()=>{
 
         initMap();
 
-        if(map)
-          map.invalidateSize();
+        map.invalidateSize();
 
-      },100);
-
-    }
-
-    if(view === "feed"){
-
-      $("feedView")
-        .classList.add("active");
-
-      renderFeed();
-
-    }
-
-    if(view === "profile"){
-
-      $("profileView")
-        .classList.add("active");
-
-    }
-
-  }
-
-
-  document.querySelectorAll(
-    ".navBtn[data-view]"
-  ).forEach(btn=>{
-
-    btn.classList.toggle(
-      "active",
-      btn.dataset.view === view
+      },
+      100
     );
 
-  });
+  }
 
 
-  if(view === "ar"){
+  if(view==="feed"){
 
-    updateAR();
+    $("feedView")
+      .classList.add("active");
+
+    renderFeed();
 
   }
+
+
+  if(view==="profile"){
+
+    $("profileView")
+      .classList.add("active");
+
+  }
+
+
+  document
+    .querySelectorAll(
+      ".nav[data-view]"
+    )
+    .forEach(
+      n=>{
+
+        n.classList.toggle(
+          "active",
+          n.dataset.view===view
+        );
+
+      }
+    );
+
+
+  if(view==="ar")
+    updateAR();
 
 }
 
 
-/* =========================================================
-   NAV BUTTONS
-========================================================= */
+document
+.querySelectorAll(
+  ".nav[data-view]"
+)
+.forEach(
+  btn=>{
 
-document.querySelectorAll(
-  ".navBtn[data-view]"
-).forEach(btn=>{
+    btn.onclick =
+      ()=>{
+        switchView(
+          btn.dataset.view
+        );
+      };
 
-  btn.addEventListener(
-    "click",
-    ()=>{
-      switchView(btn.dataset.view);
-    }
-  );
-
-});
-
-
-$("addButton")
-  .addEventListener(
-    "click",
-    openCreate
-  );
+  }
+);
 
 
-$("closeCreate")
-  .addEventListener(
-    "click",
-    closeCreate
-  );
+/* =====================================================
+   MY PROFILE
+===================================================== */
+
+function updateMyProfile(){
+
+  $("myName").textContent =
+    myProfile.name;
+
+  $("myUsername").textContent =
+    myProfile.username;
+
+  $("myBio").textContent =
+    myProfile.bio;
+
+  $("myAvatar").textContent =
+    (
+      myProfile.name ||
+      "A"
+    ).charAt(0)
+     .toUpperCase();
+
+}
 
 
-$("closeDetail")
-  .addEventListener(
-    "click",
-    closeDetail
-  );
+$("editMyProfile")
+.onclick =
+()=>{
+
+  $("myNameInput").value =
+    myProfile.name;
+
+  $("myUsernameInput").value =
+    myProfile.username;
+
+  $("myBioInput").value =
+    myProfile.bio;
+
+  $("profileModal")
+    .classList.add("show");
+
+};
 
 
 $("closeProfile")
-  .addEventListener(
-    "click",
-    ()=>{
-      $("profileModal")
-        .classList.remove("show");
-    }
+.onclick =
+()=>{
+
+  $("profileModal")
+    .classList.remove("show");
+
+};
+
+
+$("saveMyProfile")
+.onclick =
+async()=>{
+
+  myProfile.name =
+    $("myNameInput")
+      .value
+      .trim() ||
+    "ARWORLD istifadəçisi";
+
+  myProfile.username =
+    $("myUsernameInput")
+      .value
+      .trim() ||
+    "@arworld";
+
+  myProfile.bio =
+    $("myBioInput")
+      .value
+      .trim();
+
+
+  await saveProfile();
+
+  updateMyProfile();
+
+
+  $("profileModal")
+    .classList.remove("show");
+
+
+  toast(
+    "✅ Profil yadda saxlanıldı."
   );
 
-
-/* Clicking backdrop closes modal */
-
-$("createModal")
-  .addEventListener(
-    "click",
-    e=>{
-      if(e.target === $("createModal"))
-        closeCreate();
-    }
-  );
+};
 
 
-$("detailModal")
-  .addEventListener(
-    "click",
-    e=>{
-      if(e.target === $("detailModal"))
-        closeDetail();
-    }
-  );
-
-
-$("profileModal")
-  .addEventListener(
-    "click",
-    e=>{
-      if(e.target === $("profileModal"))
-        $("profileModal")
-          .classList.remove("show");
-    }
-  );
-
-
-/* =========================================================
-   PROFILE
-========================================================= */
-
-function updateProfileUI(){
-
-  $("profileName").textContent =
-    profile.name;
-
-  $("profileBio").textContent =
-    profile.bio;
-
-  $("avatarLetter").textContent =
-    (profile.name || "A")
-      .charAt(0)
-      .toUpperCase();
-
-}
-
-
-$("editProfileBtn")
-  .addEventListener(
-    "click",
-    ()=>{
-
-      $("profileNameInput").value =
-        profile.name;
-
-      $("profileBioInput").value =
-        profile.bio;
-
-      $("profileModal")
-        .classList.add("show");
-
-    }
-  );
-
-
-$("saveProfile")
-  .addEventListener(
-    "click",
-    async ()=>{
-
-      const name =
-        $("profileNameInput")
-          .value
-          .trim();
-
-      const bio =
-        $("profileBioInput")
-          .value
-          .trim();
-
-      if(!name){
-
-        toast(
-          "Ad boş ola bilməz."
-        );
-
-        return;
-
-      }
-
-      profile.name =
-        name;
-
-      profile.bio =
-        bio;
-
-      await saveProfile();
-
-      updateProfileUI();
-
-      $("profileModal")
-        .classList.remove("show");
-
-      toast(
-        "✅ Profil yadda saxlanıldı."
-      );
-
-    }
-  );
-
-
-/* =========================================================
+/* =====================================================
    SEARCH
-========================================================= */
+===================================================== */
 
 $("searchBtn")
-  .addEventListener(
-    "click",
-    ()=>{
+.onclick =
+()=>{
 
-      const box =
-        $("searchBox");
+  $("searchBox")
+    .classList.toggle("show");
 
-      box.classList.toggle("show");
+  if(
+    $("searchBox")
+      .classList.contains("show")
+  ){
 
-      if(box.classList.contains("show")){
+    $("searchInput")
+      .focus();
 
-        $("searchInput").focus();
+  }
 
-      }else{
-
-        $("searchInput").value = "";
-
-      }
-
-    }
-  );
+};
 
 
 $("searchInput")
-  .addEventListener(
-    "input",
-    ()=>{
-      updateSearch(
-        $("searchInput").value
-      );
-    }
-  );
+.oninput =
+()=>{
 
-
-function updateSearch(query){
-
-  query =
-    query
+  const q =
+    $("searchInput")
+      .value
       .trim()
       .toLowerCase();
 
-  const container =
-    $("arObjects");
 
-  container.innerHTML = "";
+  const found =
+    spatialObjects.filter(
+      obj=>
+        obj.name
+          .toLowerCase()
+          .includes(q) ||
 
-  if(userLat === null ||
-     userLng === null)
+        (obj.bio||"")
+          .toLowerCase()
+          .includes(q) ||
+
+        (obj.article||"")
+          .toLowerCase()
+          .includes(q)
+    );
+
+
+  if(!q){
+
+    updateAR();
+
     return;
 
-
-  posts
-    .filter(post=>{
-
-      if(!query)
-        return true;
-
-      return (
-        post.title
-          .toLowerCase()
-          .includes(query) ||
-
-        (post.desc || "")
-          .toLowerCase()
-          .includes(query) ||
-
-        typeName(post.type)
-          .toLowerCase()
-          .includes(query)
-      );
-
-    })
-    .forEach(post=>{
-
-      const distance =
-        distanceMeters(
-          userLat,
-          userLng,
-          post.lat,
-          post.lng
-        );
-
-      if(
-        distance >
-        Number(post.radius || 300)
-      )
-        return;
-
-      const bearing =
-        bearingTo(
-          userLat,
-          userLng,
-          post.lat,
-          post.lng
-        );
-
-      const diff =
-        angleDifference(
-          bearing,
-          heading
-        );
-
-      if(Math.abs(diff)>85)
-        return;
+  }
 
 
-      const x =
-        50 + diff / 85 * 43;
+  const old =
+    $("arObjects");
+
+  old.innerHTML = "";
+
+
+  found.forEach(
+    obj=>{
 
       const card =
-        document.createElement("div");
+        document.createElement(
+          "div"
+        );
 
       card.className =
-        "ar-card";
+        "arObject stable";
 
       card.style.left =
-        x + "%";
+        "50%";
 
       card.style.top =
         "45%";
 
+
       card.innerHTML = `
 
-        <div class="ar-title">
-          ${escapeHTML(post.title)}
+        <div class="arName">
+          ${escapeHTML(obj.name)}
         </div>
 
-        <div class="ar-meta">
-          ${typeName(post.type)}
-          · ${formatDistance(distance)}
+        <div class="arType">
+          ${typeName(obj.type)}
         </div>
 
-        <button class="ar-open">
-          Aç
+        <div class="arBio">
+          ${escapeHTML(obj.bio||"")}
+        </div>
+
+        <button class="arOpen">
+          PROFİLİ AÇ
         </button>
 
       `;
 
-      card.querySelector(".ar-open")
-        .onclick =
-        ()=>openDetail(post);
 
-      container.appendChild(card);
-
-    });
-
-}
+      card.querySelector(
+        ".arOpen"
+      ).onclick =
+        ()=>{
+          openDetail(obj);
+        };
 
 
-/* =========================================================
+      old.appendChild(card);
+
+    }
+  );
+
+};
+
+
+/* =====================================================
    REFRESH
-========================================================= */
+===================================================== */
 
 $("refreshBtn")
-  .addEventListener(
-    "click",
-    ()=>{
+.onclick =
+()=>{
 
-      cleanExpired();
+  updateAR();
 
-      updateAR();
+  renderFeed();
 
-      renderFeed();
+  renderMapMarkers();
 
-      renderMapMarkers();
+  toast(
+    "🔄 Spatial dünya yeniləndi."
+  );
 
-      toast(
-        "🔄 ARWORLD yeniləndi"
-      );
+};
+
+
+/* =====================================================
+   INITIALIZATION
+===================================================== */
+
+async function init(){
+
+  try{
+
+    await openDB();
+
+
+    const saved =
+      await loadProfile();
+
+
+    if(saved){
+
+      myProfile =
+        saved;
 
     }
-  );
 
 
-/* =========================================================
-   HELPERS
-========================================================= */
+    spatialObjects =
+      await loadObjects();
 
-function typeName(type){
 
-  const names = {
+    updateMyProfile();
 
-    general:"📍 Ümumi",
+    renderFeed();
 
-    car:"🚗 Avtomobil",
+    startGPS();
 
-    business:"🏪 Biznes",
+    startCompass();
 
-    service:"🛠️ Xidmət",
+    startCamera();
 
-    tourism:"🏔️ Turizm",
 
-    warning:"⚠️ Xəbərdarlıq",
+  }catch(e){
 
-    person:"👤 İnsan"
+    console.error(e);
 
-  };
+    toast(
+      "ARWORLD başladılarkən xəta baş verdi."
+    );
 
-  return names[type] || "📍 Obyekt";
+  }
 
 }
 
-
-function formatDistance(m){
-
-  if(m < 1000)
-    return Math.round(m) + " m";
-
-  return (
-    m / 1000
-  ).toFixed(1) + " km";
-
-}
-
-
-function formatCoordinates(lat,lng){
-
-  return (
-    Number(lat).toFixed(5) +
-    ", " +
-    Number(lng).toFixed(5)
-  );
-
-}
-
-
-function escapeHTML(value){
-
-  return String(value || "")
-    .replaceAll("&","&amp;")
-    .replaceAll("<","&lt;")
-    .replaceAll(">","&gt;")
-    .replaceAll('"',"&quot;")
-    .replaceAll("'","&#039;");
-
-}
-
-
-function escapeAttribute(value){
-
-  return String(value || "")
-    .replaceAll("'","%27")
-    .replaceAll('"',"%22");
-
-}
-
-
-/* =========================================================
-   MAP PICK
-========================================================= */
-
-$("mapPick")
-  .addEventListener(
-    "click",
-    ()=>{
-
-      /*
-        For now use current GPS.
-        The map itself can later become
-        a dedicated coordinate picker.
-      */
-
-      if(
-        userLat !== null &&
-        userLng !== null
-      ){
-
-        $("postLat").value =
-          userLat.toFixed(7);
-
-        $("postLng").value =
-          userLng.toFixed(7);
-
-        toast(
-          "📍 Cari GPS xəritə mövqeyi seçildi."
-        );
-
-      }else{
-
-        toast(
-          "Əvvəlcə GPS mövqeyiniz alınmalıdır."
-        );
-
-      }
-
-    }
-  );
-
-
-/* =========================================================
-   INITIAL START
-========================================================= */
 
 document.addEventListener(
   "DOMContentLoaded",
-  ()=>{
-    init();
-  }
+  init
 );
 
 </script>
 
 </body>
-           </html>
+      </html>
