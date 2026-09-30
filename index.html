@@ -3,21 +3,44 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#050507">
-<title>SEEIT — Show Me</title>
+<meta name="theme-color" content="#050608">
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+<title>SEEIT — AI Visual Search</title>
 
 <style>
-*{box-sizing:border-box}
+*{
+  box-sizing:border-box;
+  -webkit-tap-highlight-color:transparent;
+}
+
 html,body{
   margin:0;
   width:100%;
   height:100%;
   overflow:hidden;
-  background:#050507;
+  background:#050608;
   color:#fff;
-  font-family:Inter,Arial,sans-serif;
+  font-family:
+    Inter,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
 }
-body{position:relative}
+
+button{
+  font:inherit;
+}
+
+#app{
+  position:fixed;
+  inset:0;
+  background:#050608;
+}
+
+/* ================= CAMERA ================= */
 
 #camera{
   position:absolute;
@@ -25,405 +48,844 @@ body{position:relative}
   width:100%;
   height:100%;
   object-fit:cover;
-  background:#08090c;
+  background:#050608;
 }
 
-#shade{
+.cameraShade{
   position:absolute;
   inset:0;
-  background:
-    linear-gradient(to bottom,rgba(0,0,0,.65),transparent 24%),
-    linear-gradient(to top,rgba(0,0,0,.8),transparent 45%);
   pointer-events:none;
+  background:
+    linear-gradient(
+      to bottom,
+      rgba(0,0,0,.62) 0%,
+      transparent 27%,
+      transparent 62%,
+      rgba(0,0,0,.76) 100%
+    );
 }
 
-.top{
+/* ================= HEADER ================= */
+
+.header{
   position:absolute;
+  z-index:20;
   top:0;
   left:0;
   right:0;
-  padding:calc(15px + env(safe-area-inset-top)) 18px 15px;
+  padding:
+    calc(15px + env(safe-area-inset-top))
+    18px
+    14px;
   display:flex;
   align-items:center;
   justify-content:space-between;
-  z-index:5;
 }
 
-.logo{
-  font-size:24px;
-  font-weight:900;
-  letter-spacing:-1px;
+.brand{
+  font-size:25px;
+  font-weight:950;
+  letter-spacing:-1.4px;
 }
 
-.logo span{color:#72f5b0}
+.brand i{
+  font-style:normal;
+  color:#67f3a5;
+}
 
-.status{
+.cameraStatus{
   display:flex;
   align-items:center;
   gap:7px;
-  background:rgba(0,0,0,.45);
-  border:1px solid rgba(255,255,255,.12);
   padding:8px 12px;
   border-radius:30px;
-  backdrop-filter:blur(14px);
+  background:rgba(8,9,12,.48);
+  border:1px solid rgba(255,255,255,.13);
+  backdrop-filter:blur(18px);
   font-size:12px;
+  color:#dce0e7;
 }
 
-.dot{
-  width:8px;
-  height:8px;
+.statusDot{
+  width:7px;
+  height:7px;
   border-radius:50%;
-  background:#777;
+  background:#888;
 }
 
-.dot.active{
-  background:#5cff9d;
-  box-shadow:0 0 12px #5cff9d;
+.statusDot.live{
+  background:#67f3a5;
+  box-shadow:0 0 13px #67f3a5;
 }
 
-.center{
+/* ================= SCAN FRAME ================= */
+
+.scanFrame{
   position:absolute;
-  top:50%;
+  z-index:5;
   left:50%;
+  top:46%;
   transform:translate(-50%,-50%);
-  width:min(78vw,420px);
-  aspect-ratio:1;
-  border-radius:32px;
-  border:1px solid rgba(255,255,255,.35);
-  box-shadow:
-    0 0 0 9999px rgba(0,0,0,.05),
-    0 0 40px rgba(114,245,176,.12);
+  width:min(82vw,390px);
+  aspect-ratio:1/1;
   pointer-events:none;
 }
 
-.corner{
+.scanCorner{
   position:absolute;
-  width:32px;
-  height:32px;
+  width:42px;
+  height:42px;
   border-color:#fff;
   border-style:solid;
+  filter:drop-shadow(0 0 8px rgba(255,255,255,.3));
 }
 
-.c1{top:-2px;left:-2px;border-width:3px 0 0 3px;border-radius:15px 0 0 0}
-.c2{top:-2px;right:-2px;border-width:3px 3px 0 0;border-radius:0 15px 0 0}
-.c3{bottom:-2px;left:-2px;border-width:0 0 3px 3px;border-radius:0 0 0 15px}
-.c4{bottom:-2px;right:-2px;border-width:0 3px 3px 0;border-radius:0 0 15px 0}
+.tl{
+  left:0;
+  top:0;
+  border-width:3px 0 0 3px;
+  border-radius:18px 0 0 0;
+}
 
-.scan{
+.tr{
+  right:0;
+  top:0;
+  border-width:3px 3px 0 0;
+  border-radius:0 18px 0 0;
+}
+
+.bl{
+  left:0;
+  bottom:0;
+  border-width:0 0 3px 3px;
+  border-radius:0 0 0 18px;
+}
+
+.br{
+  right:0;
+  bottom:0;
+  border-width:0 3px 3px 0;
+  border-radius:0 0 18px 0;
+}
+
+.scanHint{
   position:absolute;
-  left:7%;
-  right:7%;
-  top:10%;
-  height:2px;
-  background:#72f5b0;
-  box-shadow:0 0 16px #72f5b0;
-  opacity:.8;
-  animation:scan 2.8s linear infinite;
+  top:calc(100% + 18px);
+  left:50%;
+  transform:translateX(-50%);
+  white-space:nowrap;
+  font-size:13px;
+  color:rgba(255,255,255,.8);
+  text-shadow:0 2px 8px #000;
 }
 
-@keyframes scan{
-  0%{top:8%}
-  50%{top:92%}
-  100%{top:8%}
-}
+/* ================= BOTTOM ================= */
 
 .bottom{
   position:absolute;
+  z-index:20;
   left:0;
   right:0;
   bottom:0;
-  padding:20px 18px calc(20px + env(safe-area-inset-bottom));
-  z-index:5;
+  padding:
+    16px
+    18px
+    calc(18px + env(safe-area-inset-bottom));
 }
 
-.result{
-  width:min(620px,100%);
-  margin:auto;
-  background:rgba(7,8,11,.76);
-  border:1px solid rgba(255,255,255,.14);
-  border-radius:25px;
-  padding:15px;
-  backdrop-filter:blur(22px);
-  box-shadow:0 15px 50px rgba(0,0,0,.35);
-  transition:.25s;
-}
-
-.result.hidden{
-  opacity:0;
-  transform:translateY(25px);
-  pointer-events:none;
-}
-
-.resultTitle{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  margin-bottom:8px;
-}
-
-.resultTitle strong{
-  font-size:21px;
-  letter-spacing:-.5px;
-}
-
-.conf{
-  font-size:12px;
-  color:#72f5b0;
-}
-
-.sub{
-  color:#aeb3bd;
-  font-size:13px;
-  margin-bottom:14px;
-}
-
-.tags{
-  display:flex;
-  gap:7px;
-  flex-wrap:wrap;
-  margin-bottom:14px;
-}
-
-.tag{
-  padding:7px 10px;
-  border-radius:12px;
-  background:rgba(255,255,255,.08);
-  color:#ddd;
-  font-size:12px;
-}
-
-.actions{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:8px;
-}
-
-.btn{
+.scanButton{
+  width:100%;
+  height:64px;
   border:0;
-  border-radius:15px;
-  padding:13px 10px;
-  font-weight:800;
-  color:#fff;
-  background:rgba(255,255,255,.1);
+  border-radius:21px;
+  background:#fff;
+  color:#050608;
+  font-size:18px;
+  font-weight:900;
+  letter-spacing:-.3px;
+  box-shadow:
+    0 12px 45px rgba(0,0,0,.35),
+    0 0 0 1px rgba(255,255,255,.2);
   cursor:pointer;
+  transition:.18s transform;
 }
 
-.btn.primary{
-  background:#72f5b0;
-  color:#07100b;
+.scanButton:active{
+  transform:scale(.97);
 }
 
-.controls{
+.scanButton.loading{
+  background:#67f3a5;
+}
+
+.secondaryControls{
   display:flex;
   justify-content:center;
-  gap:13px;
+  gap:12px;
   margin-top:12px;
 }
 
-.round{
-  width:55px;
-  height:55px;
+.circleButton{
+  width:51px;
+  height:51px;
   border-radius:50%;
   border:1px solid rgba(255,255,255,.18);
   background:rgba(0,0,0,.52);
-  color:white;
-  font-size:21px;
-  backdrop-filter:blur(14px);
+  color:#fff;
+  backdrop-filter:blur(18px);
   cursor:pointer;
+  font-size:20px;
 }
 
-.round.main{
-  width:68px;
-  height:68px;
-  background:#fff;
-  color:#000;
-  font-size:27px;
-}
+/* ================= RESULT SCREEN ================= */
 
-#loading{
-  position:absolute;
+.resultScreen{
+  position:fixed;
+  z-index:100;
   inset:0;
+  background:
+    radial-gradient(
+      circle at 50% 0%,
+      rgba(103,243,165,.09),
+      transparent 40%
+    ),
+    #08090c;
+
+  transform:translateY(100%);
+  transition:transform .34s cubic-bezier(.2,.8,.2,1);
+  overflow-y:auto;
+  overscroll-behavior:contain;
+}
+
+.resultScreen.open{
+  transform:translateY(0);
+}
+
+.resultHeader{
+  position:sticky;
+  top:0;
+  z-index:10;
   display:flex;
-  flex-direction:column;
   align-items:center;
-  justify-content:center;
-  z-index:20;
-  background:#050507;
-  transition:.4s;
+  justify-content:space-between;
+  padding:
+    calc(14px + env(safe-area-inset-top))
+    16px
+    13px;
+  background:rgba(8,9,12,.82);
+  backdrop-filter:blur(22px);
+  border-bottom:1px solid rgba(255,255,255,.08);
 }
 
-#loading.hide{
-  opacity:0;
-  pointer-events:none;
-}
-
-.spinner{
-  width:48px;
-  height:48px;
-  border:3px solid rgba(255,255,255,.15);
-  border-top-color:#72f5b0;
-  border-radius:50%;
-  animation:spin 1s linear infinite;
-  margin-bottom:18px;
-}
-
-@keyframes spin{to{transform:rotate(360deg)}}
-
-.loadTitle{
-  font-size:21px;
+.resultHeaderTitle{
+  font-size:18px;
   font-weight:900;
 }
 
-.loadText{
-  color:#969ba5;
+.closeResult{
+  width:40px;
+  height:40px;
+  border:0;
+  border-radius:50%;
+  background:rgba(255,255,255,.09);
+  color:#fff;
+  font-size:22px;
+  cursor:pointer;
+}
+
+.resultContent{
+  padding:16px 16px 40px;
+  max-width:650px;
+  margin:auto;
+}
+
+/* ================= RESULT IMAGE ================= */
+
+.resultImageBox{
+  position:relative;
+  width:100%;
+  height:min(54vh,480px);
+  border-radius:25px;
+  overflow:hidden;
+  background:#111318;
+  border:1px solid rgba(255,255,255,.08);
+}
+
+#resultImage{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+
+.imageBadge{
+  position:absolute;
+  left:12px;
+  top:12px;
+  padding:7px 10px;
+  border-radius:12px;
+  background:rgba(0,0,0,.58);
+  backdrop-filter:blur(14px);
+  font-size:11px;
+  color:#dfe4ea;
+}
+
+/* ================= AI RESULT ================= */
+
+.resultMain{
+  margin-top:17px;
+}
+
+.resultLabel{
+  font-size:29px;
+  line-height:1.05;
+  font-weight:950;
+  letter-spacing:-1.1px;
+}
+
+.resultDescription{
+  margin-top:8px;
+  color:#a8adb7;
   font-size:13px;
-  margin-top:7px;
-  text-align:center;
-  max-width:300px;
   line-height:1.5;
 }
 
-#file{
-  display:none;
+.confidenceRow{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  margin-top:15px;
 }
 
-#message{
-  position:absolute;
-  top:82px;
-  left:50%;
-  transform:translateX(-50%);
-  z-index:10;
-  background:rgba(0,0,0,.65);
-  border:1px solid rgba(255,255,255,.1);
-  border-radius:15px;
-  padding:10px 14px;
+.confidenceBar{
+  flex:1;
+  height:7px;
+  background:#1c1f25;
+  border-radius:20px;
+  overflow:hidden;
+}
+
+.confidenceFill{
+  height:100%;
+  width:0%;
+  background:#67f3a5;
+  border-radius:20px;
+  transition:width .5s;
+}
+
+.confidenceText{
+  color:#67f3a5;
   font-size:12px;
-  color:#ddd;
-  backdrop-filter:blur(15px);
-  opacity:0;
-  transition:.25s;
-  pointer-events:none;
+  font-weight:800;
 }
 
-#message.show{opacity:1}
+/* ================= TAGS ================= */
 
-@media(max-width:420px){
-  .center{width:82vw}
-  .resultTitle strong{font-size:18px}
+.tags{
+  display:flex;
+  flex-wrap:wrap;
+  gap:7px;
+  margin-top:15px;
+}
+
+.tag{
+  padding:8px 11px;
+  border-radius:13px;
+  background:#14171c;
+  border:1px solid rgba(255,255,255,.07);
+  color:#dce0e5;
+  font-size:11px;
+}
+
+/* ================= STORES ================= */
+
+.storeTitle{
+  margin-top:25px;
+  font-size:17px;
+  font-weight:900;
+}
+
+.storeSub{
+  margin-top:5px;
+  color:#858b96;
+  font-size:12px;
+}
+
+.stores{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:9px;
+  margin-top:12px;
+}
+
+.store{
+  min-height:67px;
+  padding:11px;
+  border-radius:17px;
+  background:#111419;
+  border:1px solid rgba(255,255,255,.08);
+  color:#fff;
+  text-align:left;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  transition:.15s;
+}
+
+.store:active{
+  transform:scale(.97);
+}
+
+.storeIcon{
+  width:38px;
+  height:38px;
+  display:grid;
+  place-items:center;
+  border-radius:12px;
+  background:#1b1f26;
+  font-size:19px;
+  flex:none;
+}
+
+.storeInfo{
+  min-width:0;
+}
+
+.storeName{
+  font-size:13px;
+  font-weight:850;
+}
+
+.storeAction{
+  margin-top:3px;
+  color:#7f8793;
+  font-size:10px;
+}
+
+/* ================= SEARCH ================= */
+
+.searchQuery{
+  margin-top:24px;
+  padding:14px;
+  border-radius:17px;
+  background:#111419;
+  border:1px solid rgba(255,255,255,.08);
+}
+
+.searchLabel{
+  color:#7f8793;
+  font-size:10px;
+  text-transform:uppercase;
+  letter-spacing:1px;
+}
+
+.searchText{
+  margin-top:7px;
+  font-size:13px;
+  color:#e9edf1;
+  word-break:break-word;
+}
+
+/* ================= RESCAN ================= */
+
+.rescan{
+  width:100%;
+  margin-top:14px;
+  height:58px;
+  border:0;
+  border-radius:18px;
+  background:#67f3a5;
+  color:#07100b;
+  font-size:16px;
+  font-weight:900;
+  cursor:pointer;
+}
+
+/* ================= TOAST ================= */
+
+.toast{
+  position:fixed;
+  z-index:500;
+  left:50%;
+  bottom:105px;
+  transform:translate(-50%,20px);
+  width:max-content;
+  max-width:calc(100vw - 35px);
+  padding:11px 15px;
+  border-radius:15px;
+  background:rgba(12,14,18,.9);
+  border:1px solid rgba(255,255,255,.1);
+  backdrop-filter:blur(18px);
+  color:#e8ebef;
+  font-size:12px;
+  opacity:0;
+  pointer-events:none;
+  transition:.25s;
+}
+
+.toast.show{
+  opacity:1;
+  transform:translate(-50%,0);
+}
+
+/* ================= LOADING ================= */
+
+.aiLoading{
+  position:fixed;
+  inset:0;
+  z-index:400;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  background:rgba(4,5,7,.78);
+  backdrop-filter:blur(18px);
+}
+
+.aiLoading.show{
+  display:flex;
+}
+
+.loadingCard{
+  width:min(88vw,360px);
+  padding:25px;
+  border-radius:25px;
+  background:#101217;
+  border:1px solid rgba(255,255,255,.1);
+  text-align:center;
+}
+
+.spinner{
+  width:42px;
+  height:42px;
+  margin:auto;
+  border-radius:50%;
+  border:3px solid #242831;
+  border-top-color:#67f3a5;
+  animation:spin .8s linear infinite;
+}
+
+@keyframes spin{
+  to{transform:rotate(360deg)}
+}
+
+.loadingTitle{
+  margin-top:17px;
+  font-size:18px;
+  font-weight:900;
+}
+
+.loadingText{
+  margin-top:7px;
+  color:#858b96;
+  font-size:12px;
+  line-height:1.5;
+}
+
+/* ================= ERROR ================= */
+
+.errorBox{
+  margin-top:15px;
+  padding:13px;
+  border-radius:15px;
+  background:#171419;
+  color:#ffb6bd;
+  font-size:12px;
+  line-height:1.5;
+}
+
+@media(min-width:700px){
+
+  .bottom{
+    max-width:650px;
+    margin:auto;
+  }
+
+  .scanFrame{
+    width:390px;
+  }
+
 }
 </style>
 </head>
 
 <body>
 
-<video id="camera" autoplay playsinline muted></video>
-<div id="shade"></div>
+<div id="app">
 
-<div id="loading">
-  <div class="spinner"></div>
-  <div class="loadTitle">SEEIT AI hazırlanır</div>
-  <div class="loadText">
-    Açıq mənbəli görmə modeli yüklənir.
-    İlk dəfə bir qədər vaxt tələb edə bilər.
-  </div>
-</div>
+  <video
+    id="camera"
+    autoplay
+    playsinline
+    muted
+  ></video>
 
-<div id="message"></div>
+  <div class="cameraShade"></div>
 
-<div class="top">
-  <div class="logo">SEE<span>IT</span></div>
-  <div class="status">
-    <div class="dot" id="dot"></div>
-    <span id="statusText">AI hazırlanır</span>
-  </div>
-</div>
+  <header class="header">
 
-<div class="center">
-  <div class="corner c1"></div>
-  <div class="corner c2"></div>
-  <div class="corner c3"></div>
-  <div class="corner c4"></div>
-  <div class="scan"></div>
-</div>
-
-<div class="bottom">
-
-  <div class="result hidden" id="result">
-
-    <div class="resultTitle">
-      <strong id="mainLabel">Analiz edilir...</strong>
-      <span class="conf" id="confidence">--</span>
+    <div class="brand">
+      SEE<i>IT</i>
     </div>
 
-    <div class="sub" id="description">
-      Kameranı obyektə tut.
+    <div class="cameraStatus">
+
+      <span
+        class="statusDot"
+        id="statusDot"
+      ></span>
+
+      <span id="statusText">
+        Kamera hazırlanır
+      </span>
+
     </div>
 
-    <div class="tags" id="tags"></div>
+  </header>
 
-    <div class="actions">
-      <button class="btn primary" id="shopBtn">
-        🛒 Məhsulu axtar
+  <div class="scanFrame">
+
+    <div class="scanCorner tl"></div>
+    <div class="scanCorner tr"></div>
+    <div class="scanCorner bl"></div>
+    <div class="scanCorner br"></div>
+
+    <div class="scanHint">
+      Məhsulu çərçivəyə gətir
+    </div>
+
+  </div>
+
+  <div class="bottom">
+
+    <button
+      class="scanButton"
+      id="scanButton"
+    >
+      📷 Məhsulu Skan Et
+    </button>
+
+    <div class="secondaryControls">
+
+      <button
+        class="circleButton"
+        id="galleryButton"
+        aria-label="Qalereya"
+      >
+        🖼️
       </button>
 
-      <button class="btn" id="imageSearchBtn">
-        🔎 Şəkillərdə axtar
+      <button
+        class="circleButton"
+        id="flipButton"
+        aria-label="Kameranı dəyiş"
+      >
+        🔄
       </button>
+
     </div>
-
-  </div>
-
-  <div class="controls">
-
-    <button class="round" id="gallery">
-      🖼️
-    </button>
-
-    <button class="round main" id="analyze">
-      ◉
-    </button>
-
-    <button class="round" id="flip">
-      🔄
-    </button>
 
   </div>
 
 </div>
 
-<input type="file" id="file" accept="image/*">
+<input
+  type="file"
+  id="fileInput"
+  accept="image/*"
+/>
+
+
+<!-- ================= RESULT ================= -->
+
+<section
+  class="resultScreen"
+  id="resultScreen"
+>
+
+  <div class="resultHeader">
+
+    <div class="resultHeaderTitle">
+      AI nəticəsi
+    </div>
+
+    <button
+      class="closeResult"
+      id="closeResult"
+      aria-label="Bağla"
+    >
+      ×
+    </button>
+
+  </div>
+
+  <div class="resultContent">
+
+    <div class="resultImageBox">
+
+      <img
+        id="resultImage"
+        alt="Skan edilmiş məhsul"
+      >
+
+      <div class="imageBadge">
+        SEEIT AI
+      </div>
+
+    </div>
+
+    <div class="resultMain">
+
+      <div
+        class="resultLabel"
+        id="resultLabel"
+      >
+        Analiz edilir
+      </div>
+
+      <div
+        class="resultDescription"
+        id="resultDescription"
+      >
+        -
+      </div>
+
+      <div class="confidenceRow">
+
+        <div class="confidenceBar">
+          <div
+            class="confidenceFill"
+            id="confidenceFill"
+          ></div>
+        </div>
+
+        <div
+          class="confidenceText"
+          id="confidenceText"
+        >
+          --
+        </div>
+
+      </div>
+
+      <div
+        class="tags"
+        id="resultTags"
+      ></div>
+
+    </div>
+
+    <div class="storeTitle">
+      Harada axtarmaq istəyirsən?
+    </div>
+
+    <div class="storeSub">
+      Nəticəyə əsaslanan real mağaza axtarışlarını aç.
+    </div>
+
+    <div
+      class="stores"
+      id="stores"
+    ></div>
+
+    <div class="searchQuery">
+
+      <div class="searchLabel">
+        AI axtarış sorğusu
+      </div>
+
+      <div
+        class="searchText"
+        id="searchText"
+      >
+        -
+      </div>
+
+    </div>
+
+    <button
+      class="rescan"
+      id="rescanButton"
+    >
+      🔄 Yenidən Skan Et
+    </button>
+
+  </div>
+
+</section>
+
+
+<!-- ================= AI LOADING ================= -->
+
+<div
+  class="aiLoading"
+  id="aiLoading"
+>
+
+  <div class="loadingCard">
+
+    <div class="spinner"></div>
+
+    <div class="loadingTitle">
+      AI görüntünü analiz edir
+    </div>
+
+    <div
+      class="loadingText"
+      id="loadingText"
+    >
+      İlk skanda model hazırlanır. Sonrakı skanlar daha sürətli olacaq.
+    </div>
+
+  </div>
+
+</div>
+
+<div
+  class="toast"
+  id="toast"
+></div>
+
 
 <script type="module">
 
-import { pipeline, env }
-from "https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.3.0";
+import {
+  pipeline,
+  env
+}
+from
+"https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.3.0";
 
-/* ----------------------------------------------------
-   CONFIG
----------------------------------------------------- */
+
+/* =====================================================
+   SEEIT CONFIG
+===================================================== */
 
 env.allowLocalModels = false;
 env.useBrowserCache = true;
 
-const MODEL = "Xenova/clip-vit-base-patch32";
+const MODEL =
+  "Xenova/clip-vit-base-patch32";
+
 
 /*
-  CLIP-i konkret məhsul bazası kimi təqdim etmirik.
-  Bu etiketlər real AI modelinə verilir.
+  Modelə verilən kateqoriyalar.
+
+  Bunlar saxta məhsul deyil.
+  AI şəkli bu anlayışlarla müqayisə edir.
 */
+
 const LABELS = [
 
-  "a pair of running shoes",
-  "a pair of sneakers",
-  "a pair of basketball shoes",
-  "a pair of football boots",
-  "a pair of hiking shoes",
-  "a pair of leather shoes",
-  "a pair of formal dress shoes",
-  "a pair of casual shoes",
-  "a pair of boots",
-  "a pair of sandals",
-  "a pair of slippers",
+  "running sneakers",
+  "basketball sneakers",
+  "football shoes",
+  "hiking shoes",
+  "casual sneakers",
+  "formal dress shoes",
+  "leather shoes",
+  "boots",
+  "sandals",
+  "slippers",
 
   "Nike sneakers",
   "Adidas sneakers",
@@ -434,430 +896,1014 @@ const LABELS = [
   "Vans sneakers",
   "Reebok sneakers",
 
-  "a black shoe",
-  "a white shoe",
-  "a red shoe",
-  "a blue shoe",
-  "a green shoe",
-  "a colorful shoe",
+  "black sneakers",
+  "white sneakers",
+  "red sneakers",
+  "blue sneakers",
+  "green sneakers",
 
-  "a modern sneaker",
-  "a vintage sneaker",
-  "a luxury shoe",
-  "a sports shoe"
+  "modern sneakers",
+  "luxury sneakers",
+  "sports sneakers"
+
 ];
 
-/* ----------------------------------------------------
+
+/* =====================================================
    DOM
----------------------------------------------------- */
+===================================================== */
 
-const video = document.getElementById("camera");
-const loading = document.getElementById("loading");
-const statusText = document.getElementById("statusText");
-const dot = document.getElementById("dot");
+const camera =
+  document.getElementById("camera");
 
-const result = document.getElementById("result");
-const mainLabel = document.getElementById("mainLabel");
-const confidence = document.getElementById("confidence");
-const description = document.getElementById("description");
-const tags = document.getElementById("tags");
+const statusDot =
+  document.getElementById("statusDot");
 
-const analyzeBtn = document.getElementById("analyze");
-const galleryBtn = document.getElementById("gallery");
-const flipBtn = document.getElementById("flip");
-const fileInput = document.getElementById("file");
+const statusText =
+  document.getElementById("statusText");
 
-const shopBtn = document.getElementById("shopBtn");
-const imageSearchBtn = document.getElementById("imageSearchBtn");
+const scanButton =
+  document.getElementById("scanButton");
 
-const message = document.getElementById("message");
+const galleryButton =
+  document.getElementById("galleryButton");
+
+const flipButton =
+  document.getElementById("flipButton");
+
+const fileInput =
+  document.getElementById("fileInput");
+
+const resultScreen =
+  document.getElementById("resultScreen");
+
+const closeResult =
+  document.getElementById("closeResult");
+
+const rescanButton =
+  document.getElementById("rescanButton");
+
+const resultImage =
+  document.getElementById("resultImage");
+
+const resultLabel =
+  document.getElementById("resultLabel");
+
+const resultDescription =
+  document.getElementById("resultDescription");
+
+const confidenceFill =
+  document.getElementById("confidenceFill");
+
+const confidenceText =
+  document.getElementById("confidenceText");
+
+const resultTags =
+  document.getElementById("resultTags");
+
+const stores =
+  document.getElementById("stores");
+
+const searchText =
+  document.getElementById("searchText");
+
+const aiLoading =
+  document.getElementById("aiLoading");
+
+const loadingText =
+  document.getElementById("loadingText");
+
+const toast =
+  document.getElementById("toast");
+
+
+/* =====================================================
+   STATE
+===================================================== */
+
+let stream = null;
+
+let facingMode = "environment";
 
 let classifier = null;
-let stream = null;
-let facingMode = "environment";
-let lastResult = null;
-let analyzing = false;
 
-/* ----------------------------------------------------
-   MESSAGE
----------------------------------------------------- */
+let loadingAI = false;
 
-let messageTimer;
+let scanning = false;
 
-function showMessage(text){
+let lastSearchQuery = "";
 
-  message.textContent = text;
-  message.classList.add("show");
+let currentImageURL = null;
 
-  clearTimeout(messageTimer);
 
-  messageTimer = setTimeout(()=>{
-    message.classList.remove("show");
+/* =====================================================
+   TOAST
+===================================================== */
+
+let toastTimer;
+
+function showToast(text){
+
+  toast.textContent = text;
+
+  toast.classList.add("show");
+
+  clearTimeout(toastTimer);
+
+  toastTimer = setTimeout(()=>{
+
+    toast.classList.remove("show");
+
   },2600);
+
 }
 
-/* ----------------------------------------------------
+
+/* =====================================================
    CAMERA
----------------------------------------------------- */
+===================================================== */
 
 async function startCamera(){
 
   try{
 
     if(stream){
-      stream.getTracks().forEach(track => track.stop());
+
+      stream
+        .getTracks()
+        .forEach(track => track.stop());
+
     }
 
-    stream = await navigator.mediaDevices.getUserMedia({
+    stream =
+      await navigator.mediaDevices.getUserMedia({
 
-      video:{
-        facingMode:{
-          ideal:facingMode
-        },
-        width:{
-          ideal:1280
-        },
-        height:{
-          ideal:720
+        audio:false,
+
+        video:{
+
+          facingMode:{
+            ideal:facingMode
+          },
+
+          width:{
+            ideal:1280
+          },
+
+          height:{
+            ideal:720
+          },
+
+          frameRate:{
+            ideal:30,
+            max:30
+          }
+
         }
-      },
 
-      audio:false
+      });
 
-    });
 
-    video.srcObject = stream;
+    camera.srcObject = stream;
 
-    dot.classList.add("active");
-    statusText.textContent = "Kamera aktiv";
+
+    await camera.play();
+
+
+    statusDot.classList.add("live");
+
+    statusText.textContent =
+      "Kamera hazır";
+
 
   }catch(error){
 
     console.error(error);
 
-    statusText.textContent = "Kamera açılmadı";
+    statusText.textContent =
+      "Kamera icazəsi lazımdır";
 
-    showMessage(
-      "Kameraya icazə verilmədi. Brauzerdə kamera icazəsini aç."
+    showToast(
+      "Brauzerdə kamera icazəsini aktivləşdir."
     );
+
   }
+
 }
 
-/* ----------------------------------------------------
-   AI MODEL
----------------------------------------------------- */
+
+/* =====================================================
+   OPEN CAMERA IMMEDIATELY
+===================================================== */
+
+/*
+  ƏN VACİB SÜRƏT DƏYİŞİKLİYİ:
+
+  Kamera açılarkən AI modeli yüklənmir.
+
+  Ona görə istifadəçi kamera görüntüsünü
+  dərhal görür.
+*/
+
+startCamera();
+
+
+/* =====================================================
+   LOAD AI ONLY WHEN NEEDED
+===================================================== */
 
 async function loadAI(){
 
+  if(classifier){
+
+    return true;
+
+  }
+
+  if(loadingAI){
+
+    return false;
+
+  }
+
+  loadingAI = true;
+
+  aiLoading.classList.add("show");
+
+  loadingText.textContent =
+    "Açıq mənbəli görmə modeli hazırlanır...";
+
+
   try{
-
-    statusText.textContent = "AI yüklənir";
-
-    /*
-      WebGPU dəstəklənirsə istifadə olunur.
-      Alınmasa WASM/CPU fallback işləyəcək.
-    */
 
     let device = "wasm";
 
-    if("gpu" in navigator){
+
+    if(
+      "gpu" in navigator
+    ){
+
       device = "webgpu";
+
     }
 
-    classifier = await pipeline(
-      "zero-shot-image-classification",
-      MODEL,
-      {
-        device,
-        dtype: device === "webgpu" ? "q4" : "q8"
-      }
-    );
 
-    statusText.textContent = "AI hazır";
-    dot.classList.add("active");
+    classifier =
+      await pipeline(
 
-    loading.classList.add("hide");
+        "zero-shot-image-classification",
 
-    showMessage(
-      "Hazırdır. Ayaqqabını çərçivəyə gətir."
-    );
+        MODEL,
 
-    await startCamera();
+        {
+
+          device,
+
+          dtype:
+            device === "webgpu"
+              ? "q4"
+              : "q8"
+
+        }
+
+      );
+
+
+    loadingAI.classList.remove("show");
+
+    loadingAI = false;
+
+    return true;
+
 
   }catch(error){
 
     console.error(error);
 
-    loading.querySelector(".loadTitle").textContent =
-      "AI yüklənmədi";
+    loadingAI = false;
 
-    loading.querySelector(".loadText").textContent =
-      "İnternet bağlantısını yoxla və səhifəni yenilə.";
+    aiLoading.classList.remove("show");
+
+    showToast(
+      "AI modeli yüklənmədi. İnterneti yoxla."
+    );
+
+    return false;
 
   }
+
 }
 
-/* ----------------------------------------------------
-   CAPTURE CAMERA FRAME
----------------------------------------------------- */
 
-function captureFrame(){
+/* =====================================================
+   CAPTURE
+===================================================== */
 
-  const canvas = document.createElement("canvas");
+function captureCamera(){
 
-  const maxWidth = 768;
+  const canvas =
+    document.createElement("canvas");
 
-  const ratio = video.videoHeight / video.videoWidth;
 
-  canvas.width = maxWidth;
-  canvas.height = Math.round(maxWidth * ratio);
+  /*
+    Böyük 4K şəkil göndərmirik.
 
-  const ctx = canvas.getContext("2d");
+    Daha kiçik şəkil =
+    daha az hesablama =
+    daha sürətli AI.
+  */
+
+  const targetWidth = 640;
+
+  const ratio =
+    camera.videoHeight /
+    camera.videoWidth;
+
+
+  canvas.width =
+    targetWidth;
+
+  canvas.height =
+    Math.round(
+      targetWidth * ratio
+    );
+
+
+  const ctx =
+    canvas.getContext("2d",{
+      alpha:false
+    });
+
 
   ctx.drawImage(
-    video,
+
+    camera,
+
     0,
     0,
+
     canvas.width,
     canvas.height
+
   );
 
+
   return canvas;
+
 }
 
-/* ----------------------------------------------------
-   IMAGE ANALYSIS
----------------------------------------------------- */
 
-async function analyzeImage(source){
+/* =====================================================
+   IMAGE FILE
+===================================================== */
 
-  if(!classifier){
-    showMessage("AI hələ hazır deyil.");
-    return;
-  }
+function fileToImage(file){
 
-  if(analyzing){
-    return;
-  }
+  return new Promise((resolve,reject)=>{
 
-  analyzing = true;
+    const img =
+      new Image();
 
-  analyzeBtn.textContent = "…";
+    const url =
+      URL.createObjectURL(file);
 
-  statusText.textContent = "Görüntü analiz edilir";
 
-  try{
+    img.onload = ()=>{
 
-    /*
-      REAL MODEL INFERENCE.
-      Burada saxta nəticə yoxdur.
-    */
+      URL.revokeObjectURL(url);
 
-    const output = await classifier(
-      source,
-      LABELS,
-      {
-        topk:6
-      }
-    );
+      resolve(img);
 
-    console.log("AI RESULT:",output);
+    };
 
-    if(!output || !output.length){
-      throw new Error("No AI result");
-    }
 
-    const best = output[0];
+    img.onerror = reject;
 
-    lastResult = best;
+    img.src = url;
 
-    displayResult(output);
+  });
 
-  }catch(error){
-
-    console.error(error);
-
-    showMessage(
-      "Şəkil analiz edilə bilmədi."
-    );
-
-  }finally{
-
-    analyzing = false;
-
-    analyzeBtn.textContent = "◉";
-
-    statusText.textContent = "AI hazır";
-
-  }
 }
 
-/* ----------------------------------------------------
-   RESULT UI
----------------------------------------------------- */
+
+/* =====================================================
+   IMAGE PREVIEW
+===================================================== */
+
+function showResultImage(source){
+
+  if(currentImageURL){
+
+    URL.revokeObjectURL(
+      currentImageURL
+    );
+
+    currentImageURL = null;
+
+  }
+
+
+  if(source instanceof HTMLCanvasElement){
+
+    resultImage.src =
+      source.toDataURL(
+        "image/jpeg",
+        .82
+      );
+
+  }else{
+
+    currentImageURL =
+      URL.createObjectURL(source);
+
+    resultImage.src =
+      currentImageURL;
+
+  }
+
+}
+
+
+/* =====================================================
+   CLEAN LABEL
+===================================================== */
 
 function cleanLabel(label){
 
   return label
-    .replace(/^a pair of /i,"")
-    .replace(/^a /i,"")
-    .replace(/^an /i,"")
+
+    .replace(
+      /^a pair of /i,
+      ""
+    )
+
+    .replace(
+      /^a pair of /i,
+      ""
+    )
+
+    .replace(
+      /^a /i,
+      ""
+    )
+
     .trim();
+
 }
 
-function displayResult(output){
 
-  const best = output[0];
+/* =====================================================
+   SEARCH QUERY
+===================================================== */
 
-  const label = cleanLabel(best.label);
+function buildSearchQuery(label){
 
-  const percent = Math.round(best.score * 100);
+  let q =
+    cleanLabel(label);
 
-  mainLabel.textContent =
-    label.charAt(0).toUpperCase() + label.slice(1);
 
-  confidence.textContent =
-    percent + "% AI uyğunluğu";
+  /*
+    Mağaza axtarışında daha faydalı
+    sorğu yaratmağa çalışırıq.
+  */
 
-  description.textContent =
-    "Görüntü açıq mənbəli CLIP modeli ilə analiz edildi.";
+  if(
+    q.toLowerCase()
+      .includes("sneaker")
+  ){
 
-  tags.innerHTML = "";
+    return q;
 
-  output.slice(0,5).forEach(item=>{
+  }
 
-    const el = document.createElement("div");
 
-    el.className = "tag";
+  return q + " shoes";
 
-    el.textContent =
-      `${cleanLabel(item.label)} · ${Math.round(item.score*100)}%`;
+}
 
-    tags.appendChild(el);
+
+/* =====================================================
+   STORE LINKS
+===================================================== */
+
+function createStoreLinks(query){
+
+  const q =
+    encodeURIComponent(query);
+
+
+  /*
+    Bunlar real mağaza/axtarış
+    səhifələrinə yönləndirmədir.
+
+    Konkret qiymət burada uydurulmur.
+  */
+
+  return [
+
+    {
+      name:"Google Shopping",
+      icon:"🛒",
+      url:
+        "https://www.google.com/search?tbm=shop&q="+q
+    },
+
+    {
+      name:"Google Images",
+      icon:"🔎",
+      url:
+        "https://www.google.com/search?tbm=isch&q="+q
+    },
+
+    {
+      name:"Amazon",
+      icon:"📦",
+      url:
+        "https://www.amazon.com/s?k="+q
+    },
+
+    {
+      name:"eBay",
+      icon:"🏷️",
+      url:
+        "https://www.ebay.com/sch/i.html?_nkw="+q
+    },
+
+    {
+      name:"AliExpress",
+      icon:"🛍️",
+      url:
+        "https://www.aliexpress.com/wholesale?SearchText="+q
+    },
+
+    {
+      name:"Temu",
+      icon:"🛒",
+      url:
+        "https://www.temu.com/search_result.html?search_key="+q
+    },
+
+    {
+      name:"Trendyol",
+      icon:"🛍️",
+      url:
+        "https://www.trendyol.com/sr?q="+q
+    },
+
+    {
+      name:"Bing Images",
+      icon:"🌐",
+      url:
+        "https://www.bing.com/images/search?q="+q
+    }
+
+  ];
+
+}
+
+
+/* =====================================================
+   RENDER STORES
+===================================================== */
+
+function renderStores(query){
+
+  stores.innerHTML = "";
+
+
+  const list =
+    createStoreLinks(query);
+
+
+  list.forEach(store=>{
+
+    const button =
+      document.createElement("button");
+
+    button.className =
+      "store";
+
+
+    button.innerHTML = `
+
+      <div class="storeIcon">
+        ${store.icon}
+      </div>
+
+      <div class="storeInfo">
+
+        <div class="storeName">
+          ${store.name}
+        </div>
+
+        <div class="storeAction">
+          Axtarışı aç →
+        </div>
+
+      </div>
+
+    `;
+
+
+    button.onclick = ()=>{
+
+      window.open(
+        store.url,
+        "_blank",
+        "noopener,noreferrer"
+      );
+
+    };
+
+
+    stores.appendChild(button);
 
   });
 
-  result.classList.remove("hidden");
-
-  showMessage(
-    "AI nəticəni tapdı."
-  );
 }
 
-/* ----------------------------------------------------
-   PRODUCT SEARCH
----------------------------------------------------- */
 
-function getSearchTerm(){
+/* =====================================================
+   DISPLAY RESULT
+===================================================== */
 
-  if(!lastResult){
-    return "shoes";
-  }
+function displayResult(output, source){
 
-  return cleanLabel(lastResult.label);
-}
+  if(
+    !output ||
+    !output.length
+  ){
 
-shopBtn.onclick = ()=>{
-
-  const q = encodeURIComponent(
-    getSearchTerm()
-  );
-
-  /*
-    Bu real axtarışdır.
-    Saxta məhsul kartları yaratmırıq.
-  */
-
-  window.open(
-    "https://www.google.com/search?tbm=shop&q=" + q,
-    "_blank"
-  );
-};
-
-imageSearchBtn.onclick = ()=>{
-
-  const q = encodeURIComponent(
-    getSearchTerm()
-  );
-
-  window.open(
-    "https://www.google.com/search?tbm=isch&q=" + q,
-    "_blank"
-  );
-};
-
-/* ----------------------------------------------------
-   ANALYZE CAMERA
----------------------------------------------------- */
-
-analyzeBtn.onclick = async ()=>{
-
-  if(!video.videoWidth){
-
-    showMessage("Kamera görüntüsü hələ hazır deyil.");
+    showToast(
+      "AI uyğun nəticə tapa bilmədi."
+    );
 
     return;
+
   }
 
-  const frame = captureFrame();
 
-  await analyzeImage(frame);
+  const best =
+    output[0];
+
+
+  const label =
+    cleanLabel(best.label);
+
+
+  const percent =
+    Math.round(
+      best.score * 100
+    );
+
+
+  lastSearchQuery =
+    buildSearchQuery(label);
+
+
+  showResultImage(source);
+
+
+  resultLabel.textContent =
+    label
+      .charAt(0)
+      .toUpperCase()
+      +
+    label.slice(1);
+
+
+  resultDescription.textContent =
+    "AI görüntünü bu məhsul kateqoriyasına ən yaxın olaraq qiymətləndirdi. Konkret model/qiymət üçün mağaza axtarışlarından istifadə edə bilərsən.";
+
+
+  confidenceText.textContent =
+    percent + "%";
+
+
+  confidenceFill.style.width =
+    Math.min(percent,100) + "%";
+
+
+  resultTags.innerHTML = "";
+
+
+  output
+    .slice(0,5)
+    .forEach(item=>{
+
+      const tag =
+        document.createElement("div");
+
+      tag.className =
+        "tag";
+
+      tag.textContent =
+        cleanLabel(item.label)
+        +
+        " · "
+        +
+        Math.round(item.score*100)
+        +
+        "%";
+
+
+      resultTags.appendChild(tag);
+
+    });
+
+
+  searchText.textContent =
+    lastSearchQuery;
+
+
+  renderStores(
+    lastSearchQuery
+  );
+
+
+  resultScreen.classList.add("open");
+
+
+  setTimeout(()=>{
+
+    resultScreen.scrollTop = 0;
+
+  },50);
+
+}
+
+
+/* =====================================================
+   REAL AI SCAN
+===================================================== */
+
+async function scanSource(source){
+
+  if(scanning){
+
+    return;
+
+  }
+
+  scanning = true;
+
+
+  scanButton.classList.add(
+    "loading"
+  );
+
+  scanButton.textContent =
+    "🧠 AI analiz edir...";
+
+
+  const ready =
+    await loadAI();
+
+
+  if(!ready){
+
+    scanning = false;
+
+    scanButton.classList.remove(
+      "loading"
+    );
+
+    scanButton.textContent =
+      "📷 Məhsulu Skan Et";
+
+    return;
+
+  }
+
+
+  try{
+
+    statusText.textContent =
+      "AI analiz edir";
+
+
+    /*
+      Real zero-shot image classification.
+    */
+
+    const output =
+      await classifier(
+
+        source,
+
+        LABELS,
+
+        {
+          topk:5
+        }
+
+      );
+
+
+    displayResult(
+      output,
+      source
+    );
+
+
+  }catch(error){
+
+    console.error(error);
+
+    showToast(
+      "Şəkil analiz edilərkən xəta baş verdi."
+    );
+
+  }finally{
+
+    scanning = false;
+
+    scanButton.classList.remove(
+      "loading"
+    );
+
+    scanButton.textContent =
+      "📷 Məhsulu Skan Et";
+
+    statusText.textContent =
+      "Kamera hazır";
+
+  }
+
+}
+
+
+/* =====================================================
+   CAMERA SCAN BUTTON
+===================================================== */
+
+scanButton.onclick = async ()=>{
+
+  if(
+    !camera.videoWidth ||
+    !camera.videoHeight
+  ){
+
+    showToast(
+      "Kamera görüntüsü hələ hazır deyil."
+    );
+
+    return;
+
+  }
+
+
+  /*
+    Bir dəfə çəkilir.
+    Davamlı skan YOXDUR.
+  */
+
+  const frame =
+    captureCamera();
+
+
+  await scanSource(
+    frame
+  );
+
 };
 
-/* ----------------------------------------------------
-   GALLERY
----------------------------------------------------- */
 
-galleryBtn.onclick = ()=>{
+/* =====================================================
+   GALLERY
+===================================================== */
+
+galleryButton.onclick = ()=>{
 
   fileInput.click();
 
 };
 
+
 fileInput.onchange = async ()=>{
 
-  const file = fileInput.files[0];
+  const file =
+    fileInput.files[0];
+
 
   if(!file){
+
     return;
+
   }
 
-  const image = new Image();
 
-  image.onload = async ()=>{
+  try{
 
-    await analyzeImage(image);
+    const img =
+      await fileToImage(file);
 
-    URL.revokeObjectURL(image.src);
 
-  };
+    await scanSource(
+      img
+    );
 
-  image.src = URL.createObjectURL(file);
+
+  }catch(error){
+
+    console.error(error);
+
+    showToast(
+      "Şəkil açıla bilmədi."
+    );
+
+  }
+
+
+  fileInput.value = "";
 
 };
 
-/* ----------------------------------------------------
-   CAMERA SWITCH
----------------------------------------------------- */
 
-flipBtn.onclick = async ()=>{
+/* =====================================================
+   CAMERA FLIP
+===================================================== */
+
+flipButton.onclick = async ()=>{
 
   facingMode =
     facingMode === "environment"
       ? "user"
       : "environment";
 
+
+  statusText.textContent =
+    "Kamera dəyişdirilir...";
+
+
   await startCamera();
 
 };
 
-/* ----------------------------------------------------
-   START
----------------------------------------------------- */
 
-loadAI();
+/* =====================================================
+   CLOSE RESULT
+===================================================== */
+
+closeResult.onclick = ()=>{
+
+  resultScreen.classList.remove(
+    "open"
+  );
+
+};
+
+
+/* =====================================================
+   RESCAN
+===================================================== */
+
+rescanButton.onclick = ()=>{
+
+  resultScreen.classList.remove(
+    "open"
+  );
+
+
+  /*
+    Kamera əvvəlcədən açıqdır.
+    Buna görə yenidən kamera gözləməyə
+    ehtiyac yoxdur.
+  */
+
+  setTimeout(()=>{
+
+    showToast(
+      "Hazırdır. Yeni məhsulu çərçivəyə gətir."
+    );
+
+  },250);
+
+};
+
+
+/* =====================================================
+   CLEANUP
+===================================================== */
+
+window.addEventListener(
+  "pagehide",
+  ()=>{
+
+    if(stream){
+
+      stream
+        .getTracks()
+        .forEach(track=>{
+          track.stop();
+        });
+
+    }
+
+  }
+);
 
 </script>
 
 </body>
-</html>
+  </html>
