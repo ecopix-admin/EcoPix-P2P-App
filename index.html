@@ -2,160 +2,135 @@
 <html lang="az">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>AI Footballer AZ</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>AI Futbolçu Mesajı</title>
 
 <style>
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#05070b;font-family:Arial,sans-serif}
-body{color:#fff}
-#app{position:fixed;inset:0;background:
-radial-gradient(circle at 50% 25%,rgba(30,90,160,.28),transparent 35%),
-linear-gradient(#05080d,#020305)}
-canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#020409;color:#fff;font-family:Arial}
+#app{position:fixed;inset:0}
+canvas{position:absolute;inset:0;width:100%;height:100%}
 
 #top{
- position:absolute;top:0;left:0;right:0;padding:18px 18px 0;
- display:flex;justify-content:space-between;align-items:center;
- pointer-events:none;z-index:20
+ position:absolute;z-index:20;top:14px;left:14px;right:14px;
+ display:flex;justify-content:space-between;pointer-events:none
 }
-.brand{
- font-weight:900;letter-spacing:1.5px;font-size:15px;
- background:rgba(5,8,13,.55);backdrop-filter:blur(14px);
- padding:10px 14px;border:1px solid rgba(255,255,255,.1);
- border-radius:14px
-}
-.live{
- font-size:11px;font-weight:800;color:#7dffb2;
- background:rgba(20,80,45,.35);padding:9px 12px;border-radius:20px;
- border:1px solid rgba(100,255,170,.18)
+.logo{font-weight:900;font-size:17px;text-shadow:0 3px 15px #000}
+.state{
+ background:#0009;border:1px solid #ffffff20;border-radius:20px;
+ padding:7px 12px;font-size:11px;backdrop-filter:blur(12px)
 }
 
-#bubble{
- position:absolute;left:50%;top:13%;transform:translateX(-50%);
- width:min(88%,520px);min-height:48px;
- background:rgba(8,11,17,.88);border:1px solid rgba(255,255,255,.16);
- border-radius:18px;padding:13px 17px;text-align:center;
- font-size:15px;line-height:1.4;font-weight:600;
- box-shadow:0 15px 50px rgba(0,0,0,.35);
- backdrop-filter:blur(16px);z-index:15;display:none
+#words{
+ position:absolute;z-index:15;top:10%;left:4%;right:4%;
+ height:42%;display:flex;align-items:flex-end;
+ justify-content:center;flex-direction:column;
+ pointer-events:none;overflow:hidden
 }
-#bubble:after{
- content:"";position:absolute;left:50%;bottom:-8px;
- width:14px;height:14px;background:#080b11;
- transform:translateX(-50%) rotate(45deg);
- border-right:1px solid rgba(255,255,255,.12);
- border-bottom:1px solid rgba(255,255,255,.12)
+.word{
+ align-self:center;
+ font-size:clamp(20px,6vw,34px);
+ font-weight:900;
+ margin:3px;
+ padding:5px 13px;
+ border-radius:14px;
+ background:#07101ddf;
+ border:1px solid #ffffff20;
+ box-shadow:0 5px 25px #0009;
+ animation:appear .45s ease forwards
+}
+@keyframes appear{
+ from{opacity:0;transform:translateY(45px) scale(.5)}
+ to{opacity:1;transform:translateY(0) scale(1)}
 }
 
-#controls{
- position:absolute;left:50%;bottom:max(18px,env(safe-area-inset-bottom));
- transform:translateX(-50%);width:min(94%,620px);
- z-index:30;display:flex;flex-direction:column;gap:10px
+#mouthText{
+ position:absolute;z-index:16;
+ left:50%;top:49%;
+ transform:translate(-50%,-50%);
+ font-size:18px;font-weight:900;
+ opacity:0;pointer-events:none;
+ text-shadow:0 3px 12px #000
 }
-.panel{
- background:rgba(5,8,13,.78);backdrop-filter:blur(18px);
- border:1px solid rgba(255,255,255,.1);border-radius:22px;
- padding:10px;box-shadow:0 20px 60px rgba(0,0,0,.35)
+#mouthText.fly{
+ animation:fly .8s ease forwards
 }
-.row{display:flex;gap:8px}
-input{
- flex:1;min-width:0;height:48px;border:1px solid rgba(255,255,255,.1);
- border-radius:15px;background:rgba(255,255,255,.055);
- color:#fff;padding:0 15px;font-size:15px;outline:none
+@keyframes fly{
+ 0%{opacity:0;transform:translate(-50%,-50%) scale(.3)}
+ 15%{opacity:1;transform:translate(-50%,-65%) scale(1)}
+ 100%{opacity:0;transform:translate(-50%,-360%) scale(.8)}
 }
+
+#panel{
+ position:absolute;z-index:30;
+ left:10px;right:10px;bottom:10px;
+ padding:11px;border-radius:22px;
+ background:#060d16e8;
+ border:1px solid #ffffff18;
+ backdrop-filter:blur(20px);
+ box-shadow:0 15px 60px #000b
+}
+textarea{
+ width:100%;height:65px;resize:none;outline:0;
+ border:1px solid #ffffff18;border-radius:14px;
+ background:#02050a;color:#fff;padding:11px;
+ font-size:16px
+}
+.buttons{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-top:8px}
 button{
- border:0;color:#fff;background:rgba(255,255,255,.08);
- border:1px solid rgba(255,255,255,.09);
- height:46px;border-radius:14px;padding:0 15px;
- font-weight:800;cursor:pointer
+ height:45px;border:0;border-radius:13px;
+ color:#fff;font-weight:900;font-size:12px
 }
-button:active{transform:scale(.96)}
-.speak{background:linear-gradient(135deg,#087cff,#0050c9)}
-.rec{background:linear-gradient(135deg,#ef3155,#a90b2b)}
-.share{background:linear-gradient(135deg,#16c982,#087e52)}
-.icon{width:46px;padding:0;font-size:19px}
-.modes{display:flex;gap:7px;overflow:auto}
-.modes button{flex:1;min-width:72px;font-size:11px}
-.active{background:rgba(0,130,255,.35)!important;border-color:#188cff!important}
+#play{background:linear-gradient(135deg,#126bff,#5735ff)}
+#rec{background:linear-gradient(135deg,#dc1745,#ff4264)}
+#share{background:linear-gradient(135deg,#00a85a,#16d078)}
+#status{text-align:center;color:#9da9b9;font-size:11px;padding-top:8px}
 
-#hint{
- position:absolute;left:50%;bottom:165px;transform:translateX(-50%);
- z-index:10;color:rgba(255,255,255,.58);font-size:12px;
- text-align:center;pointer-events:none;white-space:nowrap
+#loading{
+ position:absolute;z-index:100;inset:0;
+ display:flex;flex-direction:column;
+ justify-content:center;align-items:center;
+ background:#020409;gap:14px
 }
-
-#status{
- position:absolute;left:50%;top:calc(13% + 80px);transform:translateX(-50%);
- z-index:20;color:rgba(255,255,255,.65);font-size:11px;
- display:none
-}
-
-#loader{
- position:absolute;inset:0;z-index:100;background:#040609;
- display:flex;align-items:center;justify-content:center;
- flex-direction:column;gap:16px
-}
-.loaderRing{
- width:50px;height:50px;border:3px solid rgba(255,255,255,.12);
- border-top-color:#188cff;border-radius:50%;
+.loader{
+ width:45px;height:45px;border-radius:50%;
+ border:3px solid #ffffff18;
+ border-top-color:#3c82ff;
  animation:spin 1s linear infinite
 }
 @keyframes spin{to{transform:rotate(360deg)}}
-
-@media(max-width:500px){
- #controls{width:96%}
- #hint{bottom:174px}
- .brand{font-size:12px}
- input{font-size:14px}
-}
 </style>
 </head>
 
 <body>
+
 <div id="app">
 
-<div id="loader">
- <div class="loaderRing"></div>
- <b>AI FOOTBALLER</b>
- <small style="opacity:.5">3D futbolçu hazırlanır...</small>
+<div id="loading">
+ <div class="loader"></div>
+ <b>Futbolçu hazırlanır...</b>
 </div>
-
-<canvas id="scene"></canvas>
 
 <div id="top">
- <div class="brand">⚽ AI FOOTBALLER</div>
- <div class="live">● READY</div>
+ <div class="logo">⚽ AI FUTBOLÇU</div>
+ <div class="state" id="state">HAZIR</div>
 </div>
 
-<div id="bubble"></div>
-<div id="status"></div>
+<div id="words"></div>
+<div id="mouthText"></div>
 
-<div id="hint">Futbolçunun üzünə toxun və ya aşağıdan cümlə yaz</div>
+<div id="panel">
 
-<div id="controls">
+<textarea id="text"
+placeholder="Futbolçunun deyəcəyi cümləni yaz...">Salam! Necəsən? Sənə gözəl bir gün arzulayıram!</textarea>
 
- <div class="panel">
-   <div class="row">
-     <input id="text" type="text"
-       placeholder="Məsələn: Salam, mən süni intellekt futbolçuyam!"
-       autocomplete="off">
-     <button class="speak" id="speak">▶</button>
-   </div>
- </div>
+<div class="buttons">
+ <button id="play">▶ ANİMASİYA</button>
+ <button id="rec">● REC</button>
+ <button id="share">↗ WHATSAPP</button>
+</div>
 
- <div class="panel">
-   <div class="modes">
-     <button class="active" data-mode="idle">IDLE</button>
-     <button data-mode="walk">GƏZİŞ</button>
-     <button data-mode="run">QAÇIŞ</button>
-     <button data-mode="warm">İSİNİŞ</button>
-     <button data-mode="stretch">STRETCH</button>
-     <button id="rec" class="rec">● REC</button>
-     <button id="share" class="share">↗</button>
-     <button id="full" class="icon">⛶</button>
-   </div>
- </div>
+<div id="status">Mesajı yaz və ANİMASİYA düyməsinə bas.</div>
 
 </div>
 </div>
@@ -163,8 +138,8 @@ button:active{transform:scale(.96)}
 <script type="importmap">
 {
  "imports":{
-  "three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
-  "three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  "three":"https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js",
+  "three/addons/":"https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/"
  }
 }
 </script>
@@ -172,776 +147,864 @@ button:active{transform:scale(.96)}
 <script type="module">
 
 import * as THREE from "three";
-import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
+import {GLTFLoader} from
+"https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/loaders/GLTFLoader.js";
 
-const canvas=document.getElementById("scene");
-const loaderScreen=document.getElementById("loader");
-const bubble=document.getElementById("bubble");
-const status=document.getElementById("status");
-const input=document.getElementById("text");
+/*
+=========================================================
+ FUTBOLÇU MODELİ
+=========================================================
 
-let scene,camera,renderer,clock;
-let player=null,mixer=null;
-let currentAction=null;
-let recorder=null;
-let chunks=[];
-let lastVideo=null;
-let speechTimer=null;
-let speaking=false;
-let speechRate=0.94;
-let selectedMode="idle";
+BURAYA REALİSTİK GLB MODELİN URL-sini qoyuruq.
 
-const MODEL_URL=
+Modeldə bunlar varsa avtomatik istifadə olunur:
+- Idle
+- Walk
+- Run
+- Talk
+- Gesture
+- Wave
+- Football animations
+
+Model URL-ni dəyişmək kifayətdir.
+*/
+
+const PLAYER_MODEL =
 "https://cdn.jsdelivr.net/gh/MisterYI/deevid-mixamo-assets@main/char/Y_Bot.glb";
 
-/* ---------------- SCENE ---------------- */
 
-scene=new THREE.Scene();
+/* SCENE */
 
-camera=new THREE.PerspectiveCamera(
- 35,
+const scene=new THREE.Scene();
+
+scene.background=new THREE.Color(0x020409);
+
+scene.fog=new THREE.Fog(
+ 0x020409,
+ 4,
+ 11
+);
+
+
+/* CAMERA */
+
+const camera=new THREE.PerspectiveCamera(
+ 36,
  innerWidth/innerHeight,
- .1,
+ .01,
  100
 );
-camera.position.set(0,1.55,4.7);
 
-renderer=new THREE.WebGLRenderer({
- canvas,
+camera.position.set(
+ 0,1.5,4
+);
+
+camera.lookAt(
+ 0,1.15,0
+);
+
+
+/* RENDERER */
+
+const renderer=new THREE.WebGLRenderer({
  antialias:true,
- alpha:true,
- powerPreference:"high-performance"
+ preserveDrawingBuffer:true
 });
-renderer.setPixelRatio(Math.min(devicePixelRatio,1.7));
-renderer.setSize(innerWidth,innerHeight);
+
+renderer.setPixelRatio(
+ Math.min(devicePixelRatio,1.5)
+);
+
+renderer.setSize(
+ innerWidth,
+ innerHeight
+);
+
 renderer.shadowMap.enabled=true;
-renderer.shadowMap.type=THREE.PCFSoftShadowMap;
-renderer.outputColorSpace=THREE.SRGBColorSpace;
-renderer.toneMapping=THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure=1.12;
+renderer.shadowMap.type=
+THREE.PCFSoftShadowMap;
 
-/* lights */
+renderer.outputColorSpace=
+THREE.SRGBColorSpace;
 
-scene.add(new THREE.HemisphereLight(0xaec9ff,0x10131a,2.2));
+document
+.getElementById("app")
+.appendChild(renderer.domElement);
 
-const key=new THREE.DirectionalLight(0xffffff,3.2);
-key.position.set(3,6,4);
+
+/* LIGHTING */
+
+scene.add(
+ new THREE.HemisphereLight(
+  0xbdd5ff,
+  0x111111,
+  2.2
+ )
+);
+
+const key=
+new THREE.DirectionalLight(
+ 0xffffff,
+ 4
+);
+
+key.position.set(
+ -3,5,4
+);
+
 key.castShadow=true;
-key.shadow.mapSize.set(1024,1024);
-key.shadow.camera.left=-3;
-key.shadow.camera.right=3;
-key.shadow.camera.top=5;
-key.shadow.camera.bottom=-1;
+
+key.shadow.mapSize.set(
+ 1024,1024
+);
+
 scene.add(key);
 
-const rim=new THREE.DirectionalLight(0x258cff,2.1);
-rim.position.set(-4,3,-4);
-scene.add(rim);
+const blue=
+new THREE.PointLight(
+ 0x237dff,
+ 30,
+ 8
+);
 
-/* floor */
+blue.position.set(
+ 3,2.5,-2
+);
 
-const floor=new THREE.Mesh(
- new THREE.CircleGeometry(2.1,96),
+scene.add(blue);
+
+const red=
+new THREE.PointLight(
+ 0xff164e,
+ 20,
+ 7
+);
+
+red.position.set(
+ -3,1.5,-1
+);
+
+scene.add(red);
+
+
+/* FIELD */
+
+const field=
+new THREE.Mesh(
+ new THREE.CircleGeometry(
+  2.4,96
+ ),
  new THREE.MeshStandardMaterial({
-  color:0x071016,
-  roughness:.86,
-  metalness:.05,
-  transparent:true,
-  opacity:.92
+  color:0x07100b,
+  roughness:.95
  })
 );
-floor.rotation.x=-Math.PI/2;
-floor.position.y=.015;
-floor.receiveShadow=true;
-scene.add(floor);
 
-/* dynamic shadow */
+field.rotation.x=-Math.PI/2;
+field.receiveShadow=true;
 
-const shadowCanvas=document.createElement("canvas");
-shadowCanvas.width=256;
-shadowCanvas.height=256;
+scene.add(field);
 
-const sctx=shadowCanvas.getContext("2d");
-const grd=sctx.createRadialGradient(128,128,10,128,128,110);
-grd.addColorStop(0,"rgba(0,0,0,.55)");
-grd.addColorStop(1,"rgba(0,0,0,0)");
-sctx.fillStyle=grd;
-sctx.fillRect(0,0,256,256);
 
-const shadowTex=new THREE.CanvasTexture(shadowCanvas);
+/* FIELD RING */
 
-const softShadow=new THREE.Mesh(
- new THREE.PlaneGeometry(1.65,.72),
+const ring=
+new THREE.Mesh(
+ new THREE.RingGeometry(
+  1.1,1.8,96
+ ),
  new THREE.MeshBasicMaterial({
-  map:shadowTex,
+  color:0x21659b,
   transparent:true,
-  depthWrite:false
+  opacity:.25,
+  side:THREE.DoubleSide
  })
 );
-softShadow.rotation.x=-Math.PI/2;
-softShadow.position.y=.025;
-scene.add(softShadow);
 
-/* ---------------- PLAYER ---------------- */
+ring.rotation.x=-Math.PI/2;
+ring.position.y=.005;
 
-const gltfLoader=new GLTFLoader();
+scene.add(ring);
 
-function fitModel(root){
 
- const box=new THREE.Box3().setFromObject(root);
- const size=box.getSize(new THREE.Vector3());
- const center=box.getCenter(new THREE.Vector3());
+/* FOOTBALL */
 
- root.position.x-=center.x;
- root.position.z-=center.z;
- root.position.y-=box.min.y;
+const ball=
+new THREE.Mesh(
+ new THREE.SphereGeometry(
+  .13,32,32
+ ),
+ new THREE.MeshStandardMaterial({
+  color:0xffffff,
+  roughness:.55
+ })
+);
 
- const h=size.y;
+ball.position.set(
+ .55,.13,.15
+);
 
- if(h>0){
-   const scale=2.55/h;
-   root.scale.setScalar(scale);
- }
+ball.castShadow=true;
 
- root.traverse(o=>{
-   if(o.isMesh){
-     o.castShadow=true;
-     o.receiveShadow=true;
+scene.add(ball);
 
-     if(o.material){
-       o.material.roughness=.65;
-       o.material.metalness=.03;
+
+/* PLAYER */
+
+let player=null;
+let mixer=null;
+let actions={};
+let currentAction=null;
+
+const loader=new GLTFLoader();
+
+loader.load(
+ PLAYER_MODEL,
+
+ gltf=>{
+
+  player=gltf.scene;
+
+  player.scale.setScalar(1.55);
+
+  player.traverse(
+   object=>{
+
+    if(object.isMesh){
+
+     object.castShadow=true;
+     object.receiveShadow=true;
+
+     if(object.material){
+
+      object.material.roughness=.68;
+      object.material.metalness=.02;
+
      }
+    }
+
    }
- });
-}
+  );
 
-async function loadPlayer(){
+  scene.add(player);
 
- try{
+  mixer=
+  new THREE.AnimationMixer(
+   player
+  );
 
-   const gltf=await gltfLoader.loadAsync(MODEL_URL);
+  gltf.animations.forEach(
+   clip=>{
 
-   player=gltf.scene;
+    actions[clip.name]=
+    mixer.clipAction(clip);
 
-   fitModel(player);
-
-   player.position.set(0,0,0);
-
-   scene.add(player);
-
-   mixer=new THREE.AnimationMixer(player);
-
-   if(gltf.animations && gltf.animations.length){
-
-      gltf.animations.forEach((clip,i)=>{
-        clip.name=clip.name || "Animation_"+i;
-      });
-
-      playBestAnimation("idle");
    }
+  );
 
-   /* footballer kit enhancement */
+  console.log(
+   "Model animations:",
+   Object.keys(actions)
+  );
 
-   addFootballKit(player);
+  const idle=findAnimation([
+   "idle",
+   "breath",
+   "standing"
+  ]);
 
-   loaderScreen.style.display="none";
+  if(idle)
+   playAnimation(idle);
+  else{
 
- }catch(err){
+   const first=
+   Object.keys(actions)[0];
 
-   console.error(err);
+   if(first)
+    playAnimation(first);
 
-   loaderScreen.innerHTML=
-   `<b>3D model yüklənmədi</b>
-    <small style="opacity:.55">İnternet bağlantısını yoxla</small>`;
+  }
+
+  document
+   .getElementById("loading")
+   .style.display="none";
+
+  status(
+   "Futbolçu hazırdır."
+  );
+
+ },
+
+ error=>{
+
+  console.error(error);
+
+  document
+   .getElementById("loading")
+   .innerHTML=
+   `
+   <div style="font-size:40px">⚠️</div>
+   <b>3D model yüklənmədi</b>
+   <small style="color:#999">
+   İnternet bağlantısını yoxla.
+   </small>
+   `;
 
  }
-}
+);
 
-/* ---------------- KIT ---------------- */
 
-function addFootballKit(root){
+/* ANIMATION SEARCH */
 
- let materials=[];
+function findAnimation(patterns){
 
- root.traverse(o=>{
-   if(o.isMesh && o.material){
-     materials.push(o.material);
-   }
- });
+ const names=
+ Object.keys(actions);
 
- /* slightly improve contrast */
+ for(const pattern of patterns){
 
- materials.forEach(m=>{
-   if("roughness" in m) m.roughness=.55;
- });
+  const found=
+  names.find(
+   name=>
+   new RegExp(
+    pattern,
+    "i"
+   ).test(name)
+  );
 
-}
-
-/* ---------------- ANIMATION ---------------- */
-
-function findClip(mode){
-
- if(!mixer || !player) return null;
-
- const clips=mixer._actions || [];
-
- let all=[];
-
- if(player.userData.animations)
-   all=player.userData.animations;
+  if(found)
+   return found;
+ }
 
  return null;
 }
 
-function playBestAnimation(mode){
 
- if(!mixer || !player) return;
+/* PLAY ANIMATION */
 
- const rootActions=[];
+function playAnimation(name){
 
- /* Search all animations stored by loader */
- const possible=[];
+ if(!actions[name])
+  return;
 
- mixer._actions.forEach(a=>{
-   if(a.getClip) possible.push(a.getClip());
- });
+ const next=
+ actions[name];
 
- if(!possible.length){
+ if(currentAction===next)
+  return;
 
-   /* procedural mode */
-   currentAction=null;
-   selectedMode=mode;
-   return;
- }
+ if(currentAction)
+  currentAction.fadeOut(.25);
 
- let chosen=possible[0];
+ next.reset();
 
- const names=possible.map(c=>c.name.toLowerCase());
+ next.fadeIn(.3);
 
- const wanted={
-  idle:["idle","standing","breathing"],
-  walk:["walk"],
-  run:["run","jog","sprint"],
-  warm:["warm","stretch","exercise"],
-  stretch:["stretch","warm"]
- }[mode]||["idle"];
+ next.play();
 
- for(const w of wanted){
-   const idx=names.findIndex(n=>n.includes(w));
-   if(idx>=0){
-     chosen=possible[idx];
-     break;
-   }
- }
-
- const next=mixer.clipAction(chosen);
-
- if(currentAction && currentAction!==next){
-   currentAction.fadeOut(.25);
- }
-
- next.reset().fadeIn(.25).play();
  currentAction=next;
- selectedMode=mode;
 }
 
-/* ---------------- PROCEDURAL BODY ---------------- */
 
-let t=0;
+/* GESTURE */
 
-function proceduralMotion(dt){
+function gesture(){
 
- if(!player)return;
+ const anim=
+ findAnimation([
+  "talk",
+  "talking",
+  "gesture",
+  "wave",
+  "waving",
+  "hello",
+  "hand",
+  "standing"
+ ]);
 
- t+=dt;
+ if(anim){
 
- const bones=[];
+  playAnimation(anim);
 
- player.traverse(o=>{
-   if(o.isBone) bones.push(o);
- });
+  setTimeout(()=>{
 
- const get=(words)=>{
-   return bones.find(b=>{
-     const n=b.name.toLowerCase();
-     return words.some(w=>n.includes(w));
-   });
- };
+   const idle=
+   findAnimation([
+    "idle",
+    "breath",
+    "standing"
+   ]);
 
- const leftArm=get(["leftarm","left_arm"]);
- const rightArm=get(["rightarm","right_arm"]);
- const leftLeg=get(["leftleg","left_leg"]);
- const rightLeg=get(["rightleg","right_leg"]);
- const head=get(["head","neck"]);
- const spine=get(["spine","chest"]);
+   if(idle)
+    playAnimation(idle);
 
- if(selectedMode==="idle"){
+  },2200);
 
-   if(leftArm) leftArm.rotation.z+=Math.sin(t*1.3)*dt*.16;
-   if(rightArm) rightArm.rotation.z-=Math.sin(t*1.3)*dt*.16;
-
-   if(spine) spine.rotation.z=Math.sin(t*1.4)*.008;
-
- }else if(selectedMode==="walk"){
-
-   const s=Math.sin(t*4.8);
-
-   if(leftLeg) leftLeg.rotation.x=s*.28;
-   if(rightLeg) rightLeg.rotation.x=-s*.28;
-
-   if(leftArm) leftArm.rotation.x=-s*.22;
-   if(rightArm) rightArm.rotation.x=s*.22;
-
- }else if(selectedMode==="run"){
-
-   const s=Math.sin(t*7.5);
-
-   if(leftLeg) leftLeg.rotation.x=s*.55;
-   if(rightLeg) rightLeg.rotation.x=-s*.55;
-
-   if(leftArm) leftArm.rotation.x=-s*.65;
-   if(rightArm) rightArm.rotation.x=s*.65;
-
- }else if(selectedMode==="warm"){
-
-   const s=Math.sin(t*2.2);
-
-   if(leftLeg) leftLeg.rotation.x=s*.2;
-   if(rightLeg) rightLeg.rotation.x=-s*.2;
-
-   if(leftArm) leftArm.rotation.z=s*.35;
-   if(rightArm) rightArm.rotation.z=-s*.35;
-
- }else if(selectedMode==="stretch"){
-
-   const s=Math.sin(t*1.3);
-
-   if(spine) spine.rotation.z=s*.08;
-   if(leftArm) leftArm.rotation.x=s*.3;
-   if(rightArm) rightArm.rotation.x=-s*.3;
- }
-
- /* breathing */
-
- if(spine){
-   spine.scale.y=1+Math.sin(t*1.8)*.008;
- }
-
- /* head micro movement */
-
- if(head && !speaking){
-   head.rotation.y=Math.sin(t*.7)*.025;
-   head.rotation.z=Math.sin(t*.9)*.012;
  }
 
 }
 
-/* ---------------- SPEECH ---------------- */
 
-function getAzerbaijaniVoice(){
+/* WORD MESSAGE */
 
- const voices=speechSynthesis.getVoices();
+let timer=null;
 
- if(!voices.length)return null;
+function animateMessage(){
 
- const az=voices.filter(v=>
-   /^az(-|_)/i.test(v.lang)
+ const text=
+ document
+ .getElementById("text")
+ .value
+ .trim();
+
+ if(!text){
+
+  status("Mesaj yaz.");
+
+  return;
+ }
+
+ clearTimeout(timer);
+
+ const container=
+ document.getElementById("words");
+
+ container.innerHTML="";
+
+ const words=
+ text
+ .replace(/\s+/g," ")
+ .split(" ")
+ .filter(Boolean);
+
+ gesture();
+
+ let index=0;
+
+ function nextWord(){
+
+  if(index>=words.length){
+
+   status(
+    "Mesaj tamamlandı."
+   );
+
+   return;
+  }
+
+  const word=
+  words[index++];
+
+  /* söz ağızdan çıxır */
+
+  const mouth=
+  document.getElementById(
+   "mouthText"
+  );
+
+  mouth.classList.remove("fly");
+
+  void mouth.offsetWidth;
+
+  mouth.textContent=word;
+
+  mouth.classList.add("fly");
+
+
+  /* baş üzərində söz */
+
+  const el=
+  document.createElement(
+   "div"
+  );
+
+  el.className="word";
+
+  el.textContent=word;
+
+  container.appendChild(el);
+
+
+  /* əvvəlki sözlər yuxarı qalxır */
+
+  const children=
+  [...container.children];
+
+  children.forEach(
+   (item,i)=>{
+
+    const y=
+    (children.length-1-i)*40;
+
+    item.style.transform=
+    `translateY(-${y}px) scale(${Math.max(.75,1-y/500)})`;
+
+    item.style.opacity=
+    Math.max(
+     .25,
+     1-y/350
+    );
+
+   }
+  );
+
+
+  if(children.length>7)
+   container.removeChild(
+    children[0]
+   );
+
+
+  timer=
+  setTimeout(
+   nextWord,
+   260+
+   Math.min(
+    word.length*20,
+    300
+   )
+  );
+
+ }
+
+ nextWord();
+
+ status(
+  "Futbolçu danışır..."
  );
 
- if(az.length){
-
-   const male=az.find(v=>
-     /male|babək|babek|azərbaycan|azer/i.test(v.name)
-   );
-
-   return male || az[0];
- }
-
- /* Do NOT silently choose Turkish/English.
-    Only exact Azerbaijani voice is accepted. */
-
- return null;
 }
 
-function showBubble(text){
 
- bubble.textContent=text;
- bubble.style.display="block";
+/* PLAY */
 
- clearTimeout(speechTimer);
+document
+.getElementById("play")
+.onclick=
+animateMessage;
 
- speechTimer=setTimeout(()=>{
-   if(!speaking)bubble.style.display="none";
- },9000);
-}
 
-function mouthAnimation(start=true){
+/* TOUCH PLAYER */
 
- if(!player)return;
+const raycaster=
+new THREE.Raycaster();
 
- speaking=start;
+const pointer=
+new THREE.Vector2();
 
- player.traverse(o=>{
+renderer.domElement
+.addEventListener(
+ "pointerdown",
+ event=>{
 
-   if(!o.isMesh || !o.morphTargetDictionary)return;
-
-   const dict=o.morphTargetDictionary;
-   const inf=o.morphTargetInfluences;
-
-   if(!inf)return;
-
-   for(const name in dict){
-
-     const n=name.toLowerCase();
-
-     if(
-       n.includes("mouthopen") ||
-       n.includes("jawopen") ||
-       n.includes("viseme") ||
-       n.includes("mouth")
-     ){
-
-       const i=dict[name];
-
-       if(start){
-
-         inf[i]=.25+
-           Math.abs(Math.sin(performance.now()/95))*0.7;
-
-       }else{
-         inf[i]=0;
-       }
-     }
-   }
- });
-}
-
-function speakAZ(text){
-
- if(!text.trim())return;
-
- const voice=getAzerbaijaniVoice();
-
- if(!voice){
-
-   alert(
-    "Bu cihazda Azərbaycan dili üçün səs mühərriki tapılmadı.\n\n"+
-    "Android-də:\n"+
-    "Ayarlar → Dil və giriş → Mətn-səs çıxışı bölməsindən "+
-    "Azərbaycan dilinin səsini quraşdır."
-   );
-
+  if(!player)
    return;
+
+  pointer.x=
+   event.clientX/
+   innerWidth*2-1;
+
+  pointer.y=
+   -(event.clientY/
+     innerHeight)*2+1;
+
+  raycaster.setFromCamera(
+   pointer,
+   camera
+  );
+
+  const hits=
+  raycaster.intersectObject(
+   player,
+   true
+  );
+
+  if(hits.length)
+   animateMessage();
+
  }
+);
 
- speechSynthesis.cancel();
 
- const u=new SpeechSynthesisUtterance(text);
+/* RECORD */
 
- u.lang=voice.lang;
- u.voice=voice;
- u.rate=speechRate;
- u.pitch=.82;
- u.volume=1;
+let recorder=null;
+let chunks=[];
+let videoBlob=null;
 
- showBubble(text);
+document
+.getElementById("rec")
+.onclick=
+()=>{
 
- u.onstart=()=>{
-   speaking=true;
-   status.textContent="AZƏRBAYCANCA DANIŞIR";
-   status.style.display="block";
- };
+ if(
+  recorder &&
+  recorder.state==="recording"
+ ){
 
- u.onend=()=>{
-   speaking=false;
-   mouthAnimation(false);
-   status.style.display="none";
- };
+  recorder.stop();
 
- u.onerror=()=>{
-   speaking=false;
-   mouthAnimation(false);
-   status.style.display="none";
- };
-
- speechSynthesis.speak(u);
-
- /* visual mouth timing */
-
- const mouthLoop=()=>{
-   if(!speaking)return;
-   mouthAnimation(true);
-   requestAnimationFrame(mouthLoop);
- };
-
- mouthLoop();
-}
-
-/* ---------------- TAP FACE / BODY ---------------- */
-
-const raycaster=new THREE.Raycaster();
-const pointer=new THREE.Vector2();
-
-canvas.addEventListener("pointerdown",e=>{
-
- pointer.x=(e.clientX/innerWidth)*2-1;
- pointer.y=-(e.clientY/innerHeight)*2+1;
-
- raycaster.setFromCamera(pointer,camera);
-
- if(!player)return;
-
- const hits=raycaster.intersectObject(player,true);
-
- if(hits.length){
-
-   const phrase=
-    input.value.trim() ||
-    "Salam! Mən Azərbaycan dilində danışan süni intellekt futbolçuyam.";
-
-   speakAZ(phrase);
- }
-
-});
-
-/* ---------------- RECORDING ---------------- */
-
-function startRecording(){
-
- if(recorder && recorder.state==="recording"){
-   recorder.stop();
-   return;
+  return;
  }
 
  chunks=[];
 
- const videoStream=canvas.captureStream(30);
+ const stream=
+ renderer.domElement
+ .captureStream(30);
 
- let finalStream=videoStream;
+ let options={};
 
- /*
-   Browser SpeechSynthesis audio is NOT exposed as a
-   MediaStream. Therefore we add a microphone only if
-   available as an optional audio track.
- */
+ if(
+  MediaRecorder
+  .isTypeSupported(
+   "video/webm;codecs=vp9"
+  )
+ ){
 
- navigator.mediaDevices?.getUserMedia({
-   audio:true
- }).then(mic=>{
+  options={
+   mimeType:
+   "video/webm;codecs=vp9"
+  };
 
-   finalStream=new MediaStream([
-     ...videoStream.getVideoTracks(),
-     ...mic.getAudioTracks()
-   ]);
+ }
 
-   beginRecorder(finalStream,mic);
+ recorder=
+ new MediaRecorder(
+  stream,
+  options
+ );
 
- }).catch(()=>{
+ recorder.ondataavailable=
+ e=>{
 
-   beginRecorder(videoStream,null);
+  if(e.data.size)
+   chunks.push(e.data);
 
- });
-
-}
-
-function beginRecorder(stream,mic){
-
- let mime="video/webm;codecs=vp9,opus";
-
- if(!MediaRecorder.isTypeSupported(mime))
-   mime="video/webm;codecs=vp8,opus";
-
- if(!MediaRecorder.isTypeSupported(mime))
-   mime="video/webm";
-
- recorder=new MediaRecorder(stream,{
-   mimeType:mime,
-   videoBitsPerSecond:4500000
- });
-
- recorder.ondataavailable=e=>{
-   if(e.data.size)chunks.push(e.data);
  };
 
  recorder.onstop=()=>{
 
-   if(mic){
-     mic.getTracks().forEach(t=>t.stop());
+  videoBlob=
+  new Blob(
+   chunks,
+   {
+    type:"video/webm"
    }
+  );
 
-   lastVideo=new Blob(chunks,{type:mime});
+  document
+   .getElementById("rec")
+   .textContent="● REC";
 
-   document.getElementById("rec").textContent="● REC";
+  document
+   .getElementById("state")
+   .textContent="HAZIR";
 
-   downloadVideo();
+  status(
+   "Video hazırdır."
+  );
+
  };
 
- recorder.start(250);
+ recorder.start();
 
- document.getElementById("rec").textContent="■ STOP";
+ document
+  .getElementById("rec")
+  .textContent="■ STOP";
 
-}
+ document
+  .getElementById("state")
+  .textContent="● REC";
 
-/* ---------------- DOWNLOAD ---------------- */
+ status(
+  "10 saniyəlik video yazılır..."
+ );
 
-function downloadVideo(){
+ setTimeout(()=>{
 
- if(!lastVideo)return;
+  if(
+   recorder &&
+   recorder.state==="recording"
+  )
+   recorder.stop();
 
- const url=URL.createObjectURL(lastVideo);
+ },10000);
 
- const a=document.createElement("a");
- a.href=url;
- a.download="ai-footballer-az.webm";
- a.click();
+};
 
- setTimeout(()=>URL.revokeObjectURL(url),3000);
-}
 
-/* ---------------- SHARE ---------------- */
+/* SHARE WHATSAPP / TELEGRAM */
 
-async function shareVideo(){
+document
+.getElementById("share")
+.onclick=
+async()=>{
 
- if(!lastVideo){
+ if(!videoBlob){
 
-   alert("Əvvəlcə REC ilə video hazırla.");
+  status(
+   "Əvvəlcə REC ilə video yarat."
+  );
 
-   return;
+  return;
  }
 
- const file=new File(
-   [lastVideo],
-   "AI-Footballer-AZ.webm",
-   {type:"video/webm"}
+ const file=
+ new File(
+  [videoBlob],
+  "AI-Futbolcu.webm",
+  {
+   type:"video/webm"
+  }
  );
 
  try{
 
-   if(
-     navigator.share &&
-     navigator.canShare &&
-     navigator.canShare({files:[file]})
-   ){
+  if(
+   navigator.share &&
+   navigator.canShare &&
+   navigator.canShare({
+    files:[file]
+   })
+  ){
 
-     await navigator.share({
-       title:"AI Footballer AZ",
-       text:"Azərbaycan dilində danışan AI futbolçu",
-       files:[file]
-     });
+   await navigator.share({
 
-   }else{
+    title:
+    "AI Futbolçu",
 
-     downloadVideo();
+    text:
+    "AI futbolçu animasiya mesajı",
 
-   }
+    files:[file]
 
- }catch(e){
+   });
 
-   console.log(e);
+   status(
+    "WhatsApp / Telegram seçə bilərsən."
+   );
+
+  }else{
+
+   download();
+
+  }
+
+ }catch(error){
+
+  if(
+   error.name!=="AbortError"
+  )
+   download();
 
  }
 
+};
+
+
+/* DOWNLOAD */
+
+function download(){
+
+ const url=
+ URL.createObjectURL(
+  videoBlob
+ );
+
+ const a=
+ document.createElement("a");
+
+ a.href=url;
+
+ a.download=
+ "AI-Futbolcu.webm";
+
+ a.click();
+
+ setTimeout(
+  ()=>{
+   URL.revokeObjectURL(url);
+  },
+  2000
+ );
+
+ status(
+  "Video telefona endirildi."
+ );
+
 }
 
-/* ---------------- BUTTONS ---------------- */
 
-document.getElementById("speak").onclick=()=>{
- speakAZ(input.value);
-};
+/* STATUS */
 
-input.addEventListener("keydown",e=>{
- if(e.key==="Enter")speakAZ(input.value);
-});
+function status(text){
 
-document.querySelectorAll("[data-mode]").forEach(btn=>{
+ document
+  .getElementById("status")
+  .textContent=text;
 
- btn.onclick=()=>{
+}
 
-   document.querySelectorAll("[data-mode]")
-    .forEach(x=>x.classList.remove("active"));
 
-   btn.classList.add("active");
+/* RESIZE */
 
-   playBestAnimation(btn.dataset.mode);
+addEventListener(
+ "resize",
+ ()=>{
 
- };
+  camera.aspect=
+   innerWidth/
+   innerHeight;
 
-});
+  camera.updateProjectionMatrix();
 
-document.getElementById("rec").onclick=startRecording;
-document.getElementById("share").onclick=shareVideo;
+  renderer.setSize(
+   innerWidth,
+   innerHeight
+  );
 
-document.getElementById("full").onclick=async()=>{
+ }
+);
 
- try{
 
-   if(!document.fullscreenElement)
-     await document.documentElement.requestFullscreen();
-   else
-     await document.exitFullscreen();
+/* LOOP */
 
- }catch(e){}
+const clock=
+new THREE.Clock();
 
-};
+function loop(){
 
-/* ---------------- RESIZE ---------------- */
+ requestAnimationFrame(loop);
 
-addEventListener("resize",()=>{
+ const delta=
+ clock.getDelta();
 
- camera.aspect=innerWidth/innerHeight;
- camera.updateProjectionMatrix();
-
- renderer.setSize(innerWidth,innerHeight);
- renderer.setPixelRatio(Math.min(devicePixelRatio,1.7));
-
-});
-
-/* ---------------- LOOP ---------------- */
-
-clock=new THREE.Clock();
-
-function animate(){
-
- requestAnimationFrame(animate);
-
- const dt=Math.min(clock.getDelta(),.05);
-
- if(mixer)mixer.update(dt);
-
- proceduralMotion(dt);
-
- /* natural body floating / weight */
+ if(mixer)
+  mixer.update(delta);
 
  if(player){
 
-   const bob=
-     selectedMode==="run" ? Math.abs(Math.sin(t*7.5))*.012 :
-     selectedMode==="walk" ? Math.abs(Math.sin(t*4.8))*.006 :
-     Math.sin(t*1.8)*.003;
+  const t=
+   performance.now()*.0003;
 
-   player.position.y=bob;
+  player.rotation.y=
+   Math.sin(t)*.025;
 
-   softShadow.scale.x=
-     1.0-bob*2.5;
-
-   softShadow.scale.y=
-     1.0-bob*1.8;
  }
 
- renderer.render(scene,camera);
+ ring.rotation.z+=.0007;
+
+ renderer.render(
+  scene,
+  camera
+ );
 
 }
 
-loadPlayer();
-animate();
-
-/* Android voice list may arrive asynchronously */
-
-speechSynthesis.onvoiceschanged=()=>{
- speechSynthesis.getVoices();
-};
+loop();
 
 </script>
+
 </body>
-      </html>
+</html>
