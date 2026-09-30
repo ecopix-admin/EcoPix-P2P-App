@@ -2,8 +2,9 @@
 <html lang="az">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport"
-      content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#030305">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <title>DON'T LOOK BEHIND — 03:17</title>
 
 <style>
@@ -19,19 +20,19 @@ html,body{
     height:100%;
     overflow:hidden;
     background:#020204;
-    font-family:Arial,Helvetica,sans-serif;
     color:#fff;
+    font-family:Arial,Helvetica,sans-serif;
+    touch-action:none;
 }
 
 body{
-    touch-action:none;
+    overscroll-behavior:none;
 }
 
 #game{
     position:fixed;
     inset:0;
-    width:100%;
-    height:100%;
+    overflow:hidden;
     background:#020204;
 }
 
@@ -49,9 +50,11 @@ canvas{
     pointer-events:none;
 }
 
-.hud{
+/* ================= HUD ================= */
+
+#hud{
     position:absolute;
-    top:env(safe-area-inset-top,12px);
+    top:env(safe-area-inset-top,0);
     left:0;
     right:0;
     padding:14px;
@@ -59,78 +62,81 @@ canvas{
     justify-content:space-between;
     align-items:flex-start;
     opacity:0;
-    transition:.3s;
+    transition:opacity .4s;
 }
 
-.hud.show{
+#hud.show{
     opacity:1;
 }
 
 .panel{
-    background:rgba(5,7,10,.65);
-    border:1px solid rgba(255,255,255,.08);
-    backdrop-filter:blur(10px);
+    background:rgba(6,8,11,.68);
+    border:1px solid rgba(255,255,255,.09);
     border-radius:14px;
     padding:9px 12px;
-    box-shadow:0 8px 30px rgba(0,0,0,.35);
+    backdrop-filter:blur(14px);
+    -webkit-backdrop-filter:blur(14px);
+    box-shadow:0 10px 35px rgba(0,0,0,.45);
 }
 
 .clock{
     font-size:20px;
-    font-weight:800;
-    letter-spacing:3px;
+    font-weight:900;
+    letter-spacing:4px;
 }
 
 .small{
-    font-size:10px;
-    color:#89919c;
+    margin-top:4px;
+    font-size:9px;
+    color:#777e87;
     letter-spacing:2px;
-    margin-top:3px;
 }
 
 .stats{
     display:flex;
-    gap:8px;
+    gap:7px;
 }
 
 .stat{
-    min-width:65px;
+    min-width:64px;
     text-align:center;
 }
 
 .value{
-    font-size:15px;
-    font-weight:800;
+    font-size:14px;
+    font-weight:900;
 }
 
-.batteryBar{
+.battery{
     width:65px;
-    height:4px;
-    margin-top:5px;
-    border-radius:5px;
-    background:#20252b;
+    height:5px;
+    margin-top:6px;
+    background:#20242a;
+    border-radius:10px;
     overflow:hidden;
 }
 
 #batteryFill{
-    height:100%;
     width:100%;
-    background:#e5e7eb;
-    transition:.2s;
+    height:100%;
+    background:#ddd;
+    transition:width .2s;
 }
 
 #batteryFill.low{
-    background:#e53935;
+    background:#d71919;
 }
+
+/* ================= CROSSHAIR ================= */
 
 #crosshair{
     position:absolute;
     left:50%;
     top:50%;
-    transform:translate(-50%,-50%);
     width:12px;
     height:12px;
-    opacity:.55;
+    transform:translate(-50%,-50%);
+    opacity:.4;
 }
 
 #crosshair:before,
@@ -138,40 +144,67 @@ canvas{
     content:"";
     position:absolute;
     background:#fff;
-    opacity:.7;
 }
 
 #crosshair:before{
     width:12px;
     height:1px;
+    left:0;
     top:5px;
 }
 
 #crosshair:after{
-    height:12px;
     width:1px;
+    height:12px;
     left:5px;
+    top:0;
 }
+
+/* ================= MESSAGE ================= */
 
 #message{
     position:absolute;
     left:50%;
-    bottom:24%;
-    transform:translateX(-50%);
-    padding:11px 17px;
-    border-radius:30px;
-    background:rgba(0,0,0,.6);
-    border:1px solid rgba(255,255,255,.08);
-    font-size:13px;
-    letter-spacing:1px;
+    bottom:25%;
+    transform:translate(-50%,20px);
     opacity:0;
-    transition:.3s;
+    padding:11px 18px;
+    border-radius:30px;
+    background:rgba(0,0,0,.72);
+    border:1px solid rgba(255,255,255,.09);
+    color:#ddd;
+    font-size:12px;
+    letter-spacing:1px;
     white-space:nowrap;
+    transition:.3s;
+    text-align:center;
 }
 
 #message.show{
     opacity:1;
+    transform:translate(-50%,0);
 }
+
+/* ================= SANITY ================= */
+
+#sanity{
+    position:absolute;
+    left:50%;
+    bottom:16px;
+    width:135px;
+    height:3px;
+    transform:translateX(-50%);
+    background:rgba(255,255,255,.08);
+    opacity:.7;
+}
+
+#sanityFill{
+    width:100%;
+    height:100%;
+    background:#8e1717;
+}
+
+/* ================= MOBILE CONTROLS ================= */
 
 #controls{
     position:absolute;
@@ -181,125 +214,158 @@ canvas{
 
 #joystick{
     position:absolute;
-    left:24px;
+    left:22px;
     bottom:28px;
-    width:128px;
-    height:128px;
+    width:130px;
+    height:130px;
     border-radius:50%;
     background:rgba(255,255,255,.035);
     border:1px solid rgba(255,255,255,.1);
     pointer-events:auto;
+    box-shadow:0 10px 40px rgba(0,0,0,.4);
 }
 
 #stick{
     position:absolute;
+    left:37px;
+    top:37px;
     width:56px;
     height:56px;
-    left:36px;
-    top:36px;
     border-radius:50%;
-    background:rgba(255,255,255,.12);
-    border:1px solid rgba(255,255,255,.16);
+    background:rgba(255,255,255,.11);
+    border:1px solid rgba(255,255,255,.15);
 }
 
 .buttons{
     position:absolute;
     right:20px;
-    bottom:25px;
+    bottom:27px;
     display:flex;
-    gap:12px;
+    gap:11px;
     pointer-events:auto;
 }
 
 .btn{
-    width:62px;
-    height:62px;
+    width:63px;
+    height:63px;
     border-radius:50%;
-    border:1px solid rgba(255,255,255,.12);
-    background:rgba(5,7,10,.65);
-    color:white;
     display:flex;
-    align-items:center;
     justify-content:center;
+    align-items:center;
+    background:rgba(5,7,10,.72);
+    border:1px solid rgba(255,255,255,.12);
+    backdrop-filter:blur(12px);
+    -webkit-backdrop-filter:blur(12px);
     font-size:22px;
-    backdrop-filter:blur(10px);
-    box-shadow:0 8px 30px rgba(0,0,0,.3);
+    box-shadow:0 10px 35px rgba(0,0,0,.45);
 }
 
 .btn:active{
-    transform:scale(.92);
-    background:rgba(255,255,255,.12);
+    transform:scale(.9);
+    background:rgba(255,255,255,.13);
 }
 
-#startScreen,
-#endScreen,
-#pauseScreen{
+/* ================= EFFECTS ================= */
+
+#whiteFlash{
     position:absolute;
     inset:0;
+    background:#fff;
+    opacity:0;
+    z-index:10;
+}
+
+#redDamage{
+    position:absolute;
+    inset:0;
+    opacity:0;
+    z-index:9;
+    box-shadow:inset 0 0 100px rgba(190,0,0,.95);
+}
+
+/* ================= SCREENS ================= */
+
+.screen{
+    position:absolute;
+    inset:0;
+    z-index:30;
     display:flex;
-    align-items:center;
     justify-content:center;
-    padding:24px;
+    align-items:center;
+    padding:22px;
     background:
-      radial-gradient(circle at 50% 45%,rgba(70,0,0,.13),transparent 30%),
-      rgba(0,0,0,.72);
-    backdrop-filter:blur(7px);
-    z-index:20;
+        radial-gradient(circle at 50% 43%,rgba(100,0,0,.11),transparent 30%),
+        rgba(0,0,0,.76);
+    backdrop-filter:blur(8px);
+    -webkit-backdrop-filter:blur(8px);
 }
 
 .card{
     width:min(440px,100%);
-    padding:32px 25px;
+    padding:31px 24px 26px;
     border-radius:25px;
     background:
-      linear-gradient(145deg,
-      rgba(18,20,24,.9),
-      rgba(3,4,6,.92));
+        linear-gradient(
+            145deg,
+            rgba(18,20,24,.94),
+            rgba(3,4,6,.96)
+        );
     border:1px solid rgba(255,255,255,.09);
     box-shadow:
-      0 30px 100px rgba(0,0,0,.75),
-      inset 0 1px 0 rgba(255,255,255,.04);
+        0 35px 110px rgba(0,0,0,.8),
+        inset 0 1px 0 rgba(255,255,255,.04);
     text-align:center;
 }
 
 .logo{
-    font-size:12px;
+    color:#737a83;
+    font-size:11px;
     letter-spacing:6px;
-    color:#777f89;
-    margin-bottom:18px;
+    margin-bottom:20px;
 }
 
 .title{
-    font-size:clamp(36px,11vw,62px);
-    line-height:.9;
-    font-weight:900;
-    letter-spacing:-3px;
-    margin-bottom:10px;
+    font-size:clamp(42px,12vw,64px);
+    line-height:.88;
+    font-weight:1000;
+    letter-spacing:-4px;
 }
 
 .red{
-    color:#b71919;
+    color:#b81919;
 }
 
 .subtitle{
-    color:#9da3ab;
+    max-width:350px;
+    margin:22px auto 26px;
+    color:#a5aab1;
     font-size:13px;
-    line-height:1.6;
-    margin:18px auto 25px;
-    max-width:330px;
+    line-height:1.7;
+}
+
+.subtitle b{
+    color:#ddd;
 }
 
 .startBtn{
     width:100%;
+    padding:17px 14px;
     border:0;
-    border-radius:15px;
-    padding:17px;
+    border-radius:16px;
+    color:#fff;
     font-size:15px;
     font-weight:900;
     letter-spacing:2px;
-    color:white;
-    background:linear-gradient(135deg,#8e1010,#3d0606);
-    box-shadow:0 12px 35px rgba(130,0,0,.25);
+    background:
+        linear-gradient(
+            135deg,
+            #a00d0d,
+            #4a0505
+        );
+    box-shadow:
+        0 12px 35px rgba(130,0,0,.28),
+        inset 0 1px 0 rgba(255,255,255,.12);
+    cursor:pointer;
 }
 
 .startBtn:active{
@@ -307,11 +373,41 @@ canvas{
 }
 
 .tip{
-    margin-top:17px;
-    font-size:10px;
-    color:#646a72;
+    margin-top:18px;
+    color:#656c75;
+    font-size:9px;
+    line-height:1.8;
     letter-spacing:1px;
-    line-height:1.6;
+}
+
+.resultTitle{
+    font-size:43px;
+    font-weight:1000;
+    letter-spacing:-3px;
+}
+
+.resultText{
+    margin:16px 0 25px;
+    color:#9ca2aa;
+    font-size:13px;
+    line-height:1.7;
+}
+
+.resultScore{
+    margin:8px 0 15px;
+    font-size:38px;
+    font-weight:1000;
+    letter-spacing:2px;
+}
+
+.challenge{
+    margin-bottom:16px;
+    padding:12px;
+    border-radius:12px;
+    background:rgba(255,255,255,.035);
+    color:#9da4ad;
+    font-size:10px;
+    letter-spacing:1px;
 }
 
 #endScreen,
@@ -319,73 +415,13 @@ canvas{
     display:none;
 }
 
-.resultTitle{
-    font-size:42px;
-    font-weight:900;
-    letter-spacing:-2px;
+@media(max-width:700px){
+    #crosshair{
+        display:none;
+    }
 }
 
-.resultText{
-    color:#9ba1a9;
-    line-height:1.6;
-    margin:15px 0 25px;
-}
-
-.resultScore{
-    font-size:34px;
-    font-weight:900;
-    margin:12px 0;
-}
-
-.challenge{
-    padding:11px;
-    background:rgba(255,255,255,.035);
-    border-radius:12px;
-    color:#aeb4bb;
-    font-size:11px;
-    margin-bottom:15px;
-}
-
-.flash{
-    position:absolute;
-    inset:0;
-    background:#fff;
-    opacity:0;
-    pointer-events:none;
-    z-index:15;
-}
-
-.damage{
-    position:absolute;
-    inset:0;
-    box-shadow:inset 0 0 90px rgba(180,0,0,.8);
-    opacity:0;
-    pointer-events:none;
-    z-index:14;
-}
-
-#sanity{
-    position:absolute;
-    left:50%;
-    transform:translateX(-50%);
-    bottom:19px;
-    width:130px;
-    height:3px;
-    background:rgba(255,255,255,.08);
-    opacity:.7;
-}
-
-#sanityFill{
-    width:100%;
-    height:100%;
-    background:#8f1111;
-}
-
-.hidden{
-    display:none!important;
-}
-
-@media (min-width:800px){
+@media(min-width:800px){
     #joystick{
         display:none;
     }
@@ -401,29 +437,34 @@ canvas{
 <body>
 
 <div id="game">
+
 <canvas id="canvas"></canvas>
 
 <div id="ui">
 
-    <div class="hud" id="hud">
+    <div id="hud">
+
         <div class="panel">
             <div class="clock">03:17</div>
             <div class="small">DON'T LOOK BEHIND</div>
         </div>
 
         <div class="stats">
+
             <div class="panel stat">
-                <div class="value" id="keys">0 / 3</div>
+                <div class="value" id="keysHUD">0 / 3</div>
                 <div class="small">AÇAR</div>
             </div>
 
             <div class="panel stat">
                 <div class="value">🔋</div>
-                <div class="batteryBar">
+                <div class="battery">
                     <div id="batteryFill"></div>
                 </div>
             </div>
+
         </div>
+
     </div>
 
     <div id="crosshair"></div>
@@ -447,14 +488,21 @@ canvas{
 
     </div>
 
-    <div class="flash" id="flash"></div>
-    <div class="damage" id="damage"></div>
+    <div id="whiteFlash"></div>
+    <div id="redDamage"></div>
 
 </div>
 
-<div id="startScreen">
+
+<!-- ================= START ================= -->
+
+<div class="screen" id="startScreen">
+
     <div class="card">
-        <div class="logo">NIGHT PROTOCOL / 03:17</div>
+
+        <div class="logo">
+            NIGHT PROTOCOL / 03:17
+        </div>
 
         <div class="title">
             DON'T<br>
@@ -462,7 +510,7 @@ canvas{
             BEHIND
         </div>
 
-        <div class="subtitle">
+        <div class="subtitle" id="introText">
             Saat 03:17-dir.
             Elektrik kəsilib.
             Çıxış qapısı kilidlidir.
@@ -480,30 +528,52 @@ canvas{
         </button>
 
         <div class="tip">
-            MOBİL: sol tərəfdə hərəkət et • sağa sürüşdür və bax<br>
+            MOBİL: sol tərəfdə hərəkət et • sağ tərəfdə sürüşdür və bax<br>
             PC: WASD + Mouse • F = fənər • E = hərəkət
         </div>
+
     </div>
+
 </div>
 
-<div id="pauseScreen">
+
+<!-- ================= PAUSE ================= -->
+
+<div class="screen" id="pauseScreen">
+
     <div class="card">
+
         <div class="logo">PAUSED</div>
-        <div class="resultTitle">DAYANDI</div>
-        <div class="resultText">
-            Ətraf hələ də səni gözləyir.
+
+        <div class="resultTitle">
+            DAYANDI
         </div>
+
+        <div class="resultText">
+            Sakit ol.
+            O hələ də oradadır.
+        </div>
+
         <button class="startBtn" id="resumeBtn">
             DAVAM ET
         </button>
+
     </div>
+
 </div>
 
-<div id="endScreen">
-    <div class="card">
-        <div class="logo" id="endLogo">NIGHT PROTOCOL</div>
 
-        <div class="resultTitle" id="endTitle">
+<!-- ================= END ================= -->
+
+<div class="screen" id="endScreen">
+
+    <div class="card">
+
+        <div class="logo" id="endLogo">
+            NIGHT PROTOCOL
+        </div>
+
+        <div class="resultTitle red" id="endTitle">
             SƏN ÇIXDIN
         </div>
 
@@ -515,7 +585,7 @@ canvas{
             0000
         </div>
 
-        <div class="challenge" id="challenge">
+        <div class="challenge" id="challengeBox">
             CHALLENGE: ------
         </div>
 
@@ -528,31 +598,38 @@ canvas{
         <button class="startBtn" id="restartBtn">
             YENİ OYUN
         </button>
+
     </div>
+
 </div>
 
 </div>
+
 
 <script>
 "use strict";
 
 /* =========================================================
    DON'T LOOK BEHIND — 03:17
-   SINGLE FILE HORROR ENGINE
+   SINGLE FILE HORROR GAME
    ========================================================= */
 
 const canvas = document.getElementById("canvas");
-const ctx = canvas.getContext("2d", {alpha:false});
+const ctx = canvas.getContext("2d");
 
-let W=0,H=0,DPR=1;
+let W = 0;
+let H = 0;
+let DPR = 1;
 
 function resize(){
-    DPR=Math.min(window.devicePixelRatio||1,1.5);
-    W=window.innerWidth;
-    H=window.innerHeight;
 
-    canvas.width=Math.floor(W*DPR);
-    canvas.height=Math.floor(H*DPR);
+    DPR = Math.min(window.devicePixelRatio || 1, 1.5);
+
+    W = window.innerWidth;
+    H = window.innerHeight;
+
+    canvas.width = Math.floor(W * DPR);
+    canvas.height = Math.floor(H * DPR);
 
     ctx.setTransform(DPR,0,0,DPR,0,0);
 }
@@ -560,123 +637,140 @@ function resize(){
 window.addEventListener("resize",resize);
 resize();
 
-/* =========================
-   GAME STATE
-========================= */
 
-let state="menu";
-let last=0;
-let gameTime=0;
-let score=0;
+/* =========================================================
+   STATE
+   ========================================================= */
 
-let seed=0;
-let rngSeed=0;
+let state = "menu";
 
-let map=[];
-let mapW=31;
-let mapH=31;
+let lastTime = 0;
+let gameTime = 0;
+let score = 0;
 
-const TILE=1;
+let seed = 0;
+let rngSeed = 0;
 
-let player={
+let challengeCode = "";
+let challengeMode = false;
+
+const mapW = 31;
+const mapH = 31;
+
+let map = [];
+
+let player = {
     x:1.5,
     y:1.5,
-    a:0,
+    angle:0,
     health:100,
     battery:100,
     keys:0
 };
 
-let monster={
+let monster = {
     x:0,
     y:0,
     active:false,
     state:"sleep",
-    speed:.65,
-    timer:0,
-    scareCooldown:0
+    speed:.58,
+    cooldown:0
 };
 
-let items=[];
+let items = [];
 
-let flashlight=true;
-let sanity=100;
+let flashlight = true;
 
-let joystick={
-    active:false,
-    id:null,
-    x:0,
-    y:0
-};
+let sanity = 100;
 
-let look={
-    active:false,
-    id:null,
-    lastX:0,
-    lastY:0
-};
+let horrorTimer = 8;
+let footTimer = 0;
+let heartbeatTimer = 0;
 
-let keysDown={};
+let flickerTimer = 0;
+let screenShake = 0;
 
-let eventTimer=8;
-let heartbeatTimer=0;
-let footTimer=0;
-let flicker=0;
-let shake=0;
 
-let challengeCode="";
+/* =========================================================
+   RANDOM
+   ========================================================= */
 
-const FOV=Math.PI/3;
-const RAYS=150;
-const MAX_DEPTH=18;
+function random(){
 
-/* =========================
-   RNG
-========================= */
+    rngSeed =
+        (rngSeed * 1664525 + 1013904223) >>> 0;
 
-function rand(){
-    rngSeed=(rngSeed*1664525+1013904223)>>>0;
-    return rngSeed/4294967296;
+    return rngSeed / 4294967296;
 }
 
-function randomInt(a,b){
-    return Math.floor(rand()*(b-a+1))+a;
+function randomInt(min,max){
+
+    return Math.floor(
+        random() * (max-min+1)
+    ) + min;
 }
 
-function hashString(str){
-    let h=2166136261;
+function stringHash(str){
+
+    let h = 2166136261;
+
     for(let i=0;i<str.length;i++){
-        h^=str.charCodeAt(i);
-        h=Math.imul(h,16777619);
+
+        h ^= str.charCodeAt(i);
+
+        h = Math.imul(
+            h,
+            16777619
+        );
     }
-    return h>>>0;
+
+    return h >>> 0;
 }
 
-function makeSeed(){
-    return Date.now()>>>0;
+function createSeed(){
+
+    return (
+        Date.now() ^
+        Math.floor(Math.random()*0xffffffff)
+    ) >>> 0;
 }
 
-/* =========================
-   MAP GENERATION
-========================= */
 
-function generateMap(s){
-    rngSeed=s||makeSeed();
+/* =========================================================
+   MAP
+   ========================================================= */
 
-    map=Array.from(
-        {length:mapH},
-        ()=>Array(mapW).fill(1)
-    );
+function generateMap(inputSeed){
 
-    const stack=[];
+    rngSeed = inputSeed >>> 0;
+
+    map = [];
+
+    for(let y=0;y<mapH;y++){
+
+        map[y]=[];
+
+        for(let x=0;x<mapW;x++){
+
+            map[y][x]=1;
+        }
+    }
+
+    const stack = [];
 
     function carve(x,y){
+
         map[y][x]=0;
+
         stack.push([x,y]);
 
         while(stack.length){
 
-            const [cx,cy]=stack[stack.length-1];
+            const current =
+                stack[stack.length-1];
+
+            const cx=current[0];
+            const cy=current[1];
 
             const dirs=[
                 [2,0],
@@ -686,122 +780,141 @@ function generateMap(s){
             ];
 
             for(let i=dirs.length-1;i>0;i--){
+
                 const j=randomInt(0,i);
-                [dirs[i],dirs[j]]=[dirs[j],dirs[i]];
+
+                const tmp=dirs[i];
+
+                dirs[i]=dirs[j];
+                dirs[j]=tmp;
             }
 
-            let found=false;
+            let carved=false;
 
-            for(const [dx,dy] of dirs){
+            for(const dir of dirs){
 
-                const nx=cx+dx;
-                const ny=cy+dy;
+                const nx=cx+dir[0];
+                const ny=cy+dir[1];
 
                 if(
-                    nx>0 && nx<mapW-1 &&
-                    ny>0 && ny<mapH-1 &&
+                    nx>0 &&
+                    nx<mapW-1 &&
+                    ny>0 &&
+                    ny<mapH-1 &&
                     map[ny][nx]===1
                 ){
-                    map[cy+dy/2][cx+dx/2]=0;
+
+                    map[
+                        cy + dir[1]/2
+                    ][
+                        cx + dir[0]/2
+                    ]=0;
+
                     map[ny][nx]=0;
+
                     stack.push([nx,ny]);
-                    found=true;
+
+                    carved=true;
+
                     break;
                 }
             }
 
-            if(!found) stack.pop();
+            if(!carved){
+                stack.pop();
+            }
         }
     }
 
     carve(1,1);
 
-    /* Extra openings create rooms */
-    for(let i=0;i<65;i++){
+
+    /* əlavə otaqlar */
+
+    for(let i=0;i<70;i++){
 
         const x=randomInt(2,mapW-3);
         const y=randomInt(2,mapH-3);
 
-        if(x%2===0 || y%2===0){
+        map[y][x]=0;
 
-            map[y][x]=0;
+        if(random()>.35 && x<mapW-2)
+            map[y][x+1]=0;
 
-            if(rand()>.5 && x>1 && x<mapW-2)
-                map[y][x+1]=0;
-
-            if(rand()>.5 && y>1 && y<mapH-2)
-                map[y+1][x]=0;
-        }
+        if(random()>.35 && y<mapH-2)
+            map[y+1][x]=0;
     }
 
-    /* Some dead-end horror rooms */
-    for(let i=0;i<12;i++){
 
-        const x=randomInt(2,mapW-3);
-        const y=randomInt(2,mapH-3);
-
-        for(let yy=-1;yy<=1;yy++){
-            for(let xx=-1;xx<=1;xx++){
-
-                if(
-                    Math.abs(xx)+Math.abs(yy)<=2 &&
-                    y+yy>0 &&
-                    y+yy<mapH-1 &&
-                    x+xx>0 &&
-                    x+xx<mapW-1
-                ){
-                    map[y+yy][x+xx]=0;
-                }
-            }
-        }
-    }
+    /* başlanğıc */
 
     player.x=1.5;
     player.y=1.5;
 
-    /* Find far positions */
-    let open=[];
+
+    /* açıq hüceyrələr */
+
+    const open=[];
 
     for(let y=1;y<mapH-1;y++){
+
         for(let x=1;x<mapW-1;x++){
+
             if(map[y][x]===0){
-                open.push({x:x+.5,y:y+.5});
+
+                open.push({
+                    x:x+.5,
+                    y:y+.5
+                });
             }
         }
     }
 
-    open.sort(()=>{
-        return rand()-.5;
-    });
 
-    monster.active=false;
-    monster.state="sleep";
+    /* qarışdır */
 
-    let far=open[open.length-1];
+    for(let i=open.length-1;i>0;i--){
+
+        const j=randomInt(0,i);
+
+        const t=open[i];
+
+        open[i]=open[j];
+        open[j]=t;
+    }
+
+
+    /* monster uzaqda */
+
+    let monsterPos=open[open.length-1];
 
     for(const p of open){
-        const d=Math.hypot(
-            p.x-player.x,
-            p.y-player.y
-        );
 
-        if(d>10){
-            far=p;
+        if(
+            Math.hypot(
+                p.x-player.x,
+                p.y-player.y
+            )>12
+        ){
+            monsterPos=p;
             break;
         }
     }
 
-    monster.x=far.x;
-    monster.y=far.y;
+    monster.x=monsterPos.x;
+    monster.y=monsterPos.y;
+
 
     items=[];
 
-    /* Keys */
+
+    /* 3 açar */
+
     for(let i=0;i<3;i++){
 
-        let p=findFarOpenPosition(
-            items.map(v=>v),
-            i===0?5:3
+        const p=findItemPosition(
+            5,
+            items
         );
 
         items.push({
@@ -809,16 +922,18 @@ function generateMap(s){
             x:p.x,
             y:p.y,
             taken:false,
-            phase:rand()*10
+            phase:random()*10
         });
     }
 
-    /* Batteries */
+
+    /* 5 batareya */
+
     for(let i=0;i<5;i++){
 
-        let p=findFarOpenPosition(
-            items,
-            2
+        const p=findItemPosition(
+            2.5,
+            items
         );
 
         items.push({
@@ -826,12 +941,17 @@ function generateMap(s){
             x:p.x,
             y:p.y,
             taken:false,
-            phase:rand()*10
+            phase:random()*10
         });
     }
 
-    /* Exit */
-    let exit=findFarOpenPosition(items,8);
+
+    /* çıxış */
+
+    const exit=findItemPosition(
+        9,
+        items
+    );
 
     items.push({
         type:"exit",
@@ -842,16 +962,16 @@ function generateMap(s){
     });
 }
 
-function findFarOpenPosition(existing,minDistance){
 
-    let candidate=null;
+function findItemPosition(minDistance,list){
 
-    for(let i=0;i<500;i++){
+    for(let i=0;i<800;i++){
 
         const x=randomInt(1,mapW-2);
         const y=randomInt(1,mapH-2);
 
-        if(map[y][x]!==0) continue;
+        if(map[y][x]!==0)
+            continue;
 
         const p={
             x:x+.5,
@@ -863,45 +983,53 @@ function findFarOpenPosition(existing,minDistance){
                 p.x-player.x,
                 p.y-player.y
             )<minDistance
-        ) continue;
+        ){
+            continue;
+        }
 
         let good=true;
 
-        for(const e of existing){
+        for(const item of list){
 
             if(
                 Math.hypot(
-                    p.x-e.x,
-                    p.y-e.y
-                )<3
+                    p.x-item.x,
+                    p.y-item.y
+                )<2.5
             ){
                 good=false;
                 break;
             }
         }
 
-        if(good){
-            candidate=p;
-            break;
-        }
+        if(good)
+            return p;
     }
 
-    return candidate||{
-        x:mapW-2+.5,
-        y:mapH-2+.5
+    return {
+        x:mapW-2.5,
+        y:mapH-2.5
     };
 }
 
-/* =========================
-   COLLISION
-========================= */
 
-function wall(x,y){
+/* =========================================================
+   COLLISION
+   ========================================================= */
+
+function isWall(x,y){
+
     const gx=Math.floor(x);
     const gy=Math.floor(y);
 
-    if(gx<0||gy<0||gx>=mapW||gy>=mapH)
+    if(
+        gx<0 ||
+        gy<0 ||
+        gx>=mapW ||
+        gy>=mapH
+    ){
         return true;
+    }
 
     return map[gy][gx]===1;
 }
@@ -909,254 +1037,361 @@ function wall(x,y){
 function canMove(x,y,r=.18){
 
     return !(
-        wall(x-r,y-r)||
-        wall(x+r,y-r)||
-        wall(x-r,y+r)||
-        wall(x+r,y+r)
+        isWall(x-r,y-r) ||
+        isWall(x+r,y-r) ||
+        isWall(x-r,y+r) ||
+        isWall(x+r,y+r)
     );
 }
 
-function moveEntity(obj,dx,dy,r=.18){
+function moveObject(obj,dx,dy,r=.18){
 
     const nx=obj.x+dx;
-    const ny=obj.y+dy;
 
     if(canMove(nx,obj.y,r))
         obj.x=nx;
+
+    const ny=obj.y+dy;
 
     if(canMove(obj.x,ny,r))
         obj.y=ny;
 }
 
-/* =========================
-   AUDIO ENGINE
-========================= */
 
-let audio=null;
+/* =========================================================
+   AUDIO
+   ========================================================= */
+
+let audioContext=null;
 
 function initAudio(){
 
-    if(audio) return;
+    if(!audioContext){
 
-    try{
-        audio=new (window.AudioContext||
-            window.webkitAudioContext)();
+        try{
 
-        if(audio.state==="suspended")
-            audio.resume();
-    }catch(e){}
+            audioContext =
+                new (
+                    window.AudioContext ||
+                    window.webkitAudioContext
+                )();
+
+        }catch(e){
+
+            return;
+        }
+    }
+
+    if(audioContext.state==="suspended"){
+
+        audioContext.resume().catch(()=>{});
+    }
 }
 
-function tone(freq,duration,type="sine",volume=.04){
+function playTone(
+    frequency,
+    duration,
+    type="sine",
+    volume=.03
+){
 
-    if(!audio) return;
+    if(!audioContext)
+        return;
 
-    const o=audio.createOscillator();
-    const g=audio.createGain();
+    const osc=
+        audioContext.createOscillator();
 
-    o.type=type;
-    o.frequency.value=freq;
+    const gain=
+        audioContext.createGain();
 
-    g.gain.setValueAtTime(0.0001,audio.currentTime);
-    g.gain.exponentialRampToValueAtTime(
+    osc.type=type;
+    osc.frequency.value=frequency;
+
+    gain.gain.setValueAtTime(
+        .0001,
+        audioContext.currentTime
+    );
+
+    gain.gain.exponentialRampToValueAtTime(
         volume,
-        audio.currentTime+.015
-    );
-    g.gain.exponentialRampToValueAtTime(
-        0.0001,
-        audio.currentTime+duration
+        audioContext.currentTime+.02
     );
 
-    o.connect(g);
-    g.connect(audio.destination);
+    gain.gain.exponentialRampToValueAtTime(
+        .0001,
+        audioContext.currentTime+duration
+    );
 
-    o.start();
-    o.stop(audio.currentTime+duration+.03);
+    osc.connect(gain);
+    gain.connect(audioContext.destination);
+
+    osc.start();
+
+    osc.stop(
+        audioContext.currentTime+
+        duration+
+        .05
+    );
 }
 
-function noise(duration=.2,volume=.04){
+function playNoise(
+    duration=.2,
+    volume=.03
+){
 
-    if(!audio) return;
+    if(!audioContext)
+        return;
 
-    const buffer=audio.createBuffer(
-        1,
-        audio.sampleRate*duration,
-        audio.sampleRate
-    );
+    const buffer=
+        audioContext.createBuffer(
+            1,
+            Math.floor(
+                audioContext.sampleRate*duration
+            ),
+            audioContext.sampleRate
+        );
 
-    const data=buffer.getChannelData(0);
+    const data=
+        buffer.getChannelData(0);
 
-    for(let i=0;i<data.length;i++)
-        data[i]=(Math.random()*2-1);
+    for(let i=0;i<data.length;i++){
 
-    const src=audio.createBufferSource();
-    const filter=audio.createBiquadFilter();
-    const g=audio.createGain();
+        data[i]=
+            Math.random()*2-1;
+    }
+
+    const source=
+        audioContext.createBufferSource();
+
+    const filter=
+        audioContext.createBiquadFilter();
+
+    const gain=
+        audioContext.createGain();
 
     filter.type="bandpass";
-    filter.frequency.value=900;
+    filter.frequency.value=800;
     filter.Q.value=.8;
 
-    g.gain.value=volume;
+    gain.gain.value=volume;
 
-    src.buffer=buffer;
-    src.connect(filter);
-    filter.connect(g);
-    g.connect(audio.destination);
+    source.buffer=buffer;
 
-    src.start();
+    source.connect(filter);
+    filter.connect(gain);
+    gain.connect(audioContext.destination);
+
+    source.start();
 }
 
-function footstep(){
+function soundFootstep(){
 
-    if(!audio) return;
-
-    tone(
-        55+Math.random()*20,
+    playTone(
+        48+Math.random()*15,
         .07,
         "triangle",
         .025
     );
 
-    noise(.055,.015);
+    playNoise(.06,.012);
 }
 
-function whisper(){
+function soundWhisper(){
 
-    noise(.45,.025);
-    tone(90,.5,"sawtooth",.012);
+    playNoise(.5,.025);
+
+    playTone(
+        80,
+        .5,
+        "sawtooth",
+        .01
+    );
 }
 
-function scareSound(){
+function soundHeartbeat(){
 
-    tone(38,.9,"sawtooth",.12);
-    tone(800,.22,"square",.025);
-    noise(.7,.09);
-}
-
-function heartbeat(){
-
-    tone(55,.11,"sine",.035);
+    playTone(
+        55,
+        .11,
+        "sine",
+        .035
+    );
 
     setTimeout(()=>{
-        tone(48,.12,"sine",.03);
+        playTone(
+            48,
+            .11,
+            "sine",
+            .03
+        );
     },130);
 }
 
-/* =========================
+function soundScare(){
+
+    playTone(
+        35,
+        .9,
+        "sawtooth",
+        .12
+    );
+
+    playTone(
+        750,
+        .2,
+        "square",
+        .025
+    );
+
+    playNoise(
+        .65,
+        .08
+    );
+}
+
+
+/* =========================================================
    MESSAGE
-========================= */
+   ========================================================= */
 
-let messageTimeout;
+let messageTimeout=null;
 
-function showMessage(t,time=1600){
+function showMessage(text,time=1600){
 
-    const el=document.getElementById("message");
+    const el=
+        document.getElementById("message");
 
-    el.textContent=t;
+    el.textContent=text;
+
     el.classList.add("show");
 
     clearTimeout(messageTimeout);
 
-    messageTimeout=setTimeout(()=>{
-        el.classList.remove("show");
-    },time);
+    messageTimeout=
+        setTimeout(()=>{
+            el.classList.remove("show");
+        },time);
 }
 
-/* =========================
+
+/* =========================================================
    FLASHLIGHT
-========================= */
+   ========================================================= */
 
 function toggleFlashlight(){
 
     flashlight=!flashlight;
 
-    if(flashlight)
-        tone(500,.05,"square",.015);
-    else
-        tone(100,.08,"square",.02);
+    if(flashlight){
+
+        playTone(
+            520,
+            .06,
+            "square",
+            .015
+        );
+
+    }else{
+
+        playTone(
+            100,
+            .08,
+            "square",
+            .02
+        );
+    }
 }
 
-document.getElementById("flashBtn")
-    .addEventListener("pointerdown",e=>{
-        e.preventDefault();
-        initAudio();
-        toggleFlashlight();
-    });
+document
+.getElementById("flashBtn")
+.addEventListener("pointerdown",e=>{
 
-/* =========================
-   ACTION
-========================= */
+    e.preventDefault();
+
+    initAudio();
+
+    toggleFlashlight();
+});
+
+
+/* =========================================================
+   INTERACTION
+   ========================================================= */
 
 function interact(){
 
-    if(state!=="playing") return;
+    if(state!=="playing")
+        return;
 
     let nearest=null;
-    let dist=999;
+    let distance=999;
 
     for(const item of items){
 
-        if(item.taken) continue;
+        if(item.taken)
+            continue;
 
-        const d=Math.hypot(
-            player.x-item.x,
-            player.y-item.y
-        );
+        const d=
+            Math.hypot(
+                player.x-item.x,
+                player.y-item.y
+            );
 
-        if(d<1.25 && d<dist){
+        if(d<1.3 && d<distance){
+
             nearest=item;
-            dist=d;
+            distance=d;
         }
     }
 
-    if(!nearest) return;
+    if(!nearest)
+        return;
+
 
     if(nearest.type==="key"){
 
         nearest.taken=true;
+
         player.keys++;
 
         score+=500;
 
-        tone(880,.15,"sine",.05);
-        tone(1200,.25,"sine",.03);
+        playTone(
+            880,
+            .15,
+            "sine",
+            .05
+        );
+
+        playTone(
+            1200,
+            .25,
+            "sine",
+            .03
+        );
 
         showMessage(
-            `AÇAR TAPILDI — ${player.keys}/3`
+            "AÇAR TAPILDI — "+
+            player.keys+
+            "/3"
         );
 
         if(player.keys===3){
+
+            monster.active=true;
+            monster.state="hunt";
 
             showMessage(
                 "ÇIXIŞ AÇILDI. AMMA O SƏNİ EŞİDİR.",
                 2600
             );
 
-            monster.active=true;
-            monster.state="hunt";
-            scareSound();
+            soundScare();
         }
 
         updateHUD();
     }
 
-    else if(nearest.type==="battery"){
-
-        nearest.taken=true;
-
-        player.battery=Math.min(
-            100,
-            player.battery+35
-        );
-
-        score+=100;
-
-        tone(650,.15,"sine",.035);
-
-        showMessage("BATAREYA +35%");
-        updateHUD();
-    }
 
     else if(nearest.type==="exit"){
 
@@ -1167,34 +1402,55 @@ function interact(){
         }else{
 
             showMessage(
-                `KİLİDLİ — ${3-player.keys} AÇAR ÇATMIR`
+                "KİLİDLİ — "+
+                (3-player.keys)+
+                " AÇAR ÇATMIR",
+                1800
             );
 
-            tone(70,.2,"sawtooth",.04);
+            playTone(
+                65,
+                .2,
+                "sawtooth",
+                .04
+            );
         }
     }
 }
 
-document.getElementById("actionBtn")
-    .addEventListener("pointerdown",e=>{
-        e.preventDefault();
-        initAudio();
-        interact();
-    });
+document
+.getElementById("actionBtn")
+.addEventListener("pointerdown",e=>{
 
-/* =========================
+    e.preventDefault();
+
+    initAudio();
+
+    interact();
+});
+
+
+/* =========================================================
    KEYBOARD
-========================= */
+   ========================================================= */
+
+const keysDown={};
 
 window.addEventListener("keydown",e=>{
 
     keysDown[e.code]=true;
 
-    if(e.code==="KeyF")
-        toggleFlashlight();
+    if(e.code==="KeyF"){
 
-    if(e.code==="KeyE")
+        initAudio();
+        toggleFlashlight();
+    }
+
+    if(e.code==="KeyE"){
+
+        initAudio();
         interact();
+    }
 
     if(e.code==="Escape"){
 
@@ -1207,126 +1463,189 @@ window.addEventListener("keydown",e=>{
 });
 
 window.addEventListener("keyup",e=>{
+
     keysDown[e.code]=false;
 });
 
-/* =========================
-   TOUCH JOYSTICK
-========================= */
 
-const joy=document.getElementById("joystick");
-const stick=document.getElementById("stick");
+/* =========================================================
+   MOUSE LOOK
+   ========================================================= */
 
-joy.addEventListener("pointerdown",e=>{
+let mouseLook=false;
+let lastMouseX=0;
 
-    if(state!=="playing") return;
+canvas.addEventListener("pointerdown",e=>{
 
-    e.preventDefault();
+    if(state!=="playing")
+        return;
 
-    joystick.active=true;
-    joystick.id=e.pointerId;
+    if(e.pointerType==="mouse"){
 
-    joy.setPointerCapture(e.pointerId);
+        mouseLook=true;
+        lastMouseX=e.clientX;
+    }
 
-    updateJoystick(e);
+    if(
+        e.pointerType==="touch" &&
+        e.clientX>W*.40
+    ){
+
+        mouseLook=true;
+        lastMouseX=e.clientX;
+    }
 });
 
-joy.addEventListener("pointermove",e=>{
+canvas.addEventListener("pointermove",e=>{
 
-    if(!joystick.active||
-       e.pointerId!==joystick.id) return;
+    if(!mouseLook)
+        return;
 
-    updateJoystick(e);
+    const dx=
+        e.clientX-lastMouseX;
+
+    player.angle += dx*.004;
+
+    lastMouseX=e.clientX;
 });
 
-joy.addEventListener("pointerup",resetJoystick);
-joy.addEventListener("pointercancel",resetJoystick);
+canvas.addEventListener("pointerup",()=>{
+    mouseLook=false;
+});
+
+canvas.addEventListener("pointercancel",()=>{
+    mouseLook=false;
+});
+
+
+/* =========================================================
+   JOYSTICK
+   ========================================================= */
+
+const joystickEl=
+    document.getElementById("joystick");
+
+const stickEl=
+    document.getElementById("stick");
+
+const joystick={
+    active:false,
+    id:null,
+    x:0,
+    y:0
+};
+
+joystickEl.addEventListener(
+    "pointerdown",
+    e=>{
+
+        if(state!=="playing")
+            return;
+
+        e.preventDefault();
+
+        joystick.active=true;
+        joystick.id=e.pointerId;
+
+        joystickEl.setPointerCapture(
+            e.pointerId
+        );
+
+        updateJoystick(e);
+    }
+);
+
+joystickEl.addEventListener(
+    "pointermove",
+    e=>{
+
+        if(
+            !joystick.active ||
+            e.pointerId!==joystick.id
+        ){
+            return;
+        }
+
+        updateJoystick(e);
+    }
+);
+
+joystickEl.addEventListener(
+    "pointerup",
+    resetJoystick
+);
+
+joystickEl.addEventListener(
+    "pointercancel",
+    resetJoystick
+);
 
 function updateJoystick(e){
 
-    const r=joy.getBoundingClientRect();
+    const rect=
+        joystickEl.getBoundingClientRect();
 
-    let x=e.clientX-(r.left+r.width/2);
-    let y=e.clientY-(r.top+r.height/2);
+    let x=
+        e.clientX-
+        (rect.left+rect.width/2);
+
+    let y=
+        e.clientY-
+        (rect.top+rect.height/2);
 
     const max=43;
 
-    const d=Math.hypot(x,y);
+    const length=
+        Math.hypot(x,y);
 
-    if(d>max){
-        x=x/d*max;
-        y=y/d*max;
+    if(length>max){
+
+        x=x/length*max;
+        y=y/length*max;
     }
 
     joystick.x=x/max;
     joystick.y=y/max;
 
-    stick.style.transform=
-        `translate(${x}px,${y}px)`;
+    stickEl.style.transform=
+        "translate("+x+"px,"+y+"px)";
 }
 
 function resetJoystick(){
 
     joystick.active=false;
+
     joystick.x=0;
     joystick.y=0;
 
-    stick.style.transform="translate(0,0)";
+    stickEl.style.transform=
+        "translate(0,0)";
 }
 
-/* =========================
-   LOOK CONTROL
-========================= */
 
-canvas.addEventListener("pointerdown",e=>{
-
-    if(state!=="playing") return;
-
-    if(e.clientX<W*.42) return;
-
-    look.active=true;
-    look.id=e.pointerId;
-    look.lastX=e.clientX;
-    look.lastY=e.clientY;
-
-    canvas.setPointerCapture(e.pointerId);
-});
-
-canvas.addEventListener("pointermove",e=>{
-
-    if(!look.active||
-       e.pointerId!==look.id) return;
-
-    const dx=e.clientX-look.lastX;
-
-    player.a+=dx*.004;
-
-    look.lastX=e.clientX;
-    look.lastY=e.clientY;
-});
-
-canvas.addEventListener("pointerup",()=>{
-    look.active=false;
-});
-
-canvas.addEventListener("pointercancel",()=>{
-    look.active=false;
-});
-
-/* =========================
-   PLAYER UPDATE
-========================= */
+/* =========================================================
+   PLAYER
+   ========================================================= */
 
 function updatePlayer(dt){
 
     let forward=0;
     let strafe=0;
 
-    if(keysDown["KeyW"]||keysDown["ArrowUp"])
-        forward+=1;
 
-    if(keysDown["KeyS"]||keysDown["ArrowDown"])
+    if(
+        keysDown["KeyW"] ||
+        keysDown["ArrowUp"]
+    ){
+        forward+=1;
+    }
+
+    if(
+        keysDown["KeyS"] ||
+        keysDown["ArrowDown"]
+    ){
         forward-=1;
+    }
 
     if(keysDown["KeyA"])
         strafe-=1;
@@ -1334,30 +1653,66 @@ function updatePlayer(dt){
     if(keysDown["KeyD"])
         strafe+=1;
 
-    forward+=-joystick.y;
-    strafe+=joystick.x;
 
-    const len=Math.hypot(forward,strafe);
+    forward += -joystick.y;
+    strafe += joystick.x;
 
-    if(len>1){
-        forward/=len;
-        strafe/=len;
+
+    const magnitude=
+        Math.hypot(
+            forward,
+            strafe
+        );
+
+    if(magnitude>1){
+
+        forward/=magnitude;
+        strafe/=magnitude;
     }
 
-    const speed=
-        (keysDown["ShiftLeft"]?.1.9:1.25);
+
+    let speed=1.25;
+
+    if(
+        keysDown["ShiftLeft"] ||
+        keysDown["ShiftRight"]
+    ){
+        speed=1.75;
+    }
+
 
     const dx=
-        Math.cos(player.a)*forward*speed*dt+
-        Math.cos(player.a+Math.PI/2)*strafe*speed*dt;
+        Math.cos(player.angle)*
+        forward*
+        speed*
+        dt
+        +
+        Math.cos(player.angle+Math.PI/2)*
+        strafe*
+        speed*
+        dt;
+
 
     const dy=
-        Math.sin(player.a)*forward*speed*dt+
-        Math.sin(player.a+Math.PI/2)*strafe*speed*dt;
+        Math.sin(player.angle)*
+        forward*
+        speed*
+        dt
+        +
+        Math.sin(player.angle+Math.PI/2)*
+        strafe*
+        speed*
+        dt;
 
-    if(forward||strafe){
 
-        moveEntity(player,dx,dy,.2);
+    if(forward!==0 || strafe!==0){
+
+        moveObject(
+            player,
+            dx,
+            dy,
+            .20
+        );
 
         footTimer-=dt;
 
@@ -1365,17 +1720,25 @@ function updatePlayer(dt){
 
             footTimer=.42;
 
-            footstep();
+            soundFootstep();
         }
     }
 
-    if(flashlight && player.battery>0){
 
-        player.battery-=dt*.95;
+    /* batareya */
+
+    if(
+        flashlight &&
+        player.battery>0
+    ){
+
+        player.battery -=
+            dt*.85;
 
         if(player.battery<=0){
 
             player.battery=0;
+
             flashlight=false;
 
             showMessage(
@@ -1383,111 +1746,158 @@ function updatePlayer(dt){
                 2000
             );
 
-            scareSound();
+            soundScare();
         }
     }
 
-    if(player.battery<15 && flashlight){
 
-        flicker-=dt;
+    /* zəif fənər */
 
-        if(flicker<=0){
+    if(
+        player.battery<18 &&
+        flashlight
+    ){
 
-            flicker=.08+Math.random()*.25;
+        flickerTimer-=dt;
 
-            if(Math.random()<.35)
+        if(flickerTimer<=0){
+
+            flickerTimer=
+                .06+
+                Math.random()*.22;
+
+            if(Math.random()<.38){
+
                 flashlight=false;
 
-            else
-                flashlight=true;
+                setTimeout(()=>{
+                    if(state==="playing")
+                        flashlight=true;
+                },70);
+            }
         }
     }
 
+
     /* sanity */
-    const md=Math.hypot(
-        player.x-monster.x,
-        player.y-monster.y
-    );
 
-    if(monster.active && md<7){
+    const monsterDistance=
+        Math.hypot(
+            player.x-monster.x,
+            player.y-monster.y
+        );
 
-        sanity-=dt*(7-md)*1.2;
+    if(
+        monster.active &&
+        monsterDistance<7
+    ){
 
-        if(sanity<0) sanity=0;
+        sanity -=
+            dt*
+            (7-monsterDistance)*
+            1.15;
 
     }else{
 
-        sanity+=dt*2;
-
-        if(sanity>100)
-            sanity=100;
+        sanity += dt*2;
     }
 
+    sanity=
+        Math.max(
+            0,
+            Math.min(100,sanity)
+        );
+
+
     /* heartbeat */
+
     heartbeatTimer-=dt;
 
-    if(sanity<35 && heartbeatTimer<=0){
+    if(
+        sanity<35 &&
+        heartbeatTimer<=0
+    ){
 
         heartbeatTimer=.7;
 
-        heartbeat();
+        soundHeartbeat();
     }
+
 
     collectNearby();
 }
 
-/* =========================
-   ITEM PROXIMITY
-========================= */
+
+/* =========================================================
+   AUTO BATTERY PICKUP
+   ========================================================= */
 
 function collectNearby(){
 
     for(const item of items){
 
-        if(item.taken) continue;
+        if(item.taken)
+            continue;
 
-        const d=Math.hypot(
-            player.x-item.x,
-            player.y-item.y
-        );
+        if(item.type!=="battery")
+            continue;
 
-        if(item.type==="battery" && d<.65){
+        const distance=
+            Math.hypot(
+                player.x-item.x,
+                player.y-item.y
+            );
+
+        if(distance<.65){
 
             item.taken=true;
 
-            player.battery=Math.min(
-                100,
-                player.battery+30
-            );
+            player.battery=
+                Math.min(
+                    100,
+                    player.battery+30
+                );
 
             score+=100;
 
-            tone(650,.15,"sine",.035);
+            playTone(
+                650,
+                .15,
+                "sine",
+                .035
+            );
 
-            showMessage("BATAREYA +30%");
+            showMessage(
+                "BATAREYA +30%"
+            );
         }
     }
 }
 
-/* =========================
-   MONSTER AI
-========================= */
 
-function hasLineOfSight(ax,ay,bx,by){
+/* =========================================================
+   LINE OF SIGHT
+   ========================================================= */
+
+function lineOfSight(
+    ax,ay,bx,by
+){
 
     const dx=bx-ax;
     const dy=by-ay;
 
-    const dist=Math.hypot(dx,dy);
+    const distance=
+        Math.hypot(dx,dy);
 
-    const steps=Math.ceil(dist/.15);
+    const steps=
+        Math.ceil(distance/.12);
 
     for(let i=1;i<steps;i++){
 
         const t=i/steps;
 
         if(
-            wall(
+            isWall(
                 ax+dx*t,
                 ay+dy*t
             )
@@ -1499,20 +1909,33 @@ function hasLineOfSight(ax,ay,bx,by){
     return true;
 }
 
+
+/* =========================================================
+   MONSTER
+   ========================================================= */
+
 function updateMonster(dt){
 
-    if(!monster.active) return;
+    if(!monster.active)
+        return;
 
-    monster.scareCooldown-=dt;
 
-    const dx=player.x-monster.x;
-    const dy=player.y-monster.y;
+    monster.cooldown-=dt;
 
-    const dist=Math.hypot(dx,dy);
+
+    const dx=
+        player.x-monster.x;
+
+    const dy=
+        player.y-monster.y;
+
+    const distance=
+        Math.hypot(dx,dy);
+
 
     if(
-        dist<10 &&
-        hasLineOfSight(
+        distance<11 &&
+        lineOfSight(
             monster.x,
             monster.y,
             player.x,
@@ -1522,91 +1945,120 @@ function updateMonster(dt){
 
         monster.state="hunt";
 
-    }else if(dist>12){
+    }else if(distance>13){
 
         monster.state="search";
     }
 
+
     if(monster.state==="hunt"){
 
-        const a=Math.atan2(dy,dx);
+        const angle=
+            Math.atan2(
+                dy,
+                dx
+            );
 
-        moveEntity(
+        moveObject(
             monster,
-            Math.cos(a)*monster.speed*dt,
-            Math.sin(a)*monster.speed*dt,
+            Math.cos(angle)*
+            monster.speed*
+            dt,
+            Math.sin(angle)*
+            monster.speed*
+            dt,
             .18
         );
 
-        if(dist<.7 &&
-           monster.scareCooldown<=0){
 
-            monster.scareCooldown=3;
+        if(
+            distance<.72 &&
+            monster.cooldown<=0
+        ){
+
+            monster.cooldown=3;
 
             hurtPlayer();
 
-            /* teleport behind player */
             teleportMonster();
         }
     }
 
-    /* occasional teleport when unseen */
+
+    /* arxadan teleport */
+
     if(
         monster.state==="hunt" &&
-        dist>5 &&
-        Math.random()<dt*.018
+        distance>4.5 &&
+        Math.random()<dt*.015
     ){
 
         teleportMonster();
     }
 }
 
+
 function teleportMonster(){
 
-    const behindAngle=
-        player.a+Math.PI+
-        (Math.random()-.5)*1.3;
+    const behind=
+        player.angle+
+        Math.PI+
+        (Math.random()-.5)*1.2;
 
-    const distance=3+Math.random()*3;
+    const distance=
+        3+
+        Math.random()*3;
 
     const x=
         player.x+
-        Math.cos(behindAngle)*distance;
+        Math.cos(behind)*distance;
 
     const y=
         player.y+
-        Math.sin(behindAngle)*distance;
+        Math.sin(behind)*distance;
+
 
     if(canMove(x,y,.2)){
 
         monster.x=x;
         monster.y=y;
 
-        shake=.15;
+        screenShake=.15;
 
-        whisper();
+        soundWhisper();
     }
 }
+
+
+/* =========================================================
+   DAMAGE
+   ========================================================= */
 
 function hurtPlayer(){
 
     player.health-=28;
+
     sanity-=25;
 
-    shake=.35;
+    screenShake=.35;
 
-    const damage=document.getElementById("damage");
+    const damage=
+        document.getElementById("redDamage");
 
-    damage.style.opacity=.9;
+    damage.style.opacity=".9";
 
     setTimeout(()=>{
-        damage.style.opacity=0;
+        damage.style.opacity="0";
     },300);
 
-    scareSound();
+    soundScare();
 
-    if(navigator.vibrate)
-        navigator.vibrate([80,40,120]);
+    if(navigator.vibrate){
+
+        navigator.vibrate(
+            [80,40,120]
+        );
+    }
 
     if(player.health<=0){
 
@@ -1614,63 +2066,68 @@ function hurtPlayer(){
     }
 }
 
-/* =========================
+
+/* =========================================================
    HORROR EVENTS
-========================= */
+   ========================================================= */
 
 function horrorEvent(){
 
-    if(state!=="playing") return;
+    if(state!=="playing")
+        return;
 
-    const types=[
-        "whisper",
-        "flicker",
-        "shadow",
-        "behind"
-    ];
 
     const type=
-        types[randomInt(0,types.length-1)];
+        randomInt(0,4);
 
-    if(type==="whisper"){
 
-        whisper();
+    if(type===0){
+
+        soundWhisper();
 
         showMessage(
             "SƏNİ KİM İSƏ ÇAĞIRDI...",
-            1600
+            1700
         );
     }
 
-    if(type==="flicker"){
 
-        flicker=.1;
+    else if(type===1){
+
+        flickerTimer=.1;
 
         const flash=
-            document.getElementById("flash");
+            document.getElementById("whiteFlash");
 
-        flash.style.opacity=.08;
+        flash.style.opacity=".10";
 
         setTimeout(()=>{
-            flash.style.opacity=0;
-        },90);
+            flash.style.opacity="0";
+        },80);
 
-        tone(40,.3,"sawtooth",.03);
+        playTone(
+            42,
+            .3,
+            "sawtooth",
+            .03
+        );
     }
 
-    if(type==="shadow"){
 
-        shake=.08;
+    else if(type===2){
+
+        screenShake=.08;
 
         showMessage(
             "ARXANDA BİR HƏRƏKƏT VAR.",
-            1500
+            1600
         );
 
-        whisper();
+        soundWhisper();
     }
 
-    if(type==="behind"){
+
+    else if(type===3){
 
         if(!monster.active)
             monster.active=true;
@@ -1682,32 +2139,48 @@ function horrorEvent(){
             1800
         );
     }
+
+
+    else{
+
+        /* səssiz qorxu */
+
+        playTone(
+            45,
+            .7,
+            "sine",
+            .025
+        );
+    }
 }
 
-/* =========================
-   RAYCASTING
-========================= */
+
+/* =========================================================
+   RAYCAST
+   ========================================================= */
+
+const FOV=Math.PI/3;
 
 function castRay(angle){
 
     const cos=Math.cos(angle);
     const sin=Math.sin(angle);
 
-    let dist=0;
+    let distance=0;
 
-    while(dist<MAX_DEPTH){
+    while(distance<18){
 
-        dist+=.025;
+        distance+=.025;
 
         const x=
             player.x+
-            cos*dist;
+            cos*distance;
 
         const y=
             player.y+
-            sin*dist;
+            sin*distance;
 
-        if(wall(x,y)){
+        if(isWall(x,y)){
 
             const gx=Math.floor(x);
             const gy=Math.floor(y);
@@ -1715,194 +2188,376 @@ function castRay(angle){
             const fx=x-gx;
             const fy=y-gy;
 
-            let side=Math.min(
-                fx,
-                1-fx,
-                fy,
-                1-fy
-            );
+            const side=
+                Math.min(
+                    fx,
+                    1-fx,
+                    fy,
+                    1-fy
+                );
 
             return {
-                dist,
+                distance,
                 side
             };
         }
     }
 
     return {
-        dist:MAX_DEPTH,
+        distance:18,
         side:0
     };
 }
 
-/* =========================
+
+/* =========================================================
+   WORLD PROJECTION
+   ========================================================= */
+
+function project(
+    x,
+    y
+){
+
+    const dx=x-player.x;
+    const dy=y-player.y;
+
+    const distance=
+        Math.hypot(dx,dy);
+
+    let relative=
+        Math.atan2(
+            dy,
+            dx
+        )-
+        player.angle;
+
+    relative=
+        Math.atan2(
+            Math.sin(relative),
+            Math.cos(relative)
+        );
+
+    if(
+        Math.abs(relative)>
+        FOV*.70
+    ){
+        return null;
+    }
+
+    const screenX=
+        W/2+
+        (relative/FOV)*W;
+
+    const size=
+        Math.min(
+            H*1.5,
+            H/(distance*.9)
+        );
+
+    return {
+        x:screenX,
+        y:H*.48,
+        distance,
+        size
+    };
+}
+
+
+/* =========================================================
    RENDER
-========================= */
+   ========================================================= */
 
 function render(){
 
-    const horizon=H*.48;
+    const horizon=
+        H*.48;
+
 
     /* ceiling */
-    const ceiling=ctx.createLinearGradient(
-        0,0,0,horizon
+
+    const ceiling=
+        ctx.createLinearGradient(
+            0,
+            0,
+            0,
+            horizon
+        );
+
+    ceiling.addColorStop(
+        0,
+        "#010103"
     );
 
-    ceiling.addColorStop(0,"#010103");
-    ceiling.addColorStop(1,"#08090c");
+    ceiling.addColorStop(
+        1,
+        "#08090c"
+    );
 
     ctx.fillStyle=ceiling;
-    ctx.fillRect(0,0,W,horizon);
 
-    /* floor */
-    const floor=ctx.createLinearGradient(
-        0,horizon,0,H
+    ctx.fillRect(
+        0,
+        0,
+        W,
+        horizon
     );
 
-    floor.addColorStop(0,"#090a0d");
-    floor.addColorStop(1,"#010102");
+
+    /* floor */
+
+    const floor=
+        ctx.createLinearGradient(
+            0,
+            horizon,
+            0,
+            H
+        );
+
+    floor.addColorStop(
+        0,
+        "#090a0d"
+    );
+
+    floor.addColorStop(
+        1,
+        "#010102"
+    );
 
     ctx.fillStyle=floor;
-    ctx.fillRect(0,horizon,W,H-horizon);
+
+    ctx.fillRect(
+        0,
+        horizon,
+        W,
+        H-horizon
+    );
+
 
     const rayCount=
-        W<700 ? 115:RAYS;
+        W<700 ? 115 : 160;
 
-    const colW=W/rayCount;
+    const columnWidth=
+        W/rayCount;
+
 
     for(let i=0;i<rayCount;i++){
 
         const cameraX=
             i/(rayCount-1)-.5;
 
-        const angle=
-            player.a+
+        const rayAngle=
+            player.angle+
             cameraX*FOV;
 
-        const hit=castRay(angle);
+        const hit=
+            castRay(rayAngle);
 
-        let dist=
-            hit.dist*
-            Math.cos(angle-player.a);
 
-        if(dist<.05) dist=.05;
+        let distance=
+            hit.distance*
+            Math.cos(
+                rayAngle-player.angle
+            );
+
+        distance=
+            Math.max(
+                .05,
+                distance
+            );
+
 
         const wallHeight=
             Math.min(
                 H*1.7,
-                H/(dist*.92)
+                H/(distance*.92)
             );
 
         const top=
-            horizon-wallHeight/2;
+            horizon-
+            wallHeight/2;
 
-        /* Flashlight cone */
-        let brightness=0;
 
-        if(flashlight && player.battery>0){
+        /* fənər işığı */
 
-            const diff=
+        let light=0;
+
+        if(
+            flashlight &&
+            player.battery>0
+        ){
+
+            const difference=
                 Math.abs(
                     Math.atan2(
-                        Math.sin(angle-player.a),
-                        Math.cos(angle-player.a)
+                        Math.sin(
+                            rayAngle-player.angle
+                        ),
+                        Math.cos(
+                            rayAngle-player.angle
+                        )
                     )
                 );
 
-            brightness=
+            light=
                 Math.max(
                     0,
-                    1-diff/(FOV*.72)
+                    1-
+                    difference/(FOV*.72)
                 );
 
-            brightness*=Math.max(
-                0,
-                1-dist/10
-            );
+            light*=
+                Math.max(
+                    0,
+                    1-distance/10
+                );
         }
 
-        let base=
+
+        let brightness=
             5+
-            brightness*48;
+            light*50;
 
-        base*=Math.max(
-            .1,
-            1-dist/18
-        );
+        brightness*=
+            Math.max(
+                .10,
+                1-distance/18
+            );
 
-        if(flicker>0)
-            base*=Math.random()>.5?.25:1;
 
-        const sideShade=
-            hit.side<.18?.72:1;
+        if(
+            flickerTimer>0 &&
+            Math.random()<.5
+        ){
+            brightness*=.25;
+        }
 
-        base*=sideShade;
 
-        const r=Math.floor(base*1.15);
-        const g=Math.floor(base);
-        const b=Math.floor(base);
+        const shade=
+            hit.side<.18
+            ? .70
+            : 1;
+
+        brightness*=shade;
+
+
+        const r=
+            Math.floor(
+                brightness*1.1
+            );
+
+        const g=
+            Math.floor(
+                brightness
+            );
+
+        const b=
+            Math.floor(
+                brightness
+            );
+
 
         ctx.fillStyle=
-            `rgb(${r},${g},${b})`;
+            "rgb("+r+","+g+","+b+")";
 
         ctx.fillRect(
-            i*colW,
+            i*columnWidth,
             top,
-            colW+1,
+            columnWidth+1,
             wallHeight
         );
 
-        /* vertical grime */
-        if(brightness>.2 && dist<8){
+
+        /* divar çirk effektləri */
+
+        if(
+            light>.25 &&
+            distance<8 &&
+            i%15===0
+        ){
 
             ctx.fillStyle=
-                `rgba(0,0,0,${.08+dist/100})`;
+                "rgba(0,0,0,.12)";
 
-            if(i%13===0){
-
-                ctx.fillRect(
-                    i*colW,
-                    top,
-                    1,
-                    wallHeight
-                );
-            }
+            ctx.fillRect(
+                i*columnWidth,
+                top,
+                2,
+                wallHeight
+            );
         }
     }
+
 
     renderItems();
     renderMonster();
 
+
     /* vignette */
-    const vig=ctx.createRadialGradient(
-        W/2,H/2,Math.min(W,H)*.15,
-        W/2,H/2,Math.max(W,H)*.7
+
+    const vignette=
+        ctx.createRadialGradient(
+            W/2,
+            H/2,
+            Math.min(W,H)*.13,
+            W/2,
+            H/2,
+            Math.max(W,H)*.72
+        );
+
+    vignette.addColorStop(
+        0,
+        "rgba(0,0,0,0)"
     );
 
-    vig.addColorStop(0,"rgba(0,0,0,0)");
-    vig.addColorStop(.65,"rgba(0,0,0,.18)");
-    vig.addColorStop(1,"rgba(0,0,0,.9)");
+    vignette.addColorStop(
+        .60,
+        "rgba(0,0,0,.18)"
+    );
 
-    ctx.fillStyle=vig;
-    ctx.fillRect(0,0,W,H);
+    vignette.addColorStop(
+        1,
+        "rgba(0,0,0,.92)"
+    );
 
-    /* sanity distortion */
+    ctx.fillStyle=vignette;
+
+    ctx.fillRect(
+        0,
+        0,
+        W,
+        H
+    );
+
+
+    /* sanity */
+
     if(sanity<30){
 
         ctx.fillStyle=
-            `rgba(100,0,0,${(.3-sanity/100)*.15})`;
+            "rgba(100,0,0,"+
+            ((30-sanity)/100*.35)+
+            ")";
 
-        ctx.fillRect(0,0,W,H);
+        ctx.fillRect(
+            0,
+            0,
+            W,
+            H
+        );
     }
 
-    /* noise */
+
+    /* film noise */
+
     ctx.globalAlpha=.025;
 
-    for(let i=0;i<70;i++){
+    for(let i=0;i<80;i++){
 
         ctx.fillStyle=
-            Math.random()>.5?
-            "#fff":"#000";
+            Math.random()>.5
+            ? "#fff"
+            : "#000";
 
         ctx.fillRect(
             Math.random()*W,
@@ -1913,108 +2568,84 @@ function render(){
     }
 
     ctx.globalAlpha=1;
-
-    if(shake>0){
-
-        /* shake handled next frame visually */
-    }
 }
 
-/* =========================
-   PROJECT WORLD POINT
-========================= */
 
-function projectPoint(x,y){
-
-    const dx=x-player.x;
-    const dy=y-player.y;
-
-    const dist=Math.hypot(dx,dy);
-
-    let angle=
-        Math.atan2(dy,dx)-player.a;
-
-    angle=Math.atan2(
-        Math.sin(angle),
-        Math.cos(angle)
-    );
-
-    if(Math.abs(angle)>FOV*.65)
-        return null;
-
-    const screenX=
-        W/2+
-        (angle/FOV)*W;
-
-    const size=
-        Math.min(
-            H*1.5,
-            H/(dist*.9)
-        );
-
-    return {
-        x:screenX,
-        y:H*.48,
-        dist,
-        size
-    };
-}
-
-/* =========================
-   ITEMS RENDER
-========================= */
+/* =========================================================
+   ITEMS
+   ========================================================= */
 
 function renderItems(){
 
     const visible=[];
 
+
     for(const item of items){
 
-        if(item.taken) continue;
+        if(item.taken)
+            continue;
 
-        const p=projectPoint(
-            item.x,
-            item.y
-        );
+        const p=
+            project(
+                item.x,
+                item.y
+            );
 
-        if(p) visible.push({
-            item,
-            p
-        });
+        if(p){
+
+            visible.push({
+                item,
+                projection:p
+            });
+        }
     }
 
+
     visible.sort(
-        (a,b)=>b.p.dist-a.p.dist
+        (a,b)=>
+            b.projection.distance-
+            a.projection.distance
     );
+
 
     for(const v of visible){
 
-        const {item,p}=v;
+        const item=v.item;
+        const p=v.projection;
 
-        if(p.dist>10) continue;
 
-        const alpha=
-            Math.max(0,
-            1-p.dist/10);
+        if(p.distance>10)
+            continue;
+
 
         ctx.save();
 
-        ctx.globalAlpha=alpha;
+        ctx.globalAlpha=
+            Math.max(
+                0,
+                1-p.distance/10
+            );
+
 
         const pulse=
+            1+
             Math.sin(
                 gameTime*3+
                 item.phase
-            )*.15+1;
+            )*.15;
+
+
+        /* KEY */
 
         if(item.type==="key"){
 
-            ctx.shadowBlur=20;
-            ctx.shadowColor="#d9c46c";
+            ctx.shadowBlur=22;
+            ctx.shadowColor="#d6c36b";
 
-            ctx.fillStyle="#e5d17a";
+            ctx.fillStyle="#e5d47e";
 
             ctx.beginPath();
+
             ctx.arc(
                 p.x,
                 p.y,
@@ -2022,10 +2653,11 @@ function renderItems(){
                 0,
                 Math.PI*2
             );
+
             ctx.fill();
 
             ctx.fillRect(
-                p.x+4,
+                p.x+5,
                 p.y-2,
                 22,
                 4
@@ -2037,13 +2669,17 @@ function renderItems(){
                 4,
                 10
             );
+        }
 
-        }else if(item.type==="battery"){
+
+        /* BATTERY */
+
+        else if(item.type==="battery"){
 
             ctx.shadowBlur=18;
-            ctx.shadowColor="#aeb8c5";
+            ctx.shadowColor="#c8d0d9";
 
-            ctx.strokeStyle="#dfe5eb";
+            ctx.strokeStyle="#e4e8ed";
             ctx.lineWidth=2;
 
             ctx.strokeRect(
@@ -2053,106 +2689,151 @@ function renderItems(){
                 26
             );
 
-            ctx.fillStyle="#dfe5eb";
+            ctx.fillStyle="#e4e8ed";
 
             ctx.fillRect(
                 p.x-3,
-                p.y-8,
+                p.y-7,
                 6,
                 12
             );
+        }
 
-        }else if(item.type==="exit"){
 
-            const w=p.size*.45;
-            const h=p.size*.9;
+        /* EXIT */
 
-            ctx.fillStyle="rgba(20,20,22,.9)";
+        else if(item.type==="exit"){
+
+            const width=
+                Math.max(
+                    30,
+                    p.size*.45
+                );
+
+            const height=
+                Math.max(
+                    60,
+                    p.size*.90
+                );
+
+
+            ctx.fillStyle=
+                "rgba(10,10,12,.96)";
 
             ctx.fillRect(
-                p.x-w/2,
-                p.y-h/2,
-                w,
-                h
+                p.x-width/2,
+                p.y-height/2,
+                width,
+                height
             );
 
+
             ctx.strokeStyle=
-                player.keys>=3?
-                "rgba(160,30,30,.8)":
-                "rgba(100,100,100,.5)";
+                player.keys>=3
+                ? "rgba(170,25,25,.9)"
+                : "rgba(100,100,100,.55)";
 
             ctx.lineWidth=3;
 
             ctx.strokeRect(
-                p.x-w/2,
-                p.y-h/2,
-                w,
-                h
+                p.x-width/2,
+                p.y-height/2,
+                width,
+                height
             );
         }
+
 
         ctx.restore();
     }
 }
 
-/* =========================
-   MONSTER RENDER
-========================= */
+
+/* =========================================================
+   MONSTER
+   ========================================================= */
 
 function renderMonster(){
 
-    if(!monster.active) return;
-
-    const p=projectPoint(
-        monster.x,
-        monster.y
-    );
-
-    if(!p) return;
-
-    if(p.dist>13) return;
-
-    /* Hide behind walls */
-    const los=hasLineOfSight(
-        player.x,
-        player.y,
-        monster.x,
-        monster.y
-    );
-
-    if(!los && p.dist>2.2)
+    if(!monster.active)
         return;
+
+
+    const p=
+        project(
+            monster.x,
+            monster.y
+        );
+
+
+    if(!p)
+        return;
+
+
+    if(p.distance>13)
+        return;
+
+
+    const visible=
+        lineOfSight(
+            player.x,
+            player.y,
+            monster.x,
+            monster.y
+        );
+
+
+    if(
+        !visible &&
+        p.distance>2
+    ){
+        return;
+    }
+
 
     const s=p.size;
 
+
     ctx.save();
 
-    const darkness=
+
+    ctx.globalAlpha=
         Math.max(
             .25,
-            1-p.dist/13
+            1-p.distance/13
         );
 
-    ctx.globalAlpha=darkness;
-
-    /* shadow */
-    ctx.shadowBlur=35;
-    ctx.shadowColor="rgba(0,0,0,.95)";
 
     /* body */
-    const bodyGrad=
+
+    const body=
         ctx.createLinearGradient(
-            p.x-s*.22,
-            p.y-s*.2,
-            p.x+s*.22,
+            p.x-s*.2,
+            p.y-s*.3,
+            p.x+s*.2,
             p.y+s*.6
         );
 
-    bodyGrad.addColorStop(0,"#020203");
-    bodyGrad.addColorStop(.6,"#050507");
-    bodyGrad.addColorStop(1,"#000");
+    body.addColorStop(
+        0,
+        "#010102"
+    );
 
-    ctx.fillStyle=bodyGrad;
+    body.addColorStop(
+        .65,
+        "#050507"
+    );
+
+    body.addColorStop(
+        1,
+        "#000"
+    );
+
+    ctx.fillStyle=body;
+
+    ctx.shadowBlur=35;
+    ctx.shadowColor="rgba(0,0,0,.95)";
+
 
     ctx.beginPath();
 
@@ -2168,14 +2849,16 @@ function renderMonster(){
 
     ctx.fill();
 
+
     /* head */
+
     ctx.beginPath();
 
     ctx.ellipse(
         p.x,
         p.y-s*.18,
         s*.18,
-        s*.2,
+        s*.20,
         0,
         0,
         Math.PI*2
@@ -2183,14 +2866,21 @@ function renderMonster(){
 
     ctx.fill();
 
+
     /* arms */
-    ctx.lineWidth=Math.max(3,s*.07);
-    ctx.strokeStyle="#020203";
+
+    ctx.strokeStyle="#010102";
+
+    ctx.lineWidth=
+        Math.max(
+            3,
+            s*.065
+        );
 
     ctx.beginPath();
 
     ctx.moveTo(
-        p.x-s*.17,
+        p.x-s*.16,
         p.y-s*.02
     );
 
@@ -2200,7 +2890,7 @@ function renderMonster(){
     );
 
     ctx.moveTo(
-        p.x+s*.17,
+        p.x+s*.16,
         p.y-s*.02
     );
 
@@ -2211,147 +2901,188 @@ function renderMonster(){
 
     ctx.stroke();
 
-    /* face only when close */
-    if(p.dist<5){
 
-        ctx.shadowBlur=12;
-        ctx.shadowColor="#9e1111";
+    /* eyes */
 
-        ctx.fillStyle="#8d1515";
+    if(p.distance<5){
+
+        ctx.shadowBlur=15;
+        ctx.shadowColor="#a51414";
+
+        ctx.fillStyle="#9e1818";
 
         ctx.beginPath();
 
-        ctx.ellipse(
+        ctx.arc(
             p.x-s*.065,
             p.y-s*.21,
-            s*.025,
-            s*.025,
-            0,0,Math.PI*2
+            Math.max(2,s*.025),
+            0,
+            Math.PI*2
         );
 
-        ctx.ellipse(
+        ctx.arc(
             p.x+s*.065,
             p.y-s*.21,
-            s*.025,
-            s*.025,
-            0,0,Math.PI*2
+            Math.max(2,s*.025),
+            0,
+            Math.PI*2
         );
 
         ctx.fill();
     }
 
+
     ctx.restore();
 
-    /* near scare */
-    if(p.dist<1.2){
+
+    /* yaxın qorxu */
+
+    if(p.distance<1.25){
 
         ctx.save();
 
         ctx.globalAlpha=
             Math.max(
                 0,
-                1-p.dist/1.2
-            )*.55;
+                1-p.distance/1.25
+            )*.48;
 
-        ctx.fillStyle="#8d0000";
+        ctx.fillStyle="#870000";
 
         ctx.fillRect(
-            0,0,W,H
+            0,
+            0,
+            W,
+            H
         );
 
         ctx.restore();
     }
 }
 
-/* =========================
-   HORROR CLOCK
-========================= */
 
-function updateClock(dt){
+/* =========================================================
+   CLOCK / EVENTS
+   ========================================================= */
+
+function updateWorld(dt){
 
     gameTime+=dt;
 
-    eventTimer-=dt;
+    horrorTimer-=dt;
 
-    if(eventTimer<=0){
+    if(horrorTimer<=0){
 
-        eventTimer=
+        horrorTimer=
             7+
             Math.random()*13;
 
-        if(Math.random()<.72)
+        if(Math.random()<.72){
+
             horrorEvent();
+        }
+    }
+
+
+    if(flickerTimer>0){
+
+        flickerTimer-=dt;
     }
 }
 
-/* =========================
+
+/* =========================================================
    HUD
-========================= */
+   ========================================================= */
 
 function updateHUD(){
 
-    document.getElementById("keys")
-        .textContent=
-        `${player.keys} / 3`;
+    document.getElementById(
+        "keysHUD"
+    ).textContent=
+        player.keys+
+        " / 3";
 
-    const fill=
-        document.getElementById("batteryFill");
 
-    fill.style.width=
+    const battery=
+        document.getElementById(
+            "batteryFill"
+        );
+
+    battery.style.width=
         player.battery+"%";
 
-    fill.classList.toggle(
+    battery.classList.toggle(
         "low",
         player.battery<20
     );
 
-    document.getElementById("sanityFill")
-        .style.width=
+
+    document.getElementById(
+        "sanityFill"
+    ).style.width=
         sanity+"%";
 }
 
-/* =========================
-   GAME START
-========================= */
+
+/* =========================================================
+   START
+   ========================================================= */
 
 function resetGame(){
 
-    seed=makeSeed();
+    /*
+      Əgər challenge linki varsa,
+      eyni challenge seed istifadə olunur.
+    */
 
-    challengeCode=
-        seed.toString(36)
-        .toUpperCase()
-        .slice(-6);
+    if(!challengeMode){
+
+        seed=createSeed();
+
+        challengeCode=
+            seed.toString(36)
+            .toUpperCase()
+            .slice(-6);
+    }
+
 
     generateMap(seed);
+
 
     player={
         x:1.5,
         y:1.5,
-        a:0,
+        angle:0,
         health:100,
         battery:100,
         keys:0
     };
 
+
     monster.active=false;
     monster.state="sleep";
-    monster.timer=0;
-    monster.scareCooldown=0;
+    monster.cooldown=0;
+
 
     flashlight=true;
+
     sanity=100;
 
     gameTime=0;
     score=0;
 
-    eventTimer=8;
-    heartbeatTimer=0;
+    horrorTimer=8;
     footTimer=0;
-    flicker=0;
+    heartbeatTimer=0;
+    flickerTimer=0;
+    screenShake=0;
+
 
     updateHUD();
 }
+
 
 function startGame(){
 
@@ -2361,227 +3092,371 @@ function startGame(){
 
     state="playing";
 
-    document.getElementById("startScreen")
-        .style.display="none";
 
-    document.getElementById("endScreen")
-        .style.display="none";
+    document.getElementById(
+        "startScreen"
+    ).style.display="none";
 
-    document.getElementById("pauseScreen")
-        .style.display="none";
 
-    document.getElementById("hud")
-        .classList.add("show");
+    document.getElementById(
+        "endScreen"
+    ).style.display="none";
+
+
+    document.getElementById(
+        "pauseScreen"
+    ).style.display="none";
+
+
+    document.getElementById(
+        "hud"
+    ).classList.add("show");
+
 
     showMessage(
-        "SAAT 03:17 — BAŞLADI",
+        "03:17 — BAŞLADI",
         1800
     );
 
-    tone(70,.6,"sine",.025);
+
+    playTone(
+        70,
+        .6,
+        "sine",
+        .025
+    );
 }
 
-/* =========================
+
+/* =========================================================
    PAUSE
-========================= */
+   ========================================================= */
 
 function pauseGame(){
 
-    if(state!=="playing") return;
+    if(state!=="playing")
+        return;
 
     state="paused";
 
-    document.getElementById("pauseScreen")
-        .style.display="flex";
+    document.getElementById(
+        "pauseScreen"
+    ).style.display="flex";
 }
 
 function resumeGame(){
 
-    if(state!=="paused") return;
+    if(state!=="paused")
+        return;
+
+    initAudio();
 
     state="playing";
 
-    document.getElementById("pauseScreen")
-        .style.display="none";
-
-    initAudio();
+    document.getElementById(
+        "pauseScreen"
+    ).style.display="none";
 }
 
-/* =========================
-   END
-========================= */
+
+/* =========================================================
+   WIN / LOSE
+   ========================================================= */
 
 function winGame(){
 
+    if(state!=="playing")
+        return;
+
     state="win";
 
-    score+=
-        Math.max(
-            0,
-            Math.floor(
-                5000-gameTime*20
-            )
-        );
+
+    score+=Math.max(
+        0,
+        Math.floor(
+            5000-
+            gameTime*20
+        )
+    );
+
 
     showEnd(true);
 }
 
+
 function loseGame(){
+
+    if(state!=="playing")
+        return;
 
     state="dead";
 
-    scareSound();
+    soundScare();
 
     showEnd(false);
 }
 
+
 function showEnd(win){
 
-    document.getElementById("hud")
-        .classList.remove("show");
+    document.getElementById(
+        "hud"
+    ).classList.remove("show");
 
-    const screen=
-        document.getElementById("endScreen");
 
-    screen.style.display="flex";
+    document.getElementById(
+        "endScreen"
+    ).style.display="flex";
+
 
     const title=
-        document.getElementById("endTitle");
+        document.getElementById(
+            "endTitle"
+        );
 
     const text=
-        document.getElementById("endText");
+        document.getElementById(
+            "endText"
+        );
 
     const logo=
-        document.getElementById("endLogo");
+        document.getElementById(
+            "endLogo"
+        );
+
 
     if(win){
 
-        title.textContent="SƏN ÇIXDIN";
-        title.className="resultTitle red";
+        logo.textContent="SURVIVOR";
+
+        title.textContent=
+            "SƏN ÇIXDIN";
 
         text.textContent=
             "03:17-dən sağ çıxdın. İndi dostunun növbəsidir.";
 
-        logo.textContent="SURVIVOR";
-
     }else{
 
-        title.textContent="SƏNİ TAPDI";
-        title.className="resultTitle red";
+        logo.textContent="GAME OVER";
+
+        title.textContent=
+            "SƏNİ TAPDI";
 
         text.textContent=
             "İşıq söndü. Amma gecə hələ bitməyib.";
-
-        logo.textContent="GAME OVER";
     }
 
-    document.getElementById("score")
-        .textContent=
-        String(score).padStart(4,"0");
 
-    document.getElementById("challenge")
-        .textContent=
-        `CHALLENGE: ${challengeCode}`;
+    document.getElementById(
+        "score"
+    ).textContent=
+        String(
+            Math.floor(score)
+        ).padStart(4,"0");
 
-    if(navigator.vibrate)
+
+    document.getElementById(
+        "challengeBox"
+    ).textContent=
+        "CHALLENGE: "+
+        challengeCode;
+
+
+    if(navigator.vibrate){
+
         navigator.vibrate(
-            win?[80]:[120,50,180]
+            win
+            ? [80]
+            : [120,50,180]
         );
+    }
 }
 
-/* =========================
+
+/* =========================================================
    SHARE
-========================= */
+   ========================================================= */
 
-document.getElementById("shareBtn")
-    .addEventListener("click",async()=>{
+document
+.getElementById("shareBtn")
+.addEventListener("click",async()=>{
 
-        const url=
-            location.href.split("?")[0]+
-            "?challenge="+
-            encodeURIComponent(challengeCode);
+    const url=
+        location.href.split("?")[0]+
+        "?challenge="+
+        encodeURIComponent(
+            challengeCode
+        );
 
-        const text=
-            state==="win"
-            ?`Mən DON'T LOOK BEHIND — 03:17 oyunundan sağ çıxdım! 🩸\nChallenge: ${challengeCode}\nSən də çıxışa çata bilərsən?`
-            :`Məni DON'T LOOK BEHIND — 03:17-də tapdı. 😈\nChallenge: ${challengeCode}\nGörək sən nə qədər dözəcəksən.`;
 
-        try{
+    const text=
+        state==="win"
 
-            if(navigator.share){
+        ?
 
-                await navigator.share({
-                    title:"DON'T LOOK BEHIND — 03:17",
-                    text,
-                    url
-                });
+        "Mən DON'T LOOK BEHIND — 03:17 oyunundan sağ çıxdım! 🩸\n\n"+
+        "Challenge: "+
+        challengeCode+
+        "\n\n"+
+        "Sən də çıxa biləcəksən?"
 
-            }else{
+        :
 
-                await navigator.clipboard.writeText(
-                    text+"\n"+url
-                );
+        "Məni DON'T LOOK BEHIND — 03:17-də tapdı. 😈\n\n"+
+        "Challenge: "+
+        challengeCode+
+        "\n\n"+
+        "Görək sən nə qədər dözəcəksən.";
 
-                showMessage(
-                    "CHALLENGE KOPYALANDI"
-                );
-            }
 
-        }catch(e){}
-    });
+    try{
 
-/* =========================
+        if(navigator.share){
+
+            await navigator.share({
+                title:
+                    "DON'T LOOK BEHIND — 03:17",
+                text:text,
+                url:url
+            });
+
+        }else{
+
+            await navigator.clipboard.writeText(
+                text+
+                "\n"+
+                url
+            );
+
+            showMessage(
+                "CHALLENGE KOPYALANDI",
+                1800
+            );
+        }
+
+    }catch(e){}
+});
+
+
+/* =========================================================
    BUTTONS
-========================= */
+   ========================================================= */
 
-document.getElementById("startBtn")
-    .addEventListener("click",startGame);
+document
+.getElementById("startBtn")
+.addEventListener(
+    "click",
+    startGame
+);
 
-document.getElementById("resumeBtn")
-    .addEventListener("click",resumeGame);
+document
+.getElementById("resumeBtn")
+.addEventListener(
+    "click",
+    resumeGame
+);
 
-document.getElementById("restartBtn")
-    .addEventListener("click",startGame);
+document
+.getElementById("restartBtn")
+.addEventListener(
+    "click",
+    ()=>{
+        challengeMode=false;
+        startGame();
+    }
+);
 
-/* =========================
+
+/* =========================================================
+   CHALLENGE URL
+   ========================================================= */
+
+function loadChallenge(){
+
+    const params=
+        new URLSearchParams(
+            window.location.search
+        );
+
+    const code=
+        params.get("challenge");
+
+
+    if(!code)
+        return;
+
+
+    challengeMode=true;
+
+    challengeCode=
+        code.toUpperCase();
+
+    seed=
+        stringHash(code);
+
+
+    document.getElementById(
+        "introText"
+    ).innerHTML=
+
+        "<b>CHALLENGE MODE</b><br><br>"+
+        "Kod: <b>"+
+        challengeCode+
+        "</b>"+
+        "<br><br>"+
+        "Eyni gecə.<br>"+
+        "Eyni xəritə.<br>"+
+        "Eyni qorxu."+
+        "<br><br>"+
+        "<b>Görək sən çıxa biləcəksən?</b>";
+}
+
+
+/* =========================================================
    GAME LOOP
-========================= */
+   ========================================================= */
 
 function update(dt){
 
     if(state!=="playing")
         return;
 
-    updateClock(dt);
+
+    updateWorld(dt);
+
     updatePlayer(dt);
+
     updateMonster(dt);
 
-    if(shake>0)
-        shake-=dt;
 
     score+=dt*2;
+
 
     updateHUD();
 }
 
-function loop(t){
+
+function gameLoop(time){
 
     const dt=
         Math.min(
             .05,
-            (t-last)/1000||0
+            (time-lastTime)/1000 || 0
         );
 
-    last=t;
+    lastTime=time;
+
 
     update(dt);
 
+
     ctx.save();
 
-    if(shake>0){
+
+    if(screenShake>0){
 
         const amount=
-            shake*18;
+            screenShake*18;
 
         ctx.translate(
             (Math.random()-.5)*amount,
@@ -2589,64 +3464,53 @@ function loop(t){
         );
     }
 
+
     render();
+
 
     ctx.restore();
 
-    requestAnimationFrame(loop);
+
+    requestAnimationFrame(
+        gameLoop
+    );
 }
 
-requestAnimationFrame(loop);
 
-/* =========================
-   CHALLENGE MODE
-========================= */
+/* =========================================================
+   INITIALIZE
+   ========================================================= */
 
-(function(){
+loadChallenge();
 
-    const params=
-        new URLSearchParams(
-            location.search
-        );
+requestAnimationFrame(
+    gameLoop
+);
 
-    const c=params.get("challenge");
 
-    if(c){
+/* =========================================================
+   MOBILE PROTECTION
+   ========================================================= */
 
-        const s=hashString(c);
-
-        seed=s;
-
-        document.querySelector(
-            ".subtitle"
-        ).innerHTML=
-        `
-        <b>CHALLENGE MODE</b><br>
-        Kod: ${c}<br><br>
-        Eyni gecə.
-        Eyni qorxu.
-        <br>
-        Görək sən bacaracaqsan?
-        `;
-
-        challengeCode=c;
-    }
-
-})();
-
-/* prevent browser gestures */
 document.addEventListener(
     "contextmenu",
     e=>e.preventDefault()
 );
 
 document.addEventListener(
+    "gesturestart",
+    e=>e.preventDefault()
+);
+
+document.addEventListener(
     "touchmove",
-    e=>e.preventDefault(),
+    e=>{
+        e.preventDefault();
+    },
     {passive:false}
 );
 
 </script>
 
 </body>
-  </html>
+      </html>
