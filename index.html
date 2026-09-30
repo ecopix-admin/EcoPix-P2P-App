@@ -1,2641 +1,1598 @@
-<!DOCTYPE html>
-<html lang="az">
+<!DOCTYPE html><html lang="az">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport"
-      content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>IRON ZONE — Battle Royale</title>
-
-<style>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<meta name="theme-color" content="#050507">
+<title>LiveAZ — Live Streaming</title><style>
 *{
-  box-sizing:border-box;
-  margin:0;
-  padding:0;
-  -webkit-tap-highlight-color:transparent;
-  user-select:none;
+    box-sizing:border-box;
+    -webkit-tap-highlight-color:transparent;
 }
 
 html,body{
-  width:100%;
-  height:100%;
-  overflow:hidden;
-  background:#05070a;
-  font-family:Arial,Helvetica,sans-serif;
-  color:#fff;
+    margin:0;
+    padding:0;
+    width:100%;
+    height:100%;
+    overflow:hidden;
+    background:#000;
+    color:#fff;
+    font-family:Arial,Helvetica,sans-serif;
 }
 
-#game{
-  position:fixed;
-  inset:0;
+button,input{
+    font:inherit;
 }
 
-canvas{
-  display:block;
-  width:100%;
-  height:100%;
+button{
+    border:0;
+    color:#fff;
+    cursor:pointer;
 }
 
-#loading{
-  position:fixed;
-  inset:0;
-  z-index:1000;
-  background:
-    radial-gradient(circle at 50% 40%,#17212d 0,#080b10 45%,#020305 100%);
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  transition:.5s;
+#app{
+    position:relative;
+    width:100%;
+    height:100%;
+    overflow:hidden;
+    background:#050507;
+}
+
+/* VIDEO */
+
+#video{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    background:
+        radial-gradient(circle at 50% 35%,#30303a 0,#101014 35%,#030303 75%);
+    z-index:1;
+}
+
+#videoMirror{
+    transform:scaleX(-1);
+}
+
+/* DARK GRADIENTS */
+
+.gradientTop{
+    position:absolute;
+    left:0;
+    right:0;
+    top:0;
+    height:170px;
+    z-index:4;
+    pointer-events:none;
+    background:linear-gradient(
+        to bottom,
+        rgba(0,0,0,.72),
+        rgba(0,0,0,.25),
+        transparent
+    );
+}
+
+.gradientBottom{
+    position:absolute;
+    left:0;
+    right:0;
+    bottom:0;
+    height:360px;
+    z-index:4;
+    pointer-events:none;
+    background:linear-gradient(
+        to top,
+        rgba(0,0,0,.90),
+        rgba(0,0,0,.60),
+        transparent
+    );
+}
+
+/* TOP BAR */
+
+.topbar{
+    position:absolute;
+    top:0;
+    left:0;
+    right:0;
+    z-index:10;
+    padding:14px 12px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+}
+
+.liveInfo{
+    display:flex;
+    align-items:center;
+    gap:9px;
+}
+
+.liveBadge{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    padding:7px 10px;
+    border-radius:9px;
+    background:rgba(255,25,70,.92);
+    font-size:12px;
+    font-weight:800;
+    box-shadow:0 4px 15px rgba(255,0,60,.25);
+}
+
+.liveDot{
+    width:7px;
+    height:7px;
+    background:white;
+    border-radius:50%;
+    animation:pulse 1.2s infinite;
+}
+
+@keyframes pulse{
+    50%{opacity:.35;transform:scale(.7)}
+}
+
+.viewerBox{
+    display:flex;
+    align-items:center;
+    gap:5px;
+    padding:7px 10px;
+    border-radius:9px;
+    background:rgba(0,0,0,.48);
+    backdrop-filter:blur(12px);
+    font-size:12px;
+}
+
+.topActions{
+    display:flex;
+    gap:7px;
+}
+
+.iconBtn{
+    width:38px;
+    height:38px;
+    border-radius:50%;
+    background:rgba(0,0,0,.45);
+    backdrop-filter:blur(12px);
+    font-size:18px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+/* PROFILE */
+
+.profile{
+    position:absolute;
+    left:14px;
+    bottom:175px;
+    z-index:11;
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+
+.avatar{
+    width:44px;
+    height:44px;
+    border-radius:50%;
+    border:2px solid #fff;
+    object-fit:cover;
+    background:#222;
+}
+
+.profileText{
+    display:flex;
+    flex-direction:column;
+    gap:3px;
+}
+
+.username{
+    font-size:15px;
+    font-weight:800;
+}
+
+.followBtn{
+    width:max-content;
+    padding:4px 11px;
+    border-radius:6px;
+    background:#ff174f;
+    font-size:11px;
+    font-weight:700;
+}
+
+/* CHAT */
+
+.chat{
+    position:absolute;
+    left:12px;
+    bottom:77px;
+    width:min(72%,370px);
+    height:245px;
+    z-index:12;
+    display:flex;
+    flex-direction:column;
+    justify-content:flex-end;
+    overflow:hidden;
+    pointer-events:none;
+}
+
+.messages{
+    display:flex;
+    flex-direction:column;
+    gap:7px;
+    overflow:hidden;
+}
+
+.msg{
+    width:max-content;
+    max-width:100%;
+    padding:6px 10px;
+    border-radius:14px;
+    background:rgba(0,0,0,.38);
+    backdrop-filter:blur(8px);
+    font-size:13px;
+    line-height:1.3;
+    animation:messageIn .25s ease;
+}
+
+.msg b{
+    color:#ffd84d;
+    margin-right:4px;
+}
+
+@keyframes messageIn{
+    from{opacity:0;transform:translateY(10px)}
+    to{opacity:1;transform:translateY(0)}
+}
+
+/* INPUT */
+
+.inputArea{
+    position:absolute;
+    left:10px;
+    right:10px;
+    bottom:13px;
+    z-index:20;
+    display:flex;
+    align-items:center;
+    gap:7px;
+}
+
+.chatInput{
+    min-width:0;
+    flex:1;
+    height:46px;
+    border:1px solid rgba(255,255,255,.18);
+    outline:none;
+    border-radius:24px;
+    padding:0 17px;
+    color:white;
+    background:rgba(0,0,0,.48);
+    backdrop-filter:blur(18px);
+}
+
+.chatInput::placeholder{
+    color:rgba(255,255,255,.65);
+}
+
+.actionCircle{
+    width:46px;
+    height:46px;
+    flex:0 0 46px;
+    border-radius:50%;
+    background:rgba(0,0,0,.50);
+    backdrop-filter:blur(15px);
+    font-size:21px;
+}
+
+/* RIGHT ACTIONS */
+
+.rightActions{
+    position:absolute;
+    right:10px;
+    bottom:75px;
+    z-index:15;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:14px;
+}
+
+.sideAction{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:3px;
+    font-size:11px;
+    text-shadow:0 2px 5px #000;
+}
+
+.sideIcon{
+    width:48px;
+    height:48px;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:25px;
+    background:rgba(0,0,0,.38);
+    backdrop-filter:blur(10px);
+}
+
+.likeCount{
+    font-weight:700;
+}
+
+/* HEARTS */
+
+#hearts{
+    position:absolute;
+    right:70px;
+    bottom:80px;
+    width:130px;
+    height:430px;
+    z-index:30;
+    pointer-events:none;
+    overflow:visible;
+}
+
+.heart{
+    position:absolute;
+    bottom:0;
+    font-size:28px;
+    animation:heartFly 2.5s cubic-bezier(.15,.7,.25,1) forwards;
+    filter:drop-shadow(0 4px 8px rgba(255,0,80,.4));
+}
+
+@keyframes heartFly{
+    0%{
+        opacity:0;
+        transform:translate(0,0) scale(.5) rotate(0);
+    }
+    10%{opacity:1}
+    100%{
+        opacity:0;
+        transform:translate(
+            var(--x),
+            -390px
+        ) scale(1.45) rotate(var(--r));
+    }
+}
+
+/* GIFTS */
+
+.giftPanel{
+    position:absolute;
+    right:10px;
+    bottom:145px;
+    z-index:40;
+    width:220px;
+    padding:10px;
+    border-radius:16px;
+    background:rgba(12,12,18,.85);
+    backdrop-filter:blur(18px);
+    border:1px solid rgba(255,255,255,.12);
+    display:none;
+}
+
+.giftPanel.open{
+    display:block;
+    animation:panelIn .2s ease;
+}
+
+@keyframes panelIn{
+    from{opacity:0;transform:translateY(10px) scale(.96)}
+    to{opacity:1;transform:none}
+}
+
+.giftTitle{
+    font-weight:800;
+    font-size:14px;
+    margin-bottom:9px;
+}
+
+.gifts{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:6px;
+}
+
+.gift{
+    padding:9px 2px;
+    border-radius:10px;
+    background:rgba(255,255,255,.07);
+    font-size:22px;
+}
+
+.gift small{
+    display:block;
+    margin-top:3px;
+    font-size:9px;
+    opacity:.75;
+}
+
+/* GIFT ANIMATION */
+
+.giftFly{
+    position:absolute;
+    left:50%;
+    top:55%;
+    z-index:100;
+    font-size:70px;
+    animation:giftFly 1.5s ease-out forwards;
+    pointer-events:none;
+}
+
+@keyframes giftFly{
+    0%{
+        opacity:0;
+        transform:translate(-50%,-50%) scale(.3);
+    }
+    20%{opacity:1}
+    100%{
+        opacity:0;
+        transform:translate(-50%,-280px) scale(1.4);
+    }
+}
+
+/* CAMERA OFF */
+
+.cameraOff{
+    position:absolute;
+    inset:0;
+    z-index:2;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    flex-direction:column;
+    background:
+        radial-gradient(circle,#24242d,#050507 65%);
+}
+
+.cameraOff.show{
+    display:flex;
+}
+
+.cameraOff .bigAvatar{
+    width:95px;
+    height:95px;
+    border-radius:50%;
+    object-fit:cover;
+    border:3px solid rgba(255,255,255,.8);
+}
+
+.cameraOff p{
+    margin-top:12px;
+    font-weight:700;
+}
+
+/* SETTINGS */
+
+.settings{
+    position:absolute;
+    top:62px;
+    right:10px;
+    z-index:50;
+    width:240px;
+    border-radius:16px;
+    background:rgba(12,12,17,.92);
+    backdrop-filter:blur(20px);
+    border:1px solid rgba(255,255,255,.12);
+    padding:8px;
+    display:none;
+}
+
+.settings.open{
+    display:block;
+}
+
+.setting{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:13px 10px;
+    border-radius:10px;
+    font-size:13px;
+}
+
+.setting:hover{
+    background:rgba(255,255,255,.08);
+}
+
+.toggle{
+    width:40px;
+    height:22px;
+    border-radius:20px;
+    background:#555;
+    position:relative;
+}
+
+.toggle.on{
+    background:#ff1750;
+}
+
+.toggle:after{
+    content:"";
+    position:absolute;
+    top:3px;
+    left:3px;
+    width:16px;
+    height:16px;
+    border-radius:50%;
+    background:white;
+    transition:.2s;
+}
+
+.toggle.on:after{
+    left:21px;
+}
+
+/* START SCREEN */
+
+.startScreen{
+    position:absolute;
+    inset:0;
+    z-index:200;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-direction:column;
+    background:
+        radial-gradient(circle at 50% 25%,#28172a,#09090d 50%,#020203);
+    text-align:center;
+    padding:25px;
 }
 
 .logo{
-  font-size:clamp(42px,10vw,100px);
-  font-weight:1000;
-  letter-spacing:8px;
-  text-shadow:0 0 25px #00c8ff,0 0 60px #006aff;
+    font-size:39px;
+    font-weight:900;
+    letter-spacing:-2px;
+    background:linear-gradient(90deg,#ff174f,#ff5b9a,#8d6bff);
+    -webkit-background-clip:text;
+    color:transparent;
 }
 
-.sub{
-  margin-top:8px;
-  letter-spacing:5px;
-  color:#9eb0bf;
-  font-size:13px;
+.logoSub{
+    color:#aaa;
+    font-size:13px;
+    margin:7px 0 28px;
 }
 
-.loadbar{
-  width:min(380px,70vw);
-  height:5px;
-  background:#17202a;
-  margin-top:35px;
-  overflow:hidden;
-  border-radius:10px;
+.startBtn{
+    padding:14px 35px;
+    border-radius:28px;
+    background:linear-gradient(90deg,#ff174f,#ff3b79);
+    font-weight:800;
+    font-size:15px;
+    box-shadow:0 10px 35px rgba(255,20,75,.28);
 }
 
-.loadfill{
-  width:0%;
-  height:100%;
-  background:#00c8ff;
-  box-shadow:0 0 18px #00c8ff;
-  transition:width .3s;
+.permission{
+    margin-top:14px;
+    color:#777;
+    font-size:11px;
+    max-width:290px;
+    line-height:1.5;
 }
 
-#hud{
-  position:fixed;
-  inset:0;
-  pointer-events:none;
-  z-index:20;
+/* TOAST */
+
+.toast{
+    position:absolute;
+    left:50%;
+    top:50%;
+    z-index:300;
+    transform:translate(-50%,-50%) scale(.9);
+    padding:12px 17px;
+    border-radius:13px;
+    background:rgba(0,0,0,.78);
+    backdrop-filter:blur(15px);
+    opacity:0;
+    pointer-events:none;
+    transition:.25s;
+    font-size:13px;
+    text-align:center;
 }
 
-.top{
-  position:absolute;
-  top:15px;
-  left:15px;
-  right:15px;
-  display:flex;
-  justify-content:space-between;
-  align-items:flex-start;
+.toast.show{
+    opacity:1;
+    transform:translate(-50%,-50%) scale(1);
 }
 
-.panel{
-  background:rgba(5,10,15,.72);
-  border:1px solid rgba(255,255,255,.13);
-  backdrop-filter:blur(10px);
-  border-radius:12px;
-  padding:9px 13px;
-  box-shadow:0 5px 25px #0007;
+/* RESPONSIVE */
+
+@media(min-width:700px){
+    #app{
+        max-width:480px;
+        margin:auto;
+        box-shadow:0 0 80px rgba(0,0,0,.8);
+    }
 }
 
-.stat{
-  display:flex;
-  gap:8px;
-  align-items:center;
-  font-weight:800;
+@media(max-height:650px){
+    .profile{bottom:145px}
+    .chat{height:190px;bottom:62px}
+    .rightActions{bottom:60px}
 }
+</style></head><body><div id="app"><video id="video" autoplay muted playsinline></video>
 
-.small{
-  color:#91a0aa;
-  font-size:10px;
-  letter-spacing:1px;
-}
-
-#alive{
-  color:#65ff9c;
-}
-
-#kills{
-  color:#ffb84d;
-}
-
-#zone{
-  color:#5bd8ff;
-}
-
-#crosshair{
-  position:absolute;
-  left:50%;
-  top:50%;
-  width:25px;
-  height:25px;
-  transform:translate(-50%,-50%);
-}
-
-#crosshair:before,
-#crosshair:after{
-  content:"";
-  position:absolute;
-  background:#fff;
-  box-shadow:0 0 7px #000;
-}
-
-#crosshair:before{
-  width:2px;
-  height:25px;
-  left:11px;
-}
-
-#crosshair:after{
-  height:2px;
-  width:25px;
-  top:11px;
-}
-
-#hitmarker{
-  position:absolute;
-  left:50%;
-  top:50%;
-  width:32px;
-  height:32px;
-  transform:translate(-50%,-50%);
-  opacity:0;
-}
-
-#hitmarker:before,
-#hitmarker:after{
-  content:"";
-  position:absolute;
-  inset:0;
-  border:3px solid white;
-  transform:rotate(45deg);
-}
-
-#hitmarker.show{
-  animation:hit .18s ease-out;
-}
-
-@keyframes hit{
-  0%{opacity:1;transform:translate(-50%,-50%) scale(.7)}
-  100%{opacity:0;transform:translate(-50%,-50%) scale(1.25)}
-}
-
-#bottom{
-  position:absolute;
-  left:50%;
-  bottom:18px;
-  transform:translateX(-50%);
-  display:flex;
-  align-items:flex-end;
-  gap:14px;
-}
-
-.weapon{
-  min-width:220px;
-  padding:12px 15px;
-}
-
-.weaponName{
-  font-size:18px;
-  font-weight:900;
-}
-
-.ammo{
-  font-size:28px;
-  font-weight:1000;
-  margin-top:3px;
-}
-
-.ammo span{
-  font-size:14px;
-  color:#87939d;
-}
-
-.hpwrap{
-  width:220px;
-  margin-top:7px;
-}
-
-.hp{
-  height:8px;
-  background:#20272d;
-  border-radius:10px;
-  overflow:hidden;
-}
-
-.hp > div{
-  width:100%;
-  height:100%;
-  background:#37e889;
-}
-
-.armor{
-  margin-top:4px;
-  height:5px;
-  background:#20272d;
-  overflow:hidden;
-  border-radius:10px;
-}
-
-.armor > div{
-  width:100%;
-  height:100%;
-  background:#36a7ff;
-}
-
-#map{
-  width:150px;
-  height:150px;
-  position:relative;
-  overflow:hidden;
-  border-radius:12px;
-  border:1px solid #ffffff35;
-  background:#17251c;
-}
-
-#map canvas{
-  position:absolute;
-  inset:0;
-}
-
-#mobile{
-  display:none;
-  position:fixed;
-  inset:0;
-  z-index:50;
-  pointer-events:none;
-}
-
-#joystick{
-  position:absolute;
-  left:24px;
-  bottom:30px;
-  width:135px;
-  height:135px;
-  border:2px solid #ffffff33;
-  border-radius:50%;
-  background:#ffffff0a;
-  pointer-events:auto;
-}
-
-#stick{
-  position:absolute;
-  width:62px;
-  height:62px;
-  left:35px;
-  top:35px;
-  border-radius:50%;
-  background:#ffffff18;
-  border:2px solid #ffffff40;
-}
-
-.mbtn{
-  position:absolute;
-  width:68px;
-  height:68px;
-  border-radius:50%;
-  border:1px solid #ffffff3a;
-  background:#071019b8;
-  color:#fff;
-  font-size:11px;
-  font-weight:900;
-  pointer-events:auto;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-}
-
-#fire{
-  right:27px;
-  bottom:40px;
-  width:90px;
-  height:90px;
-  background:#e52d2d45;
-  border-color:#ff5555aa;
-}
-
-#reload{
-  right:125px;
-  bottom:30px;
-}
-
-#jump{
-  right:30px;
-  bottom:145px;
-}
-
-#sprint{
-  left:170px;
-  bottom:45px;
-  width:62px;
-  height:62px;
-}
-
-#switch{
-  right:115px;
-  bottom:130px;
-}
-
-#message{
-  position:absolute;
-  left:50%;
-  top:22%;
-  transform:translateX(-50%);
-  font-size:22px;
-  font-weight:1000;
-  text-align:center;
-  text-shadow:0 3px 15px #000;
-}
-
-#damage{
-  position:absolute;
-  inset:0;
-  pointer-events:none;
-  opacity:0;
-  background:radial-gradient(circle,transparent 45%,#ff000080 100%);
-}
-
-#damage.flash{
-  animation:damage .25s;
-}
-
-@keyframes damage{
-  0%{opacity:1}
-  100%{opacity:0}
-}
-
-#menu{
-  position:fixed;
-  inset:0;
-  z-index:200;
-  background:#020406d9;
-  backdrop-filter:blur(12px);
-  display:none;
-  align-items:center;
-  justify-content:center;
-}
-
-.menuBox{
-  width:min(460px,90vw);
-  padding:30px;
-  border:1px solid #ffffff20;
-  border-radius:20px;
-  background:#091018ee;
-  text-align:center;
-}
-
-.menuBox h1{
-  font-size:35px;
-  margin-bottom:8px;
-}
-
-.menuBox p{
-  color:#9ba8b2;
-  margin-bottom:22px;
-}
-
-.btn{
-  border:0;
-  background:#0ab8f2;
-  color:#001019;
-  font-weight:1000;
-  padding:14px 25px;
-  border-radius:10px;
-  cursor:pointer;
-  width:100%;
-}
-
-@media(max-width:700px){
-  #mobile{display:block}
-  #map{
-    width:115px;
-    height:115px;
-  }
-  .hpwrap{width:160px}
-  .weapon{min-width:175px}
-  .weaponName{font-size:14px}
-  .ammo{font-size:23px}
-  #bottom{bottom:12px}
-  .top{top:8px;left:8px;right:8px}
-  .panel{padding:7px 9px}
-}
-</style>
-</head>
-
-<body>
-
-<div id="game"></div>
-
-<div id="loading">
-  <div class="logo">IRON ZONE</div>
-  <div class="sub">BATTLE ROYALE</div>
-  <div class="loadbar"><div class="loadfill" id="loadfill"></div></div>
+<div class="cameraOff" id="cameraOff">
+    <img class="bigAvatar"
+         src="https://i.pravatar.cc/200?img=12"
+         alt="">
+    <p>Kamera söndürülüb</p>
 </div>
 
-<div id="hud">
+<div class="gradientTop"></div>
+<div class="gradientBottom"></div>
 
-  <div class="top">
+<!-- TOP -->
+<div class="topbar">
 
-    <div class="panel">
-      <div class="stat">
-        <span>ALIVE</span>
-        <span id="alive">30</span>
-      </div>
-      <div class="stat">
-        <span>KILLS</span>
-        <span id="kills">0</span>
-      </div>
+    <div class="liveInfo">
+        <div class="liveBadge">
+            <span class="liveDot"></span>
+            CANLI
+        </div>
+
+        <div class="viewerBox">
+            👥 <span id="viewers">27</span>
+        </div>
     </div>
 
-    <div id="map"></div>
+    <div class="topActions">
+        <button class="iconBtn" onclick="shareLive()">↗</button>
+        <button class="iconBtn" onclick="toggleSettings()">⋯</button>
+    </div>
 
-  </div>
+</div>
 
-  <div id="crosshair"></div>
-  <div id="hitmarker"></div>
-  <div id="message"></div>
-  <div id="damage"></div>
+<!-- PROFILE -->
+<div class="profile">
 
-  <div id="bottom">
+    <img class="avatar"
+         src="https://i.pravatar.cc/100?img=12"
+         alt="Avatar">
 
-    <div class="panel weapon">
+    <div class="profileText">
+        <div class="username">
+            @LiveAZ
+            ✓
+        </div>
 
-      <div class="small">PRIMARY WEAPON</div>
-      <div class="weaponName" id="weaponName">AR-7 ASSAULT RIFLE</div>
+        <button class="followBtn" id="followBtn"
+                onclick="followHost()">
+            + İzl ə
+        </button>
+    </div>
 
-      <div class="ammo">
-        <span id="ammo">30</span>
-        <span>/</span>
-        <span id="reserve">180</span>
-      </div>
+</div>
 
-      <div class="hpwrap">
-        <div class="hp"><div id="hpbar"></div></div>
-        <div class="armor"><div id="armorbar"></div></div>
-      </div>
+<!-- CHAT -->
+<div class="chat">
+    <div class="messages" id="messages"></div>
+</div>
+
+<!-- RIGHT -->
+<div class="rightActions">
+
+    <div class="sideAction">
+        <button class="sideIcon"
+                onclick="sendHeart()">❤️</button>
+        <span class="likeCount" id="likes">1.2K</span>
+    </div>
+
+    <div class="sideAction">
+        <button class="sideIcon"
+                onclick="toggleGift()">🎁</button>
+        <span>Hədiyyə</span>
+    </div>
+
+    <div class="sideAction">
+        <button class="sideIcon"
+                onclick="switchCamera()">🔄</button>
+        <span>Kamera</span>
+    </div>
+
+    <div class="sideAction">
+        <button class="sideIcon"
+                onclick="toggleCamera()">📹</button>
+        <span>Kamera</span>
+    </div>
+
+    <div class="sideAction">
+        <button class="sideIcon"
+                onclick="toggleMic()">🎙️</button>
+        <span>Mikrofon</span>
+    </div>
+
+</div>
+
+<!-- HEARTS -->
+<div id="hearts"></div>
+
+<!-- GIFT PANEL -->
+<div class="giftPanel" id="giftPanel">
+
+    <div class="giftTitle">
+        🎁 Hədiyyə göndər
+    </div>
+
+    <div class="gifts">
+
+        <button class="gift" onclick="sendGift('🌹')">
+            🌹
+            <small>Rose</small>
+        </button>
+
+        <button class="gift" onclick="sendGift('❤️')">
+            ❤️
+            <small>Love</small>
+        </button>
+
+        <button class="gift" onclick="sendGift('💎')">
+            💎
+            <small>Diamond</small>
+        </button>
+
+        <button class="gift" onclick="sendGift('👑')">
+            👑
+            <small>Crown</small>
+        </button>
+
+        <button class="gift" onclick="sendGift('🚗')">
+            🚗
+            <small>Car</small>
+        </button>
+
+        <button class="gift" onclick="sendGift('🚀')">
+            🚀
+            <small>Rocket</small>
+        </button>
+
+        <button class="gift" onclick="sendGift('🎂')">
+            🎂
+            <small>Cake</small>
+        </button>
+
+        <button class="gift" onclick="sendGift('🔥')">
+            🔥
+            <small>Fire</small>
+        </button>
 
     </div>
 
-  </div>
 </div>
 
-<div id="mobile">
-  <div id="joystick"><div id="stick"></div></div>
+<!-- CHAT INPUT -->
+<div class="inputArea">
 
-  <button class="mbtn" id="fire">FIRE</button>
-  <button class="mbtn" id="reload">R</button>
-  <button class="mbtn" id="jump">JUMP</button>
-  <button class="mbtn" id="switch">GUN</button>
-  <button class="mbtn" id="sprint">RUN</button>
+    <input
+        id="chatInput"
+        class="chatInput"
+        maxlength="120"
+        autocomplete="off"
+        placeholder="Canlı söhbətə qoşul..."
+    >
+
+    <button class="actionCircle"
+            onclick="sendMessage()">
+        ➤
+    </button>
+
 </div>
 
-<div id="menu">
-  <div class="menuBox">
-    <h1 id="menuTitle">GAME OVER</h1>
-    <p id="menuText"></p>
-    <button class="btn" onclick="location.reload()">PLAY AGAIN</button>
-  </div>
+<!-- SETTINGS -->
+<div class="settings" id="settings">
+
+    <div class="setting">
+        <span>💬 Chatı göstər</span>
+        <div class="toggle on" onclick="toggleChat(this)"></div>
+    </div>
+
+    <div class="setting">
+        <span>🔊 Səs</span>
+        <div class="toggle on" id="soundToggle"
+             onclick="toggleSound(this)"></div>
+    </div>
+
+    <div class="setting"
+         onclick="reportLive()">
+        <span>🚩 Canlı yayımı bildir</span>
+        <span>›</span>
+    </div>
+
+    <div class="setting"
+         onclick="showToast('Moderator rejimi aktivdir')">
+        <span>🛡️ Moderator</span>
+        <span>›</span>
+    </div>
+
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.min.js"></script>
+<!-- START -->
+<div class="startScreen" id="startScreen">
 
-<script>
-/*
-=========================================================
-IRON ZONE
-3D BATTLE ROYALE PROTOTYPE
-Single HTML / GitHub Pages
-=========================================================
-*/
+    <div class="logo">LiveAZ</div>
 
-"use strict";
+    <div class="logoSub">
+        Professional Live Streaming
+    </div>
 
-/* -----------------------------
-   GLOBALS
------------------------------ */
+    <button class="startBtn"
+            onclick="startLive()">
+        🔴 CANLIYA BAŞLA
+    </button>
 
-let scene;
-let camera;
-let renderer;
-let clock;
+    <div class="permission">
+        Kamera və mikrofon icazəsi tələb olunur.
+        Bu demo WebRTC kamera bağlantısından istifadə edir.
+    </div>
 
-let player;
-let playerGroup;
+</div>
 
-let enemies=[];
-let bullets=[];
-let loot=[];
-let trees=[];
-let buildings=[];
-let particles=[];
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
 
-let keys={};
+</div><script>
 
-let yaw=0;
-let pitch=0;
+/* =========================================================
+   LIVEAZ — WEBRTC LOCAL LIVE ENGINE
+   ========================================================= */
 
-let velocityY=0;
-let grounded=true;
+let stream = null;
+let cameraEnabled = true;
+let micEnabled = true;
+let frontCamera = true;
+let followed = false;
+let chatEnabled = true;
+let soundEnabled = true;
+let likeNumber = 1200;
+let viewerNumber = 27;
 
-let health=100;
-let armor=100;
+const video =
+    document.getElementById("video");
 
-let kills=0;
+const startScreen =
+    document.getElementById("startScreen");
 
-let ammo=30;
-let reserve=180;
+const cameraOff =
+    document.getElementById("cameraOff");
 
-let shooting=false;
-let reloading=false;
+const messages =
+    document.getElementById("messages");
 
-let zoneRadius=170;
-let zoneTarget=170;
-let zoneTimer=0;
+const chatInput =
+    document.getElementById("chatInput");
 
-let gameOver=false;
+const hearts =
+    document.getElementById("hearts");
 
-let lastShot=0;
-let muzzleTimer=0;
+/* =========================================================
+   START LIVE
+   ========================================================= */
 
-let mobileMoveX=0;
-let mobileMoveY=0;
+async function startLive(){
 
-let touchLook=false;
-let lastTouchX=0;
-let lastTouchY=0;
+    try{
 
-let sprinting=false;
+        stream =
+            await navigator.mediaDevices.getUserMedia({
 
-let mapCanvas;
-let mapCtx;
+                video:{
+                    facingMode:
+                        frontCamera
+                        ? "user"
+                        : "environment",
 
+                    width:{
+                        ideal:1280
+                    },
 
-/* -----------------------------
-   LOAD
------------------------------ */
+                    height:{
+                        ideal:1920
+                    }
+                },
 
-let progress=0;
+                audio:{
+                    echoCancellation:true,
+                    noiseSuppression:true,
+                    autoGainControl:true
+                }
 
-const loadingInterval=setInterval(()=>{
-  progress+=12;
-  document.getElementById("loadfill").style.width=
-    Math.min(progress,100)+"%";
+            });
 
-  if(progress>=100){
-    clearInterval(loadingInterval);
+        video.srcObject = stream;
 
-    setTimeout(()=>{
-      document.getElementById("loading").style.opacity="0";
-
-      setTimeout(()=>{
-        document.getElementById("loading").remove();
-      },500);
-
-    },400);
-  }
-},120);
-
-
-/* -----------------------------
-   INIT
------------------------------ */
-
-init();
-
-function init(){
-
-  scene=new THREE.Scene();
-
-  scene.background=new THREE.Color(0x88a6b9);
-
-  scene.fog=new THREE.FogExp2(
-    0x88a6b9,
-    0.0038
-  );
-
-  camera=new THREE.PerspectiveCamera(
-    70,
-    innerWidth/innerHeight,
-    0.1,
-    800
-  );
-
-  camera.position.set(
-    0,
-    2,
-    8
-  );
-
-  renderer=new THREE.WebGLRenderer({
-    antialias:true,
-    powerPreference:"high-performance"
-  });
-
-  renderer.setPixelRatio(
-    Math.min(devicePixelRatio,1.6)
-  );
-
-  renderer.setSize(
-    innerWidth,
-    innerHeight
-  );
-
-  renderer.shadowMap.enabled=true;
-  renderer.shadowMap.type=THREE.PCFSoftShadowMap;
-
-  renderer.outputColorSpace=THREE.SRGBColorSpace;
-
-  document.getElementById("game")
-    .appendChild(renderer.domElement);
-
-  clock=new THREE.Clock();
-
-  setupLights();
-  setupWorld();
-  setupPlayer();
-  setupEnemies();
-  setupLoot();
-  setupMap();
-
-  setupControls();
-
-  window.addEventListener(
-    "resize",
-    resize
-  );
-
-  animate();
-}
-
-
-/* -----------------------------
-   LIGHTING
------------------------------ */
-
-function setupLights(){
-
-  const hemi=new THREE.HemisphereLight(
-    0xbde7ff,
-    0x26351f,
-    2.2
-  );
-
-  scene.add(hemi);
-
-  const sun=new THREE.DirectionalLight(
-    0xffffff,
-    3.5
-  );
-
-  sun.position.set(
-    -80,
-    120,
-    60
-  );
-
-  sun.castShadow=true;
-
-  sun.shadow.mapSize.width=2048;
-  sun.shadow.mapSize.height=2048;
-
-  sun.shadow.camera.left=-220;
-  sun.shadow.camera.right=220;
-  sun.shadow.camera.top=220;
-  sun.shadow.camera.bottom=-220;
-
-  scene.add(sun);
-}
-
-
-/* -----------------------------
-   MATERIALS
------------------------------ */
-
-function mat(color,roughness=.8){
-
-  return new THREE.MeshStandardMaterial({
-    color,
-    roughness,
-    metalness:.05
-  });
-}
-
-const MAT={
-  grass:mat(0x3d6b38),
-  road:mat(0x252a2d),
-  dirt:mat(0x6b5235),
-  concrete:mat(0x777c80),
-  wall:mat(0x6c7479),
-  roof:mat(0x31383d),
-  wood:mat(0x62462e),
-  tree:mat(0x244a2b),
-  dark:mat(0x171b1f),
-  metal:mat(0x515b61,.35),
-  red:mat(0xa62c28),
-  blue:mat(0x23618c),
-  loot:mat(0xffc52e,.3)
-};
-
-
-/* -----------------------------
-   WORLD
------------------------------ */
-
-function setupWorld(){
-
-  const ground=new THREE.Mesh(
-    new THREE.PlaneGeometry(
-      500,
-      500
-    ),
-    MAT.grass
-  );
-
-  ground.rotation.x=-Math.PI/2;
-  ground.receiveShadow=true;
-
-  scene.add(ground);
-
-  createRoad(
-    0,
-    0,
-    500,
-    14
-  );
-
-  createRoad(
-    0,
-    0,
-    14,
-    500
-  );
-
-  for(let i=0;i<70;i++){
-
-    const x=(Math.random()-.5)*430;
-    const z=(Math.random()-.5)*430;
-
-    if(Math.abs(x)<18 || Math.abs(z)<18)
-      continue;
-
-    createTree(x,z);
-  }
-
-  createCity();
-}
-
-
-/* -----------------------------
-   ROAD
------------------------------ */
-
-function createRoad(
-  x,
-  z,
-  w,
-  h
-){
-
-  const road=new THREE.Mesh(
-    new THREE.BoxGeometry(w,.04,h),
-    MAT.road
-  );
-
-  road.position.set(
-    x,
-    .02,
-    z
-  );
-
-  road.receiveShadow=true;
-
-  scene.add(road);
-
-  if(w>h){
-
-    for(let i=-230;i<230;i+=18){
-
-      const line=new THREE.Mesh(
-        new THREE.BoxGeometry(
-          8,
-          .045,
-          .18
-        ),
-        mat(0xd9c95a)
-      );
-
-      line.position.set(
-        i,
-        .055,
-        z
-      );
-
-      scene.add(line);
-    }
-
-  }else{
-
-    for(let i=-230;i<230;i+=18){
-
-      const line=new THREE.Mesh(
-        new THREE.BoxGeometry(
-          .18,
-          .045,
-          8
-        ),
-        mat(0xd9c95a)
-      );
-
-      line.position.set(
-        x,
-        .055,
-        i
-      );
-
-      scene.add(line);
-    }
-  }
-}
-
-
-/* -----------------------------
-   TREES
------------------------------ */
-
-function createTree(x,z){
-
-  const g=new THREE.Group();
-
-  const trunk=new THREE.Mesh(
-    new THREE.CylinderGeometry(
-      .35,
-      .5,
-      3.5,
-      8
-    ),
-    MAT.wood
-  );
-
-  trunk.position.y=1.75;
-
-  trunk.castShadow=true;
-
-  g.add(trunk);
-
-  const crown=new THREE.Mesh(
-    new THREE.DodecahedronGeometry(
-      2.3,
-      1
-    ),
-    MAT.tree
-  );
-
-  crown.position.y=4.1;
-
-  crown.castShadow=true;
-
-  g.add(crown);
-
-  g.position.set(
-    x,
-    0,
-    z
-  );
-
-  scene.add(g);
-
-  trees.push(g);
-}
-
-
-/* -----------------------------
-   CITY
------------------------------ */
-
-function createCity(){
-
-  const spots=[
-    [-70,-60],
-    [-35,-80],
-    [65,-70],
-    [90,30],
-    [-90,55],
-    [45,80],
-    [-20,70],
-    [105,-110]
-  ];
-
-  spots.forEach((p,i)=>{
-
-    createBuilding(
-      p[0],
-      p[1],
-      14+Math.random()*9,
-      10+Math.random()*10,
-      7+Math.random()*5
-    );
-
-    if(i%2===0){
-
-      createBuilding(
-        p[0]+18,
-        p[1]+8,
-        10,
-        12,
-        6
-      );
-    }
-  });
-}
-
-
-/* -----------------------------
-   BUILDING
------------------------------ */
-
-function createBuilding(
-  x,
-  z,
-  w,
-  d,
-  h
-){
-
-  const g=new THREE.Group();
-
-  const body=new THREE.Mesh(
-    new THREE.BoxGeometry(
-      w,
-      h,
-      d
-    ),
-    MAT.wall
-  );
-
-  body.position.y=h/2;
-
-  body.castShadow=true;
-  body.receiveShadow=true;
-
-  g.add(body);
-
-  const roof=new THREE.Mesh(
-    new THREE.BoxGeometry(
-      w+0.7,
-      .7,
-      d+0.7
-    ),
-    MAT.roof
-  );
-
-  roof.position.y=h+.35;
-
-  roof.castShadow=true;
-
-  g.add(roof);
-
-  // windows
-
-  for(let side of [-1,1]){
-
-    for(let yy=2;yy<h-1;yy+=2.2){
-
-      for(let xx=-w/2+2;xx<w/2-1;xx+=3){
-
-        const windowMat=mat(
-          Math.random()>.35
-          ?0x8fc8d8
-          :0x20272b,
-          .3
-        );
-
-        const win=new THREE.Mesh(
-          new THREE.BoxGeometry(
-            1.4,
-            1.1,
-            .08
-          ),
-          windowMat
-        );
-
-        win.position.set(
-          xx,
-          yy,
-          side*(d/2+.04)
-        );
-
-        g.add(win);
-      }
-    }
-  }
-
-  g.position.set(
-    x,
-    0,
-    z
-  );
-
-  scene.add(g);
-
-  buildings.push(g);
-}
-
-
-/* -----------------------------
-   PLAYER
------------------------------ */
-
-function createHumanoid(
-  color=0x1e5d91
-){
-
-  const g=new THREE.Group();
-
-  const skin=mat(0xc89570);
-  const shirt=mat(color);
-  const pants=mat(0x20252b);
-  const boots=mat(0x111315);
-  const gunmat=mat(0x191c20,.3);
-
-  // legs
-
-  const leg1=new THREE.Mesh(
-    new THREE.BoxGeometry(
-      .38,
-      1.35,
-      .42
-    ),
-    pants
-  );
-
-  const leg2=leg1.clone();
-
-  leg1.position.set(
-    -.23,
-    .68,
-    0
-  );
-
-  leg2.position.set(
-    .23,
-    .68,
-    0
-  );
-
-  g.add(leg1,leg2);
-
-  // boots
-
-  const boot1=new THREE.Mesh(
-    new THREE.BoxGeometry(
-      .43,
-      .28,
-      .7
-    ),
-    boots
-  );
-
-  const boot2=boot1.clone();
-
-  boot1.position.set(
-    -.23,
-    .14,
-    -.12
-  );
-
-  boot2.position.set(
-    .23,
-    .14,
-    -.12
-  );
-
-  g.add(
-    boot1,
-    boot2
-  );
-
-  // torso
-
-  const torso=new THREE.Mesh(
-    new THREE.BoxGeometry(
-      1.05,
-      1.35,
-      .58
-    ),
-    shirt
-  );
-
-  torso.position.y=1.65;
-
-  torso.castShadow=true;
-
-  g.add(torso);
-
-  // neck
-
-  const neck=new THREE.Mesh(
-    new THREE.CylinderGeometry(
-      .16,
-      .16,
-      .25,
-      10
-    ),
-    skin
-  );
-
-  neck.position.y=2.43;
-
-  g.add(neck);
-
-  // head
-
-  const head=new THREE.Mesh(
-    new THREE.SphereGeometry(
-      .42,
-      18,
-      14
-    ),
-    skin
-  );
-
-  head.scale.y=1.08;
-
-  head.position.y=2.82;
-
-  head.castShadow=true;
-
-  g.add(head);
-
-  // helmet
-
-  const helmet=new THREE.Mesh(
-    new THREE.SphereGeometry(
-      .46,
-      16,
-      10,
-      0,
-      Math.PI*2,
-      0,
-      Math.PI*.58
-    ),
-    MAT.dark
-  );
-
-  helmet.position.y=2.94;
-
-  g.add(helmet);
-
-  // arms
-
-  const arm1=new THREE.Mesh(
-    new THREE.BoxGeometry(
-      .34,
-      1.05,
-      .36
-    ),
-    shirt
-  );
-
-  const arm2=arm1.clone();
-
-  arm1.position.set(
-    -.7,
-    1.72,
-    -.02
-  );
-
-  arm2.position.set(
-    .7,
-    1.72,
-    -.02
-  );
-
-  g.add(
-    arm1,
-    arm2
-  );
-
-  // weapon
-
-  const weapon=new THREE.Group();
-
-  const receiver=new THREE.Mesh(
-    new THREE.BoxGeometry(
-      .95,
-      .22,
-      .22
-    ),
-    gunmat
-  );
-
-  const barrel=new THREE.Mesh(
-    new THREE.CylinderGeometry(
-      .055,
-      .055,
-      1.2,
-      8
-    ),
-    gunmat
-  );
-
-  barrel.rotation.z=Math.PI/2;
-
-  barrel.position.x=.9;
-
-  weapon.add(
-    receiver,
-    barrel
-  );
-
-  weapon.position.set(
-    .55,
-    1.58,
-    -.55
-  );
-
-  weapon.rotation.y=-.2;
-
-  g.add(weapon);
-
-  g.userData.weapon=weapon;
-
-  return g;
-}
-
-
-/* -----------------------------
-   PLAYER SETUP
------------------------------ */
-
-function setupPlayer(){
-
-  playerGroup=createHumanoid(
-    0x175f93
-  );
-
-  playerGroup.position.set(
-    0,
-    0,
-    0
-  );
-
-  scene.add(playerGroup);
-
-  player={
-    group:playerGroup,
-    speed:7,
-    radius:.65
-  };
-
-  camera.position.set(
-    0,
-    2.1,
-    5.5
-  );
-}
-
-
-/* -----------------------------
-   ENEMIES
------------------------------ */
-
-function setupEnemies(){
-
-  const colors=[
-    0x8c2525,
-    0x6b4b1d,
-    0x49346d,
-    0x255b3c,
-    0x555d65,
-    0x873b6c
-  ];
-
-  for(let i=0;i<29;i++){
-
-    let x,z;
-
-    do{
-      x=(Math.random()-.5)*300;
-      z=(Math.random()-.5)*300;
-    }while(
-      Math.hypot(x,z)<35
-    );
-
-    const bot=createHumanoid(
-      colors[
-        Math.floor(
-          Math.random()*colors.length
-        )
-      ]
-    );
-
-    bot.position.set(
-      x,
-      0,
-      z
-    );
-
-    scene.add(bot);
-
-    enemies.push({
-      group:bot,
-      hp:100,
-      speed:2+Math.random()*1.6,
-      fireTimer:Math.random()*3,
-      direction:new THREE.Vector3(),
-      alive:true,
-      wander:Math.random()*Math.PI*2,
-      name:"BOT-"+(i+1)
-    });
-  }
-}
-
-
-/* -----------------------------
-   LOOT
------------------------------ */
-
-function setupLoot(){
-
-  for(let i=0;i<55;i++){
-
-    const x=(Math.random()-.5)*360;
-    const z=(Math.random()-.5)*360;
-
-    const box=new THREE.Mesh(
-      new THREE.BoxGeometry(
-        .65,
-        .35,
-        .65
-      ),
-      MAT.loot
-    );
-
-    box.position.set(
-      x,
-      .25,
-      z
-    );
-
-    box.castShadow=true;
-
-    scene.add(box);
-
-    loot.push({
-      mesh:box,
-      active:true,
-      type:Math.random()>.7
-        ?"armor"
-        :"ammo"
-    });
-  }
-}
-
-
-/* -----------------------------
-   MAP
------------------------------ */
-
-function setupMap(){
-
-  mapCanvas=document.createElement("canvas");
-
-  mapCanvas.width=300;
-  mapCanvas.height=300;
-
-  mapCanvas.style.width="100%";
-  mapCanvas.style.height="100%";
-
-  document
-    .getElementById("map")
-    .appendChild(mapCanvas);
-
-  mapCtx=mapCanvas.getContext("2d");
-}
-
-
-/* -----------------------------
-   CONTROLS
------------------------------ */
-
-function setupControls(){
-
-  document.addEventListener(
-    "keydown",
-    e=>{
-      keys[e.code]=true;
-
-      if(e.code==="KeyR")
-        reload();
-
-      if(e.code==="Space")
-        jump();
-
-      if(e.code==="ShiftLeft" ||
-         e.code==="ShiftRight")
-        sprinting=true;
-    }
-  );
-
-  document.addEventListener(
-    "keyup",
-    e=>{
-      keys[e.code]=false;
-
-      if(e.code==="ShiftLeft" ||
-         e.code==="ShiftRight")
-        sprinting=false;
-    }
-  );
-
-  renderer.domElement.addEventListener(
-    "click",
-    ()=>{
-      if(innerWidth>700)
-        renderer.domElement.requestPointerLock();
-    }
-  );
-
-  document.addEventListener(
-    "mousemove",
-    e=>{
-      if(document.pointerLockElement){
-
-        yaw-=e.movementX*.0023;
-        pitch-=e.movementY*.0023;
-
-        pitch=Math.max(
-          -1.35,
-          Math.min(1.25,pitch)
-        );
-      }
-    }
-  );
-
-  renderer.domElement.addEventListener(
-    "mousedown",
-    e=>{
-      if(e.button===0)
-        shooting=true;
-    }
-  );
-
-  document.addEventListener(
-    "mouseup",
-    e=>{
-      if(e.button===0)
-        shooting=false;
-    }
-  );
-
-  setupMobile();
-}
-
-
-/* -----------------------------
-   MOBILE JOYSTICK
------------------------------ */
-
-function setupMobile(){
-
-  const joy=document.getElementById(
-    "joystick"
-  );
-
-  const stick=document.getElementById(
-    "stick"
-  );
-
-  let active=false;
-
-  joy.addEventListener(
-    "touchstart",
-    e=>{
-      active=true;
-      e.preventDefault();
-    },
-    {passive:false}
-  );
-
-  joy.addEventListener(
-    "touchmove",
-    e=>{
-      if(!active)return;
-
-      const r=joy.getBoundingClientRect();
-      const t=e.touches[0];
-
-      let dx=
-        t.clientX-
-        (r.left+r.width/2);
-
-      let dy=
-        t.clientY-
-        (r.top+r.height/2);
-
-      const max=48;
-
-      const len=Math.hypot(dx,dy);
-
-      if(len>max){
-
-        dx=dx/len*max;
-        dy=dy/len*max;
-      }
-
-      stick.style.transform=
-        `translate(${dx}px,${dy}px)`;
-
-      mobileMoveX=dx/max;
-      mobileMoveY=dy/max;
-
-      e.preventDefault();
-
-    },
-    {passive:false}
-  );
-
-  joy.addEventListener(
-    "touchend",
-    ()=>{
-      active=false;
-
-      mobileMoveX=0;
-      mobileMoveY=0;
-
-      stick.style.transform="";
-    }
-  );
-
-  document
-    .getElementById("fire")
-    .addEventListener(
-      "touchstart",
-      e=>{
-        shooting=true;
-        e.preventDefault();
-      },
-      {passive:false}
-    );
-
-  document
-    .getElementById("fire")
-    .addEventListener(
-      "touchend",
-      ()=>{
-        shooting=false;
-      }
-    );
-
-  document
-    .getElementById("reload")
-    .addEventListener(
-      "touchstart",
-      ()=>{
-        reload();
-      }
-    );
-
-  document
-    .getElementById("jump")
-    .addEventListener(
-      "touchstart",
-      ()=>{
-        jump();
-      }
-    );
-
-  document
-    .getElementById("sprint")
-    .addEventListener(
-      "touchstart",
-      ()=>{
-        sprinting=true;
-      }
-    );
-
-  document
-    .getElementById("sprint")
-    .addEventListener(
-      "touchend",
-      ()=>{
-        sprinting=false;
-      }
-    );
-
-  let lastX=0;
-  let lastY=0;
-
-  renderer.domElement.addEventListener(
-    "touchstart",
-    e=>{
-
-      if(e.touches.length!==1)
-        return;
-
-      lastX=e.touches[0].clientX;
-      lastY=e.touches[0].clientY;
-
-    },
-    {passive:true}
-  );
-
-  renderer.domElement.addEventListener(
-    "touchmove",
-    e=>{
-
-      if(e.touches.length!==1)
-        return;
-
-      const t=e.touches[0];
-
-      if(t.clientX<180)
-        return;
-
-      const dx=t.clientX-lastX;
-      const dy=t.clientY-lastY;
-
-      yaw-=dx*.004;
-      pitch-=dy*.004;
-
-      pitch=Math.max(
-        -1.35,
-        Math.min(1.25,pitch)
-      );
-
-      lastX=t.clientX;
-      lastY=t.clientY;
-
-    },
-    {passive:true}
-  );
-}
-
-
-/* -----------------------------
-   JUMP
------------------------------ */
-
-function jump(){
-
-  if(grounded){
-
-    velocityY=7;
-    grounded=false;
-  }
-}
-
-
-/* -----------------------------
-   RELOAD
------------------------------ */
-
-function reload(){
-
-  if(reloading)
-    return;
-
-  if(ammo>=30)
-    return;
-
-  if(reserve<=0)
-    return;
-
-  reloading=true;
-
-  document.getElementById(
-    "message"
-  ).textContent="RELOADING...";
-
-  setTimeout(()=>{
-
-    const need=30-ammo;
-
-    const amount=Math.min(
-      need,
-      reserve
-    );
-
-    ammo+=amount;
-    reserve-=amount;
-
-    reloading=false;
-
-    document.getElementById(
-      "message"
-    ).textContent="";
-
-    updateHUD();
-
-  },1200);
-}
-
-
-/* -----------------------------
-   SHOOT
------------------------------ */
-
-function shoot(){
-
-  if(gameOver ||
-     reloading)
-    return;
-
-  const now=performance.now();
-
-  if(now-lastShot<110)
-    return;
-
-  lastShot=now;
-
-  if(ammo<=0){
-
-    reload();
-
-    return;
-  }
-
-  ammo--;
-
-  muzzleFlash();
-
-  createBullet();
-
-  updateHUD();
-}
-
-
-/* -----------------------------
-   BULLET
------------------------------ */
-
-function createBullet(){
-
-  const dir=new THREE.Vector3();
-
-  camera.getWorldDirection(dir);
-
-  const origin=
-    camera.position.clone();
-
-  const bullet={
-    pos:origin,
-    dir:dir.normalize(),
-    life:0,
-    speed:95
-  };
-
-  bullets.push(bullet);
-
-  // instant ray test against bots
-
-  let closest=null;
-  let closestDist=Infinity;
-
-  const ray=new THREE.Raycaster(
-    origin,
-    dir,
-    0,
-    130
-  );
-
-  for(const e of enemies){
-
-    if(!e.alive)
-      continue;
-
-    const hits=
-      ray.intersectObject(
-        e.group,
-        true
-      );
-
-    if(hits.length){
-
-      const d=hits[0].distance;
-
-      if(d<closestDist){
-
-        closest=e;
-        closestDist=d;
-      }
-    }
-  }
-
-  if(closest){
-
-    const damage=
-      Math.random()<.16
-      ?65
-      :32;
-
-    closest.hp-=damage;
-
-    hitMarker();
-
-    spawnImpact(
-      closest.group.position
-        .clone()
-        .add(new THREE.Vector3(
-          0,
-          1.5,
-          0
-        ))
-    );
-
-    if(closest.hp<=0){
-
-      killEnemy(
-        closest
-      );
-    }
-  }
-}
-
-
-/* -----------------------------
-   MUZZLE
------------------------------ */
-
-function muzzleFlash(){
-
-  muzzleTimer=.07;
-
-  const flash=new THREE.PointLight(
-    0xffc66b,
-    12,
-    8
-  );
-
-  const dir=new THREE.Vector3();
-
-  camera.getWorldDirection(dir);
-
-  flash.position.copy(
-    camera.position
-  ).add(
-    dir.multiplyScalar(.8)
-  );
-
-  scene.add(flash);
-
-  setTimeout(()=>{
-    scene.remove(flash);
-  },50);
-}
-
-
-/* -----------------------------
-   HIT
------------------------------ */
-
-function hitMarker(){
-
-  const h=document.getElementById(
-    "hitmarker"
-  );
-
-  h.classList.remove("show");
-
-  void h.offsetWidth;
-
-  h.classList.add("show");
-}
-
-
-/* -----------------------------
-   IMPACT PARTICLES
------------------------------ */
-
-function spawnImpact(pos){
-
-  for(let i=0;i<7;i++){
-
-    const p=new THREE.Mesh(
-      new THREE.SphereGeometry(
-        .045,
-        5,
-        5
-      ),
-      mat(0xffb35c)
-    );
-
-    p.position.copy(pos);
-
-    scene.add(p);
-
-    particles.push({
-      mesh:p,
-      life:.35,
-      vel:new THREE.Vector3(
-        (Math.random()-.5)*4,
-        Math.random()*4,
-        (Math.random()-.5)*4
-      )
-    });
-  }
-}
-
-
-/* -----------------------------
-   KILL ENEMY
------------------------------ */
-
-function killEnemy(e){
-
-  e.alive=false;
-
-  scene.remove(
-    e.group
-  );
-
-  kills++;
-
-  const box=new THREE.Mesh(
-    new THREE.BoxGeometry(
-      .8,
-      .4,
-      .8
-    ),
-    MAT.loot
-  );
-
-  box.position.copy(
-    e.group.position
-  );
-
-  box.position.y=.25;
-
-  scene.add(box);
-
-  loot.push({
-    mesh:box,
-    active:true,
-    type:"ammo"
-  });
-
-  updateHUD();
-
-  checkWin();
-}
-
-
-/* -----------------------------
-   PLAYER DAMAGE
------------------------------ */
-
-function damagePlayer(amount){
-
-  if(gameOver)
-    return;
-
-  let remaining=amount;
-
-  if(armor>0){
-
-    const absorbed=
-      Math.min(
-        armor,
-        remaining*.65
-      );
-
-    armor-=absorbed;
-    remaining-=absorbed;
-  }
-
-  health-=remaining;
-
-  const d=document.getElementById(
-    "damage"
-  );
-
-  d.classList.remove("flash");
-
-  void d.offsetWidth;
-
-  d.classList.add("flash");
-
-  updateHUD();
-
-  if(health<=0)
-    endGame(false);
-}
-
-
-/* -----------------------------
-   BOT AI
------------------------------ */
-
-function updateEnemies(dt){
-
-  const playerPos=
-    playerGroup.position;
-
-  for(const e of enemies){
-
-    if(!e.alive)
-      continue;
-
-    const pos=e.group.position;
-
-    const dx=
-      playerPos.x-pos.x;
-
-    const dz=
-      playerPos.z-pos.z;
-
-    const dist=
-      Math.hypot(dx,dz);
-
-    if(dist<55){
-
-      const ang=
-        Math.atan2(
-          dx,
-          dz
-        );
-
-      e.group.rotation.y=ang;
-
-      if(dist>14){
-
-        const speed=e.speed*dt;
-
-        pos.x+=Math.sin(ang)*speed;
-        pos.z+=Math.cos(ang)*speed;
-
-      }else{
-
-        e.fireTimer-=dt;
-
-        if(e.fireTimer<=0){
-
-          e.fireTimer=
-            .8+
-            Math.random()*1.8;
-
-          damagePlayer(
-            4+
-            Math.random()*8
-          );
+        if(frontCamera){
+            video.classList.add("videoMirror");
         }
-      }
+
+        startScreen.style.display = "none";
+
+        addMessage(
+            "LiveAZ",
+            "Canlı yayım başladı! 🎉"
+        );
+
+        addMessage(
+            "Sistem",
+            "Kamera və mikrofon aktivdir."
+        );
+
+        showToast(
+            "Canlı yayım başladı"
+        );
+
+        startViewerSimulation();
+
+    }catch(error){
+
+        console.error(error);
+
+        showToast(
+            "Kamera/mikrofon icazəsi verilmədi."
+        );
+
+    }
+
+}
+
+/* =========================================================
+   CAMERA
+   ========================================================= */
+
+async function switchCamera(){
+
+    if(!stream){
+        showToast("Əvvəlcə canlıya başlayın.");
+        return;
+    }
+
+    frontCamera = !frontCamera;
+
+    stream.getTracks().forEach(
+        track => track.stop()
+    );
+
+    try{
+
+        stream =
+            await navigator.mediaDevices.getUserMedia({
+
+                video:{
+                    facingMode:
+                        frontCamera
+                        ? "user"
+                        : "environment",
+
+                    width:{
+                        ideal:1280
+                    },
+
+                    height:{
+                        ideal:1920
+                    }
+                },
+
+                audio:{
+                    echoCancellation:true,
+                    noiseSuppression:true
+                }
+
+            });
+
+        video.srcObject = stream;
+
+        if(frontCamera){
+            video.classList.add("videoMirror");
+        }else{
+            video.classList.remove("videoMirror");
+        }
+
+        showToast(
+            frontCamera
+            ? "Ön kamera"
+            : "Arxa kamera"
+        );
+
+    }catch(e){
+
+        showToast(
+            "Kamera dəyişdirilə bilmədi."
+        );
+
+    }
+
+}
+
+/* =========================================================
+   CAMERA ON/OFF
+   ========================================================= */
+
+function toggleCamera(){
+
+    if(!stream){
+        showToast("Əvvəlcə canlıya başlayın.");
+        return;
+    }
+
+    cameraEnabled = !cameraEnabled;
+
+    stream.getVideoTracks().forEach(
+        track => {
+            track.enabled =
+                cameraEnabled;
+        }
+    );
+
+    cameraOff.classList.toggle(
+        "show",
+        !cameraEnabled
+    );
+
+    showToast(
+        cameraEnabled
+        ? "Kamera aktivdir"
+        : "Kamera söndürülüb"
+    );
+
+}
+
+/* =========================================================
+   MICROPHONE
+   ========================================================= */
+
+function toggleMic(){
+
+    if(!stream){
+        showToast("Əvvəlcə canlıya başlayın.");
+        return;
+    }
+
+    micEnabled = !micEnabled;
+
+    stream.getAudioTracks().forEach(
+        track => {
+            track.enabled =
+                micEnabled;
+        }
+    );
+
+    showToast(
+        micEnabled
+        ? "Mikrofon aktivdir"
+        : "Mikrofon söndürülüb"
+    );
+
+}
+
+/* =========================================================
+   HEARTS
+   ========================================================= */
+
+function sendHeart(){
+
+    likeNumber++;
+
+    document.getElementById("likes")
+        .textContent =
+        formatNumber(likeNumber);
+
+    createHeart();
+
+}
+
+function createHeart(){
+
+    const heart =
+        document.createElement("div");
+
+    heart.className = "heart";
+
+    const heartTypes =
+        ["❤️","💗","💖","💕","💓"];
+
+    heart.textContent =
+        heartTypes[
+            Math.floor(
+                Math.random() *
+                heartTypes.length
+            )
+        ];
+
+    heart.style.left =
+        (20 + Math.random()*80) + "px";
+
+    heart.style.setProperty(
+        "--x",
+        ((Math.random()*120)-60)+"px"
+    );
+
+    heart.style.setProperty(
+        "--r",
+        ((Math.random()*60)-30)+"deg"
+    );
+
+    heart.style.animationDuration =
+        (1.8 + Math.random()*1.3)+"s";
+
+    hearts.appendChild(heart);
+
+    setTimeout(
+        ()=>heart.remove(),
+        3500
+    );
+
+}
+
+/* Double tap */
+
+let lastTap = 0;
+
+document.getElementById("app")
+.addEventListener("touchend",function(e){
+
+    const now =
+        Date.now();
+
+    if(
+        now-lastTap < 300 &&
+        e.target === video
+    ){
+        sendHeart();
+        sendHeart();
+    }
+
+    lastTap = now;
+
+});
+
+/* =========================================================
+   CHAT FILTER
+   ========================================================= */
+
+const bannedWords = [
+
+    "spam",
+    "scam",
+    "porno",
+    "fuck",
+    "idiot"
+
+];
+
+function containsBadWord(text){
+
+    const normalized =
+        text
+        .toLowerCase()
+        .replace(/[^\p{L}\p{N}\s]/gu," ");
+
+    return bannedWords.some(
+        word =>
+        normalized.includes(word)
+    );
+
+}
+
+/* =========================================================
+   SEND MESSAGE
+   ========================================================= */
+
+function sendMessage(){
+
+    if(!chatEnabled){
+        return;
+    }
+
+    let text =
+        chatInput.value.trim();
+
+    if(!text){
+        return;
+    }
+
+    if(containsBadWord(text)){
+
+        showToast(
+            "Mesaj filtr tərəfindən bloklandı."
+        );
+
+        chatInput.value = "";
+
+        return;
+    }
+
+    addMessage(
+        "Siz",
+        text
+    );
+
+    chatInput.value = "";
+
+}
+
+/* ENTER */
+
+chatInput.addEventListener(
+    "keydown",
+    function(e){
+
+        if(e.key === "Enter"){
+            sendMessage();
+        }
+
+    }
+);
+
+/* =========================================================
+   ADD MESSAGE
+   ========================================================= */
+
+function addMessage(
+    username,
+    text
+){
+
+    const message =
+        document.createElement("div");
+
+    message.className =
+        "msg";
+
+    const safeUser =
+        escapeHTML(username);
+
+    const safeText =
+        escapeHTML(text);
+
+    message.innerHTML =
+        `<b>${safeUser}</b>${safeText}`;
+
+    messages.appendChild(message);
+
+    while(messages.children.length > 12){
+        messages.firstChild.remove();
+    }
+
+    messages.scrollTop =
+        messages.scrollHeight;
+
+}
+
+/* =========================================================
+   ESCAPE HTML
+   ========================================================= */
+
+function escapeHTML(text){
+
+    return text
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;")
+        .replace(/'/g,"&#039;");
+
+}
+
+/* =========================================================
+   DEMO CHAT
+   ========================================================= */
+
+const demoMessages = [
+
+    ["Murad","Salam 👋"],
+    ["Aysel","Canlı çox yaxşıdır ❤️"],
+    ["Elvin","Salam Bakı!"],
+    ["Nigar","Necəsiniz? 😊"],
+    ["Rauf","🔥🔥🔥"],
+    ["Kamran","Yeni qoşuldum"],
+    ["Leyla","Gözəl yayım 👍"]
+
+];
+
+let demoIndex = 0;
+
+function startDemoChat(){
+
+    setInterval(function(){
+
+        if(!chatEnabled){
+            return;
+        }
+
+        const item =
+            demoMessages[
+                demoIndex %
+                demoMessages.length
+            ];
+
+        addMessage(
+            item[0],
+            item[1]
+        );
+
+        demoIndex++;
+
+    },4200);
+
+}
+
+/* =========================================================
+   VIEWER SIMULATION
+   ========================================================= */
+
+function startViewerSimulation(){
+
+    setInterval(function(){
+
+        const change =
+            Math.random() > .5
+            ? 1
+            : -1;
+
+        viewerNumber += change;
+
+        if(viewerNumber < 20){
+            viewerNumber = 20;
+        }
+
+        document.getElementById(
+            "viewers"
+        ).textContent =
+            viewerNumber;
+
+    },3000);
+
+}
+
+/* =========================================================
+   FOLLOW
+   ========================================================= */
+
+function followHost(){
+
+    followed = !followed;
+
+    const btn =
+        document.getElementById(
+            "followBtn"
+        );
+
+    if(followed){
+
+        btn.textContent =
+            "✓ İzlənilir";
+
+        btn.style.background =
+            "rgba(255,255,255,.20)";
+
+        showToast(
+            "LiveAZ izlənilir ❤️"
+        );
 
     }else{
 
-      e.wander+=
-        (Math.random()-.5)*dt;
+        btn.textContent =
+            "+ İzlə";
 
-      pos.x+=
-        Math.sin(e.wander)*
-        e.speed*.22*
-        dt;
+        btn.style.background =
+            "#ff174f";
 
-      pos.z+=
-        Math.cos(e.wander)*
-        e.speed*.22*
-        dt;
     }
 
-    // stay in world
-
-    pos.x=Math.max(
-      -235,
-      Math.min(235,pos.x)
-    );
-
-    pos.z=Math.max(
-      -235,
-      Math.min(235,pos.z)
-    );
-  }
 }
 
+/* =========================================================
+   GIFTS
+   ========================================================= */
 
-/* -----------------------------
-   PLAYER UPDATE
------------------------------ */
+function toggleGift(){
 
-function updatePlayer(dt){
+    document
+        .getElementById("giftPanel")
+        .classList.toggle("open");
 
-  let forward=0;
-  let side=0;
-
-  if(keys["KeyW"])
-    forward+=1;
-
-  if(keys["KeyS"])
-    forward-=1;
-
-  if(keys["KeyD"])
-    side+=1;
-
-  if(keys["KeyA"])
-    side-=1;
-
-  forward+=-mobileMoveY;
-  side+=mobileMoveX;
-
-  const len=Math.hypot(
-    forward,
-    side
-  );
-
-  if(len>1){
-
-    forward/=len;
-    side/=len;
-  }
-
-  const speed=
-    sprinting
-    ?11
-    :7;
-
-  const sin=Math.sin(yaw);
-  const cos=Math.cos(yaw);
-
-  playerGroup.position.x +=
-    (
-      side*cos+
-      forward*sin
-    )*speed*dt;
-
-  playerGroup.position.z +=
-    (
-      side*-sin+
-      forward*cos
-    )*speed*dt;
-
-  playerGroup.position.x=
-    Math.max(
-      -240,
-      Math.min(
-        240,
-        playerGroup.position.x
-      )
-    );
-
-  playerGroup.position.z=
-    Math.max(
-      -240,
-      Math.min(
-        240,
-        playerGroup.position.z
-      )
-    );
-
-  // gravity
-
-  velocityY-=18*dt;
-
-  playerGroup.position.y+=
-    velocityY*dt;
-
-  if(playerGroup.position.y<=0){
-
-    playerGroup.position.y=0;
-    velocityY=0;
-    grounded=true;
-  }
-
-  // zone damage
-
-  const distance=Math.hypot(
-    playerGroup.position.x,
-    playerGroup.position.z
-  );
-
-  if(distance>zoneRadius){
-
-    damagePlayer(
-      5*dt
-    );
-  }
-
-  // camera
-
-  const camDistance=5.5;
-
-  const camHeight=2.2;
-
-  const target=
-    playerGroup.position.clone();
-
-  target.y+=1.8;
-
-  const offset=new THREE.Vector3(
-    Math.sin(yaw)*camDistance,
-    camHeight-pitch*1.5,
-    Math.cos(yaw)*camDistance
-  );
-
-  camera.position.copy(
-    target
-  ).add(offset);
-
-  camera.lookAt(
-    target
-  );
-
-  // player orientation
-
-  playerGroup.rotation.y=yaw;
 }
 
+function sendGift(icon){
 
-/* -----------------------------
-   LOOT PICKUP
------------------------------ */
+    document
+        .getElementById("giftPanel")
+        .classList.remove("open");
 
-function updateLoot(){
+    const gift =
+        document.createElement("div");
 
-  for(const l of loot){
+    gift.className =
+        "giftFly";
 
-    if(!l.active)
-      continue;
+    gift.textContent =
+        icon;
 
-    const d=
-      l.mesh.position.distanceTo(
-        playerGroup.position
-      );
+    document
+        .getElementById("app")
+        .appendChild(gift);
 
-    if(d<2){
+    setTimeout(
+        ()=>gift.remove(),
+        1600
+    );
 
-      l.active=false;
-      l.mesh.visible=false;
+    addMessage(
+        "Siz",
+        icon + " hədiyyə göndərdi!"
+    );
 
-      if(l.type==="ammo"){
+}
 
-        reserve+=60;
+/* =========================================================
+   SETTINGS
+   ========================================================= */
 
-      }else{
+function toggleSettings(){
 
-        armor=Math.min(
-          100,
-          armor+35
+    document
+        .getElementById("settings")
+        .classList.toggle("open");
+
+}
+
+function toggleChat(element){
+
+    chatEnabled =
+        !chatEnabled;
+
+    element.classList.toggle(
+        "on",
+        chatEnabled
+    );
+
+    document
+        .querySelector(".chat")
+        .style.display =
+        chatEnabled
+        ? "flex"
+        : "none";
+
+}
+
+function toggleSound(element){
+
+    soundEnabled =
+        !soundEnabled;
+
+    element.classList.toggle(
+        "on",
+        soundEnabled
+    );
+
+}
+
+/* =========================================================
+   SHARE
+   ========================================================= */
+
+async function shareLive(){
+
+    const shareData = {
+
+        title:"LiveAZ",
+
+        text:
+        "LiveAZ canlı yayımına qoşul!",
+
+        url:
+        window.location.href
+
+    };
+
+    try{
+
+        if(
+            navigator.share
+        ){
+
+            await navigator.share(
+                shareData
+            );
+
+        }else{
+
+            await navigator.clipboard.writeText(
+                window.location.href
+            );
+
+            showToast(
+                "Canlı linki kopyalandı."
+            );
+
+        }
+
+    }catch(e){}
+
+}
+
+/* =========================================================
+   REPORT
+   ========================================================= */
+
+function reportLive(){
+
+    showToast(
+        "Şikayət qeydə alındı."
+    );
+
+}
+
+/* =========================================================
+   TOAST
+   ========================================================= */
+
+let toastTimer;
+
+function showToast(text){
+
+    const toast =
+        document.getElementById(
+            "toast"
         );
-      }
 
-      updateHUD();
+    toast.textContent =
+        text;
+
+    toast.classList.add(
+        "show"
+    );
+
+    clearTimeout(toastTimer);
+
+    toastTimer =
+        setTimeout(
+            ()=>{
+                toast.classList.remove(
+                    "show"
+                );
+            },
+            2200
+        );
+
+}
+
+/* =========================================================
+   FORMAT NUMBERS
+   ========================================================= */
+
+function formatNumber(number){
+
+    if(number >= 1000000){
+
+        return (
+            number/1000000
+        ).toFixed(1)+"M";
+
     }
-  }
-}
 
+    if(number >= 1000){
 
-/* -----------------------------
-   ZONE
------------------------------ */
+        return (
+            number/1000
+        ).toFixed(1)+"K";
 
-function updateZone(dt){
-
-  zoneTimer+=dt;
-
-  if(zoneTimer>20){
-
-    zoneTimer=0;
-
-    zoneTarget=Math.max(
-      35,
-      zoneTarget-15
-    );
-  }
-
-  zoneRadius +=
-    (zoneTarget-zoneRadius)*
-    dt*.03;
-}
-
-
-/* -----------------------------
-   HUD
------------------------------ */
-
-function updateHUD(){
-
-  const alive=
-    enemies.filter(
-      e=>e.alive
-    ).length+1;
-
-  document.getElementById(
-    "alive"
-  ).textContent=alive;
-
-  document.getElementById(
-    "kills"
-  ).textContent=kills;
-
-  document.getElementById(
-    "ammo"
-  ).textContent=ammo;
-
-  document.getElementById(
-    "reserve"
-  ).textContent=reserve;
-
-  document.getElementById(
-    "hpbar"
-  ).style.width=
-    Math.max(0,health)+"%";
-
-  document.getElementById(
-    "armorbar"
-  ).style.width=
-    Math.max(0,armor)+"%";
-}
-
-
-/* -----------------------------
-   MINIMAP
------------------------------ */
-
-function updateMap(){
-
-  if(!mapCtx)
-    return;
-
-  const c=mapCtx;
-
-  c.clearRect(
-    0,
-    0,
-    300,
-    300
-  );
-
-  c.fillStyle="#14231a";
-
-  c.fillRect(
-    0,
-    0,
-    300,
-    300
-  );
-
-  const scale=.62;
-
-  // roads
-
-  c.fillStyle="#333b3f";
-
-  c.fillRect(
-    0,
-    142,
-    300,
-    16
-  );
-
-  c.fillRect(
-    142,
-    0,
-    16,
-    300
-  );
-
-  // buildings
-
-  c.fillStyle="#59636a";
-
-  for(const b of buildings){
-
-    const x=
-      150+
-      b.position.x*scale;
-
-    const y=
-      150+
-      b.position.z*scale;
-
-    c.fillRect(
-      x-5,
-      y-5,
-      10,
-      10
-    );
-  }
-
-  // zone
-
-  c.strokeStyle="#45d7ff";
-  c.lineWidth=3;
-
-  c.beginPath();
-
-  c.arc(
-    150,
-    150,
-    zoneRadius*scale,
-    0,
-    Math.PI*2
-  );
-
-  c.stroke();
-
-  // enemies
-
-  c.fillStyle="#ff4545";
-
-  for(const e of enemies){
-
-    if(!e.alive)
-      continue;
-
-    const x=
-      150+
-      e.group.position.x*scale;
-
-    const y=
-      150+
-      e.group.position.z*scale;
-
-    c.fillRect(
-      x-2,
-      y-2,
-      4,
-      4
-    );
-  }
-
-  // player
-
-  c.fillStyle="#ffffff";
-
-  const px=
-    150+
-    playerGroup.position.x*scale;
-
-  const py=
-    150+
-    playerGroup.position.z*scale;
-
-  c.beginPath();
-
-  c.arc(
-    px,
-    py,
-    5,
-    0,
-    Math.PI*2
-  );
-
-  c.fill();
-}
-
-
-/* -----------------------------
-   PARTICLES
------------------------------ */
-
-function updateParticles(dt){
-
-  for(let i=particles.length-1;i>=0;i--){
-
-    const p=particles[i];
-
-    p.life-=dt;
-
-    p.vel.y-=8*dt;
-
-    p.mesh.position.addScaledVector(
-      p.vel,
-      dt
-    );
-
-    if(p.life<=0){
-
-      scene.remove(
-        p.mesh
-      );
-
-      particles.splice(
-        i,
-        1
-      );
     }
-  }
+
+    return String(number);
+
 }
 
+/* =========================================================
+   START DEMO
+   ========================================================= */
 
-/* -----------------------------
-   SHOOT LOOP
------------------------------ */
+startDemoChat();
 
-function updateShooting(){
-
-  if(shooting)
-    shoot();
-}
-
-
-/* -----------------------------
-   WIN / GAME OVER
------------------------------ */
-
-function checkWin(){
-
-  const remaining=
-    enemies.filter(
-      e=>e.alive
-    ).length;
-
-  if(remaining===0)
-    endGame(true);
-}
-
-function endGame(win){
-
-  if(gameOver)
-    return;
-
-  gameOver=true;
-
-  document.getElementById(
-    "menu"
-  ).style.display="flex";
-
-  document.getElementById(
-    "menuTitle"
-  ).textContent=
-    win
-    ? "🏆 VICTORY"
-    : "ELIMINATED";
-
-  document.getElementById(
-    "menuText"
-  ).textContent=
-    win
-    ? "You are the last survivor. Kills: "+kills
-    : "You were eliminated. Kills: "+kills;
-}
-
-
-/* -----------------------------
-   ANIMATION
------------------------------ */
-
-function animate(){
-
-  requestAnimationFrame(
-    animate
-  );
-
-  const dt=Math.min(
-    clock.getDelta(),
-    .05
-  );
-
-  if(!gameOver){
-
-    updatePlayer(dt);
-
-    updateEnemies(dt);
-
-    updateLoot();
-
-    updateZone(dt);
-
-    updateParticles(dt);
-
-    updateShooting();
-
-    updateHUD();
-
-    updateMap();
-  }
-
-  renderer.render(
-    scene,
-    camera
-  );
-}
-
-
-/* -----------------------------
-   RESIZE
------------------------------ */
-
-function resize(){
-
-  camera.aspect=
-    innerWidth/innerHeight;
-
-  camera.updateProjectionMatrix();
-
-  renderer.setSize(
-    innerWidth,
-    innerHeight
-  );
-}
-
-</script>
-
-</body>
-    </html>
+</script></body>
+      </html>
