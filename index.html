@@ -3,264 +3,292 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Waze Tərzli Səsli və Təhlükə Bildirişli Naviqasiya</title>
-    
-    <!-- Leaflet və Routing Machine CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
-
+    <title>Səsli Şəbəkə - Görmə Əngəllilər Üçün Sosial Məkan</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        body, html { width: 100%; height: 100%; overflow: hidden; }
-        #map { width: 100%; height: 100%; }
-        
-        /* Əsas İdarəetmə Paneli */
-        .top-bar {
-            position: absolute;
-            top: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 1000;
-            background: rgba(255, 255, 255, 0.95);
-            padding: 10px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background-color: #000000;
+            color: #FFFFFF;
             display: flex;
-            gap: 8px;
-            width: 90%;
-            max-width: 440px;
+            flex-direction: column;
+            min-height: 100vh;
+            padding: 15px;
         }
 
-        .top-bar button {
-            flex: 1;
-            padding: 10px;
-            border: none;
-            background: #007bff;
-            color: white;
+        header {
+            text-align: center;
+            padding: 15px 0;
+            border-bottom: 4px solid #FFFF00;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 28px;
+            color: #FFFF00;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        /* Görmə məhdudiyyətli şəxslər üçün kontrastlı və iri düymələr */
+        .btn {
+            background-color: #FFFF00;
+            color: #000000;
+            border: 4px solid #FFFFFF;
+            padding: 25px;
+            font-size: 22px;
             font-weight: bold;
-            border-radius: 8px;
+            border-radius: 15px;
             cursor: pointer;
-            font-size: 13px;
+            text-align: center;
+            user-select: none;
+            width: 100%;
         }
 
-        .top-bar button.clear { background: #dc3545; }
+        .btn:active, .btn:focus {
+            background-color: #00FF00;
+            color: #000000;
+            outline: none;
+        }
 
-        /* Waze Təhlükə Bildiriş Paneli (Sağ tərəf) */
-        .report-panel {
-            position: absolute;
-            right: 12px;
-            top: 80px;
-            z-index: 1000;
+        .btn-record {
+            background-color: #FF3333;
+            color: #FFFFFF;
+        }
+
+        .btn-record.recording {
+            background-color: #00FF00;
+            color: #000000;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.6; }
+            100% { opacity: 1; }
+        }
+
+        .feed-title {
+            font-size: 24px;
+            color: #FFFF00;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #555;
+            padding-bottom: 5px;
+        }
+
+        .posts-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .post-card {
+            background-color: #1A1A1A;
+            border: 3px solid #FFFF00;
+            border-radius: 12px;
+            padding: 20px;
             display: flex;
             flex-direction: column;
             gap: 10px;
         }
 
-        .report-btn {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            border: none;
-            background: #ffffff;
-            font-size: 22px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: transform 0.2s, background-color 0.2s;
+        .post-time {
+            font-size: 14px;
+            color: #AAAAAA;
         }
 
-        .report-btn:active { transform: scale(0.9); }
-        .report-btn.active { background: #ffe600; border: 2px solid #333; }
-
-        /* Naviqasiya Təlimat Qutusu */
-        .nav-info-box {
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 1000;
-            background: #111111;
-            color: #ffffff;
-            padding: 14px 20px;
-            border-radius: 14px;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
-            width: 90%;
-            max-width: 440px;
-            text-align: center;
-            font-size: 15px;
-            font-weight: 600;
+        .post-text {
+            font-size: 18px;
+            color: #FFFFFF;
         }
 
-        .active-mode-tag {
-            color: #007bff;
-            font-size: 12px;
-            display: block;
-            margin-bottom: 4px;
+        audio {
+            width: 100%;
+            margin-top: 10px;
+            height: 45px;
         }
     </style>
 </head>
 <body>
 
-    <div class="top-bar">
-        <button onclick="startLiveTracking()">📍 Canlı İzləmə</button>
-        <button class="clear" onclick="clearRoute()">🗑️ Marşrutu Sil</button>
-    </div>
+    <header role="banner">
+        <h1 id="appTitle" tabindex="0">Səsli Sosial Şəbəkə</h1>
+    </header>
 
-    <!-- Waze Bildiriş Düymələri -->
-    <div class="report-panel">
-        <button class="report-btn" title="Radar Əlavə Et" onclick="selectReportType('speedcam', '📷', 'Radar')">📷</button>
-        <button class="report-btn" title="Qəza Bildir" onclick="selectReportType('accident', '💥', 'Yol Qəzası')">💥</button>
-        <button class="report-btn" title="Təmir İşləri" onclick="selectReportType('work', '🚧', 'Yol Təmiri')">🚧</button>
-        <button class="report-btn" title="Tıxac" onclick="selectReportType('traffic', '🚗', 'Ağır Tıxac')">🚗</button>
-    </div>
+    <main class="controls">
+        <!-- Səsli Post Yazma Düyməsi -->
+        <button id="recordBtn" class="btn btn-record" aria-label="Səsli post yazmaq üçün toxunun">
+            🎤 Səsli Post Yaz (Toxun)
+        </button>
 
-    <div id="map"></div>
+        <!-- Akışdakı Postları Oxutma Düyməsi -->
+        <button id="readFeedBtn" class="btn" aria-label="Bütün paylaşımları səsli dinlə">
+            🔊 Bütün Paylaşımları Dinlə
+        </button>
+    </main>
 
-    <div class="nav-info-box" id="navInstruction">
-        <span class="active-mode-tag" id="modeTag">MARŞRUT REJİMİ</span>
-        Xəritədə gedəcəyiniz nöqtəyə toxunun...
-    </div>
-
-    <!-- Leaflet JS -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.min.js"></script>
+    <section aria-labelledby="feedTitle">
+        <h2 id="feedTitle" class="feed-title">Son Paylaşımlar</h2>
+        <div id="postsContainer" class="posts-list">
+            <!-- Paylaşımlar buraya dinamik əlavə olunacaq -->
+        </div>
+    </section>
 
     <script>
-        const map = L.map('map').setView([40.409264, 49.867092], 14);
+        // Səs Sintezi (Brauzerin oxuma funksiyası)
+        const synth = window.speechSynthesis;
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '© OpenStreetMap'
-        }).addTo(map);
-
-        let userLocation = null;
-        let userMarker = null;
-        let routingControl = null;
-        let watchId = null;
-        let lastSpokenInstruction = "";
-        let selectedReport = null; // Bildiriş rejimi üçün
-
-        // Səsli oxuma funksiyası (SpeechSynthesis API)
-        function speakText(text) {
-            if (!('speechSynthesis' in window)) return;
-            if (lastSpokenInstruction === text) return;
-            
-            window.speechSynthesis.cancel();
+        function speak(text) {
+            if (synth.speaking) synth.cancel();
             const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'az-AZ';
-            utterance.rate = 1.0;
-            
-            window.speechSynthesis.speak(utterance);
-            lastSpokenInstruction = text;
+            utterance.lang = 'az-AZ'; // Azərbaycan dili dəstəyi
+            utterance.rate = 0.9;     // Bir qədər aydın və anlaşılan sürət
+            synth.speak(utterance);
         }
 
-        // GPS İzləmə
-        function startLiveTracking() {
-            if (!navigator.geolocation) {
-                alert("Brauzeriniz GPS dəstəkləmir!");
-                return;
-            }
-
-            if (watchId !== null) navigator.geolocation.clearWatch(watchId);
-
-            watchId = navigator.geolocation.watchPosition(
-                position => {
-                    const lat = position.coords.latitude;
-                    const lng = position.coords.longitude;
-                    userLocation = [lat, lng];
-
-                    if (!userMarker) {
-                        userMarker = L.marker(userLocation).addTo(map).bindPopup("Sizin Mövqeyiniz");
-                    } else {
-                        userMarker.setLatLng(userLocation);
-                    }
-
-                    map.setView(userLocation, map.getZoom());
-
-                    if (routingControl) {
-                        routingControl.spliceWaypoints(0, 1, L.latLng(lat, lng));
-                    }
-                },
-                error => console.error("GPS xətası:", error),
-                { enableHighAccuracy: true, maximumAge: 2000, timeout: 5000 }
-            );
-        }
-
-        // Təhlükə Növünü Seçmək
-        function selectReportType(type, icon, label) {
-            selectedReport = { type, icon, label };
-            document.getElementById('modeTag').innerText = "BİLDİRİŞ REJİMİ";
-            document.getElementById('navInstruction').innerText = `Xəritədə "${label}" yerləşdirmək istədiyiniz yerə toxunun.`;
-            speakText(`${label} bildiriş rejimini seçdiniz. Xəritədə yeri qeyd edin.`);
-        }
-
-        // Xəritəyə Vurulduqda (Marşrut çəkmək VƏ YA Bildiriş qoymaq)
-        map.on('click', function(e) {
-            // Əgər istifadəçi Təhlükə/Bildiriş rejimindədirsə
-            if (selectedReport) {
-                const customIcon = L.divIcon({
-                    html: `<div style="font-size: 28px; text-shadow: 0 2px 5px rgba(0,0,0,0.5);">${selectedReport.icon}</div>`,
-                    className: 'custom-report-icon',
-                    iconSize: [30, 30]
-                });
-
-                L.marker([e.latlng.lat, e.latlng.lng], { icon: customIcon })
-                    .addTo(map)
-                    .bindPopup(`<b>Xəbərdarlıq:</b> ${selectedReport.label}`)
-                    .openPopup();
-
-                speakText(`Yolda ${selectedReport.label} qeydə alındı.`);
-                
-                // Rejimi sıfırla
-                selectedReport = null;
-                document.getElementById('modeTag').innerText = "MARŞRUT REJİMİ";
-                document.getElementById('navInstruction').innerText = "Xəritədə gedəcəyiniz nöqtəyə toxunun...";
-                return;
-            }
-
-            // Əks halda normal Marşrut qur
-            if (!userLocation) {
-                alert("Əvvəlcə GPS-i aktivləşdirin!");
-                return;
-            }
-
-            if (routingControl) map.removeControl(routingControl);
-
-            routingControl = L.Routing.control({
-                waypoints: [
-                    L.latLng(userLocation[0], userLocation[1]),
-                    L.latLng(e.latlng.lat, e.latlng.lng)
-                ],
-                routeWhileDragging: false,
-                addWaypoints: false,
-                show: false,
-                language: 'az',
-                lineOptions: { styles: [{ color: '#0066FF', weight: 6, opacity: 0.8 }] }
-            }).addTo(map);
-
-            routingControl.on('routesfound', function(event) {
-                const instructions = event.routes[0].instructions;
-                if (instructions && instructions.length > 0) {
-                    const nextStep = instructions[0].text;
-                    document.getElementById('navInstruction').innerText = nextStep;
-                    speakText(nextStep);
-                }
-            });
+        // Tətbiq açıldıqda qarşılama səsli mesajı
+        window.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                speak("Səsli sosial şəbəkəyə xoş gəldiniz. Səsli post yazmaq üçün ekranın yuxarı hissəsindəki qırmızı düyməyə toxunun.");
+            }, 500);
+            loadPosts();
         });
 
-        function clearRoute() {
-            if (routingControl) {
-                map.removeControl(routingControl);
-                routingControl = null;
+        // Səs Yazma Məntiqi (MediaRecorder)
+        let mediaRecorder;
+        let audioChunks = [];
+        let isRecording = false;
+
+        const recordBtn = document.getElementById('recordBtn');
+
+        recordBtn.addEventListener('click', async () => {
+            if (!isRecording) {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    mediaRecorder = new MediaRecorder(stream);
+                    audioChunks = [];
+
+                    mediaRecorder.ondataavailable = (e) => {
+                        if (e.data.size > 0) audioChunks.push(e.data);
+                    };
+
+                    mediaRecorder.onstop = () => {
+                        const audioBlob = new Blob(audioChunks, { type: 'audio/mp3' });
+                        const reader = new FileReader();
+                        reader.readAsDataURL(audioBlob);
+                        reader.onloadend = () => {
+                            const base64Audio = reader.result;
+                            savePost(base64Audio);
+                        };
+                    };
+
+                    mediaRecorder.start();
+                    isRecording = true;
+                    recordBtn.classList.add('recording');
+                    recordBtn.innerText = "🛑 Səsi Saxla və Paylaş";
+                    speak("Səs yazılır. Bitirmək üçün eyni düyməyə yenidən toxunun.");
+
+                } catch (err) {
+                    speak("Mikrofona icazə verilmədi və ya mikrofon tapılmadı.");
+                }
+            } else {
+                mediaRecorder.stop();
+                mediaRecorder.stream.getTracks().forEach(track => track.stop());
+                isRecording = false;
+                recordBtn.classList.remove('recording');
+                recordBtn.innerText = "🎤 Səsli Post Yaz (Toxun)";
+                speak("Səsiniz saxlanıldı və sosial şəbəkədə paylaşıldı.");
             }
-            document.getElementById('modeTag').innerText = "MARŞRUT REJİMİ";
-            document.getElementById('navInstruction').innerText = "Xəritədə gedəcəyiniz nöqtəyə toxunun...";
-            lastSpokenInstruction = "";
+        });
+
+        // LocalStorage-a Post Saxlamaq
+        function savePost(audioData) {
+            const posts = JSON.parse(localStorage.getItem('voice_posts') || '[]');
+            const newPost = {
+                id: Date.now(),
+                audio: audioData,
+                date: new Date().toLocaleTimeString('az-AZ', { hour: '2-digit', minute: '2-digit' })
+            };
+            posts.unshift(newPost);
+            localStorage.setItem('voice_posts', JSON.stringify(posts));
+            loadPosts();
         }
 
-        startLiveTracking();
+        // Postları Ekrana Yükləmək
+        function loadPosts() {
+            const postsContainer = document.getElementById('postsContainer');
+            const posts = JSON.parse(localStorage.getItem('voice_posts') || '[]');
+
+            postsContainer.innerHTML = '';
+
+            if (posts.length === 0) {
+                postsContainer.innerHTML = '<p class="post-text">Hələ heç bir səsli paylaşım yoxdur.</p>';
+                return;
+            }
+
+            posts.forEach((post, index) => {
+                const card = document.createElement('div');
+                card.className = 'post-card';
+                card.setAttribute('tabindex', '0');
+
+                card.innerHTML = `
+                    <div class="post-time">Paylaşıldı: Saat ${post.date}</div>
+                    <audio controls src="${post.audio}"></audio>
+                    <button class="btn" style="padding:10px; font-size:16px;" onclick="playPostAudio(${index})">
+                        ▶ Bu Səsi Dinlə
+                    </button>
+                `;
+                postsContainer.appendChild(card);
+            });
+        }
+
+        function playPostAudio(index) {
+            const posts = JSON.parse(localStorage.getItem('voice_posts') || '[]');
+            if (posts[index]) {
+                speak(`Post ${index + 1} oxunur`);
+                const audio = new Audio(posts[index].audio);
+                audio.play();
+            }
+        }
+
+        // Bütün Paylaşımları Ardıcıl Səsli Dinləmə
+        const readFeedBtn = document.getElementById('readFeedBtn');
+        readFeedBtn.addEventListener('click', () => {
+            const posts = JSON.parse(localStorage.getItem('voice_posts') || '[]');
+            if (posts.length === 0) {
+                speak("Hələ heç bir paylaşım yoxdur.");
+                return;
+            }
+
+            speak(`Ümumilikdə ${posts.length} səsli paylaşım var. Birinci paylaşım səsləndirilir.`);
+            
+            let currentIndex = 0;
+            function playNext() {
+                if (currentIndex < posts.length) {
+                    const audio = new Audio(posts[currentIndex].audio);
+                    audio.play();
+                    audio.onended = () => {
+                        currentIndex++;
+                        if (currentIndex < posts.length) {
+                            setTimeout(playNext, 1000);
+                        } else {
+                            speak("Bütün paylaşımlar bitdi.");
+                        }
+                    };
+                }
+            }
+            playNext();
+        });
     </script>
 </body>
 </html>
