@@ -2,3529 +2,3484 @@
 <html lang="az">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport"
-      content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<meta name="theme-color" content="#07111f">
-<meta name="description" content="ARWORLD — Real-World Search, Dynamic AR & Hyper-Local Social Ecosystem">
-<title>ARWORLD — Real-World Search</title>
-
-<!-- External engines -->
-<link rel="stylesheet"
-      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-      crossorigin="anonymous">
-
-<script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.5/three.js/build/ar.js"></script>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-        crossorigin="anonymous"></script>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#0b141a">
+<meta name="description" content="AzChat - P2P Social Messenger">
+<title>AzChat P2P</title>
 
 <style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 :root{
-  --bg:#07111f;
-  --bg2:#0b1728;
-  --card:rgba(15,28,47,.82);
-  --card2:rgba(20,36,59,.92);
-  --text:#f4f8ff;
-  --muted:#91a4bc;
-  --line:rgba(255,255,255,.10);
-  --accent:#39d9ff;
-  --accent2:#7c5cff;
-  --green:#38e39b;
-  --red:#ff5577;
-  --yellow:#ffd45c;
-  --shadow:0 18px 55px rgba(0,0,0,.35);
-  --radius:20px;
-}
-body.light{
-  --bg:#eef4f9;
-  --bg2:#ffffff;
-  --card:rgba(255,255,255,.88);
-  --card2:#ffffff;
-  --text:#142033;
-  --muted:#607086;
-  --line:rgba(20,32,51,.10);
-  --shadow:0 15px 40px rgba(30,50,80,.15);
-}
-*{
-  box-sizing:border-box;
-  -webkit-tap-highlight-color:transparent;
+  --bg:#0b141a;
+  --panel:#111b21;
+  --panel2:#202c33;
+  --line:#26343c;
+  --text:#e9edef;
+  --muted:#8696a0;
+  --green:#00a884;
+  --green2:#06cf9c;
+  --danger:#ef4444;
+  --bubble:#005c4b;
+  --bubble2:#202c33;
 }
 html,body{
   margin:0;
   width:100%;
   height:100%;
-  overflow:hidden;
-  font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
   background:var(--bg);
   color:var(--text);
-}
-button,input,textarea,select{
-  font:inherit;
-}
-button{
-  border:0;
-  color:inherit;
-  cursor:pointer;
-}
-#app{
-  position:fixed;
-  inset:0;
+  font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
   overflow:hidden;
+}
+button,input,textarea,select{font:inherit}
+button{cursor:pointer;border:0}
+.app{
+  width:100%;
+  height:100dvh;
+  display:flex;
+  flex-direction:column;
   background:var(--bg);
 }
-.hidden{
-  display:none!important;
-}
-.screen{
-  position:absolute;
-  inset:0;
-  display:none;
-}
-.screen.active{
-  display:block;
-}
-.glass{
-  background:var(--card);
-  backdrop-filter:blur(18px);
-  -webkit-backdrop-filter:blur(18px);
-  border:1px solid var(--line);
-  box-shadow:var(--shadow);
-}
 .topbar{
-  position:absolute;
-  top:0;
-  left:0;
-  right:0;
-  z-index:1000;
-  padding:
-    calc(env(safe-area-inset-top) + 10px)
-    12px 10px;
-}
-.toprow{
+  height:62px;
+  min-height:62px;
   display:flex;
   align-items:center;
-  gap:8px;
+  padding:0 12px;
+  background:var(--panel);
+  border-bottom:1px solid var(--line);
+  gap:10px;
 }
 .brand{
-  flex:1;
-  font-weight:900;
   font-size:20px;
-  letter-spacing:-.5px;
+  font-weight:800;
+  letter-spacing:.3px;
+  color:#fff;
+  flex:1;
 }
-.brand span{
-  color:var(--accent);
-}
+.brand span{color:var(--green)}
 .iconbtn{
   width:42px;
   height:42px;
-  border-radius:14px;
-  background:var(--card);
-  border:1px solid var(--line);
+  border-radius:50%;
+  background:transparent;
+  color:var(--text);
   display:flex;
   align-items:center;
   justify-content:center;
-  font-size:19px;
+  font-size:20px;
+}
+.iconbtn:active{background:#26343c}
+.layout{
+  flex:1;
+  min-height:0;
+  display:flex;
+}
+.sidebar{
+  width:360px;
+  max-width:100%;
+  background:var(--panel);
+  border-right:1px solid var(--line);
+  display:flex;
+  flex-direction:column;
+}
+.search{
+  padding:9px 12px;
+  border-bottom:1px solid var(--line);
 }
 .searchbox{
-  margin-top:9px;
-  height:46px;
-  border-radius:15px;
+  height:40px;
+  border-radius:9px;
+  background:var(--panel2);
   display:flex;
   align-items:center;
-  padding:0 13px;
-  gap:9px;
+  padding:0 12px;
+}
+.searchbox span{
+  color:var(--muted);
+  margin-right:8px;
 }
 .searchbox input{
-  flex:1;
-  min-width:0;
-  background:none;
+  width:100%;
   border:0;
   outline:0;
   color:var(--text);
-}
-.searchbox input::placeholder{
-  color:var(--muted);
-}
-#map{
-  position:absolute;
-  inset:0;
-  z-index:1;
-}
-.leaflet-control-attribution{
-  font-size:8px!important;
-}
-.leaflet-popup-content-wrapper,
-.leaflet-popup-tip{
-  background:var(--card2);
-  color:var(--text);
-}
-.leaflet-popup-content{
-  margin:12px;
-}
-.map-card{
-  min-width:210px;
-}
-.map-card h3{
-  margin:0 0 5px;
-}
-.map-card p{
-  margin:4px 0;
-  color:var(--muted);
-}
-.category-dot{
-  width:34px;
-  height:34px;
-  border-radius:50%;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  border:2px solid rgba(255,255,255,.7);
-  box-shadow:0 5px 20px rgba(0,0,0,.3);
-}
-.radius-panel{
-  position:absolute;
-  top:143px;
-  left:12px;
-  z-index:900;
-  padding:8px;
-  border-radius:15px;
-  display:flex;
-  gap:5px;
-}
-.radius-btn{
-  padding:7px 10px;
-  border-radius:10px;
   background:transparent;
-  color:var(--muted);
-  font-size:11px;
 }
-.radius-btn.active{
-  background:var(--accent);
-  color:#00131b;
-  font-weight:800;
+.contactlist{
+  overflow:auto;
+  flex:1;
 }
-.locate{
-  position:absolute;
-  right:13px;
-  bottom:92px;
-  z-index:900;
-}
-.bottomnav{
-  position:absolute;
-  left:10px;
-  right:10px;
-  bottom:
-    calc(env(safe-area-inset-bottom) + 8px);
-  height:68px;
-  z-index:1000;
-  border-radius:23px;
-  display:grid;
-  grid-template-columns:repeat(5,1fr);
-  padding:5px;
-}
-.navitem{
-  background:none;
-  border-radius:18px;
-  color:var(--muted);
+.contact{
+  height:70px;
   display:flex;
-  flex-direction:column;
+  align-items:center;
+  gap:12px;
+  padding:8px 12px;
+  border-bottom:1px solid rgba(255,255,255,.03);
+}
+.contact:active{background:#202c33}
+.avatar{
+  width:50px;
+  height:50px;
+  border-radius:50%;
+  overflow:hidden;
+  background:#26343c;
+  display:flex;
   align-items:center;
   justify-content:center;
-  gap:2px;
-  font-size:10px;
+  flex-shrink:0;
+  font-weight:700;
 }
-.navitem .ico{
-  font-size:20px;
-}
-.navitem.active{
-  background:rgba(57,217,255,.13);
-  color:var(--accent);
-}
-#arScreen{
-  background:#000;
-}
-#arVideo{
-  position:absolute;
-  inset:0;
+.avatar img{
   width:100%;
   height:100%;
   object-fit:cover;
-  background:#000;
 }
-#arCanvas{
-  position:absolute;
-  inset:0;
-  width:100%;
-  height:100%;
-  pointer-events:none;
+.contactmain{
+  min-width:0;
+  flex:1;
 }
-.ar-top{
-  position:absolute;
-  top:0;
-  left:0;
-  right:0;
-  z-index:30;
-  padding:
-    calc(env(safe-area-inset-top) + 10px)
-    12px 10px;
+.contactname{
   display:flex;
+  justify-content:space-between;
   gap:8px;
 }
-.ar-status{
-  flex:1;
-  padding:10px 12px;
-  border-radius:14px;
+.contactname b{
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.contacttime{
+  color:var(--muted);
   font-size:12px;
 }
-.ar-object{
-  position:absolute;
-  min-width:150px;
-  max-width:230px;
-  padding:10px;
-  border-radius:16px;
-  color:white;
-  transform:translate(-50%,-50%);
-  pointer-events:auto;
-  user-select:none;
-  touch-action:manipulation;
-  transition:
-    transform .12s linear,
-    left .12s linear,
-    top .12s linear;
-  z-index:20;
-}
-.ar-object .ar-title{
-  font-weight:900;
-  font-size:14px;
-}
-.ar-object .ar-meta{
-  font-size:11px;
-  opacity:.82;
+.preview{
+  color:var(--muted);
+  font-size:13px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
   margin-top:3px;
 }
-.ar-object .ar-price{
-  font-weight:900;
-  margin-top:5px;
-}
-.ar-object button{
-  margin-top:7px;
-  padding:6px 9px;
-  border-radius:9px;
-  background:rgba(255,255,255,.16);
-}
-.ar-object.locked{
-  outline:2px solid var(--accent);
-}
-#feedScreen{
-  overflow:auto;
-  padding:
-    calc(env(safe-area-inset-top) + 75px)
-    12px
-    calc(env(safe-area-inset-bottom) + 90px);
-}
-.feed-list{
+.chat{
+  flex:1;
+  min-width:0;
   display:flex;
   flex-direction:column;
-  gap:10px;
+  background:
+    radial-gradient(circle at 20% 20%,rgba(255,255,255,.025) 0 1px,transparent 2px),
+    radial-gradient(circle at 80% 70%,rgba(255,255,255,.02) 0 1px,transparent 2px),
+    var(--bg);
+  background-size:34px 34px;
 }
-.feed-card{
-  padding:14px;
-  border-radius:20px;
-}
-.feed-head{
+.chathead{
+  height:62px;
+  min-height:62px;
+  background:var(--panel);
+  border-bottom:1px solid var(--line);
   display:flex;
   align-items:center;
-  gap:10px;
+  padding:6px 10px;
+  gap:9px;
 }
-.avatar{
-  width:42px;
-  height:42px;
-  border-radius:50%;
-  background:linear-gradient(135deg,var(--accent),var(--accent2));
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-weight:900;
+.back{
+  display:none;
 }
-.feed-head-main{
+.chatinfo{
   flex:1;
+  min-width:0;
 }
-.feed-title{
-  font-weight:900;
+.chatname{
+  font-weight:700;
 }
-.feed-sub{
-  color:var(--muted);
-  font-size:11px;
-}
-.feed-body{
-  margin-top:10px;
-}
-.feed-media{
-  width:100%;
-  max-height:300px;
-  object-fit:cover;
-  border-radius:14px;
-  margin-top:8px;
-}
-.feed-actions{
-  display:flex;
-  gap:5px;
-  margin-top:9px;
-  flex-wrap:wrap;
-}
-.action{
-  padding:8px 10px;
-  border-radius:11px;
-  background:rgba(255,255,255,.06);
+.status{
   font-size:12px;
+  color:var(--muted);
+  margin-top:2px;
 }
-.profile-screen{
+.messages{
+  flex:1;
   overflow:auto;
-  padding:
-    calc(env(safe-area-inset-top) + 75px)
-    12px
-    calc(env(safe-area-inset-bottom) + 90px);
+  padding:15px 5%;
 }
-.profile-card{
-  padding:18px;
-  border-radius:22px;
-}
-.profile-big{
-  width:80px;
-  height:80px;
-  border-radius:50%;
+.empty{
   margin:auto;
-  background:linear-gradient(135deg,var(--accent2),var(--accent));
+  text-align:center;
+  max-width:330px;
+  color:var(--muted);
+}
+.empty h2{color:var(--text)}
+.msg{
+  max-width:min(75%,520px);
+  margin:5px 0;
+  padding:7px 9px 5px;
+  border-radius:8px;
+  background:var(--bubble2);
+  word-break:break-word;
+  position:relative;
+  box-shadow:0 1px 1px rgba(0,0,0,.15);
+}
+.msg.me{
+  margin-left:auto;
+  background:var(--bubble);
+}
+.msgtext{
+  white-space:pre-wrap;
+  line-height:1.4;
+}
+.msgmeta{
+  font-size:10px;
+  color:#b7c5ca;
+  text-align:right;
+  margin-top:3px;
+}
+.composer{
+  min-height:62px;
+  background:var(--panel);
+  border-top:1px solid var(--line);
+  padding:9px;
+  display:flex;
+  gap:7px;
+  align-items:flex-end;
+}
+.composer textarea{
+  flex:1;
+  resize:none;
+  min-height:42px;
+  max-height:120px;
+  border:0;
+  outline:0;
+  background:var(--panel2);
+  color:var(--text);
+  border-radius:21px;
+  padding:11px 15px;
+}
+.round{
+  width:44px;
+  height:44px;
+  border-radius:50%;
+  background:var(--green);
+  color:#fff;
   display:flex;
   align-items:center;
   justify-content:center;
-  font-size:30px;
-  font-weight:900;
-}
-.profile-name{
-  text-align:center;
-  font-size:21px;
-  font-weight:900;
-  margin-top:10px;
-}
-.profile-bio{
-  text-align:center;
-  color:var(--muted);
-  margin-top:5px;
-}
-.stats{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:7px;
-  margin-top:15px;
-}
-.stat{
-  text-align:center;
-  padding:10px;
-  border-radius:13px;
-  background:rgba(255,255,255,.05);
-}
-.stat b{
-  display:block;
-  font-size:18px;
-}
-.stat span{
-  font-size:10px;
-  color:var(--muted);
-}
-.profile-tabs{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:5px;
-  margin-top:12px;
-}
-.profile-tab{
-  padding:10px;
-  border-radius:11px;
-  background:rgba(255,255,255,.05);
-  font-size:11px;
-}
-.profile-tab.active{
-  background:var(--accent);
-  color:#00131b;
   font-weight:800;
+}
+.round:active{transform:scale(.94)}
+.emptychat{
+  margin:auto;
+  text-align:center;
+  color:var(--muted);
 }
 .modal{
   position:fixed;
   inset:0;
-  z-index:3000;
+  background:rgba(0,0,0,.65);
   display:none;
-  align-items:flex-end;
-  justify-content:center;
-  background:rgba(0,0,0,.62);
-}
-.modal.show{
-  display:flex;
-}
-.modal-card{
-  width:100%;
-  max-width:600px;
-  max-height:90vh;
-  overflow:auto;
-  padding:17px;
-  border-radius:25px 25px 0 0;
-  background:var(--bg2);
-  border:1px solid var(--line);
-}
-.modal-title{
-  display:flex;
   align-items:center;
-  justify-content:space-between;
-  margin-bottom:12px;
+  justify-content:center;
+  z-index:100;
+  padding:15px;
 }
-.modal-title h2{
-  margin:0;
-  font-size:20px;
+.modal.show{display:flex}
+.sheet{
+  width:min(500px,100%);
+  max-height:90dvh;
+  overflow:auto;
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:18px;
+  padding:18px;
+  box-shadow:0 20px 70px rgba(0,0,0,.45);
 }
-.close{
-  width:38px;
-  height:38px;
-  border-radius:12px;
-  background:rgba(255,255,255,.08);
+.sheet h2{
+  margin:0 0 15px;
 }
 .field{
-  margin-bottom:11px;
+  margin-bottom:13px;
 }
 .field label{
   display:block;
   color:var(--muted);
-  font-size:11px;
-  margin-bottom:5px;
+  font-size:13px;
+  margin-bottom:6px;
 }
-.field input,
-.field textarea,
-.field select{
+.field input,.field textarea,.field select{
   width:100%;
   border:1px solid var(--line);
-  background:rgba(255,255,255,.05);
+  background:var(--panel2);
   color:var(--text);
-  border-radius:12px;
-  padding:11px;
-  outline:0;
+  border-radius:10px;
+  padding:11px 12px;
+  outline:none;
 }
-.field textarea{
-  min-height:90px;
-  resize:vertical;
-}
-.primary{
-  width:100%;
-  padding:13px;
-  border-radius:14px;
-  background:linear-gradient(135deg,var(--accent),#64f0d0);
-  color:#00131b;
-  font-weight:900;
-}
-.secondary{
-  padding:11px 13px;
-  border-radius:12px;
-  background:rgba(255,255,255,.07);
-}
-.danger{
-  background:rgba(255,85,119,.14);
-  color:#ff829c;
-}
-.checkbox{
+.actions{
   display:flex;
-  gap:9px;
-  align-items:flex-start;
-  font-size:11px;
-  color:var(--muted);
-  margin:10px 0;
+  gap:8px;
+  flex-wrap:wrap;
 }
-.checkbox input{
-  margin-top:2px;
+.btn{
+  padding:11px 15px;
+  border-radius:10px;
+  background:var(--panel2);
+  color:var(--text);
 }
-.category-grid{
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:7px;
+.btn.primary{
+  background:var(--green);
+  color:white;
 }
-.cat-btn{
-  padding:9px 4px;
-  border-radius:12px;
-  background:rgba(255,255,255,.05);
-  text-align:center;
-  font-size:10px;
+.btn.danger{
+  background:#5d2020;
+  color:#ffb4b4;
 }
-.cat-btn.active{
-  outline:2px solid var(--accent);
+.profilePreview{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:8px;
+  padding:10px 0 16px;
 }
-.media-preview{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:5px;
-}
-.media-preview img,
-.media-preview video{
-  width:100%;
+.bigavatar{
+  width:90px;
   height:90px;
+  border-radius:50%;
+  overflow:hidden;
+  background:var(--panel2);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:30px;
+  font-weight:800;
+}
+.bigavatar img{
+  width:100%;
+  height:100%;
   object-fit:cover;
+}
+.idbox{
+  width:100%;
+  padding:12px;
+  border:1px dashed var(--green);
+  border-radius:10px;
+  background:rgba(0,168,132,.06);
+  text-align:center;
+  word-break:break-all;
+}
+.qrwrap{
+  background:#fff;
+  padding:14px;
+  border-radius:16px;
+  width:max-content;
+  margin:12px auto;
+}
+#qrCanvas{
+  display:block;
+  width:260px;
+  height:260px;
+  image-rendering:pixelated;
+}
+.qrtext{
+  background:var(--panel2);
+  border-radius:10px;
+  padding:10px;
+  word-break:break-all;
+  font-size:12px;
+  color:var(--muted);
+}
+.tabs{
+  display:flex;
+  gap:7px;
+  margin-bottom:12px;
+}
+.tab{
+  flex:1;
+  padding:10px;
   border-radius:9px;
+  background:var(--panel2);
+  color:var(--muted);
+}
+.tab.active{
+  background:var(--green);
+  color:#fff;
 }
 .toast{
   position:fixed;
   left:50%;
-  bottom:90px;
-  z-index:5000;
+  bottom:85px;
   transform:translate(-50%,20px);
   opacity:0;
   pointer-events:none;
-  padding:11px 15px;
-  border-radius:13px;
-  background:#101d2e;
-  color:white;
-  border:1px solid var(--line);
-  transition:.25s;
+  z-index:300;
+  background:#26343c;
+  color:#fff;
+  padding:10px 15px;
+  border-radius:10px;
+  transition:.2s;
   max-width:90%;
   text-align:center;
-  font-size:12px;
 }
 .toast.show{
-  transform:translate(-50%,0);
   opacity:1;
+  transform:translate(-50%,0);
 }
-#canvasFallback{
-  position:absolute;
+.setup{
+  position:fixed;
   inset:0;
-  z-index:0;
+  z-index:500;
+  background:var(--bg);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
 }
-#radar{
-  position:absolute;
-  top:160px;
-  right:12px;
-  z-index:900;
-  width:100px;
-  height:100px;
-  border-radius:50%;
-  border:1px solid rgba(57,217,255,.35);
-  background:
-    radial-gradient(circle,transparent 25%,rgba(57,217,255,.05) 26%,transparent 27%),
-    radial-gradient(circle,transparent 48%,rgba(57,217,255,.05) 49%,transparent 50%);
+.setup.show{display:flex}
+.setupbox{
+  width:min(440px,100%);
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:22px;
+  padding:25px;
 }
-.radar-dot{
-  position:absolute;
-  width:6px;
-  height:6px;
-  border-radius:50%;
-  background:var(--accent);
-  transform:translate(-50%,-50%);
-}
-.notice{
-  padding:11px;
-  border-radius:14px;
-  background:rgba(255,212,92,.09);
-  color:var(--yellow);
-  font-size:11px;
-  margin-bottom:10px;
-}
-.verified{
-  color:#42e5a0;
-}
-.star{
-  color:#ffd45c;
-}
-.comment{
-  padding:9px;
-  margin-top:6px;
-  border-radius:11px;
-  background:rgba(255,255,255,.04);
-}
-.comment small{
-  color:var(--muted);
-}
-#mediaModal .modal-card{
-  height:100%;
-  max-height:100%;
-  border-radius:0;
+.logo{
+  width:72px;
+  height:72px;
+  border-radius:22px;
+  background:var(--green);
   display:flex;
-  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  margin:0 auto 15px;
+  font-size:30px;
+  font-weight:900;
 }
-#fullMedia{
-  flex:1;
-  min-height:0;
+.hidden{display:none!important}
+.qrscan{
   width:100%;
-  object-fit:contain;
+  aspect-ratio:1;
+  background:#000;
+  border-radius:14px;
+  overflow:hidden;
+  position:relative;
 }
-@media(min-width:700px){
-  .modal-card{
-    border-radius:25px;
-    margin-bottom:20px;
+.qrscan video{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+.scanline{
+  position:absolute;
+  left:10%;
+  right:10%;
+  top:50%;
+  height:2px;
+  background:var(--green);
+  box-shadow:0 0 15px var(--green);
+}
+@media(max-width:720px){
+  .sidebar{
+    width:100%;
   }
-  .modal{
-    align-items:center;
+  .chat{
+    display:none;
   }
+  .chat.mobile{
+    display:flex;
+    position:absolute;
+    inset:0;
+    z-index:20;
+  }
+  .back{display:flex}
+  .layout{position:relative}
+  .messages{padding:12px 3%}
+  .msg{max-width:85%}
 }
 </style>
 </head>
 
 <body>
-<div id="app">
 
-<!-- MAP -->
-<section id="mapScreen" class="screen active">
-  <div id="map"></div>
+<div class="app">
 
   <div class="topbar">
-    <div class="toprow">
-      <div class="brand">AR<span>WORLD</span></div>
-      <button class="iconbtn" id="themeBtn">☀️</button>
-      <button class="iconbtn" id="helpBtn">?</button>
-    </div>
-
-    <div class="searchbox glass">
-      🔎
-      <input id="globalSearch"
-             autocomplete="off"
-             placeholder="Küçə, şəhər, ünvan, obyekt axtar...">
-      <button id="clearSearch">×</button>
-    </div>
+    <div class="brand">Az<span>Chat</span></div>
+    <button class="iconbtn" id="qrTop" title="QR">▦</button>
+    <button class="iconbtn" id="profileTop" title="Profil">●</button>
+    <button class="iconbtn" id="settingsTop" title="Ayarlar">⚙</button>
   </div>
 
-  <div class="radius-panel glass">
-    <button class="radius-btn" data-radius="10">10m</button>
-    <button class="radius-btn" data-radius="50">50m</button>
-    <button class="radius-btn active" data-radius="100">100m</button>
-    <button class="radius-btn" data-radius="300">300m</button>
-    <button class="radius-btn" data-radius="1000">1km</button>
-    <button class="radius-btn" data-radius="global">∞</button>
+  <div class="layout">
+
+    <aside class="sidebar" id="sidebar">
+      <div class="search">
+        <div class="searchbox">
+          <span>⌕</span>
+          <input id="searchInput" placeholder="Axtar...">
+        </div>
+      </div>
+
+      <div class="contactlist" id="contactList"></div>
+    </aside>
+
+    <main class="chat" id="chat">
+
+      <div class="chathead">
+        <button class="iconbtn back" id="backBtn">‹</button>
+
+        <div class="avatar" id="chatAvatar">?</div>
+
+        <div class="chatinfo">
+          <div class="chatname" id="chatName">AzChat</div>
+          <div class="status" id="chatStatus">Kontakt seçin</div>
+        </div>
+
+        <button class="iconbtn" id="callBtn">☎</button>
+        <button class="iconbtn" id="videoBtn">▣</button>
+        <button class="iconbtn" id="chatMore">⋮</button>
+      </div>
+
+      <div class="messages" id="messages">
+        <div class="emptychat">
+          <h2>AzChat</h2>
+          <div>P2P söhbətə başlamaq üçün kontakt əlavə edin.</div>
+        </div>
+      </div>
+
+      <div class="composer">
+        <button class="iconbtn" id="attachBtn">＋</button>
+        <textarea id="messageInput" rows="1" placeholder="Mesaj yazın..."></textarea>
+        <button class="round" id="sendBtn">➤</button>
+      </div>
+
+    </main>
+
   </div>
+</div>
 
-  <button class="iconbtn locate glass" id="locateBtn">⌖</button>
 
-  <div id="radar" class="glass"></div>
-</section>
+<!-- SETUP -->
 
-<!-- AR -->
-<section id="arScreen" class="screen">
-  <video id="arVideo"
-         autoplay
-         muted
-         playsinline></video>
-  <canvas id="arCanvas"></canvas>
+<div class="setup" id="setup">
 
-  <div class="ar-top">
-    <button class="iconbtn glass" id="arBack">←</button>
-    <div class="ar-status glass" id="arStatus">
-      AR hazırlanır...
+  <div class="setupbox">
+
+    <div class="logo">A</div>
+
+    <h2 style="text-align:center;margin:0 0 5px">AzChat</h2>
+
+    <p style="text-align:center;color:var(--muted);font-size:14px">
+      P2P profilinizi yaradın
+    </p>
+
+    <div class="field">
+      <label>Adınız</label>
+      <input id="setupName" maxlength="40" placeholder="Məsələn: Şamxal">
     </div>
-    <button class="iconbtn glass" id="arLock">⌾</button>
-  </div>
 
-  <div id="arObjects"></div>
-</section>
-
-<!-- FEED -->
-<section id="feedScreen" class="screen">
-  <div class="topbar">
-    <div class="toprow">
-      <div class="brand">Yaxınlıqdakı <span>İzlər</span></div>
-      <button class="iconbtn" id="feedRefresh">↻</button>
+    <div class="field">
+      <label>Profil şəkli</label>
+      <input id="setupAvatar" type="file" accept="image/*">
     </div>
+
+    <button class="btn primary" style="width:100%" id="createProfile">
+      Profil yarat
+    </button>
+
   </div>
-  <div id="feedList" class="feed-list"></div>
-</section>
+
+</div>
+
 
 <!-- PROFILE -->
-<section id="profileScreen" class="screen profile-screen">
-  <div class="profile-card glass">
-    <div class="profile-big" id="profileAvatar">Ş</div>
-    <div class="profile-name" id="profileName">ARWORLD istifadəçisi</div>
-    <div class="profile-bio" id="profileBio">
-      Real dünyada rəqəmsal iz burax.
+
+<div class="modal" id="profileModal">
+
+  <div class="sheet">
+
+    <h2>Profil</h2>
+
+    <div class="profilePreview">
+
+      <div class="bigavatar" id="profileAvatar">A</div>
+
+      <b id="profileName">-</b>
+
+      <div class="idbox">
+        <div style="font-size:12px;color:var(--muted)">P2P ID</div>
+        <strong id="profileId">-</strong>
+      </div>
+
     </div>
 
-    <div class="stats">
-      <div class="stat">
-        <b id="statPosts">0</b>
-        <span>İz</span>
-      </div>
-      <div class="stat">
-        <b id="statViews">0</b>
-        <span>Baxış</span>
-      </div>
-      <div class="stat">
-        <b id="statReactions">0</b>
-        <span>Reaksiya</span>
-      </div>
+    <div class="actions">
+      <button class="btn primary" id="copyId">ID-ni kopyala</button>
+      <button class="btn" id="openMyQR">QR kodum</button>
+      <button class="btn" id="editProfile">Redaktə</button>
     </div>
 
-    <div style="display:flex;gap:7px;margin-top:12px">
-      <button class="secondary" style="flex:1" id="editProfile">
-        ✏️ Profil
-      </button>
-      <button class="secondary" style="flex:1" id="settingsBtn">
-        ⚙️ Ayarlar
-      </button>
-    </div>
+    <div style="height:10px"></div>
 
-    <div class="profile-tabs">
-      <button class="profile-tab active" data-tab="posts">
-        Mənim izlərim
-      </button>
-      <button class="profile-tab" data-tab="liked">
-        Bəyəndiklərim
-      </button>
-      <button class="profile-tab" data-tab="saved">
-        Saxlanılanlar
-      </button>
-    </div>
+    <button class="btn" style="width:100%" id="closeProfile">Bağla</button>
+
   </div>
 
-  <div id="profilePosts" style="margin-top:10px"></div>
-</section>
+</div>
 
-<!-- BOTTOM NAV -->
-<nav class="bottomnav glass">
-  <button class="navitem active" data-screen="mapScreen">
-    <span class="ico">🗺️</span>
-    <span>Xəritə</span>
-  </button>
-  <button class="navitem" data-screen="arScreen">
-    <span class="ico">◉</span>
-    <span>AR Kamera</span>
-  </button>
-  <button class="navitem" id="addNav">
-    <span class="ico">＋</span>
-    <span>Əlavə et</span>
-  </button>
-  <button class="navitem" data-screen="feedScreen">
-    <span class="ico">▤</span>
-    <span>Feed</span>
-  </button>
-  <button class="navitem" data-screen="profileScreen">
-    <span class="ico">◎</span>
-    <span>Profil</span>
-  </button>
-</nav>
 
-<!-- ADD MODAL -->
-<div id="addModal" class="modal">
-  <div class="modal-card">
-    <div class="modal-title">
-      <h2>🌍 Dünyaya iz əlavə et</h2>
-      <button class="close" data-close="addModal">×</button>
+<!-- QR -->
+
+<div class="modal" id="qrModal">
+
+  <div class="sheet">
+
+    <h2 id="qrTitle">QR kod</h2>
+
+    <div class="tabs">
+      <button class="tab active" id="tabMyQR">Mənim QR</button>
+      <button class="tab" id="tabTextQR">Mətn QR</button>
     </div>
 
-    <div class="notice">
-      Paylaşım koordinatınıza və seçdiyiniz hüquqi təsdiqə əsasən
-      cihazda saxlanacaq.
+    <div id="myQRPanel">
+
+      <div class="qrwrap">
+        <canvas id="qrCanvas" width="37" height="37"></canvas>
+      </div>
+
+      <div class="qrtext" id="qrPayload"></div>
+
+      <div class="actions" style="margin-top:10px">
+
+        <button class="btn primary" id="downloadQR">
+          PNG saxla
+        </button>
+
+        <button class="btn" id="shareQR">
+          Paylaş
+        </button>
+
+      </div>
+
     </div>
 
-    <div class="field">
-      <label>Başlıq</label>
-      <input id="postTitle" maxlength="80"
-             placeholder="Məsələn: Usta xidməti">
+    <div id="textQRPanel" class="hidden">
+
+      <div class="field">
+        <label>QR-a çevriləcək məlumat</label>
+
+        <textarea
+          id="qrTextInput"
+          rows="5"
+          placeholder="Mətn, link, ID və s."
+        ></textarea>
+
+      </div>
+
+      <button class="btn primary" style="width:100%" id="makeTextQR">
+        QR yarat
+      </button>
+
+      <div class="qrwrap" id="textQRWrap" style="display:none">
+        <canvas id="textQRCanvas" width="37" height="37"></canvas>
+      </div>
+
+      <button class="btn" style="width:100%;margin-top:8px;display:none" id="downloadTextQR">
+        PNG saxla
+      </button>
+
     </div>
 
-    <div class="field">
-      <label>Kateqoriya</label>
-      <div class="category-grid" id="categoryGrid"></div>
-    </div>
+    <div style="height:12px"></div>
 
-    <div class="field">
-      <label>Açıqlama</label>
-      <textarea id="postDescription"
-                placeholder="Məlumat, elan, məqalə..."></textarea>
-    </div>
-
-    <div class="field">
-      <label>Qiymət</label>
-      <input id="postPrice" inputmode="decimal"
-             placeholder="Məsələn: 50 AZN">
-    </div>
-
-    <div class="field">
-      <label>Əlaqə</label>
-      <input id="postContact"
-             inputmode="tel"
-             placeholder="+994...">
-    </div>
-
-    <div class="field">
-      <label>Yerləşmə müddəti</label>
-      <select id="postDuration">
-        <option value="permanent">Daimi</option>
-        <option value="24h">24 saat</option>
-      </select>
-    </div>
-
-    <div class="field">
-      <label>Media</label>
-      <input id="mediaInput"
-             type="file"
-             accept="image/*,video/*"
-             multiple>
-      <div id="mediaPreview"
-           class="media-preview"
-           style="margin-top:7px"></div>
-    </div>
-
-    <div class="field">
-      <label>YouTube linki</label>
-      <input id="youtubeInput"
-             type="url"
-             placeholder="https://youtube.com/watch?v=...">
-    </div>
-
-    <div class="checkbox">
-      <input type="checkbox" id="anonymousPost">
-      <span>Anonim paylaşım</span>
-    </div>
-
-    <div class="checkbox">
-      <input type="checkbox" id="legalCheck">
-      <span>
-        Bu paylaşımın məzmununa və yerləşdirildiyi yerə görə
-        bütün hüquqi məsuliyyəti öz üzərimə götürürəm.
-      </span>
-    </div>
-
-    <button class="primary" id="publishBtn">
-      📍 Yerləşdir
+    <button class="btn" style="width:100%" id="closeQR">
+      Bağla
     </button>
+
   </div>
+
 </div>
 
-<!-- DETAIL MODAL -->
-<div id="detailModal" class="modal">
-  <div class="modal-card">
-    <div class="modal-title">
-      <h2 id="detailTitle">Obyekt</h2>
-      <button class="close" data-close="detailModal">×</button>
-    </div>
-    <div id="detailContent"></div>
-  </div>
-</div>
 
-<!-- COMMENTS MODAL -->
-<div id="commentsModal" class="modal">
-  <div class="modal-card">
-    <div class="modal-title">
-      <h2>💬 Rəylər</h2>
-      <button class="close" data-close="commentsModal">×</button>
-    </div>
-    <div id="commentsList"></div>
-    <div style="display:flex;gap:6px;margin-top:10px">
-      <input id="commentInput"
-             style="flex:1;border:1px solid var(--line);
-             background:rgba(255,255,255,.05);
-             color:var(--text);border-radius:12px;padding:11px"
-             placeholder="Rəy yaz...">
-      <button class="primary"
-              style="width:auto;padding:0 15px"
-              id="commentSend">➤</button>
-    </div>
-  </div>
-</div>
+<!-- ADD FRIEND -->
 
-<!-- PROFILE EDIT -->
-<div id="profileModal" class="modal">
-  <div class="modal-card">
-    <div class="modal-title">
-      <h2>👤 Profil</h2>
-      <button class="close" data-close="profileModal">×</button>
+<div class="modal" id="addModal">
+
+  <div class="sheet">
+
+    <h2>Kontakt əlavə et</h2>
+
+    <div class="field">
+      <label>P2P ID</label>
+      <input id="friendId" placeholder="AZ-XXXXXXXX">
     </div>
 
     <div class="field">
       <label>Ad</label>
-      <input id="profileNameInput">
+      <input id="friendName" placeholder="Kontakt adı">
     </div>
 
-    <div class="field">
-      <label>Bio</label>
-      <textarea id="profileBioInput"></textarea>
+    <div class="actions">
+      <button class="btn primary" id="addFriend">Əlavə et</button>
+      <button class="btn" id="scanQR">QR oxut</button>
+      <button class="btn" id="closeAdd">Bağla</button>
     </div>
 
-    <div class="field">
-      <label>Peşə</label>
-      <input id="profileJobInput"
-             placeholder="Usta, mağaza, fotoqraf...">
-    </div>
-
-    <div class="field">
-      <label>Telefon</label>
-      <input id="profilePhoneInput"
-             inputmode="tel">
-    </div>
-
-    <button class="primary" id="saveProfile">
-      Yadda saxla
-    </button>
   </div>
+
 </div>
 
-<!-- SETTINGS -->
-<div id="settingsModal" class="modal">
-  <div class="modal-card">
-    <div class="modal-title">
-      <h2>⚙️ Ayarlar</h2>
-      <button class="close" data-close="settingsModal">×</button>
+
+<!-- SCANNER -->
+
+<div class="modal" id="scannerModal">
+
+  <div class="sheet">
+
+    <h2>QR oxut</h2>
+
+    <div class="qrscan">
+      <video id="scanVideo" playsinline></video>
+      <div class="scanline"></div>
     </div>
+
+    <p id="scanStatus" style="color:var(--muted);font-size:13px">
+      Kamera hazırlanır...
+    </p>
+
+    <button class="btn" style="width:100%" id="closeScanner">
+      Bağla
+    </button>
+
+  </div>
+
+</div>
+
+
+<!-- EDIT PROFILE -->
+
+<div class="modal" id="editModal">
+
+  <div class="sheet">
+
+    <h2>Profili redaktə et</h2>
+
+    <div class="field">
+      <label>Ad</label>
+      <input id="editName">
+    </div>
+
+    <div class="field">
+      <label>Yeni şəkil</label>
+      <input id="editAvatarFile" type="file" accept="image/*">
+    </div>
+
+    <div class="actions">
+      <button class="btn primary" id="saveProfile">Yadda saxla</button>
+      <button class="btn" id="closeEdit">Bağla</button>
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- SETTINGS -->
+
+<div class="modal" id="settingsModal">
+
+  <div class="sheet">
+
+    <h2>Ayarlar</h2>
 
     <div class="field">
       <label>Dil</label>
-      <select id="languageSelect">
-        <option value="auto">Auto</option>
+      <select id="language">
         <option value="az">Azərbaycan</option>
         <option value="en">English</option>
         <option value="ru">Русский</option>
-        <option value="tr">Türkçe</option>
-        <option value="de">Deutsch</option>
       </select>
     </div>
 
-    <button class="secondary" style="width:100%;margin-bottom:7px"
-            id="requestPermissions">
-      📡 GPS + Kamera icazələri
+    <div class="field">
+      <label>Bildirişlər</label>
+      <button class="btn" style="width:100%" id="notificationBtn">
+        Bildiriş icazəsi
+      </button>
+    </div>
+
+    <div class="actions">
+
+      <button class="btn" id="exportData">
+        Məlumatları ixrac et
+      </button>
+
+      <button class="btn danger" id="wipeData">
+        Bütün lokal məlumatları sil
+      </button>
+
+    </div>
+
+    <div style="height:12px"></div>
+
+    <button class="btn" style="width:100%" id="closeSettings">
+      Bağla
     </button>
 
-    <button class="secondary" style="width:100%;margin-bottom:7px"
-            id="shareApp">
-      📲 Platformanı paylaş
-    </button>
-
-    <button class="secondary" style="width:100%;margin-bottom:7px"
-            id="termsBtn">
-      📄 İstifadə qaydaları
-    </button>
-
-    <button class="secondary" style="width:100%;margin-bottom:7px"
-            id="privacyBtn">
-      🔒 Məxfilik siyasəti
-    </button>
-
-    <button class="secondary danger"
-            style="width:100%"
-            id="clearData">
-      🗑️ Bütün lokal məlumatları sil
-    </button>
   </div>
+
 </div>
 
-<!-- TEXT MODAL -->
-<div id="textModal" class="modal">
-  <div class="modal-card">
-    <div class="modal-title">
-      <h2 id="textModalTitle">Məlumat</h2>
-      <button class="close" data-close="textModal">×</button>
+
+<!-- CALL -->
+
+<div class="modal" id="callModal">
+
+  <div class="sheet">
+
+    <h2 id="callTitle">P2P zəng</h2>
+
+    <div style="
+      width:100%;
+      aspect-ratio:16/10;
+      background:#000;
+      border-radius:14px;
+      overflow:hidden;
+      position:relative;
+    ">
+
+      <video id="remoteVideo"
+        autoplay
+        playsinline
+        style="width:100%;height:100%;object-fit:cover">
+      </video>
+
+      <video id="localVideo"
+        autoplay
+        muted
+        playsinline
+        style="
+          position:absolute;
+          width:105px;
+          height:140px;
+          right:10px;
+          bottom:10px;
+          object-fit:cover;
+          border-radius:10px;
+          background:#111;
+        ">
+      </video>
+
     </div>
-    <div id="textModalBody"
-         style="line-height:1.65;font-size:13px"></div>
+
+    <div class="actions" style="margin-top:12px">
+
+      <button class="btn" id="muteBtn">
+        Mikrofon
+      </button>
+
+      <button class="btn" id="cameraBtn">
+        Kamera
+      </button>
+
+      <button class="btn danger" id="endCall">
+        Zəngi bitir
+      </button>
+
+    </div>
+
   </div>
+
 </div>
 
-<!-- MEDIA -->
-<div id="mediaModal" class="modal">
-  <div class="modal-card">
-    <div class="modal-title">
-      <h2>Media</h2>
-      <button class="close" data-close="mediaModal">×</button>
-    </div>
-    <div id="fullMediaWrap"
-         style="flex:1;display:flex;align-items:center">
-      <img id="fullMedia" class="hidden">
-      <video id="fullVideo"
-             class="hidden"
-             controls
-             playsinline
-             style="width:100%;max-height:80vh"></video>
-    </div>
-  </div>
-</div>
 
-<div id="toast" class="toast"></div>
+<div class="toast" id="toast"></div>
+
 
 <script>
-"use strict";
+/* =========================================================
+   AZCHAT
+   LOCAL QR + P2P FOUNDATION
+   ========================================================= */
 
-/* ============================================================
-   ARWORLD SINGLE-FILE ENGINE
-   ============================================================ */
+const $ = id => document.getElementById(id);
 
-const $ = s => document.querySelector(s);
-const $$ = s => [...document.querySelectorAll(s)];
+const DB_NAME = "AZCHAT_LOCAL_DB";
+const DB_VERSION = 1;
 
-const STORAGE_KEY = "arworld_v1";
+let db;
+let profile = null;
+let contacts = [];
+let chats = {};
+let currentContact = null;
+let peer = null;
+let currentCall = null;
+let localStream = null;
+let scanStream = null;
+let scanTimer = null;
 
-const DEFAULT_STATE = {
-  posts: [],
-  comments: {},
-  liked: [],
-  saved: [],
-  notifications: [],
-  profile: {
-    name: "ARWORLD istifadəçisi",
-    bio: "Real dünyada rəqəmsal iz burax.",
-    job: "",
-    phone: ""
-  },
-  settings: {
-    theme: "dark",
-    language: "auto",
-    radius: 100
-  },
-  stats: {
-    views: 0
-  },
-  onboarded: false
-};
 
-let state = loadState();
-let map = null;
-let mapMarkers = [];
-let userMarker = null;
-let accuracyCircle = null;
-let userLocation = null;
-let watchId = null;
-let currentHeading = 0;
-let cameraStream = null;
-let arTimer = null;
-let selectedPost = null;
-let selectedCategory = "other";
-let searchTimer = null;
-let mediaFiles = [];
-let lockedTarget = null;
-let orientationListening = false;
-
-/* ============================================================
-   CATEGORY ENGINE
-   ============================================================ */
-
-const CATEGORIES = {
-  business:{
-    icon:"🏪",
-    name:"Biznes",
-    color:"#24d6a1"
-  },
-  service:{
-    icon:"🛠️",
-    name:"Usta",
-    color:"#ffb84a"
-  },
-  property:{
-    icon:"🏢",
-    name:"Əmlak",
-    color:"#a877ff"
-  },
-  car:{
-    icon:"🚗",
-    name:"Maşın",
-    color:"#ff5577"
-  },
-  person:{
-    icon:"👤",
-    name:"Profil",
-    color:"#3dc8ff"
-  },
-  media:{
-    icon:"📸",
-    name:"Media",
-    color:"#ff67d5"
-  },
-  article:{
-    icon:"📜",
-    name:"Məqalə",
-    color:"#e3d15c"
-  },
-  other:{
-    icon:"📍",
-    name:"Digər",
-    color:"#8295aa"
-  }
-};
-
-function renderCategories(){
-  const box = $("#categoryGrid");
-  box.innerHTML = "";
-
-  Object.entries(CATEGORIES).forEach(([key,c])=>{
-    const b = document.createElement("button");
-    b.className = "cat-btn" + (key===selectedCategory?" active":"");
-    b.dataset.category = key;
-    b.innerHTML = `${c.icon}<br>${c.name}`;
-    b.onclick = ()=>{
-      selectedCategory = key;
-      $$(".cat-btn").forEach(x=>x.classList.remove("active"));
-      b.classList.add("active");
-    };
-    box.appendChild(b);
-  });
-}
-
-/* ============================================================
-   STORAGE
-   ============================================================ */
-
-function clone(obj){
-  return JSON.parse(JSON.stringify(obj));
-}
-
-function loadState(){
-  try{
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if(!raw) return clone(DEFAULT_STATE);
-    const parsed = JSON.parse(raw);
-    return deepMerge(clone(DEFAULT_STATE),parsed);
-  }catch(e){
-    console.warn("Storage error",e);
-    return clone(DEFAULT_STATE);
-  }
-}
-
-function deepMerge(base,extra){
-  if(!extra || typeof extra!=="object") return base;
-
-  Object.keys(extra).forEach(k=>{
-    if(
-      extra[k] &&
-      typeof extra[k]==="object" &&
-      !Array.isArray(extra[k]) &&
-      base[k] &&
-      typeof base[k]==="object" &&
-      !Array.isArray(base[k])
-    ){
-      base[k]=deepMerge(base[k],extra[k]);
-    }else{
-      base[k]=extra[k];
-    }
-  });
-
-  return base;
-}
-
-function saveState(){
-  try{
-    localStorage.setItem(STORAGE_KEY,JSON.stringify(state));
-  }catch(e){
-    toast("Yaddaş limiti dolub. Böyük videoları silin.");
-  }
-}
-
-/* ============================================================
-   UTILITIES
-   ============================================================ */
-
-function uid(){
-  return "p_" +
-    Date.now().toString(36) +
-    "_" +
-    Math.random().toString(36).slice(2,9);
-}
-
-function clamp(n,min,max){
-  return Math.max(min,Math.min(max,n));
-}
-
-function escapeHTML(v){
-  return String(v??"")
-    .replaceAll("&","&amp;")
-    .replaceAll("<","&lt;")
-    .replaceAll(">","&gt;")
-    .replaceAll('"',"&quot;")
-    .replaceAll("'","&#039;");
-}
+/* =========================================================
+   TOAST
+   ========================================================= */
 
 function toast(message){
-  const el=$("#toast");
-  el.textContent=message;
+
+  const el = $("toast");
+
+  el.textContent = message;
+
   el.classList.add("show");
-  clearTimeout(toast.timer);
-  toast.timer=setTimeout(()=>{
+
+  clearTimeout(el._t);
+
+  el._t = setTimeout(()=>{
     el.classList.remove("show");
-  },2600);
+  },2500);
 }
 
-function speak(message){
-  try{
-    if("speechSynthesis" in window){
-      speechSynthesis.cancel();
-      const u=new SpeechSynthesisUtterance(message);
-      u.lang=currentLanguage()+"-"+currentLanguage().toUpperCase();
-      u.rate=.95;
-      speechSynthesis.speak(u);
-    }
-  }catch(e){}
-}
 
-function vibrate(pattern=[100]){
-  try{
-    if(navigator.vibrate) navigator.vibrate(pattern);
-  }catch(e){}
-}
+/* =========================================================
+   INDEXED DB
+   ========================================================= */
 
-function currentLanguage(){
-  const l=state.settings.language;
-  if(l!=="auto") return l;
-  return (navigator.language||"az").slice(0,2);
-}
+function openDB(){
 
-function now(){
-  return Date.now();
-}
+  return new Promise((resolve,reject)=>{
 
-/* ============================================================
-   GEO ENGINE
-   ============================================================ */
+    const request = indexedDB.open(DB_NAME,DB_VERSION);
 
-function haversine(lat1,lon1,lat2,lon2){
-  const R=6371000;
-  const p=Math.PI/180;
-  const a=
-    0.5-
-    Math.cos((lat2-lat1)*p)/2+
-    Math.cos(lat1*p)*
-    Math.cos(lat2*p)*
-    (1-Math.cos((lon2-lon1)*p))/2;
+    request.onupgradeneeded = e => {
 
-  return 2*R*Math.asin(Math.sqrt(a));
-}
+      const database = e.target.result;
 
-function formatDistance(m){
-  if(!Number.isFinite(m)) return "—";
-  if(m<1000) return Math.round(m)+" m";
-  return (m/1000).toFixed(2)+" km";
-}
-
-function bearing(lat1,lon1,lat2,lon2){
-  const p=Math.PI/180;
-  const y=Math.sin((lon2-lon1)*p)*Math.cos(lat2*p);
-  const x=
-    Math.cos(lat1*p)*Math.sin(lat2*p)-
-    Math.sin(lat1*p)*Math.cos(lat2*p)*
-    Math.cos((lon2-lon1)*p);
-
-  return (Math.atan2(y,x)*180/Math.PI+360)%360;
-}
-
-function gpsAvailable(){
-  return "geolocation" in navigator;
-}
-
-/* ============================================================
-   GPS
-   ============================================================ */
-
-function startGPS(){
-  if(!gpsAvailable()){
-    toast("Bu brauzer GPS dəstəkləmir.");
-    return;
-  }
-
-  if(watchId!==null) return;
-
-  watchId=navigator.geolocation.watchPosition(
-    position=>{
-      const c=position.coords;
-
-      userLocation={
-        lat:c.latitude,
-        lng:c.longitude,
-        accuracy:c.accuracy||0,
-        speed:Number.isFinite(c.speed)?c.speed:0,
-        timestamp:Date.now()
-      };
-
-      updateUserMarker();
-      updateMapMarkers();
-      updateRadar();
-      updateARObjects();
-      checkGeofence();
-    },
-    error=>{
-      const messages={
-        1:"GPS icazəsi verilmədi.",
-        2:"GPS mövqeyi müəyyən edilə bilmədi.",
-        3:"GPS sorğusu vaxt aşımına uğradı."
-      };
-      toast(messages[error.code]||"GPS xətası");
-    },
-    {
-      enableHighAccuracy:true,
-      maximumAge:2000,
-      timeout:15000
-    }
-  );
-}
-
-function updateUserMarker(){
-  if(!map || !userLocation) return;
-
-  const ll=[userLocation.lat,userLocation.lng];
-
-  if(!userMarker){
-    userMarker=L.marker(ll,{
-      icon:L.divIcon({
-        className:"",
-        html:
-          '<div style="' +
-          'width:18px;height:18px;border-radius:50%;' +
-          'background:#39d9ff;border:3px solid white;' +
-          'box-shadow:0 0 0 8px rgba(57,217,255,.18),0 2px 10px #000">' +
-          '</div>',
-        iconSize:[18,18],
-        iconAnchor:[9,9]
-      })
-    }).addTo(map);
-  }else{
-    userMarker.setLatLng(ll);
-  }
-
-  if(!accuracyCircle){
-    accuracyCircle=L.circle(ll,{
-      radius:userLocation.accuracy||20,
-      color:"#39d9ff",
-      fillOpacity:.05,
-      weight:1
-    }).addTo(map);
-  }else{
-    accuracyCircle.setLatLng(ll);
-    accuracyCircle.setRadius(userLocation.accuracy||20);
-  }
-}
-
-function locateUser(){
-  if(!userLocation){
-    startGPS();
-    toast("GPS mövqeyi gözlənilir...");
-    return;
-  }
-
-  map.setView(
-    [userLocation.lat,userLocation.lng],
-    Math.max(map.getZoom(),17),
-    {animate:true}
-  );
-}
-
-/* ============================================================
-   COMPASS / ORIENTATION
-   ============================================================ */
-
-async function startOrientation(){
-  if(orientationListening) return;
-
-  try{
-    if(
-      typeof DeviceOrientationEvent!=="undefined" &&
-      typeof DeviceOrientationEvent.requestPermission==="function"
-    ){
-      const permission=
-        await DeviceOrientationEvent.requestPermission();
-
-      if(permission!=="granted"){
-        toast("Kompas icazəsi verilmədi.");
-        return;
+      if(!database.objectStoreNames.contains("data")){
+        database.createObjectStore("data");
       }
-    }
 
-    window.addEventListener(
-      "deviceorientationabsolute",
-      handleOrientation,
-      true
-    );
-
-    window.addEventListener(
-      "deviceorientation",
-      handleOrientation,
-      true
-    );
-
-    orientationListening=true;
-  }catch(e){
-    toast("Kompas bu cihazda əlçatan deyil.");
-  }
-}
-
-function handleOrientation(e){
-  let h=null;
-
-  if(typeof e.webkitCompassHeading==="number"){
-    h=e.webkitCompassHeading;
-  }else if(typeof e.alpha==="number"){
-    h=360-e.alpha;
-  }
-
-  if(h!==null){
-    currentHeading=
-      currentHeading*.82+
-      h*.18;
-
-    updateARObjects();
-  }
-}
-
-/* ============================================================
-   MAP
-   ============================================================ */
-
-function initMap(){
-  map=L.map("map",{
-    zoomControl:false,
-    preferCanvas:true
-  }).setView([40.4093,49.8671],12);
-
-  L.tileLayer(
-    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-    {
-      maxZoom:20,
-      attribution:"© OpenStreetMap contributors"
-    }
-  ).addTo(map);
-
-  map.on("click",e=>{
-    openAddModal(e.latlng.lat,e.latlng.lng);
-  });
-
-  renderMapMarkers();
-}
-
-function markerIcon(post){
-  const c=CATEGORIES[post.category]||CATEGORIES.other;
-
-  return L.divIcon({
-    className:"",
-    html:
-      `<div class="category-dot"
-            style="background:${c.color}">
-         ${c.icon}
-       </div>`,
-    iconSize:[38,38],
-    iconAnchor:[19,19],
-    popupAnchor:[0,-18]
-  });
-}
-
-function renderMapMarkers(){
-  if(!map) return;
-
-  mapMarkers.forEach(m=>{
-    try{map.removeLayer(m)}catch(e){}
-  });
-
-  mapMarkers=[];
-
-  const visible=getVisiblePosts();
-
-  visible.forEach(post=>{
-    const marker=L.marker(
-      [post.lat,post.lng],
-      {icon:markerIcon(post)}
-    );
-
-    marker.on("click",()=>{
-      openDetail(post.id);
-    });
-
-    marker.bindPopup(createPopupHTML(post));
-
-    marker.addTo(map);
-    mapMarkers.push(marker);
-  });
-}
-
-function createPopupHTML(post){
-  const distance=userLocation
-    ? haversine(
-        userLocation.lat,
-        userLocation.lng,
-        post.lat,
-        post.lng
-      )
-    : null;
-
-  const c=CATEGORIES[post.category]||CATEGORIES.other;
-
-  return `
-    <div class="map-card">
-      <h3>${c.icon} ${escapeHTML(post.title)}</h3>
-      <p>${escapeHTML(post.description||"")}</p>
-      <p>📏 ${formatDistance(distance)}</p>
-      ${post.price?`<p>💰 ${escapeHTML(post.price)}</p>`:""}
-      <button
-        onclick="openDetail('${post.id}')"
-        style="
-          margin-top:6px;
-          padding:8px 10px;
-          border-radius:9px;
-          background:#39d9ff;
-          color:#00131b;
-          font-weight:800">
-        Aç
-      </button>
-    </div>
-  `;
-}
-
-function updateMapMarkers(){
-  if(!map) return;
-  renderMapMarkers();
-}
-
-/* ============================================================
-   SEARCH / GEOCODING
-   ============================================================ */
-
-function searchPosts(query){
-  query=query.trim().toLowerCase();
-
-  if(!query){
-    renderMapMarkers();
-    renderFeed();
-    return;
-  }
-
-  const filtered=state.posts.filter(p=>{
-    const text=[
-      p.title,
-      p.description,
-      p.category,
-      p.contact,
-      p.price
-    ].join(" ").toLowerCase();
-
-    return text.includes(query);
-  });
-
-  renderMapMarkersCustom(filtered);
-  renderFeed(filtered);
-}
-
-function renderMapMarkersCustom(posts){
-  if(!map) return;
-
-  mapMarkers.forEach(m=>{
-    try{map.removeLayer(m)}catch(e){}
-  });
-
-  mapMarkers=[];
-
-  posts.forEach(post=>{
-    const m=L.marker(
-      [post.lat,post.lng],
-      {icon:markerIcon(post)}
-    ).addTo(map);
-
-    m.on("click",()=>openDetail(post.id));
-    m.bindPopup(createPopupHTML(post));
-    mapMarkers.push(m);
-  });
-
-  if(posts.length===1){
-    map.setView([posts[0].lat,posts[0].lng],17);
-  }
-}
-
-let geocodeAbort=null;
-
-async function geocode(query){
-  query=query.trim();
-  if(!query) return;
-
-  try{
-    if(geocodeAbort) geocodeAbort.abort();
-    geocodeAbort=new AbortController();
-
-    const url=
-      "https://nominatim.openstreetmap.org/search" +
-      "?format=jsonv2&limit=5&q="+
-      encodeURIComponent(query);
-
-    const response=await fetch(
-      url,
-      {
-        signal:geocodeAbort.signal,
-        headers:{
-          "Accept":"application/json"
-        }
-      }
-    );
-
-    if(!response.ok) throw new Error("Geocode error");
-
-    const data=await response.json();
-
-    if(!data.length){
-      toast("Məkan tapılmadı.");
-      return;
-    }
-
-    const first=data[0];
-    const lat=Number(first.lat);
-    const lon=Number(first.lon);
-
-    map.setView([lat,lon],17,{animate:true});
-
-    L.marker([lat,lon])
-      .addTo(map)
-      .bindPopup(
-        `<b>${escapeHTML(first.display_name)}</b>`
-      )
-      .openPopup();
-
-  }catch(e){
-    if(e.name!=="AbortError"){
-      toast("Ünvan axtarışı alınmadı.");
-    }
-  }
-}
-
-/* ============================================================
-   FILTER / RADIUS
-   ============================================================ */
-
-function getVisiblePosts(){
-  const radius=state.settings.radius;
-
-  if(radius==="global" || !userLocation){
-    return [...state.posts];
-  }
-
-  return state.posts.filter(post=>{
-    const d=haversine(
-      userLocation.lat,
-      userLocation.lng,
-      post.lat,
-      post.lng
-    );
-
-    return d<=Number(radius);
-  });
-}
-
-/* ============================================================
-   FEED
-   ============================================================ */
-
-function renderFeed(posts=getVisiblePosts()){
-  const list=$("#feedList");
-
-  if(!posts.length){
-    list.innerHTML=`
-      <div class="glass feed-card">
-        <h3>🌍 Burada hələ paylaşım yoxdur</h3>
-        <p style="color:var(--muted)">
-          Xəritədə bir nöqtəyə toxunaraq ilk rəqəmsal izi sən qoy.
-        </p>
-      </div>
-    `;
-    return;
-  }
-
-  list.innerHTML=posts
-    .slice()
-    .sort((a,b)=>b.createdAt-a.createdAt)
-    .map(renderFeedCard)
-    .join("");
-}
-
-function renderFeedCard(post){
-  const c=CATEGORIES[post.category]||CATEGORIES.other;
-
-  const distance=userLocation
-    ? haversine(
-        userLocation.lat,
-        userLocation.lng,
-        post.lat,
-        post.lng
-      )
-    : null;
-
-  const liked=state.liked.includes(post.id);
-  const saved=state.saved.includes(post.id);
-
-  const media=post.media?.[0];
-
-  let mediaHTML="";
-
-  if(media){
-    if(media.type.startsWith("image/")){
-      mediaHTML=
-        `<img class="feed-media"
-              src="${media.data}"
-              onclick="openMedia('${post.id}',0)">`;
-    }else if(media.type.startsWith("video/")){
-      mediaHTML=
-        `<video class="feed-media"
-                src="${media.data}"
-                muted
-                playsinline
-                onclick="openMedia('${post.id}',0)">
-         </video>`;
-    }
-  }
-
-  return `
-    <article class="feed-card glass">
-      <div class="feed-head">
-        <div class="avatar">${escapeHTML(
-          (post.author||"A").slice(0,1).toUpperCase()
-        )}</div>
-
-        <div class="feed-head-main">
-          <div class="feed-title">
-            ${c.icon} ${escapeHTML(post.title)}
-            ${post.verified?
-              '<span class="verified">✓</span>':""}
-          </div>
-          <div class="feed-sub">
-            ${escapeHTML(post.author||"Anonim")}
-            · ${formatDistance(distance)}
-          </div>
-        </div>
-
-        <button class="action"
-                onclick="openDetail('${post.id}')">
-          ⋮
-        </button>
-      </div>
-
-      <div class="feed-body">
-        ${escapeHTML(post.description||"")}
-        ${post.price?
-          `<div style="font-weight:900;margin-top:6px">
-             💰 ${escapeHTML(post.price)}
-           </div>`:""}
-        ${mediaHTML}
-      </div>
-
-      <div class="feed-actions">
-        <button class="action"
-                onclick="reactPost('${post.id}','like')">
-          ${liked?"❤️":"🤍"} ${post.reactions?.like||0}
-        </button>
-
-        <button class="action"
-                onclick="reactPost('${post.id}','useful')">
-          💡 ${post.reactions?.useful||0}
-        </button>
-
-        <button class="action"
-                onclick="reactPost('${post.id}','fire')">
-          🔥 ${post.reactions?.fire||0}
-        </button>
-
-        <button class="action"
-                onclick="openComments('${post.id}')">
-          💬 ${getCommentCount(post.id)}
-        </button>
-
-        <button class="action"
-                onclick="savePost('${post.id}')">
-          ${saved?"🔖":"📑"}
-        </button>
-
-        <button class="action"
-                onclick="sharePost('${post.id}')">
-          ↗️
-        </button>
-      </div>
-    </article>
-  `;
-}
-
-/* ============================================================
-   POST CREATION
-   ============================================================ */
-
-function openAddModal(lat=null,lng=null){
-  if(!userLocation && lat===null){
-    startGPS();
-  }
-
-  $("#addModal").classList.add("show");
-
-  if(lat!==null){
-    $("#publishBtn").dataset.lat=lat;
-    $("#publishBtn").dataset.lng=lng;
-  }else if(userLocation){
-    $("#publishBtn").dataset.lat=userLocation.lat;
-    $("#publishBtn").dataset.lng=userLocation.lng;
-  }
-}
-
-function resetAddForm(){
-  $("#postTitle").value="";
-  $("#postDescription").value="";
-  $("#postPrice").value="";
-  $("#postContact").value="";
-  $("#youtubeInput").value="";
-  $("#mediaInput").value="";
-  $("#mediaPreview").innerHTML="";
-  $("#legalCheck").checked=false;
-  $("#anonymousPost").checked=false;
-  mediaFiles=[];
-  selectedCategory="other";
-  renderCategories();
-}
-
-function validateText(text){
-  const banned=[
-    "terrorist",
-    "terrorism",
-    "nazi",
-    "hitler",
-    "kill",
-    "bomb",
-    "weapon",
-    "porn"
-  ];
-
-  const normalized=text.toLowerCase();
-
-  return !banned.some(w=>normalized.includes(w));
-}
-
-function createPost(){
-  const title=$("#postTitle").value.trim();
-  const description=$("#postDescription").value.trim();
-  const price=$("#postPrice").value.trim();
-  const contact=$("#postContact").value.trim();
-  const duration=$("#postDuration").value;
-  const youtube=$("#youtubeInput").value.trim();
-  const anonymous=$("#anonymousPost").checked;
-  const legal=$("#legalCheck").checked;
-
-  if(!title){
-    toast("Başlıq yazın.");
-    return;
-  }
-
-  if(!legal){
-    toast("Hüquqi təsdiq mütləqdir.");
-    return;
-  }
-
-  if(!validateText(
-    title+" "+description+" "+price
-  )){
-    toast("Uyğunsuz məzmun bloklandı.");
-    return;
-  }
-
-  let lat=Number($("#publishBtn").dataset.lat);
-  let lng=Number($("#publishBtn").dataset.lng);
-
-  if(!Number.isFinite(lat)||!Number.isFinite(lng)){
-    if(!userLocation){
-      toast("Əvvəlcə GPS mövqeyi lazımdır.");
-      startGPS();
-      return;
-    }
-
-    lat=userLocation.lat;
-    lng=userLocation.lng;
-  }
-
-  const post={
-    id:uid(),
-    title,
-    description,
-    price,
-    contact,
-    category:selectedCategory,
-    lat,
-    lng,
-    createdAt:now(),
-    expiresAt:
-      duration==="24h"
-        ?now()+86400000
-        :null,
-    author:
-      anonymous
-        ?"Anonim"
-        :state.profile.name,
-    anonymous,
-    media:mediaFiles.slice(),
-    youtube,
-    verified:false,
-    views:0,
-    reactions:{
-      like:0,
-      useful:0,
-      fire:0,
-      location:0
-    },
-    locked:false
-  };
-
-  state.posts.unshift(post);
-  saveState();
-
-  $("#addModal").classList.remove("show");
-  resetAddForm();
-
-  renderMapMarkers();
-  renderFeed();
-  updateProfile();
-
-  if(map){
-    map.setView([lat,lng],18,{animate:true});
-  }
-
-  toast("📍 İz uğurla yerləşdirildi.");
-  speak("Yeni paylaşım yaradıldı");
-}
-
-async function readMedia(files){
-  const result=[];
-
-  for(const file of files){
-    if(file.size>5*1024*1024){
-      toast("5 MB-dan böyük fayl lokal demo üçün çox böyükdür.");
-      continue;
-    }
-
-    const data=await new Promise((resolve,reject)=>{
-      const reader=new FileReader();
-
-      reader.onload=()=>resolve(reader.result);
-      reader.onerror=reject;
-
-      reader.readAsDataURL(file);
-    });
-
-    result.push({
-      name:file.name,
-      type:file.type,
-      data
-    });
-  }
-
-  return result;
-}
-
-/* ============================================================
-   DETAIL
-   ============================================================ */
-
-function openDetail(id){
-  const post=state.posts.find(p=>p.id===id);
-  if(!post) return;
-
-  selectedPost=post.id;
-
-  post.views=(post.views||0)+1;
-  state.stats.views++;
-  saveState();
-
-  const c=CATEGORIES[post.category]||CATEGORIES.other;
-
-  const distance=userLocation
-    ? haversine(
-        userLocation.lat,
-        userLocation.lng,
-        post.lat,
-        post.lng
-      )
-    : null;
-
-  const comments=getComments(post.id);
-
-  $("#detailTitle").textContent=
-    `${c.icon} ${post.title}`;
-
-  $("#detailContent").innerHTML=`
-    <div class="notice">
-      📏 Sizdən məsafə: <b>${formatDistance(distance)}</b>
-      ${post.verified?
-        '<br><span class="verified">✓ Yoxlanılmış məkan</span>':""}
-    </div>
-
-    <p>${escapeHTML(post.description||"")}</p>
-
-    ${post.price?
-      `<p><b>💰 ${escapeHTML(post.price)}</b></p>`:""}
-
-    ${post.contact?
-      `<button class="secondary"
-        onclick="callNumber('${escapeHTML(post.contact)}')">
-        📞 Zəng et
-      </button>`:""}
-
-    <button class="secondary"
-      onclick="navigateTo(${post.lat},${post.lng})">
-      🧭 Naviqasiya
-    </button>
-
-    <button class="secondary"
-      onclick="lockAR('${post.id}')">
-      🎯 AR hədəfə kilidlə
-    </button>
-
-    <button class="secondary"
-      onclick="openComments('${post.id}')">
-      💬 Rəylər (${comments.length})
-    </button>
-
-    <button class="secondary"
-      onclick="sharePost('${post.id}')">
-      📲 Paylaş
-    </button>
-
-    ${isOwnPost(post)?
-      `<div style="margin-top:10px">
-        <button class="secondary"
-          onclick="editPost('${post.id}')">
-          ✏️ Redaktə
-        </button>
-        <button class="secondary danger"
-          onclick="deletePost('${post.id}')">
-          🗑️ Sil
-        </button>
-      </div>`:""}
-
-    <div style="margin-top:12px;color:var(--muted);font-size:11px">
-      👁️ ${post.views||0} baxış
-      · 📍 ${post.lat.toFixed(6)}, ${post.lng.toFixed(6)}
-    </div>
-  `;
-
-  $("#detailModal").classList.add("show");
-}
-
-function isOwnPost(post){
-  return post.author===state.profile.name && !post.anonymous;
-}
-
-function navigateTo(lat,lng){
-  const url=
-    `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
-
-  window.open(url,"_blank","noopener");
-}
-
-function callNumber(number){
-  window.location.href="tel:"+number;
-}
-
-/* ============================================================
-   REACTIONS
-   ============================================================ */
-
-function reactPost(id,type){
-  const post=state.posts.find(p=>p.id===id);
-  if(!post) return;
-
-  post.reactions ||= {
-    like:0,
-    useful:0,
-    fire:0,
-    location:0
-  };
-
-  if(type==="like"){
-    if(state.liked.includes(id)){
-      state.liked=state.liked.filter(x=>x!==id);
-      post.reactions.like=Math.max(
-        0,(post.reactions.like||0)-1
-      );
-    }else{
-      state.liked.push(id);
-      post.reactions.like=(post.reactions.like||0)+1;
-    }
-  }else{
-    post.reactions[type]=(post.reactions[type]||0)+1;
-  }
-
-  saveState();
-  renderFeed();
-  updateProfile();
-
-  if(selectedPost===id) openDetail(id);
-}
-
-function savePost(id){
-  if(state.saved.includes(id)){
-    state.saved=state.saved.filter(x=>x!==id);
-    toast("Saxlanılanlardan çıxarıldı.");
-  }else{
-    state.saved.push(id);
-    toast("Saxlanıldı.");
-  }
-
-  saveState();
-  renderFeed();
-}
-
-/* ============================================================
-   COMMENTS
-   ============================================================ */
-
-function getComments(id){
-  return state.comments[id]||[];
-}
-
-function getCommentCount(id){
-  return getComments(id).length;
-}
-
-function openComments(id){
-  selectedPost=id;
-  renderComments();
-  $("#commentsModal").classList.add("show");
-}
-
-function renderComments(){
-  const list=$("#commentsList");
-  const comments=getComments(selectedPost);
-
-  if(!comments.length){
-    list.innerHTML=
-      `<div style="color:var(--muted);padding:15px">
-        Hələ rəy yoxdur.
-       </div>`;
-    return;
-  }
-
-  list.innerHTML=comments.map(c=>`
-    <div class="comment">
-      <b>${escapeHTML(c.author)}</b>
-      <small> · ${new Date(c.createdAt).toLocaleString()}</small>
-      <div style="margin-top:4px">
-        ${escapeHTML(c.text)}
-      </div>
-      <button class="action"
-              onclick="replyToComment('${c.id}')">
-        ↩️ Cavab
-      </button>
-      ${c.author===state.profile.name?
-        `<button class="action"
-          onclick="deleteComment('${c.id}')">
-          Sil
-        </button>`:""}
-    </div>
-  `).join("");
-}
-
-function addComment(text,parentId=null){
-  text=text.trim();
-
-  if(!text) return;
-
-  if(!validateText(text)){
-    toast("Uyğunsuz məzmun bloklandı.");
-    return;
-  }
-
-  state.comments[selectedPost] ||= [];
-
-  state.comments[selectedPost].push({
-    id:uid(),
-    parentId,
-    author:state.profile.name,
-    text,
-    createdAt:now()
-  });
-
-  saveState();
-  $("#commentInput").value="";
-  renderComments();
-  renderFeed();
-
-  toast("Rəy əlavə edildi.");
-}
-
-function replyToComment(id){
-  const text=prompt("Cavabınız:");
-  if(text) addComment(text,id);
-}
-
-function deleteComment(id){
-  state.comments[selectedPost]=
-    getComments(selectedPost)
-      .filter(c=>c.id!==id);
-
-  saveState();
-  renderComments();
-}
-
-/* ============================================================
-   SHARE / DEEP LINK
-   ============================================================ */
-
-async function sharePost(id){
-  const post=state.posts.find(p=>p.id===id);
-  if(!post) return;
-
-  const url=
-    location.href.split("#")[0]+
-    "#post="+encodeURIComponent(id);
-
-  const text=
-    `${post.title} — ARWORLD\n`+
-    `📍 ${post.lat.toFixed(6)}, ${post.lng.toFixed(6)}\n`+
-    `AR-da bax: ${url}`;
-
-  if(navigator.share){
-    try{
-      await navigator.share({
-        title:"ARWORLD",
-        text,
-        url
-      });
-      return;
-    }catch(e){}
-  }
-
-  try{
-    await navigator.clipboard.writeText(text);
-    toast("Paylaşım mətni kopyalandı.");
-  }catch(e){
-    toast(text);
-  }
-}
-
-async function shareApp(){
-  const text=
-    "ARWORLD — real dünyada rəqəmsal axtarış və AR sosial platforması\n"+
-    location.href;
-
-  if(navigator.share){
-    try{
-      await navigator.share({
-        title:"ARWORLD",
-        text,
-        url:location.href
-      });
-      return;
-    }catch(e){}
-  }
-
-  try{
-    await navigator.clipboard.writeText(text);
-    toast("Platforma linki kopyalandı.");
-  }catch(e){
-    toast(location.href);
-  }
-}
-
-function handleDeepLink(){
-  const hash=location.hash;
-
-  if(hash.startsWith("#post=")){
-    const id=
-      decodeURIComponent(hash.slice(6));
-
-    setTimeout(()=>{
-      if(state.posts.some(p=>p.id===id)){
-        openDetail(id);
-      }
-    },500);
-  }
-}
-
-/* ============================================================
-   AR CAMERA
-   ============================================================ */
-
-async function openAR(){
-  switchScreen("arScreen");
-  await startOrientation();
-
-  const video=$("#arVideo");
-
-  if(!navigator.mediaDevices ||
-     !navigator.mediaDevices.getUserMedia){
-
-    showARFallback();
-    return;
-  }
-
-  try{
-    cameraStream=
-      await navigator.mediaDevices.getUserMedia({
-        video:{
-          facingMode:{ideal:"environment"},
-          width:{ideal:1280},
-          height:{ideal:720}
-        },
-        audio:false
-      });
-
-    video.srcObject=cameraStream;
-    await video.play();
-
-    $("#arStatus").textContent=
-      "● AR aktiv · GPS + Kompas";
-
-    renderARObjects();
-
-  }catch(e){
-    showARFallback();
-    toast("Kamera icazəsi yoxdur. Xəritə/Canvas rejimi aktivdir.");
-  }
-}
-
-function closeAR(){
-  if(cameraStream){
-    cameraStream.getTracks().forEach(t=>t.stop());
-    cameraStream=null;
-  }
-
-  clearInterval(arTimer);
-  arTimer=null;
-
-  switchScreen("mapScreen");
-}
-
-function showARFallback(){
-  $("#arStatus").textContent=
-    "Hybrid AR · kamera əlçatan deyil";
-
-  const ctx=$("#arCanvas").getContext("2d");
-
-  ctx.clearRect(
-    0,0,
-    $("#arCanvas").width,
-    $("#arCanvas").height
-  );
-
-  renderARObjects();
-}
-
-function resizeARCanvas(){
-  const c=$("#arCanvas");
-  c.width=window.innerWidth*devicePixelRatio;
-  c.height=window.innerHeight*devicePixelRatio;
-  c.style.width=window.innerWidth+"px";
-  c.style.height=window.innerHeight+"px";
-}
-
-function renderARObjects(){
-  const box=$("#arObjects");
-  box.innerHTML="";
-
-  getVisiblePosts()
-    .slice(0,30)
-    .forEach((post,index)=>{
-      const el=document.createElement("div");
-      const cat=CATEGORIES[post.category]||CATEGORIES.other;
-
-      el.className="ar-object glass";
-      el.dataset.id=post.id;
-
-      el.innerHTML=`
-        <div class="ar-title">
-          ${cat.icon} ${escapeHTML(post.title)}
-        </div>
-        <div class="ar-meta">
-          ${escapeHTML(post.description||"").slice(0,60)}
-        </div>
-        <div class="ar-meta">
-          📏 <span class="ar-distance"></span>
-        </div>
-        ${post.price?
-          `<div class="ar-price">
-             ${escapeHTML(post.price)}
-           </div>`:""}
-        <button onclick="openDetail('${post.id}')">
-          Aç
-        </button>
-      `;
-
-      el.addEventListener("pointerdown",e=>{
-        e.stopPropagation();
-        lockedTarget=post.id;
-        $$(".ar-object").forEach(x=>
-          x.classList.remove("locked")
-        );
-        el.classList.add("locked");
-      });
-
-      box.appendChild(el);
-    });
-
-  updateARObjects();
-}
-
-function updateARObjects(){
-  if(!userLocation) return;
-
-  const objects=$$(".ar-object");
-
-  const width=window.innerWidth;
-  const height=window.innerHeight;
-
-  const centerX=width/2;
-  const centerY=height/2;
-
-  const positions=[];
-
-  objects.forEach((el,index)=>{
-    const id=el.dataset.id;
-    const post=state.posts.find(p=>p.id===id);
-    if(!post) return;
-
-    const d=haversine(
-      userLocation.lat,
-      userLocation.lng,
-      post.lat,
-      post.lng
-    );
-
-    const b=bearing(
-      userLocation.lat,
-      userLocation.lng,
-      post.lat,
-      post.lng
-    );
-
-    const relative=
-      ((b-currentHeading+540)%360)-180;
-
-    const maxAngle=65;
-
-    if(
-      lockedTarget!==id &&
-      Math.abs(relative)>maxAngle
-    ){
-      el.style.display="none";
-      return;
-    }
-
-    el.style.display="block";
-
-    const normalized=
-      clamp(relative/maxAngle,-1,1);
-
-    let x=
-      centerX+
-      normalized*(width*.40);
-
-    const scale=
-      clamp(
-        1.12-
-        Math.log10(Math.max(1,d))/3,
-        .65,
-        1.15
-      );
-
-    let y=
-      centerY+
-      Math.sin(
-        (b/180)*Math.PI
-      )*50;
-
-    y+=index*2;
-
-    /*
-      Anti-overlap engine:
-      objects that are geographically close receive
-      deterministic horizontal/vertical offsets.
-    */
-    positions.forEach(p=>{
-      const dx=x-p.x;
-      const dy=y-p.y;
-
-      if(Math.sqrt(dx*dx+dy*dy)<100){
-        y+=90;
-      }
-    });
-
-    x=clamp(x,100,width-100);
-    y=clamp(y,130,height-150);
-
-    positions.push({x,y});
-
-    el.style.left=x+"px";
-    el.style.top=y+"px";
-    el.style.transform=
-      `translate(-50%,-50%) scale(${scale})`;
-
-    const distanceEl=
-      el.querySelector(".ar-distance");
-
-    if(distanceEl){
-      distanceEl.textContent=formatDistance(d);
-    }
-  });
-
-  updateRadar();
-}
-
-function lockAR(id){
-  lockedTarget=id;
-
-  closeModal("detailModal");
-
-  if(!$("#arScreen").classList.contains("active")){
-    openAR();
-  }else{
-    updateARObjects();
-  }
-
-  toast("🎯 AR hədəf kilidləndi.");
-}
-
-/* ============================================================
-   RADAR
-   ============================================================ */
-
-function updateRadar(){
-  const radar=$("#radar");
-
-  if(!radar || !userLocation) return;
-
-  radar.innerHTML="";
-
-  const radius=
-    state.settings.radius==="global"
-      ?1000
-      :Number(state.settings.radius);
-
-  getVisiblePosts()
-    .slice(0,30)
-    .forEach(post=>{
-      const d=haversine(
-        userLocation.lat,
-        userLocation.lng,
-        post.lat,
-        post.lng
-      );
-
-      const b=bearing(
-        userLocation.lat,
-        userLocation.lng,
-        post.lat,
-        post.lng
-      );
-
-      const angle=
-        ((b-currentHeading+360)%360)*
-        Math.PI/180;
-
-      const r=
-        Math.min(43,(d/Math.max(radius,1))*43);
-
-      const x=50+Math.sin(angle)*r;
-      const y=50-Math.cos(angle)*r;
-
-      const dot=document.createElement("div");
-      dot.className="radar-dot";
-      dot.style.left=x+"%";
-      dot.style.top=y+"%";
-
-      radar.appendChild(dot);
-    });
-}
-
-/* ============================================================
-   GEOFENCE
-   ============================================================ */
-
-let lastGeoAlert={};
-
-function checkGeofence(){
-  if(!userLocation) return;
-
-  const radius=
-    state.settings.radius==="global"
-      ?100
-      :Number(state.settings.radius);
-
-  state.posts.forEach(post=>{
-    const d=haversine(
-      userLocation.lat,
-      userLocation.lng,
-      post.lat,
-      post.lng
-    );
-
-    if(d<=radius){
-      const last=lastGeoAlert[post.id]||0;
-
-      if(now()-last>60000){
-        lastGeoAlert[post.id]=now();
-
-        state.notifications.unshift({
-          id:uid(),
-          type:"geo",
-          text:
-            `📍 ${post.title} yaxınlığınızdadır — ${formatDistance(d)}`,
-          createdAt:now()
-        });
-
-        state.notifications=
-          state.notifications.slice(0,50);
-
-        saveState();
-
-        toast(
-          `📍 Radius daxilində paylaşım var: ${post.title}`
-        );
-
-        speak("Radius daxilində yeni paylaşım var");
-        vibrate([80,60,80]);
-      }
-    }
-  });
-}
-
-/* ============================================================
-   PROFILE
-   ============================================================ */
-
-function updateProfile(){
-  $("#profileName").textContent=
-    state.profile.name;
-
-  $("#profileBio").textContent=
-    state.profile.bio;
-
-  $("#profileAvatar").textContent=
-    (state.profile.name||"A")
-      .slice(0,1)
-      .toUpperCase();
-
-  const mine=state.posts.filter(
-    p=>isOwnPost(p)
-  );
-
-  const views=mine.reduce(
-    (sum,p)=>sum+(p.views||0),
-    0
-  );
-
-  const reactions=mine.reduce(
-    (sum,p)=>
-      sum+
-      Object.values(p.reactions||{})
-        .reduce((a,b)=>a+b,0),
-    0
-  );
-
-  $("#statPosts").textContent=mine.length;
-  $("#statViews").textContent=views;
-  $("#statReactions").textContent=reactions;
-
-  renderProfilePosts(mine);
-}
-
-function renderProfilePosts(posts){
-  const box=$("#profilePosts");
-
-  if(!posts.length){
-    box.innerHTML=`
-      <div class="glass feed-card">
-        Hələ şəxsi paylaşım yoxdur.
-      </div>
-    `;
-    return;
-  }
-
-  box.innerHTML=posts.map(p=>`
-    <div class="glass feed-card"
-         style="margin-bottom:8px">
-      <b>${escapeHTML(p.title)}</b>
-      <div class="feed-sub">
-        📍 ${p.lat.toFixed(5)}, ${p.lng.toFixed(5)}
-      </div>
-      <div class="feed-sub">
-        👁️ ${p.views||0}
-      </div>
-      <button class="action"
-              onclick="openDetail('${p.id}')">
-        Aç
-      </button>
-    </div>
-  `).join("");
-}
-
-/* ============================================================
-   EDIT / DELETE
-   ============================================================ */
-
-function editPost(id){
-  const post=state.posts.find(p=>p.id===id);
-  if(!post) return;
-
-  $("#detailModal").classList.remove("show");
-
-  $("#postTitle").value=post.title;
-  $("#postDescription").value=post.description||"";
-  $("#postPrice").value=post.price||"";
-  $("#postContact").value=post.contact||"";
-  $("#youtubeInput").value=post.youtube||"";
-
-  selectedCategory=post.category;
-  renderCategories();
-
-  $("#publishBtn").dataset.editId=id;
-  $("#publishBtn").dataset.lat=post.lat;
-  $("#publishBtn").dataset.lng=post.lng;
-
-  $("#addModal").classList.add("show");
-}
-
-function updatePost(id){
-  const post=state.posts.find(p=>p.id===id);
-  if(!post) return;
-
-  post.title=$("#postTitle").value.trim();
-  post.description=$("#postDescription").value.trim();
-  post.price=$("#postPrice").value.trim();
-  post.contact=$("#postContact").value.trim();
-  post.youtube=$("#youtubeInput").value.trim();
-  post.category=selectedCategory;
-
-  saveState();
-
-  $("#addModal").classList.remove("show");
-  resetAddForm();
-
-  renderMapMarkers();
-  renderFeed();
-  updateProfile();
-
-  toast("Paylaşım yeniləndi.");
-}
-
-function deletePost(id){
-  if(!confirm("Bu paylaşım silinsin?")) return;
-
-  state.posts=state.posts.filter(p=>p.id!==id);
-  delete state.comments[id];
-  state.liked=state.liked.filter(x=>x!==id);
-  state.saved=state.saved.filter(x=>x!==id);
-
-  saveState();
-
-  closeModal("detailModal");
-  renderMapMarkers();
-  renderFeed();
-  updateProfile();
-
-  toast("Paylaşım silindi.");
-}
-
-/* ============================================================
-   MEDIA
-   ============================================================ */
-
-function openMedia(id,index){
-  const post=state.posts.find(p=>p.id===id);
-  if(!post || !post.media?.[index]) return;
-
-  const media=post.media[index];
-
-  $("#fullMedia").classList.add("hidden");
-  $("#fullVideo").classList.add("hidden");
-
-  if(media.type.startsWith("image/")){
-    $("#fullMedia").src=media.data;
-    $("#fullMedia").classList.remove("hidden");
-  }else{
-    $("#fullVideo").src=media.data;
-    $("#fullVideo").classList.remove("hidden");
-  }
-
-  $("#mediaModal").classList.add("show");
-}
-
-/* ============================================================
-   THEME
-   ============================================================ */
-
-function applyTheme(){
-  document.body.classList.toggle(
-    "light",
-    state.settings.theme==="light"
-  );
-
-  $("#themeBtn").textContent=
-    state.settings.theme==="light"
-      ?"🌙"
-      :"☀️";
-}
-
-/* ============================================================
-   SCREEN ROUTER
-   ============================================================ */
-
-function switchScreen(id){
-  $$(".screen").forEach(s=>
-    s.classList.remove("active")
-  );
-
-  $("#"+id).classList.add("active");
-
-  $$(".navitem").forEach(n=>
-    n.classList.remove("active")
-  );
-
-  const nav=
-    $(`.navitem[data-screen="${id}"]`);
-
-  if(nav) nav.classList.add("active");
-
-  if(id==="feedScreen") renderFeed();
-  if(id==="profileScreen") updateProfile();
-  if(id==="mapScreen" && map){
-    setTimeout(()=>map.invalidateSize(),100);
-  }
-
-  if(id==="arScreen"){
-    resizeARCanvas();
-  }
-}
-
-function closeModal(id){
-  $("#"+id)?.classList.remove("show");
-}
-
-/* ============================================================
-   LEGAL
-   ============================================================ */
-
-function showTerms(){
-  $("#textModalTitle").textContent=
-    "📄 İstifadə Qaydaları";
-
-  $("#textModalBody").innerHTML=`
-    <p>
-      ARWORLD istifadəçilərə fiziki məkanlarla əlaqəli
-      rəqəmsal məlumat və paylaşım yerləşdirməyə imkan verən
-      texnoloji platformadır.
-    </p>
-
-    <p>
-      İstifadəçi yerləşdirdiyi məlumatın qanuniliyinə,
-      düzgünlüyünə və üçüncü şəxslərin hüquqlarına riayət
-      edilməsinə görə məsuliyyət daşıyır.
-    </p>
-
-    <p>
-      Başqasının şəxsi məlumatını, icazəsiz foto/video,
-      qanunsuz elan və ya hüquqları pozan materialı
-      yerləşdirmək qadağandır.
-    </p>
-
-    <p>
-      Platformanın demo versiyasında məlumatlar cihazın
-      lokal yaddaşında saxlanıla bilər.
-    </p>
-  `;
-
-  $("#textModal").classList.add("show");
-}
-
-function showPrivacy(){
-  $("#textModalTitle").textContent=
-    "🔒 Məxfilik Siyasəti";
-
-  $("#textModalBody").innerHTML=`
-    <p>
-      Bu single-file demo əsasən cihazdaxili yaddaşdan
-      istifadə edir.
-    </p>
-
-    <p>
-      GPS məlumatı xəritə, məsafə və AR hesablamaları üçün
-      brauzerdə istifadə olunur.
-    </p>
-
-    <p>
-      Kamera yalnız istifadəçi icazə verdikdə aktivləşdirilir.
-      Kamera görüntüsü bu demo tərəfindən avtomatik olaraq
-      serverə göndərilmir.
-    </p>
-
-    <p>
-      Xarici xəritə və geocoding xidmətlərindən istifadə zamanı
-      həmin xidmətlərin öz qaydaları tətbiq olunur.
-    </p>
-  `;
-
-  $("#textModal").classList.add("show");
-}
-
-/* ============================================================
-   PERMISSIONS
-   ============================================================ */
-
-async function requestPermissions(){
-  startGPS();
-  await startOrientation();
-
-  try{
-    if(navigator.mediaDevices?.getUserMedia){
-      const stream=
-        await navigator.mediaDevices.getUserMedia({
-          video:{
-            facingMode:{ideal:"environment"}
-          },
-          audio:false
-        });
-
-      stream.getTracks().forEach(t=>t.stop());
-      toast("GPS + Kamera icazələri yoxlanıldı.");
-    }
-  }catch(e){
-    toast("Kamera icazəsi verilmədi.");
-  }
-}
-
-/* ============================================================
-   ONBOARDING
-   ============================================================ */
-
-function showOnboarding(){
-  if(state.onboarded) return;
-
-  $("#textModalTitle").textContent=
-    "🌍 ARWORLD-a xoş gəlmisiniz";
-
-  $("#textModalBody").innerHTML=`
-    <h3>Real dünyanı axtarın.</h3>
-
-    <p>
-      🗺️ Xəritədə ətrafınızdakı obyektləri görün.
-    </p>
-
-    <p>
-      ◉ AR Kameranı açaraq rəqəmsal izləri fiziki məkanda
-      görməyə çalışın.
-    </p>
-
-    <p>
-      ＋ Xəritədə istənilən nöqtəyə toxunaraq öz izinizi
-      yerləşdirin.
-    </p>
-
-    <p>
-      📏 Məsafə filtrləri ilə yalnız yaxın obyektləri göstərin.
-    </p>
-
-    <button class="primary"
-            onclick="
-              state.onboarded=true;
-              saveState();
-              closeModal('textModal');
-            ">
-      Başla
-    </button>
-  `;
-
-  $("#textModal").classList.add("show");
-}
-
-/* ============================================================
-   INITIAL DEMO OBJECTS
-   ============================================================ */
-
-function seedDemo(){
-  if(state.posts.length) return;
-
-  const base={
-    lat:40.4093,
-    lng:49.8671
-  };
-
-  state.posts=[
-    {
-      id:uid(),
-      title:"ARWORLD Demo Məkanı",
-      description:
-        "Bu rəqəmsal obyekt ARWORLD spatial layer sistemini nümayiş etdirir.",
-      price:"",
-      contact:"",
-      category:"business",
-      lat:base.lat+0.001,
-      lng:base.lng+0.001,
-      createdAt:now(),
-      expiresAt:null,
-      author:"ARWORLD",
-      anonymous:false,
-      media:[],
-      youtube:"",
-      verified:true,
-      views:0,
-      reactions:{
-        like:2,
-        useful:1,
-        fire:1,
-        location:0
-      }
-    },
-    {
-      id:uid(),
-      title:"Yaxın Usta",
-      description:
-        "Təmir, alçıpan, boya və digər xidmətlər.",
-      price:"Razılaşma ilə",
-      contact:"",
-      category:"service",
-      lat:base.lat-0.0012,
-      lng:base.lng+0.0007,
-      createdAt:now(),
-      expiresAt:null,
-      author:"Demo Usta",
-      anonymous:false,
-      media:[],
-      youtube:"",
-      verified:false,
-      views:0,
-      reactions:{
-        like:1,
-        useful:2,
-        fire:0,
-        location:0
-      }
-    }
-  ];
-
-  saveState();
-}
-
-/* ============================================================
-   CLEAN EXPIRED POSTS
-   ============================================================ */
-
-function cleanExpired(){
-  const before=state.posts.length;
-
-  state.posts=state.posts.filter(p=>
-    !p.expiresAt || p.expiresAt>now()
-  );
-
-  if(before!==state.posts.length){
-    saveState();
-  }
-}
-
-/* ============================================================
-   EVENT BINDINGS
-   ============================================================ */
-
-function bindEvents(){
-
-  $$(".navitem[data-screen]").forEach(btn=>{
-    btn.addEventListener("click",()=>{
-      const id=btn.dataset.screen;
-
-      if(id==="arScreen"){
-        openAR();
-      }else{
-        switchScreen(id);
-      }
-    });
-  });
-
-  $("#addNav").onclick=()=>{
-    openAddModal();
-  };
-
-  $("#locateBtn").onclick=locateUser;
-
-  $("#themeBtn").onclick=()=>{
-    state.settings.theme=
-      state.settings.theme==="dark"
-        ?"light"
-        :"dark";
-
-    saveState();
-    applyTheme();
-
-    if(map){
-      setTimeout(()=>map.invalidateSize(),100);
-    }
-  };
-
-  $("#helpBtn").onclick=showOnboarding;
-
-  $("#clearSearch").onclick=()=>{
-    $("#globalSearch").value="";
-    renderMapMarkers();
-    renderFeed();
-  };
-
-  $("#globalSearch").addEventListener(
-    "input",
-    e=>{
-      clearTimeout(searchTimer);
-
-      const q=e.target.value;
-
-      searchPosts(q);
-
-      if(q.trim().length>=3){
-        searchTimer=setTimeout(
-          ()=>geocode(q),
-          900
-        );
-      }
-    }
-  );
-
-  $$(".radius-btn").forEach(btn=>{
-    btn.onclick=()=>{
-      $$(".radius-btn").forEach(x=>
-        x.classList.remove("active")
-      );
-
-      btn.classList.add("active");
-
-      state.settings.radius=
-        btn.dataset.radius==="global"
-          ?"global"
-          :Number(btn.dataset.radius);
-
-      saveState();
-
-      renderMapMarkers();
-      renderFeed();
-      updateARObjects();
     };
+
+    request.onsuccess = e => {
+
+      db = e.target.result;
+
+      resolve(db);
+
+    };
+
+    request.onerror = () => reject(request.error);
+
   });
 
-  $("#arBack").onclick=closeAR;
+}
 
-  $("#arLock").onclick=()=>{
-    lockedTarget=null;
-    $$(".ar-object").forEach(x=>
-      x.classList.remove("locked")
-    );
-    toast("AR kilidi söndürüldü.");
-  };
 
-  $("#publishBtn").onclick=()=>{
-    const editId=$("#publishBtn").dataset.editId;
+function dbGet(key){
 
-    if(editId){
-      updatePost(editId);
-      delete $("#publishBtn").dataset.editId;
-    }else{
-      createPost();
+  return new Promise(resolve=>{
+
+    const tx = db.transaction("data","readonly");
+
+    const store = tx.objectStore("data");
+
+    const req = store.get(key);
+
+    req.onsuccess = ()=>resolve(req.result);
+
+    req.onerror = ()=>resolve(null);
+
+  });
+
+}
+
+
+function dbSet(key,value){
+
+  return new Promise((resolve,reject)=>{
+
+    const tx = db.transaction("data","readwrite");
+
+    tx.objectStore("data").put(value,key);
+
+    tx.oncomplete = ()=>resolve();
+
+    tx.onerror = ()=>reject(tx.error);
+
+  });
+
+}
+
+
+/* =========================================================
+   CRYPTO RANDOM ID
+   ========================================================= */
+
+function makeID(){
+
+  const bytes = new Uint8Array(8);
+
+  crypto.getRandomValues(bytes);
+
+  let str = "";
+
+  for(const b of bytes){
+
+    str += b.toString(16).padStart(2,"0");
+
+  }
+
+  return "AZ-" + str.toUpperCase();
+
+}
+
+
+/* =========================================================
+   PROFILE
+   ========================================================= */
+
+async function loadData(){
+
+  profile = await dbGet("profile");
+
+  contacts = await dbGet("contacts") || [];
+
+  chats = await dbGet("chats") || {};
+
+}
+
+
+async function saveAll(){
+
+  await dbSet("profile",profile);
+
+  await dbSet("contacts",contacts);
+
+  await dbSet("chats",chats);
+
+}
+
+
+function renderProfile(){
+
+  if(!profile)return;
+
+  $("profileName").textContent = profile.name;
+
+  $("profileId").textContent = profile.id;
+
+  setAvatar(
+    $("profileAvatar"),
+    profile.avatar,
+    profile.name
+  );
+
+}
+
+
+function setAvatar(element,src,name){
+
+  element.innerHTML = "";
+
+  if(src){
+
+    const img = document.createElement("img");
+
+    img.src = src;
+
+    element.appendChild(img);
+
+  }else{
+
+    element.textContent =
+      (name || "?").trim().charAt(0).toUpperCase();
+
+  }
+
+}
+
+
+function readImage(file){
+
+  return new Promise(resolve=>{
+
+    if(!file){
+
+      resolve("");
+
+      return;
+
     }
+
+    const reader = new FileReader();
+
+    reader.onload = ()=>resolve(reader.result);
+
+    reader.readAsDataURL(file);
+
+  });
+
+}
+
+
+async function createProfile(){
+
+  const name = $("setupName").value.trim();
+
+  if(!name){
+
+    toast("Adınızı yazın");
+
+    return;
+
+  }
+
+  const avatar =
+    await readImage($("setupAvatar").files[0]);
+
+  profile = {
+
+    id:makeID(),
+
+    name:name,
+
+    avatar:avatar,
+
+    created:Date.now()
+
   };
 
-  $("#mediaInput").addEventListener(
-    "change",
-    async e=>{
-      mediaFiles=await readMedia(e.target.files);
+  await saveAll();
 
-      $("#mediaPreview").innerHTML=
-        mediaFiles.map((m,i)=>{
-          if(m.type.startsWith("image/")){
-            return `<img src="${m.data}" alt="">`;
+  $("setup").classList.remove("show");
+
+  renderProfile();
+
+  renderContacts();
+
+  initPeer();
+
+  toast("Profil yaradıldı");
+
+}
+
+
+/* =========================================================
+   CONTACTS
+   ========================================================= */
+
+function renderContacts(filter=""){
+
+  const list = $("contactList");
+
+  list.innerHTML = "";
+
+  const f = filter.toLowerCase();
+
+  const result = contacts.filter(c =>
+
+    c.name.toLowerCase().includes(f) ||
+
+    c.id.toLowerCase().includes(f)
+
+  );
+
+  if(!result.length){
+
+    const empty = document.createElement("div");
+
+    empty.style.padding = "30px 20px";
+
+    empty.style.textAlign = "center";
+
+    empty.style.color = "var(--muted)";
+
+    empty.innerHTML = `
+
+      <div style="font-size:35px;margin-bottom:10px">＋</div>
+
+      <div>Hələ kontakt yoxdur</div>
+
+      <button class="btn primary"
+        style="margin-top:12px"
+        onclick="openAdd()">
+        Kontakt əlavə et
+      </button>
+
+    `;
+
+    list.appendChild(empty);
+
+    return;
+
+  }
+
+  for(const c of result){
+
+    const row = document.createElement("div");
+
+    row.className = "contact";
+
+    row.onclick = ()=>openChat(c.id);
+
+    const av = document.createElement("div");
+
+    av.className = "avatar";
+
+    setAvatar(av,c.avatar,c.name);
+
+    const main = document.createElement("div");
+
+    main.className = "contactmain";
+
+    const top = document.createElement("div");
+
+    top.className = "contactname";
+
+    const b = document.createElement("b");
+
+    b.textContent = c.name;
+
+    const time = document.createElement("span");
+
+    time.className = "contacttime";
+
+    const messages = chats[c.id] || [];
+
+    if(messages.length){
+
+      time.textContent =
+        new Date(messages[messages.length-1].time)
+        .toLocaleTimeString([],{
+          hour:"2-digit",
+          minute:"2-digit"
+        });
+
+    }
+
+    top.append(b,time);
+
+    const preview = document.createElement("div");
+
+    preview.className = "preview";
+
+    preview.textContent =
+      messages.length
+      ? messages[messages.length-1].text || "Media"
+      : c.id;
+
+    main.append(top,preview);
+
+    row.append(av,main);
+
+    list.appendChild(row);
+
+  }
+
+}
+
+
+function openAdd(){
+
+  $("addModal").classList.add("show");
+
+}
+
+
+function closeAdd(){
+
+  $("addModal").classList.remove("show");
+
+}
+
+
+async function addFriend(){
+
+  const id =
+    $("friendId").value.trim().toUpperCase();
+
+  const name =
+    $("friendName").value.trim() || id;
+
+  if(!/^AZ-[A-Z0-9]+$/.test(id)){
+
+    toast("P2P ID düzgün deyil");
+
+    return;
+
+  }
+
+  if(id === profile.id){
+
+    toast("Özünüzü kontakt kimi əlavə edə bilməzsiniz");
+
+    return;
+
+  }
+
+  if(contacts.some(c=>c.id===id)){
+
+    toast("Bu kontakt artıq var");
+
+    return;
+
+  }
+
+  contacts.unshift({
+
+    id:id,
+
+    name:name,
+
+    avatar:"",
+
+    created:Date.now()
+
+  });
+
+  await saveAll();
+
+  renderContacts();
+
+  closeAdd();
+
+  $("friendId").value="";
+
+  $("friendName").value="";
+
+  toast("Kontakt əlavə edildi");
+
+}
+
+
+/* =========================================================
+   CHAT
+   ========================================================= */
+
+function openChat(id){
+
+  currentContact =
+    contacts.find(c=>c.id===id);
+
+  if(!currentContact)return;
+
+  $("chatName").textContent =
+    currentContact.name;
+
+  $("chatStatus").textContent =
+    currentContact.id;
+
+  setAvatar(
+    $("chatAvatar"),
+    currentContact.avatar,
+    currentContact.name
+  );
+
+  renderMessages();
+
+  $("chat").classList.add("mobile");
+
+}
+
+
+function renderMessages(){
+
+  const box = $("messages");
+
+  box.innerHTML = "";
+
+  if(!currentContact){
+
+    box.innerHTML = `
+
+      <div class="emptychat">
+
+        <h2>AzChat</h2>
+
+        <div>Kontakt seçin.</div>
+
+      </div>
+
+    `;
+
+    return;
+
+  }
+
+  const arr =
+    chats[currentContact.id] || [];
+
+  if(!arr.length){
+
+    box.innerHTML = `
+
+      <div class="emptychat">
+
+        <div style="font-size:35px">✦</div>
+
+        <div>Hələ mesaj yoxdur.</div>
+
+      </div>
+
+    `;
+
+    return;
+
+  }
+
+  for(const m of arr){
+
+    const el = document.createElement("div");
+
+    el.className =
+      "msg " + (m.from===profile.id ? "me":"");
+
+    const text = document.createElement("div");
+
+    text.className="msgtext";
+
+    text.textContent=m.text || "";
+
+    const meta = document.createElement("div");
+
+    meta.className="msgmeta";
+
+    meta.textContent =
+      new Date(m.time)
+      .toLocaleTimeString([],{
+        hour:"2-digit",
+        minute:"2-digit"
+      }) +
+      (m.from===profile.id ? " ✓✓":"");
+
+    el.append(text,meta);
+
+    box.appendChild(el);
+
+  }
+
+  box.scrollTop=box.scrollHeight;
+
+}
+
+
+async function sendMessage(){
+
+  if(!currentContact){
+
+    toast("Əvvəl kontakt seçin");
+
+    return;
+
+  }
+
+  const input = $("messageInput");
+
+  const text = input.value.trim();
+
+  if(!text)return;
+
+  if(!chats[currentContact.id]){
+
+    chats[currentContact.id]=[];
+
+  }
+
+  const message = {
+
+    id:crypto.randomUUID
+      ? crypto.randomUUID()
+      : Date.now()+"-"+Math.random(),
+
+    from:profile.id,
+
+    to:currentContact.id,
+
+    text:text,
+
+    time:Date.now()
+
+  };
+
+  chats[currentContact.id].push(message);
+
+  await saveAll();
+
+  renderMessages();
+
+  renderContacts();
+
+  input.value="";
+
+  input.style.height="42px";
+
+  sendP2P(message);
+
+}
+
+
+function sendP2P(message){
+
+  try{
+
+    if(peer &&
+       peer.connections &&
+       peer.connections[currentContact.id] &&
+       peer.connections[currentContact.id][0]){
+
+      const conn =
+        peer.connections[currentContact.id][0];
+
+      if(conn.open){
+
+        conn.send({
+
+          type:"message",
+
+          message:message
+
+        });
+
+      }
+
+    }
+
+  }catch(e){
+
+    console.log("P2P send:",e);
+
+  }
+
+}
+
+
+/* =========================================================
+   PEERJS
+   ========================================================= */
+
+function loadPeerJS(){
+
+  return new Promise(resolve=>{
+
+    if(window.Peer){
+
+      resolve();
+
+      return;
+
+    }
+
+    const script =
+      document.createElement("script");
+
+    script.src =
+      "https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js";
+
+    script.onload=resolve;
+
+    script.onerror=()=>{
+
+      toast("P2P kitabxanası yüklənmədi");
+
+      resolve();
+
+    };
+
+    document.head.appendChild(script);
+
+  });
+
+}
+
+
+async function initPeer(){
+
+  await loadPeerJS();
+
+  if(!window.Peer)return;
+
+  try{
+
+    peer = new Peer(profile.id,{
+      debug:0,
+      config:{
+        iceServers:[
+          {urls:"stun:stun.l.google.com:19302"},
+          {urls:"stun:stun.cloudflare.com:3478"}
+        ]
+      }
+    });
+
+    peer.on("open",id=>{
+
+      console.log("P2P ID:",id);
+
+    });
+
+    peer.on("connection",conn=>{
+
+      setupConnection(conn);
+
+    });
+
+    peer.on("call",call=>{
+
+      incomingCall(call);
+
+    });
+
+    peer.on("error",e=>{
+
+      console.log("Peer error",e);
+
+    });
+
+  }catch(e){
+
+    console.log(e);
+
+  }
+
+}
+
+
+function connectTo(id){
+
+  if(!peer)return;
+
+  try{
+
+    const conn =
+      peer.connect(id,{
+        reliable:true
+      });
+
+    setupConnection(conn);
+
+  }catch(e){
+
+    toast("P2P bağlantı xətası");
+
+  }
+
+}
+
+
+function setupConnection(conn){
+
+  conn.on("open",()=>{
+
+    conn.send({
+
+      type:"hello",
+
+      profile:{
+
+        id:profile.id,
+
+        name:profile.name,
+
+        avatar:profile.avatar
+
+      }
+
+    });
+
+  });
+
+  conn.on("data",async data=>{
+
+    if(!data)return;
+
+    if(data.type==="hello"){
+
+      const p=data.profile;
+
+      if(p && p.id && p.id!==profile.id){
+
+        const exists =
+          contacts.find(c=>c.id===p.id);
+
+        if(!exists){
+
+          contacts.unshift({
+
+            id:p.id,
+
+            name:p.name || p.id,
+
+            avatar:p.avatar || "",
+
+            created:Date.now()
+
+          });
+
+          await saveAll();
+
+          renderContacts();
+
+        }
+
+      }
+
+    }
+
+    if(data.type==="message"){
+
+      const m=data.message;
+
+      if(!m)return;
+
+      if(!chats[m.from]){
+
+        chats[m.from]=[];
+
+      }
+
+      chats[m.from].push(m);
+
+      await saveAll();
+
+      if(currentContact &&
+         currentContact.id===m.from){
+
+        renderMessages();
+
+      }
+
+      renderContacts();
+
+      showNotification(
+        m.from,
+        m.text
+      );
+
+    }
+
+  });
+
+  conn.on("close",()=>{});
+
+}
+
+
+/* =========================================================
+   QR ENGINE
+   =========================================================
+
+   Bu QR sistemi xarici server/API istifadə etmir.
+
+   QR məlumatı əvvəlcə UTF-8 byte-lara çevrilir.
+   Sonra QR Code Model 2, byte mode,
+   error correction M istifadə olunur.
+
+   Bu, profil məlumatını serverə göndərmədən
+   brauzerin daxilində QR yaratmağa imkan verir.
+   ========================================================= */
+
+const QR = (()=>{
+
+  const EXP = new Array(512);
+  const LOG = new Array(256);
+
+  let initialized=false;
+
+  function initGF(){
+
+    if(initialized)return;
+
+    let x=1;
+
+    for(let i=0;i<255;i++){
+
+      EXP[i]=x;
+
+      LOG[x]=i;
+
+      x<<=1;
+
+      if(x&0x100)x^=0x11d;
+
+    }
+
+    for(let i=255;i<512;i++){
+
+      EXP[i]=EXP[i-255];
+
+    }
+
+    initialized=true;
+
+  }
+
+
+  function mul(a,b){
+
+    if(a===0 || b===0)return 0;
+
+    return EXP[LOG[a]+LOG[b]];
+
+  }
+
+
+  function polyMul(p,q){
+
+    const r=
+      new Array(p.length+q.length-1).fill(0);
+
+    for(let i=0;i<p.length;i++){
+
+      for(let j=0;j<q.length;j++){
+
+        r[i+j]^=mul(p[i],q[j]);
+
+      }
+
+    }
+
+    return r;
+
+  }
+
+
+  function generator(n){
+
+    let g=[1];
+
+    let a=1;
+
+    for(let i=0;i<n;i++){
+
+      g=polyMul(g,[1,a]);
+
+      a=mul(a,2);
+
+    }
+
+    return g;
+
+  }
+
+
+  function ecc(data,n){
+
+    const g=generator(n);
+
+    const res=
+      data.concat(new Array(n).fill(0));
+
+    for(let i=0;i<data.length;i++){
+
+      const factor=res[i];
+
+      if(factor){
+
+        for(let j=0;j<g.length;j++){
+
+          res[i+j]^=mul(g[j],factor);
+
+        }
+
+      }
+
+    }
+
+    return res.slice(data.length);
+
+  }
+
+
+  const EC_M = {
+
+    1:{total:26,data:16,ecc:10,blocks:1},
+
+    2:{total:44,data:28,ecc:16,blocks:1},
+
+    3:{total:70,data:44,ecc:26,blocks:1},
+
+    4:{total:100,data:64,ecc:18,blocks:2},
+
+    5:{total:134,data:86,ecc:24,blocks:2},
+
+    6:{total:172,data:108,ecc:16,blocks:4},
+
+    7:{total:196,data:124,ecc:18,blocks:4},
+
+    8:{total:242,data:154,ecc:22,blocks:4},
+
+    9:{total:292,data:182,ecc:22,blocks:5},
+
+    10:{total:346,data:216,ecc:26,blocks:5}
+
+  };
+
+
+  function bytesToBits(bytes){
+
+    const bits=[];
+
+    for(const b of bytes){
+
+      for(let i=7;i>=0;i--){
+
+        bits.push((b>>i)&1);
+
+      }
+
+    }
+
+    return bits;
+
+  }
+
+
+  function bitsToBytes(bits){
+
+    const out=[];
+
+    for(let i=0;i<bits.length;i+=8){
+
+      let x=0;
+
+      for(let j=0;j<8;j++){
+
+        x=(x<<1)|(bits[i+j]||0);
+
+      }
+
+      out.push(x);
+
+    }
+
+    return out;
+
+  }
+
+
+  function makeData(text,version){
+
+    const encoder=new TextEncoder();
+
+    const bytes=[...encoder.encode(text)];
+
+    const info=EC_M[version];
+
+    const capacity=info.data;
+
+    const maxBytes=capacity-2;
+
+    const use=bytes.slice(0,maxBytes);
+
+    const bits=[];
+
+    // byte mode 0100
+
+    bits.push(0,1,0,0);
+
+    const len=use.length;
+
+    for(let i=7;i>=0;i--){
+
+      bits.push((len>>i)&1);
+
+    }
+
+    bits.push(...bytesToBits(use));
+
+    const target=capacity*8;
+
+    while(bits.length<target){
+
+      bits.push(0);
+
+    }
+
+    const data=bitsToBytes(bits);
+
+    for(let i=0;i<data.length;i++){
+
+      if(data[i]===0 && i>=2){
+
+        // padding handled below
+
+      }
+
+    }
+
+    const pad=[0xec,0x11];
+
+    let pi=0;
+
+    while(data.length<capacity){
+
+      data.push(pad[pi++%2]);
+
+    }
+
+    return data.slice(0,capacity);
+
+  }
+
+
+  function maskBit(mask,r,c){
+
+    switch(mask){
+
+      case 0:return (r+c)%2===0;
+
+      case 1:return r%2===0;
+
+      case 2:return c%3===0;
+
+      case 3:return (r+c)%3===0;
+
+      case 4:return (Math.floor(r/2)+Math.floor(c/3))%2===0;
+
+      case 5:return (r*c)%2+(r*c)%3===0;
+
+      case 6:return ((r*c)%2+(r*c)%3)%2===0;
+
+      case 7:return ((r*c)%3+(r+c)%2)%2===0;
+
+    }
+
+    return false;
+
+  }
+
+
+  function formatBits(mask){
+
+    const G=0x537;
+
+    let data=(0x00<<3)|mask;
+
+    let v=data<<10;
+
+    for(let i=14;i>=10;i--){
+
+      if((v>>i)&1){
+
+        v^=G<<(i-10);
+
+      }
+
+    }
+
+    return ((data<<10)|v)^0x5412;
+
+  }
+
+
+  function bchTypeInfo(data){
+
+    let d=data<<10;
+
+    const g=0x537;
+
+    for(let i=14;i>=10;i--){
+
+      if((d>>i)&1){
+
+        d^=g<<(i-10);
+
+      }
+
+    }
+
+    return ((data<<10)|d)^0x5412;
+
+  }
+
+
+  function bchTypeNumber(data){
+
+    let d=data<<12;
+
+    const g=0x1f25;
+
+    for(let i=17;i>=12;i--){
+
+      if((d>>i)&1){
+
+        d^=g<<(i-12);
+
+      }
+
+    }
+
+    return (data<<12)|d;
+
+  }
+
+
+  function makeMatrix(version,data,mask){
+
+    const n=version*4+17;
+
+    const m=
+      Array.from({length:n},()=>Array(n).fill(null));
+
+    function setFinder(r,c){
+
+      for(let dr=-1;dr<=7;dr++){
+
+        for(let dc=-1;dc<=7;dc++){
+
+          const rr=r+dr;
+          const cc=c+dc;
+
+          if(rr<0||rr>=n||cc<0||cc>=n)continue;
+
+          const on =
+            dr>=0&&dr<=6&&dc>=0&&dc<=6 &&
+            (
+              dr===0||dr===6||
+              dc===0||dc===6||
+              (dr>=2&&dr<=4&&dc>=2&&dc<=4)
+            );
+
+          m[rr][cc]=on;
+
+        }
+
+      }
+
+    }
+
+    setFinder(0,0);
+
+    setFinder(n-7,0);
+
+    setFinder(0,n-7);
+
+
+    for(let i=8;i<n-8;i++){
+
+      if(m[6][i]===null)m[6][i]=i%2===0;
+
+      if(m[i][6]===null)m[i][6]=i%2===0;
+
+    }
+
+
+    const alignment={
+
+      2:[6,18],
+
+      3:[6,22],
+
+      4:[6,26],
+
+      5:[6,30],
+
+      6:[6,34],
+
+      7:[6,22,38],
+
+      8:[6,24,42],
+
+      9:[6,26,46],
+
+      10:[6,28,50]
+
+    };
+
+    if(version>=2){
+
+      const pos=alignment[version];
+
+      for(const r of pos){
+
+        for(const c of pos){
+
+          if(m[r][c]!==null)continue;
+
+          for(let dr=-2;dr<=2;dr++){
+
+            for(let dc=-2;dc<=2;dc++){
+
+              m[r+dr][c+dc]=
+                Math.max(Math.abs(dr),Math.abs(dc))!==1;
+
+            }
+
           }
 
-          return `<video src="${m.data}" muted></video>`;
-        }).join("");
-    }
-  );
+        }
 
-  $("#commentSend").onclick=()=>{
-    addComment($("#commentInput").value);
-  };
-
-  $("#commentInput").addEventListener(
-    "keydown",
-    e=>{
-      if(e.key==="Enter"){
-        e.preventDefault();
-        addComment(e.target.value);
       }
+
     }
-  );
 
-  $("#editProfile").onclick=()=>{
-    $("#profileNameInput").value=state.profile.name;
-    $("#profileBioInput").value=state.profile.bio;
-    $("#profileJobInput").value=state.profile.job;
-    $("#profilePhoneInput").value=state.profile.phone;
 
-    $("#profileModal").classList.add("show");
-  };
+    // Dark module
 
-  $("#saveProfile").onclick=()=>{
-    state.profile.name=
-      $("#profileNameInput").value.trim() ||
-      "ARWORLD istifadəçisi";
+    m[n-8][8]=true;
 
-    state.profile.bio=
-      $("#profileBioInput").value.trim();
 
-    state.profile.job=
-      $("#profileJobInput").value.trim();
+    // Reserve format areas
 
-    state.profile.phone=
-      $("#profilePhoneInput").value.trim();
+    for(let i=0;i<9;i++){
 
-    saveState();
-    updateProfile();
+      if(m[i][8]===null)m[i][8]=false;
 
-    closeModal("profileModal");
-    toast("Profil yeniləndi.");
-  };
+      if(m[8][i]===null)m[8][i]=false;
 
-  $("#settingsBtn").onclick=()=>{
-    $("#languageSelect").value=
-      state.settings.language;
-    $("#settingsModal").classList.add("show");
-  };
+    }
 
-  $("#languageSelect").onchange=e=>{
-    state.settings.language=e.target.value;
-    saveState();
-    toast("Dil seçimi saxlanıldı.");
-  };
+    for(let i=0;i<8;i++){
 
-  $("#requestPermissions").onclick=
-    requestPermissions;
+      if(m[n-1-i][8]===null)m[n-1-i][8]=false;
 
-  $("#shareApp").onclick=shareApp;
+      if(m[8][n-1-i]===null)m[8][n-1-i]=false;
 
-  $("#termsBtn").onclick=showTerms;
-  $("#privacyBtn").onclick=showPrivacy;
+    }
 
-  $("#clearData").onclick=()=>{
-    if(!confirm(
-      "Bütün lokal ARWORLD məlumatları silinsin?"
-    )) return;
 
-    localStorage.removeItem(STORAGE_KEY);
-    location.reload();
-  };
+    const bits=formatBits(mask);
 
-  $("#feedRefresh").onclick=()=>{
-    renderFeed();
-    toast("Feed yeniləndi.");
-  };
+    for(let i=0;i<15;i++){
 
-  $$(".profile-tab").forEach(tab=>{
-    tab.onclick=()=>{
-      $$(".profile-tab").forEach(x=>
-        x.classList.remove("active")
-      );
+      const bit=((bits>>i)&1)!==0;
 
-      tab.classList.add("active");
+      let r,c;
 
-      const type=tab.dataset.tab;
+      if(i<6){
 
-      if(type==="posts"){
-        renderProfilePosts(
-          state.posts.filter(p=>isOwnPost(p))
-        );
-      }else if(type==="liked"){
-        renderProfilePosts(
-          state.posts.filter(p=>
-            state.liked.includes(p.id)
-          )
-        );
+        r=i;
+
+        c=8;
+
+      }else if(i<8){
+
+        r=i+1;
+
+        c=8;
+
       }else{
-        renderProfilePosts(
-          state.posts.filter(p=>
-            state.saved.includes(p.id)
-          )
-        );
+
+        r=n-15+i;
+
+        c=8;
+
       }
-    };
-  });
 
-  $$("[data-close]").forEach(btn=>{
-    btn.onclick=()=>{
-      closeModal(btn.dataset.close);
-    };
-  });
+      m[r][c]=bit;
 
-  $$(".modal").forEach(modal=>{
-    modal.addEventListener("click",e=>{
-      if(e.target===modal){
-        modal.classList.remove("show");
-      }
-    });
-  });
-
-  window.addEventListener(
-    "resize",
-    ()=>{
-      resizeARCanvas();
-      updateARObjects();
     }
+
+    for(let i=0;i<15;i++){
+
+      const bit=((bits>>i)&1)!==0;
+
+      let r,c;
+
+      if(i<8){
+
+        r=8;
+
+        c=n-i-1;
+
+      }else if(i<9){
+
+        r=8;
+
+        c=15-i;
+
+      }else{
+
+        r=8;
+
+        c=15-i-1;
+
+      }
+
+      m[r][c]=bit;
+
+    }
+
+
+    // Data
+
+    const allBits=bytesToBits(data);
+
+    let k=0;
+
+    let row=n-1;
+
+    let inc=-1;
+
+    let col=n-1;
+
+    while(col>0){
+
+      if(col===6)col--;
+
+      while(true){
+
+        for(let j=0;j<2;j++){
+
+          const c=col-j;
+
+          if(m[row][c]===null){
+
+            let bit=k<allBits.length
+              ? allBits[k++]
+              : 0;
+
+            if(maskBit(mask,row,c))bit^=1;
+
+            m[row][c]=!!bit;
+
+          }
+
+        }
+
+        row+=inc;
+
+        if(row<0 || row>=n){
+
+          row-=inc;
+
+          inc=-inc;
+
+          break;
+
+        }
+
+      }
+
+      col-=2;
+
+    }
+
+    return m;
+
+  }
+
+
+  function penalty(m){
+
+    const n=m.length;
+
+    let p=0;
+
+    for(let r=0;r<n;r++){
+
+      let run=1;
+
+      for(let c=1;c<n;c++){
+
+        if(m[r][c]===m[r][c-1]){
+
+          run++;
+
+        }else{
+
+          if(run>=5)p+=3+run-5;
+
+          run=1;
+
+        }
+
+      }
+
+      if(run>=5)p+=3+run-5;
+
+    }
+
+    for(let c=0;c<n;c++){
+
+      let run=1;
+
+      for(let r=1;r<n;r++){
+
+        if(m[r][c]===m[r-1][c]){
+
+          run++;
+
+        }else{
+
+          if(run>=5)p+=3+run-5;
+
+          run=1;
+
+        }
+
+      }
+
+      if(run>=5)p+=3+run-5;
+
+    }
+
+    for(let r=0;r<n-1;r++){
+
+      for(let c=0;c<n-1;c++){
+
+        const a=m[r][c];
+
+        if(
+          m[r+1][c]===a &&
+          m[r][c+1]===a &&
+          m[r+1][c+1]===a
+        )p+=3;
+
+      }
+
+    }
+
+    return p;
+
+  }
+
+
+  function generate(text){
+
+    initGF();
+
+    let version=1;
+
+    for(let v=1;v<=10;v++){
+
+      const max=EC_M[v].data-2;
+
+      const bytes=
+        [...new TextEncoder().encode(text)];
+
+      if(bytes.length<=max){
+
+        version=v;
+
+        break;
+
+      }
+
+      version=v;
+
+    }
+
+    const info=EC_M[version];
+
+    const data=makeData(text,version);
+
+    const ec=ecc(data,info.ecc);
+
+    const codewords=data.concat(ec);
+
+    let best=null;
+
+    let bestScore=Infinity;
+
+    for(let mask=0;mask<8;mask++){
+
+      const matrix=
+        makeMatrix(version,codewords,mask);
+
+      const score=penalty(matrix);
+
+      if(score<bestScore){
+
+        bestScore=score;
+
+        best=matrix;
+
+      }
+
+    }
+
+    return best;
+
+  }
+
+
+  function draw(canvas,text){
+
+    const matrix=generate(text);
+
+    const n=matrix.length;
+
+    canvas.width=n;
+
+    canvas.height=n;
+
+    const ctx=canvas.getContext("2d");
+
+    ctx.imageSmoothingEnabled=false;
+
+    ctx.fillStyle="#fff";
+
+    ctx.fillRect(0,0,n,n);
+
+    ctx.fillStyle="#000";
+
+    for(let y=0;y<n;y++){
+
+      for(let x=0;x<n;x++){
+
+        if(matrix[y][x]){
+
+          ctx.fillRect(x,y,1,1);
+
+        }
+
+      }
+
+    }
+
+  }
+
+  return {draw};
+
+})();
+
+
+/* =========================================================
+   QR PROFILE
+   ========================================================= */
+
+function profileQRData(){
+
+  return JSON.stringify({
+
+    app:"AzChat",
+
+    version:1,
+
+    id:profile.id,
+
+    name:profile.name,
+
+    avatar:profile.avatar || ""
+
+  });
+
+}
+
+
+function openQR(){
+
+  $("qrModal").classList.add("show");
+
+  $("tabMyQR").classList.add("active");
+
+  $("tabTextQR").classList.remove("active");
+
+  $("myQRPanel").classList.remove("hidden");
+
+  $("textQRPanel").classList.add("hidden");
+
+  const payload=profileQRData();
+
+  QR.draw(
+    $("qrCanvas"),
+    payload
   );
 
-  document.addEventListener(
-    "visibilitychange",
-    ()=>{
-      if(document.hidden){
-        clearInterval(arTimer);
-      }else if(
-        $("#arScreen").classList.contains("active")
-      ){
-        startARRenderLoop();
-      }
-    }
-  );
+  $("qrPayload").textContent=payload;
+
 }
 
-/* ============================================================
-   AR RENDER LOOP
-   ============================================================ */
 
-function startARRenderLoop(){
-  clearInterval(arTimer);
+function downloadCanvas(canvas,name){
 
-  arTimer=setInterval(()=>{
-    if($("#arScreen").classList.contains("active")){
-      updateARObjects();
-    }
-  },1000/30);
+  canvas.toBlob(blob=>{
+
+    if(!blob)return;
+
+    const url=URL.createObjectURL(blob);
+
+    const a=document.createElement("a");
+
+    a.href=url;
+
+    a.download=name;
+
+    a.click();
+
+    setTimeout(()=>{
+      URL.revokeObjectURL(url);
+    },1000);
+
+  },"image/png");
+
 }
 
-/* ============================================================
-   YOUTUBE
-   ============================================================ */
 
-function youtubeEmbed(url){
-  try{
-    const u=new URL(url);
+async function shareCanvas(canvas){
 
-    let id="";
+  canvas.toBlob(async blob=>{
 
-    if(u.hostname.includes("youtu.be")){
-      id=u.pathname.slice(1);
-    }else{
-      id=u.searchParams.get("v")||"";
-    }
+    if(!blob)return;
 
-    if(!id) return "";
-
-    return `
-      <iframe
-        width="100%"
-        height="230"
-        src="https://www.youtube.com/embed/${encodeURIComponent(id)}"
-        title="YouTube"
-        frameborder="0"
-        allow="
-          accelerometer;
-          autoplay;
-          clipboard-write;
-          encrypted-media;
-          gyroscope;
-          picture-in-picture;
-          web-share"
-        allowfullscreen>
-      </iframe>
-    `;
-  }catch(e){
-    return "";
-  }
-}
-
-/* ============================================================
-   OPEN DETAIL ENHANCEMENT
-   ============================================================ */
-
-const originalOpenDetail=openDetail;
-
-openDetail=function(id){
-  const post=state.posts.find(p=>p.id===id);
-
-  if(!post) return;
-
-  originalOpenDetail(id);
-
-  if(post.youtube){
-    const iframe=youtubeEmbed(post.youtube);
-
-    if(iframe){
-      const box=$("#detailContent");
-
-      box.insertAdjacentHTML(
-        "beforeend",
-        `<div style="margin-top:12px">${iframe}</div>`
-      );
-    }
-  }
-};
-
-/* ============================================================
-   NOTIFICATION CENTER
-   ============================================================ */
-
-function showNotifications(){
-  const notes=state.notifications;
-
-  $("#textModalTitle").textContent=
-    "🔔 Bildirişlər";
-
-  if(!notes.length){
-    $("#textModalBody").innerHTML=
-      `<p style="color:var(--muted)">
-        Aktiv bildiriş yoxdur.
-      </p>`;
-  }else{
-    $("#textModalBody").innerHTML=
-      notes.slice(0,30).map(n=>`
-        <div class="comment">
-          ${escapeHTML(n.text)}
-          <small>
-            ${new Date(n.createdAt).toLocaleString()}
-          </small>
-        </div>
-      `).join("");
-  }
-
-  $("#textModal").classList.add("show");
-}
-
-/* ============================================================
-   GLOBAL KEYBOARD / ESC
-   ============================================================ */
-
-document.addEventListener("keydown",e=>{
-  if(e.key==="Escape"){
-    $$(".modal.show").forEach(m=>
-      m.classList.remove("show")
+    const file=new File(
+      [blob],
+      "azchat-qr.png",
+      {type:"image/png"}
     );
+
+    if(
+      navigator.share &&
+      navigator.canShare &&
+      navigator.canShare({files:[file]})
+    ){
+
+      try{
+
+        await navigator.share({
+
+          title:"AzChat QR",
+
+          files:[file]
+
+        });
+
+        return;
+
+      }catch(e){}
+
+    }
+
+    downloadCanvas(canvas,"azchat-qr.png");
+
+  },"image/png");
+
+}
+
+
+function parseQRText(text){
+
+  try{
+
+    const data=JSON.parse(text);
+
+    if(
+      data &&
+      data.app==="AzChat" &&
+      data.id
+    ){
+
+      $("friendId").value=data.id;
+
+      $("friendName").value=data.name || data.id;
+
+      closeScanner();
+
+      $("scannerModal").classList.remove("show");
+
+      $("addModal").classList.add("show");
+
+      toast("QR məlumatı oxundu");
+
+      return true;
+
+    }
+
+  }catch(e){}
+
+  if(/^AZ-[A-Z0-9]+$/i.test(text.trim())){
+
+    $("friendId").value=text.trim().toUpperCase();
+
+    closeScanner();
+
+    $("scannerModal").classList.remove("show");
+
+    $("addModal").classList.add("show");
+
+    toast("P2P ID oxundu");
+
+    return true;
+
   }
-});
 
-/* ============================================================
-   BOOT
-   ============================================================ */
+  return false;
 
-async function boot(){
+}
 
-  cleanExpired();
-  seedDemo();
 
-  renderCategories();
-  applyTheme();
-  initMap();
-  bindEvents();
-  startGPS();
-  startARRenderLoop();
-  updateProfile();
-  renderFeed();
-  resizeARCanvas();
-  handleDeepLink();
+/* =========================================================
+   QR SCANNER
+   ========================================================= */
+
+async function openScanner(){
+
+  $("scannerModal").classList.add("show");
+
+  $("scanStatus").textContent=
+    "Kamera açılır...";
+
+  try{
+
+    scanStream =
+      await navigator.mediaDevices.getUserMedia({
+
+        video:{
+          facingMode:{
+            ideal:"environment"
+          }
+        },
+
+        audio:false
+
+      });
+
+    $("scanVideo").srcObject=scanStream;
+
+    await $("scanVideo").play();
+
+    if("BarcodeDetector" in window){
+
+      startBarcodeDetector();
+
+    }else{
+
+      $("scanStatus").textContent=
+        "Bu brauzer daxili QR oxunu dəstəkləmir. Chrome-un son versiyasını istifadə edin.";
+
+    }
+
+  }catch(e){
+
+    $("scanStatus").textContent=
+      "Kameraya icazə verilmədi və ya kamera əlçatan deyil.";
+
+  }
+
+}
+
+
+async function startBarcodeDetector(){
+
+  let detector;
+
+  try{
+
+    detector =
+      new BarcodeDetector({
+        formats:["qr_code"]
+      });
+
+  }catch(e){
+
+    $("scanStatus").textContent=
+      "QR oxuyucu dəstəklənmir.";
+
+    return;
+
+  }
+
+  clearInterval(scanTimer);
+
+  scanTimer=setInterval(async()=>{
+
+    if(
+      !$("scanVideo").videoWidth ||
+      $("scannerModal").classList.contains("show")===false
+    )return;
+
+    try{
+
+      const codes=
+        await detector.detect($("scanVideo"));
+
+      if(codes.length){
+
+        const value=codes[0].rawValue;
+
+        if(parseQRText(value)){
+
+          clearInterval(scanTimer);
+
+        }
+
+      }
+
+    }catch(e){}
+
+  },300);
+
+}
+
+
+function closeScanner(){
+
+  clearInterval(scanTimer);
+
+  scanTimer=null;
+
+  if(scanStream){
+
+    scanStream.getTracks().forEach(t=>t.stop());
+
+    scanStream=null;
+
+  }
+
+  $("scanVideo").srcObject=null;
+
+  $("scannerModal").classList.remove("show");
+
+}
+
+
+/* =========================================================
+   NOTIFICATIONS
+   ========================================================= */
+
+async function showNotification(title,text){
+
+  if(
+    "Notification" in window &&
+    Notification.permission==="granted"
+  ){
+
+    try{
+
+      new Notification(title || "AzChat",{
+        body:text || "Yeni mesaj"
+      });
+
+    }catch(e){}
+
+  }
+
+}
+
+
+async function requestNotifications(){
+
+  if(!("Notification" in window)){
+
+    toast("Bu brauzer bildirişləri dəstəkləmir");
+
+    return;
+
+  }
+
+  const result =
+    await Notification.requestPermission();
+
+  toast(
+    result==="granted"
+      ? "Bildirişlər aktivdir"
+      : "Bildiriş icazəsi verilmədi"
+  );
+
+}
+
+
+/* =========================================================
+   PROFILE EDIT
+   ========================================================= */
+
+function openEdit(){
+
+  $("editName").value=profile.name;
+
+  $("editModal").classList.add("show");
+
+}
+
+
+async function saveProfile(){
+
+  const name=
+    $("editName").value.trim();
+
+  if(!name){
+
+    toast("Ad boş ola bilməz");
+
+    return;
+
+  }
+
+  profile.name=name;
+
+  const file=
+    $("editAvatarFile").files[0];
+
+  if(file){
+
+    profile.avatar=
+      await readImage(file);
+
+  }
+
+  await saveAll();
+
+  renderProfile();
+
+  renderContacts();
+
+  if(currentContact){
+
+    const c=
+      contacts.find(x=>x.id===currentContact.id);
+
+    if(c){
+
+      currentContact=c;
+
+    }
+
+  }
+
+  $("editModal").classList.remove("show");
+
+  toast("Profil yeniləndi");
+
+}
+
+
+/* =========================================================
+   CALL
+   ========================================================= */
+
+async function startCall(video=false){
+
+  if(!currentContact){
+
+    toast("Kontakt seçin");
+
+    return;
+
+  }
+
+  if(!peer){
+
+    toast("P2P hələ hazır deyil");
+
+    return;
+
+  }
+
+  try{
+
+    localStream =
+      await navigator.mediaDevices.getUserMedia({
+
+        audio:true,
+
+        video:video
+
+      });
+
+    $("localVideo").srcObject=localStream;
+
+    $("callModal").classList.add("show");
+
+    const call =
+      peer.call(
+        currentContact.id,
+        localStream
+      );
+
+    currentCall=call;
+
+    call.on("stream",stream=>{
+
+      $("remoteVideo").srcObject=stream;
+
+    });
+
+    call.on("close",endCall);
+
+    call.on("error",()=>{
+
+      toast("Zəng bağlantısı kəsildi");
+
+      endCall();
+
+    });
+
+  }catch(e){
+
+    toast("Mikrofon/kamera icazəsi lazımdır");
+
+  }
+
+}
+
+
+async function incomingCall(call){
+
+  const ok =
+    confirm("Gələn P2P zəng. Qəbul edirsiniz?");
+
+  if(!ok){
+
+    try{call.close()}catch(e){}
+
+    return;
+
+  }
+
+  try{
+
+    localStream =
+      await navigator.mediaDevices.getUserMedia({
+
+        audio:true,
+
+        video:true
+
+      });
+
+    $("localVideo").srcObject=localStream;
+
+    $("callModal").classList.add("show");
+
+    currentCall=call;
+
+    call.answer(localStream);
+
+    call.on("stream",stream=>{
+
+      $("remoteVideo").srcObject=stream;
+
+    });
+
+    call.on("close",endCall);
+
+  }catch(e){
+
+    toast("Kamera/mikrofon açıla bilmədi");
+
+  }
+
+}
+
+
+function endCall(){
+
+  try{
+
+    if(currentCall){
+
+      currentCall.close();
+
+    }
+
+  }catch(e){}
+
+  currentCall=null;
+
+  if(localStream){
+
+    localStream.getTracks().forEach(t=>t.stop());
+
+    localStream=null;
+
+  }
+
+  $("localVideo").srcObject=null;
+
+  $("remoteVideo").srcObject=null;
+
+  $("callModal").classList.remove("show");
+
+}
+
+
+function toggleMute(){
+
+  if(!localStream)return;
+
+  const track=
+    localStream.getAudioTracks()[0];
+
+  if(!track)return;
+
+  track.enabled=!track.enabled;
+
+  $("muteBtn").textContent=
+    track.enabled ? "Mikrofon" : "Mikrofon bağlı";
+
+}
+
+
+function toggleCamera(){
+
+  if(!localStream)return;
+
+  const track=
+    localStream.getVideoTracks()[0];
+
+  if(!track)return;
+
+  track.enabled=!track.enabled;
+
+  $("cameraBtn").textContent=
+    track.enabled ? "Kamera" : "Kamera bağlı";
+
+}
+
+
+/* =========================================================
+   EXPORT / WIPE
+   ========================================================= */
+
+async function exportData(){
+
+  const data={
+
+    version:1,
+
+    profile:profile,
+
+    contacts:contacts,
+
+    chats:chats,
+
+    exported:new Date().toISOString()
+
+  };
+
+  const blob=
+    new Blob(
+      [JSON.stringify(data,null,2)],
+      {type:"application/json"}
+    );
+
+  const url=
+    URL.createObjectURL(blob);
+
+  const a=
+    document.createElement("a");
+
+  a.href=url;
+
+  a.download=
+    "azchat-backup.json";
+
+  a.click();
 
   setTimeout(()=>{
-    showOnboarding();
-  },700);
+    URL.revokeObjectURL(url);
+  },1000);
 
-  /*
-    First GPS attempt.
-    Mobile browsers can reject this until the page is served
-    through HTTPS and the user grants permission.
-  */
-  if(gpsAvailable()){
-    startGPS();
-  }
-
-  toast("ARWORLD hazırdır.");
 }
 
-boot();
 
+async function wipeData(){
+
+  const ok=
+    confirm(
+      "Bütün lokal AzChat məlumatları silinsin?"
+    );
+
+  if(!ok)return;
+
+  indexedDB.deleteDatabase(DB_NAME);
+
+  localStorage.clear();
+
+  location.reload();
+
+}
+
+
+/* =========================================================
+   EVENTS
+   ========================================================= */
+
+$("createProfile").onclick=createProfile;
+
+$("profileTop").onclick=()=>{
+
+  renderProfile();
+
+  $("profileModal").classList.add("show");
+
+};
+
+$("closeProfile").onclick=()=>{
+
+  $("profileModal").classList.remove("show");
+
+};
+
+$("copyId").onclick=async()=>{
+
+  await navigator.clipboard.writeText(profile.id);
+
+  toast("ID kopyalandı");
+
+};
+
+$("openMyQR").onclick=()=>{
+
+  $("profileModal").classList.remove("show");
+
+  openQR();
+
+};
+
+$("qrTop").onclick=openQR;
+
+$("closeQR").onclick=()=>{
+
+  $("qrModal").classList.remove("show");
+
+};
+
+$("tabMyQR").onclick=()=>{
+
+  $("tabMyQR").classList.add("active");
+
+  $("tabTextQR").classList.remove("active");
+
+  $("myQRPanel").classList.remove("hidden");
+
+  $("textQRPanel").classList.add("hidden");
+
+};
+
+$("tabTextQR").onclick=()=>{
+
+  $("tabTextQR").classList.add("active");
+
+  $("tabMyQR").classList.remove("active");
+
+  $("myQRPanel").classList.add("hidden");
+
+  $("textQRPanel").classList.remove("hidden");
+
+};
+
+$("downloadQR").onclick=()=>{
+
+  downloadCanvas(
+    $("qrCanvas"),
+    "azchat-profile-qr.png"
+  );
+
+};
+
+$("shareQR").onclick=()=>{
+
+  shareCanvas($("qrCanvas"));
+
+};
+
+$("makeTextQR").onclick=()=>{
+
+  const text=
+    $("qrTextInput").value.trim();
+
+  if(!text){
+
+    toast("Mətn daxil edin");
+
+    return;
+
+  }
+
+  QR.draw(
+    $("textQRCanvas"),
+    text
+  );
+
+  $("textQRWrap").style.display="block";
+
+  $("downloadTextQR").style.display="block";
+
+};
+
+$("downloadTextQR").onclick=()=>{
+
+  downloadCanvas(
+    $("textQRCanvas"),
+    "azchat-qr.png"
+  );
+
+};
+
+$("settingsTop").onclick=()=>{
+
+  $("settingsModal").classList.add("show");
+
+};
+
+$("closeSettings").onclick=()=>{
+
+  $("settingsModal").classList.remove("show");
+
+};
+
+$("notificationBtn").onclick=
+  requestNotifications;
+
+$("exportData").onclick=
+  exportData;
+
+$("wipeData").onclick=
+  wipeData;
+
+$("editProfile").onclick=()=>{
+
+  $("profileModal").classList.remove("show");
+
+  openEdit();
+
+};
+
+$("closeEdit").onclick=()=>{
+
+  $("editModal").classList.remove("show");
+
+};
+
+$("saveProfile").onclick=
+  saveProfile;
+
+$("addFriend").onclick=
+  addFriend;
+
+$("closeAdd").onclick=
+  closeAdd;
+
+$("scanQR").onclick=()=>{
+
+  closeAdd();
+
+  openScanner();
+
+};
+
+$("closeScanner").onclick=
+  closeScanner;
+
+$("sendBtn").onclick=
+  sendMessage;
+
+$("messageInput").addEventListener(
+  "keydown",
+  e=>{
+
+    if(
+      e.key==="Enter" &&
+      !e.shiftKey
+    ){
+
+      e.preventDefault();
+
+      sendMessage();
+
+    }
+
+  }
+);
+
+$("messageInput").addEventListener(
+  "input",
+  e=>{
+
+    e.target.style.height="42px";
+
+    e.target.style.height=
+      Math.min(
+        e.target.scrollHeight,
+        120
+      )+"px";
+
+  }
+);
+
+$("searchInput").oninput=e=>{
+
+  renderContacts(e.target.value);
+
+};
+
+$("backBtn").onclick=()=>{
+
+  $("chat").classList.remove("mobile");
+
+  currentContact=null;
+
+};
+
+$("callBtn").onclick=
+  ()=>startCall(false);
+
+$("videoBtn").onclick=
+  ()=>startCall(true);
+
+$("muteBtn").onclick=
+  toggleMute;
+
+$("cameraBtn").onclick=
+  toggleCamera;
+
+$("endCall").onclick=
+  endCall;
+
+$("chatMore").onclick=()=>{
+
+  if(!currentContact)return;
+
+  const ok=
+    confirm(
+      "Bu söhbəti lokal cihazdan silmək istəyirsiniz?"
+    );
+
+  if(ok){
+
+    delete chats[currentContact.id];
+
+    saveAll();
+
+    renderMessages();
+
+    renderContacts();
+
+  }
+
+};
+
+$("attachBtn").onclick=()=>{
+
+  toast("Media göndərmə modulu növbəti mərhələdə aktivləşdirilə bilər");
+
+};
+
+
+/* =========================================================
+   INIT
+   ========================================================= */
+
+(async()=>{
+
+  try{
+
+    await openDB();
+
+    await loadData();
+
+    if(!profile){
+
+      $("setup").classList.add("show");
+
+    }else{
+
+      renderProfile();
+
+      renderContacts();
+
+      initPeer();
+
+    }
+
+  }catch(e){
+
+    console.error(e);
+
+    toast("Lokal yaddaş açıla bilmədi");
+
+  }
+
+})();
 </script>
+
 </body>
-  </html>
+      </html>
