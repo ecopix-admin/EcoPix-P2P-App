@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Fon Təmizləyici & Məhsul Studio</title>
+    <title>Sürətli AI Fon Təmizləyici & Kamera Studio</title>
     <style>
         :root {
             --primary: #6366f1;
@@ -14,12 +14,7 @@
             --border: #334155;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
 
         body {
             background-color: var(--bg);
@@ -28,356 +23,392 @@
             flex-direction: column;
             align-items: center;
             min-height: 100vh;
-            padding: 20px;
+            padding: 15px;
         }
 
-        header {
-            text-align: center;
-            margin-bottom: 25px;
-        }
-
+        header { text-align: center; margin-bottom: 20px; }
         header h1 {
-            font-size: 2.2rem;
-            margin-bottom: 8px;
+            font-size: 1.8rem;
             background: linear-gradient(135deg, #a5b4fc, #6366f1);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
-        header p {
-            color: #94a3b8;
-            font-size: 0.95rem;
-        }
-
         .container {
             width: 100%;
-            max-width: 900px;
+            max-width: 800px;
             background: var(--card);
             border: 1px solid var(--border);
             border-radius: 16px;
-            padding: 24px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            padding: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
         }
 
-        .upload-box {
-            border: 2px dashed var(--primary);
-            border-radius: 12px;
-            padding: 40px 20px;
-            text-align: center;
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        button, .btn-upload {
+            flex: 1;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: #334155;
+            color: #fff;
+            font-size: 0.95rem;
+            font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s;
-            background: rgba(99, 102, 241, 0.05);
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s;
         }
 
-        .upload-box:hover {
-            background: rgba(99, 102, 241, 0.15);
-        }
+        button:hover, .btn-upload:hover { background: #475569; }
 
-        .upload-box input {
+        .btn-primary { background: var(--primary); border-color: var(--primary); }
+        .btn-primary:hover { background: var(--primary-hover); }
+
+        input[type="file"] { display: none; }
+
+        /* Kamera Modalı */
+        .camera-modal {
             display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.9);
+            z-index: 100;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
         }
 
+        video {
+            width: 100%;
+            max-width: 500px;
+            border-radius: 12px;
+            background: #000;
+        }
+
+        /* İş Sahəsi */
         .editor-area {
             display: none;
             flex-direction: column;
-            gap: 20px;
+            gap: 15px;
         }
 
         .canvas-container {
             width: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             background: #000;
             border-radius: 12px;
             overflow: hidden;
-            min-height: 300px;
-            max-height: 500px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 250px;
+            max-height: 450px;
             position: relative;
         }
 
-        canvas {
-            max-width: 100%;
-            max-height: 500px;
-            object-fit: contain;
-        }
+        canvas { max-width: 100%; max-height: 450px; object-fit: contain; }
 
         .controls {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
             background: #0f172a;
             padding: 15px;
             border-radius: 12px;
         }
 
-        .control-group {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
+        .control-group { display: flex; flex-direction: column; gap: 5px; }
+        .control-group label { font-size: 0.8rem; color: #94a3b8; font-weight: 600; }
 
-        .control-group label {
-            font-size: 0.85rem;
-            color: #cbd5e1;
-            font-weight: 600;
-        }
-
-        select, input[type="color"], button {
-            padding: 10px;
+        select, input[type="color"] {
+            padding: 8px;
             border-radius: 8px;
             border: 1px solid var(--border);
             background: var(--card);
             color: var(--text);
-            font-size: 0.9rem;
             outline: none;
-            cursor: pointer;
         }
 
-        button.btn-main {
-            background: var(--primary);
-            color: #fff;
-            border: none;
-            font-weight: bold;
-            transition: background 0.2s;
-        }
-
-        button.btn-main:hover {
-            background: var(--primary-hover);
-        }
-
-        .status-overlay {
+        .status-badge {
             position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
+            top: 10px;
+            left: 10px;
             background: rgba(15, 23, 42, 0.85);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
             display: flex;
-            flex-direction: column;
-            justify-content: center;
             align-items: center;
-            gap: 12px;
-            color: var(--text);
-            font-weight: 500;
+            gap: 8px;
             backdrop-filter: blur(4px);
+            border: 1px solid var(--border);
         }
 
         .spinner {
-            width: 36px;
-            height: 36px;
-            border: 4px solid var(--border);
-            border-top: 4px solid var(--primary);
+            width: 14px;
+            height: 14px;
+            border: 2px solid var(--border);
+            border-top: 2px solid var(--primary);
             border-radius: 50%;
-            animation: spin 1s linear infinite;
+            animation: spin 0.8s linear infinite;
         }
 
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-        }
-
-        .actions button {
-            flex: 1;
-        }
-
-        footer {
-            margin-top: automotive;
-            padding: 20px;
-            color: #64748b;
-            font-size: 0.85rem;
-        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
-
-    <!-- Transformers.js (AI Modeli Brauzerdə İcra Etmək Üçün) -->
-    <script type="module">
-        import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.4.5/+esm';
-        window.removeBackground = pipeline;
-    </script>
 </head>
 <body>
 
     <header>
-        <h1>AI Fon Təmizləyici & Studio</h1>
-        <p>Tamamilə brauzerinizdə işləyir — Şəkilləriniz heç bir serverə göndərilmir!</p>
+        <h1>AI Studio & Fon Təmizləyici</h1>
     </header>
 
     <div class="container">
-        <!-- Yükləmə Sahəsi -->
-        <div class="upload-box" id="uploadBox" onclick="document.getElementById('fileInput').click()">
-            <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-bottom: 10px; color: var(--primary);">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-            </svg>
-            <h3>Şəkil seçin və ya buraya sürüşdürün</h3>
-            <p style="font-size: 0.8rem; color: #64748b; margin-top: 5px;">PNG, JPG, WEBP dəstəklənir</p>
-            <input type="file" id="fileInput" accept="image/*">
+        <!-- Seçim Düymələri -->
+        <div class="btn-group" id="initialControls">
+            <label class="btn-upload btn-primary">
+                📁 Şəkil Seçin
+                <input type="file" id="fileInput" accept="image/*">
+            </label>
+            <button type="button" id="openCamBtn">📷 Kamera ilə Çək</button>
+        </div>
+
+        <!-- Kamera Ekranı -->
+        <div class="camera-modal" id="cameraModal">
+            <video id="webcam" autoplay playsinline></video>
+            <div class="btn-group" style="width: 100%; max-width: 500px; margin-top: 15px;">
+                <button type="button" class="btn-primary" id="captureBtn">📸 Çək</button>
+                <button type="button" id="closeCamBtn" style="background: #ef4444;">Ləğv et</button>
+            </div>
         </div>
 
         <!-- Redaktə Sahəsi -->
         <div class="editor-area" id="editorArea">
             <div class="canvas-container">
                 <canvas id="mainCanvas"></canvas>
-                <div class="status-overlay" id="statusOverlay">
-                    <div class="spinner"></div>
-                    <span id="statusText">AI Model Yüklənir və Fon Silinir...</span>
+                <div class="status-badge" id="statusBadge">
+                    <div class="spinner" id="spinner"></div>
+                    <span id="statusText">Şəkil yükləndi. AI hazırlanır...</span>
                 </div>
             </div>
 
             <div class="controls">
                 <div class="control-group">
                     <label for="bgType">Fon Növü</label>
-                    <select id="bgType" onchange="updateCanvas()">
+                    <select id="bgType">
                         <option value="transparent">Şəffaf (PNG)</option>
-                        <option value="color">Birmənalı Rəng</option>
-                        <option value="gradient">Gradient (Studiya)</option>
                         <option value="white" selected>Təmiz Ağ (E-Ticarət)</option>
+                        <option value="color">Rəng Seçin</option>
+                        <option value="gradient">Gradient Studiya</option>
                     </select>
                 </div>
 
                 <div class="control-group" id="colorPickerGroup">
                     <label for="bgColor">Fon Rəngi</label>
-                    <input type="color" id="bgColor" value="#ffffff" onchange="updateCanvas()">
+                    <input type="color" id="bgColor" value="#ffffff">
                 </div>
 
                 <div class="control-group">
-                    <label for="aspectRatio">Məhsul Ölçüsü</label>
-                    <select id="aspectRatio" onchange="updateCanvas()">
-                        <option value="original">Orijinal Ölçü</option>
-                        <option value="1:1">Kvadrat (1:1 - Instagram/Tap.az)</option>
-                        <option value="4:3">Məhsul Katalogu (4:3)</option>
+                    <label for="aspectRatio">Ölçü (Format)</label>
+                    <select id="aspectRatio">
+                        <option value="original">Orijinal</option>
+                        <option value="1:1">Kvadrat (1:1 - Tap.az)</option>
+                        <option value="4:3">Məhsul (4:3)</option>
                         <option value="9:16">Story / TikTok (9:16)</option>
                     </select>
                 </div>
             </div>
 
-            <div class="actions">
-                <button onclick="resetApp()">Yeni Şəkil</button>
-                <button class="btn-main" onclick="downloadImage()">Yüksək Keyfiyyətdə Yüklə</button>
+            <div class="btn-group">
+                <button type="button" id="resetBtn" style="background: #475569;">Yenidən Seç</button>
+                <button type="button" class="btn-primary" id="downloadBtn">Yüklə (HD)</button>
             </div>
         </div>
     </div>
 
-    <footer>
-        © 2026 AI Studio — Local In-Browser Processing
-    </footer>
-
+    <!-- AI Model Modulu -->
     <script type="module">
         import imglyRemoveBackground from 'https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.4.5/+esm';
 
         const fileInput = document.getElementById('fileInput');
-        const uploadBox = document.getElementById('uploadBox');
+        const openCamBtn = document.getElementById('openCamBtn');
+        const closeCamBtn = document.getElementById('closeCamBtn');
+        const captureBtn = document.getElementById('captureBtn');
+        const cameraModal = document.getElementById('cameraModal');
+        const webcam = document.getElementById('webcam');
         const editorArea = document.getElementById('editorArea');
-        const statusOverlay = document.getElementById('statusOverlay');
+        const initialControls = document.getElementById('initialControls');
+        const statusBadge = document.getElementById('statusBadge');
         const statusText = document.getElementById('statusText');
+        const spinner = document.getElementById('spinner');
         const canvas = document.getElementById('mainCanvas');
         const ctx = canvas.getContext('2d');
 
-        let rawImage = null;
-        let fgImage = null; // Fonu silinmiş şəkil
+        let cameraStream = null;
+        let originalImage = null;
+        let bgRemovedImage = null;
 
+        // 1. Fayl seçildikdə DƏRHOL ekrana çıxar
         fileInput.addEventListener('change', (e) => {
             if (e.target.files && e.target.files[0]) {
-                processImage(e.target.files[0]);
+                handleImageInput(e.target.files[0]);
             }
         });
 
-        async function processImage(file) {
-            uploadBox.style.display = 'none';
-            editorArea.style.display = 'flex';
-            statusOverlay.style.display = 'flex';
-            statusText.innerText = "Süni İntellekt fonu silir (bir neçə saniyə)...";
-
-            rawImage = new Image();
-            rawImage.src = URL.createObjectURL(file);
-            await rawImage.decode();
-
+        // 2. Kameranı Aç
+        openCamBtn.addEventListener('click', async () => {
             try {
-                // @imgly/background-removal brauzerdə WASM və WebGL ilə işləyir
-                const blob = await imglyRemoveBackground(file, {
+                cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+                webcam.srcObject = cameraStream;
+                cameraModal.style.display = 'flex';
+            } catch (err) {
+                alert("Kameraya daxil olmaq mümkün olmadı: " + err.message);
+            }
+        });
+
+        // Kameranı Bağla
+        closeCamBtn.addEventListener('click', stopCamera);
+
+        function stopCamera() {
+            if (cameraStream) {
+                cameraStream.getTracks().forEach(track => track.stop());
+            }
+            cameraModal.style.display = 'none';
+        }
+
+        // 3. Kameradan Şəkil Çək
+        captureBtn.addEventListener('click', () => {
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = webcam.videoWidth;
+            tempCanvas.height = webcam.videoHeight;
+            const tempCtx = tempCanvas.getContext('2d');
+            tempCtx.drawImage(webcam, 0, 0);
+
+            tempCanvas.toBlob((blob) => {
+                stopCamera();
+                handleImageInput(blob);
+            }, 'image/jpeg');
+        });
+
+        // 4. Şəklin Emalı və Göstərilməsi
+        async function handleImageInput(imageSource) {
+            initialControls.style.display = 'none';
+            editorArea.style.display = 'flex';
+            statusBadge.style.display = 'flex';
+            spinner.style.display = 'block';
+            statusText.innerText = "Şəkil göstərilir...";
+
+            const url = URL.createObjectURL(imageSource);
+            originalImage = new Image();
+            originalImage.src = url;
+
+            await originalImage.decode();
+            
+            // Şəkil DƏRHOL canvas-da göstərilir (Gözləmədən!)
+            renderCanvas(originalImage);
+
+            // Fon silmə prosesi arxa fonda sürətli başladılır
+            statusText.innerText = "Süni intellekt fonu silir...";
+            
+            try {
+                const blob = await imglyRemoveBackground(imageSource, {
+                    fetchArgs: { mode: 'cors' },
                     progress: (key, current, total) => {
                         const pct = Math.round((current / total) * 100);
-                        if(!isNaN(pct)) statusText.innerText = `Model hazırlanır: ${pct}%`;
+                        if (!isNaN(pct)) statusText.innerText = `Süni İntellekt: ${pct}%`;
                     }
                 });
 
-                fgImage = new Image();
-                fgImage.src = URL.createObjectURL(blob);
-                await fgImage.decode();
+                bgRemovedImage = new Image();
+                bgRemovedImage.src = URL.createObjectURL(blob);
+                await bgRemovedImage.decode();
 
-                statusOverlay.style.display = 'none';
-                updateCanvas();
+                spinner.style.display = 'none';
+                statusText.innerText = "Fon silindi!";
+                setTimeout(() => { statusBadge.style.display = 'none'; }, 2000);
+
+                renderCanvas(bgRemovedImage);
             } catch (err) {
                 console.error(err);
-                alert("Xəta baş verdi: " + err.message);
-                resetApp();
+                spinner.style.display = 'none';
+                statusText.innerText = "Orijinal şəkil göstərilir (AI xətası)";
             }
         }
 
-        window.updateCanvas = function() {
-            if (!fgImage) return;
+        // Canvas Çəkim Funksiyası
+        function renderCanvas(imgToDraw) {
+            if (!imgToDraw) return;
 
             const bgType = document.getElementById('bgType').value;
             const bgColor = document.getElementById('bgColor').value;
             const ratio = document.getElementById('aspectRatio').value;
 
-            let targetWidth = fgImage.width;
-            let targetHeight = fgImage.height;
+            let w = imgToDraw.width;
+            let h = imgToDraw.height;
 
             if (ratio === '1:1') {
-                const max = Math.max(targetWidth, targetHeight);
-                targetWidth = max; targetHeight = max;
+                const max = Math.max(w, h);
+                w = max; h = max;
             } else if (ratio === '4:3') {
-                targetWidth = fgImage.width;
-                targetHeight = (fgImage.width * 3) / 4;
+                h = (w * 3) / 4;
             } else if (ratio === '9:16') {
-                targetWidth = fgImage.width;
-                targetHeight = (fgImage.width * 16) / 9;
+                h = (w * 16) / 9;
             }
 
-            canvas.width = targetWidth;
-            canvas.height = targetHeight;
+            canvas.width = w;
+            canvas.height = h;
 
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.clearRect(0, 0, w, h);
 
-            // 1. Fon Çəkilməsi
-            if (bgType === 'color' || bgType === 'white') {
-                ctx.fillStyle = bgType === 'white' ? '#ffffff' : bgColor;
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            // Fon rəngləri (yalnız fon silinibsə və ya istifadəçi seçibsə)
+            if (bgType === 'white') {
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, w, h);
+            } else if (bgType === 'color') {
+                ctx.fillStyle = bgColor;
+                ctx.fillRect(0, 0, w, h);
             } else if (bgType === 'gradient') {
-                const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+                const grad = ctx.createLinearGradient(0, 0, 0, h);
                 grad.addColorStop(0, '#38bdf8');
                 grad.addColorStop(1, '#0369a1');
                 ctx.fillStyle = grad;
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillRect(0, 0, w, h);
             }
 
-            // 2. Əsas Obyektin Mərkəzləşdirilib Çəkilməsi
-            const x = (canvas.width - fgImage.width) / 2;
-                const y = (canvas.height - fgImage.height) / 2;
-            ctx.drawImage(fgImage, x, y);
-        };
+            const x = (w - imgToDraw.width) / 2;
+            const y = (h - imgToDraw.height) / 2;
+            ctx.drawImage(imgToDraw, x, y);
+        }
 
-        window.downloadImage = function() {
-            const bgType = document.getElementById('bgType').value;
-            const format = bgType === 'transparent' ? 'image/png' : 'image/jpeg';
-            const ext = bgType === 'transparent' ? 'png' : 'jpg';
+        // Hadisələr (Events)
+        document.getElementById('bgType').addEventListener('change', () => renderCanvas(bgRemovedImage || originalImage));
+        document.getElementById('bgColor').addEventListener('input', () => renderCanvas(bgRemovedImage || originalImage));
+        document.getElementById('aspectRatio').addEventListener('change', () => renderCanvas(bgRemovedImage || originalImage));
 
-            const link = document.createElement('a');
-            link.download = `ai_studio_${Date.now()}.${ext}`;
-            link.href = canvas.toDataURL(format, 0.95);
-            link.click();
-        };
-
-        window.resetApp = function() {
+        document.getElementById('resetBtn').addEventListener('click', () => {
             fileInput.value = '';
-            rawImage = null;
-            fgImage = null;
-            uploadBox.style.display = 'block';
+            originalImage = null;
+            bgRemovedImage = null;
+            initialControls.style.display = 'flex';
             editorArea.style.display = 'none';
-        };
+        });
+
+        document.getElementById('downloadBtn').addEventListener('click', () => {
+            const bgType = document.getElementById('bgType').value;
+            const ext = bgType === 'transparent' ? 'png' : 'jpg';
+            const link = document.createElement('a');
+            link.download = `studio_${Date.now()}.${ext}`;
+            link.href = canvas.toDataURL(bgType === 'transparent' ? 'image/png' : 'image/jpeg', 0.95);
+            link.click();
+        });
     </script>
 </body>
 </html>
