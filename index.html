@@ -2,83 +2,382 @@
 <html lang="az">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">Kamera Effekti</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Fon Təmizləyici & Məhsul Studio</title>
     <style>
-        body, html {
+        :root {
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --bg: #0f172a;
+            --card: #1e293b;
+            --text: #f8fafc;
+            --border: #334155;
+        }
+
+        * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #a5b4fc, #6366f1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        header p {
+            color: #94a3b8;
+            font-size: 0.95rem;
+        }
+
+        .container {
             width: 100%;
-            height: 100%;
-            overflow: hidden;
-            background: #000;
-            font-family: Arial, sans-serif;
+            max-width: 900px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
         }
-        video, .overlay-img {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        .overlay-img {
-            opacity: 1;
-            transition: opacity 0.5s ease;
-            pointer-events: none;
-        }
-        .controls {
-            position: absolute;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 10;
-        }
-        button {
-            padding: 12px 24px;
-            font-size: 16px;
-            background: #ff4757;
-            color: white;
-            border: none;
-            border-radius: 25px;
+
+        .upload-box {
+            border: 2px dashed var(--primary);
+            border-radius: 12px;
+            padding: 40px 20px;
+            text-align: center;
             cursor: pointer;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            transition: all 0.3s;
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        .upload-box:hover {
+            background: rgba(99, 102, 241, 0.15);
+        }
+
+        .upload-box input {
+            display: none;
+        }
+
+        .editor-area {
+            display: none;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .canvas-container {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            min-height: 300px;
+            max-height: 500px;
+            position: relative;
+        }
+
+        canvas {
+            max-width: 100%;
+            max-height: 500px;
+            object-fit: contain;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            background: #0f172a;
+            padding: 15px;
+            border-radius: 12px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .control-group label {
+            font-size: 0.85rem;
+            color: #cbd5e1;
+            font-weight: 600;
+        }
+
+        select, input[type="color"], button {
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--card);
+            color: var(--text);
+            font-size: 0.9rem;
+            outline: none;
+            cursor: pointer;
+        }
+
+        button.btn-main {
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+
+        button.btn-main:hover {
+            background: var(--primary-hover);
+        }
+
+        .status-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15, 23, 42, 0.85);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            color: var(--text);
+            font-weight: 500;
+            backdrop-filter: blur(4px);
+        }
+
+        .spinner {
+            width: 36px;
+            height: 36px;
+            border: 4px solid var(--border);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .actions button {
+            flex: 1;
+        }
+
+        footer {
+            margin-top: automotive;
+            padding: 20px;
+            color: #64748b;
+            font-size: 0.85rem;
         }
     </style>
+
+    <!-- Transformers.js (AI Modeli Brauzerdə İcra Etmək Üçün) -->
+    <script type="module">
+        import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.4.5/+esm';
+        window.removeBackground = pipeline;
+    </script>
 </head>
 <body>
 
-    <!-- Kamera görüntüsü -->
-    <video id="video" autoplay playsinline></video>
-    
-    <!-- Üst qat şəkli (vizual örtük) -->
-    <img id="overlay" class="overlay-img" src="https://via.placeholder.com/600x800?text=Geyim+Qati" alt="Örtük">
+    <header>
+        <h1>AI Fon Təmizləyici & Studio</h1>
+        <p>Tamamilə brauzerinizdə işləyir — Şəkilləriniz heç bir serverə göndərilmir!</p>
+    </header>
 
-    <div class="controls">
-        <button onclick="toggleEffect()">Effekti Dəyiş</button>
+    <div class="container">
+        <!-- Yükləmə Sahəsi -->
+        <div class="upload-box" id="uploadBox" onclick="document.getElementById('fileInput').click()">
+            <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-bottom: 10px; color: var(--primary);">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+            </svg>
+            <h3>Şəkil seçin və ya buraya sürüşdürün</h3>
+            <p style="font-size: 0.8rem; color: #64748b; margin-top: 5px;">PNG, JPG, WEBP dəstəklənir</p>
+            <input type="file" id="fileInput" accept="image/*">
+        </div>
+
+        <!-- Redaktə Sahəsi -->
+        <div class="editor-area" id="editorArea">
+            <div class="canvas-container">
+                <canvas id="mainCanvas"></canvas>
+                <div class="status-overlay" id="statusOverlay">
+                    <div class="spinner"></div>
+                    <span id="statusText">AI Model Yüklənir və Fon Silinir...</span>
+                </div>
+            </div>
+
+            <div class="controls">
+                <div class="control-group">
+                    <label for="bgType">Fon Növü</label>
+                    <select id="bgType" onchange="updateCanvas()">
+                        <option value="transparent">Şəffaf (PNG)</option>
+                        <option value="color">Birmənalı Rəng</option>
+                        <option value="gradient">Gradient (Studiya)</option>
+                        <option value="white" selected>Təmiz Ağ (E-Ticarət)</option>
+                    </select>
+                </div>
+
+                <div class="control-group" id="colorPickerGroup">
+                    <label for="bgColor">Fon Rəngi</label>
+                    <input type="color" id="bgColor" value="#ffffff" onchange="updateCanvas()">
+                </div>
+
+                <div class="control-group">
+                    <label for="aspectRatio">Məhsul Ölçüsü</label>
+                    <select id="aspectRatio" onchange="updateCanvas()">
+                        <option value="original">Orijinal Ölçü</option>
+                        <option value="1:1">Kvadrat (1:1 - Instagram/Tap.az)</option>
+                        <option value="4:3">Məhsul Katalogu (4:3)</option>
+                        <option value="9:16">Story / TikTok (9:16)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="actions">
+                <button onclick="resetApp()">Yeni Şəkil</button>
+                <button class="btn-main" onclick="downloadImage()">Yüksək Keyfiyyətdə Yüklə</button>
+            </div>
+        </div>
     </div>
 
-    <script>
-        const video = document.getElementById('video');
-        const overlay = document.getElementById('overlay');
+    <footer>
+        © 2026 AI Studio — Local In-Browser Processing
+    </footer>
 
-        // Kameranı işə salmaq
-        navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
-            .then(stream => {
-                video.srcObject = stream;
-            })
-            .catch(err => {
-                console.error("Kameraya giriş icazəsi yoxdur: ", err);
-            });
+    <script type="module">
+        import imglyRemoveBackground from 'https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.4.5/+esm';
 
-        // Düyməyə basdıqda üst qatın şəffaflığını dəyişən funksiya
-        function toggleEffect() {
-            if (overlay.style.opacity === '0') {
-                overlay.style.opacity = '1';
-            } else {
-                overlay.style.opacity = '0';
+        const fileInput = document.getElementById('fileInput');
+        const uploadBox = document.getElementById('uploadBox');
+        const editorArea = document.getElementById('editorArea');
+        const statusOverlay = document.getElementById('statusOverlay');
+        const statusText = document.getElementById('statusText');
+        const canvas = document.getElementById('mainCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let rawImage = null;
+        let fgImage = null; // Fonu silinmiş şəkil
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files && e.target.files[0]) {
+                processImage(e.target.files[0]);
+            }
+        });
+
+        async function processImage(file) {
+            uploadBox.style.display = 'none';
+            editorArea.style.display = 'flex';
+            statusOverlay.style.display = 'flex';
+            statusText.innerText = "Süni İntellekt fonu silir (bir neçə saniyə)...";
+
+            rawImage = new Image();
+            rawImage.src = URL.createObjectURL(file);
+            await rawImage.decode();
+
+            try {
+                // @imgly/background-removal brauzerdə WASM və WebGL ilə işləyir
+                const blob = await imglyRemoveBackground(file, {
+                    progress: (key, current, total) => {
+                        const pct = Math.round((current / total) * 100);
+                        if(!isNaN(pct)) statusText.innerText = `Model hazırlanır: ${pct}%`;
+                    }
+                });
+
+                fgImage = new Image();
+                fgImage.src = URL.createObjectURL(blob);
+                await fgImage.decode();
+
+                statusOverlay.style.display = 'none';
+                updateCanvas();
+            } catch (err) {
+                console.error(err);
+                alert("Xəta baş verdi: " + err.message);
+                resetApp();
             }
         }
-    </script>
 
+        window.updateCanvas = function() {
+            if (!fgImage) return;
+
+            const bgType = document.getElementById('bgType').value;
+            const bgColor = document.getElementById('bgColor').value;
+            const ratio = document.getElementById('aspectRatio').value;
+
+            let targetWidth = fgImage.width;
+            let targetHeight = fgImage.height;
+
+            if (ratio === '1:1') {
+                const max = Math.max(targetWidth, targetHeight);
+                targetWidth = max; targetHeight = max;
+            } else if (ratio === '4:3') {
+                targetWidth = fgImage.width;
+                targetHeight = (fgImage.width * 3) / 4;
+            } else if (ratio === '9:16') {
+                targetWidth = fgImage.width;
+                targetHeight = (fgImage.width * 16) / 9;
+            }
+
+            canvas.width = targetWidth;
+            canvas.height = targetHeight;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 1. Fon Çəkilməsi
+            if (bgType === 'color' || bgType === 'white') {
+                ctx.fillStyle = bgType === 'white' ? '#ffffff' : bgColor;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            } else if (bgType === 'gradient') {
+                const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+                grad.addColorStop(0, '#38bdf8');
+                grad.addColorStop(1, '#0369a1');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
+
+            // 2. Əsas Obyektin Mərkəzləşdirilib Çəkilməsi
+            const x = (canvas.width - fgImage.width) / 2;
+                const y = (canvas.height - fgImage.height) / 2;
+            ctx.drawImage(fgImage, x, y);
+        };
+
+        window.downloadImage = function() {
+            const bgType = document.getElementById('bgType').value;
+            const format = bgType === 'transparent' ? 'image/png' : 'image/jpeg';
+            const ext = bgType === 'transparent' ? 'png' : 'jpg';
+
+            const link = document.createElement('a');
+            link.download = `ai_studio_${Date.now()}.${ext}`;
+            link.href = canvas.toDataURL(format, 0.95);
+            link.click();
+        };
+
+        window.resetApp = function() {
+            fileInput.value = '';
+            rawImage = null;
+            fgImage = null;
+            uploadBox.style.display = 'block';
+            editorArea.style.display = 'none';
+        };
+    </script>
 </body>
 </html>
