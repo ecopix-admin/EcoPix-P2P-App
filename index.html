@@ -1,414 +1,73 @@
-<!DOCTYPE html>
-<html lang="az">
+<!doctype html>
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sürətli AI Fon Təmizləyici & Kamera Studio</title>
-    <style>
-        :root {
-            --primary: #6366f1;
-            --primary-hover: #4f46e5;
-            --bg: #0f172a;
-            --card: #1e293b;
-            --text: #f8fafc;
-            --border: #334155;
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
-
-        body {
-            background-color: var(--bg);
-            color: var(--text);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-            padding: 15px;
-        }
-
-        header { text-align: center; margin-bottom: 20px; }
-        header h1 {
-            font-size: 1.8rem;
-            background: linear-gradient(135deg, #a5b4fc, #6366f1);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 800px;
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 20px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
-        }
-
-        .btn-group {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-
-        button, .btn-upload {
-            flex: 1;
-            padding: 12px;
-            border-radius: 10px;
-            border: 1px solid var(--border);
-            background: #334155;
-            color: #fff;
-            font-size: 0.95rem;
-            font-weight: 600;
-            cursor: pointer;
-            text-align: center;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            transition: all 0.2s;
-        }
-
-        button:hover, .btn-upload:hover { background: #475569; }
-
-        .btn-primary { background: var(--primary); border-color: var(--primary); }
-        .btn-primary:hover { background: var(--primary-hover); }
-
-        input[type="file"] { display: none; }
-
-        /* Kamera Modalı */
-        .camera-modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.9);
-            z-index: 100;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-
-        video {
-            width: 100%;
-            max-width: 500px;
-            border-radius: 12px;
-            background: #000;
-        }
-
-        /* İş Sahəsi */
-        .editor-area {
-            display: none;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .canvas-container {
-            width: 100%;
-            background: #000;
-            border-radius: 12px;
-            overflow: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 250px;
-            max-height: 450px;
-            position: relative;
-        }
-
-        canvas { max-width: 100%; max-height: 450px; object-fit: contain; }
-
-        .controls {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 12px;
-            background: #0f172a;
-            padding: 15px;
-            border-radius: 12px;
-        }
-
-        .control-group { display: flex; flex-direction: column; gap: 5px; }
-        .control-group label { font-size: 0.8rem; color: #94a3b8; font-weight: 600; }
-
-        select, input[type="color"] {
-            padding: 8px;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            background: var(--card);
-            color: var(--text);
-            outline: none;
-        }
-
-        .status-badge {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            background: rgba(15, 23, 42, 0.85);
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            backdrop-filter: blur(4px);
-            border: 1px solid var(--border);
-        }
-
-        .spinner {
-            width: 14px;
-            height: 14px;
-            border: 2px solid var(--border);
-            border-top: 2px solid var(--primary);
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    </style>
-</head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#08101e"><title>PixelCut Studio — AI Background Remover</title>
+<style>
+:root{color-scheme:dark;--bg:#070e19;--panel:#0e1929;--panel2:#111f33;--line:#243550;--muted:#9aacc8;--text:#f4f7ff;--blue:#397dff;--violet:#7547ff;--green:#00bd96;--radius:16px}*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 50% -20%,#172747 0,transparent 52%),var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}button,input,select{font:inherit}button{cursor:pointer;color:inherit;border:1px solid var(--line);background:#17253a;border-radius:11px;padding:11px 14px;transition:.15s}button:hover{filter:brightness(1.14)}button:disabled{opacity:.45;cursor:not-allowed}.topbar{min-height:84px;padding:16px clamp(14px,3vw,34px);display:flex;align-items:center;justify-content:space-between;gap:18px;border-bottom:1px solid #1b2b43;background:#091220d9}.brand{display:flex;align-items:center;gap:14px}.logo{width:48px;height:48px;border-radius:15px;display:grid;place-items:center;font-weight:900;font-size:27px;background:linear-gradient(135deg,#a43cff,#168eff 70%,#00d4bb);box-shadow:0 8px 28px #345dff35}.brand h1{font-size:clamp(18px,2vw,25px);margin:0}.brand p{margin:2px 0 0;color:#a9bad5;font-size:13px}.top-right{display:flex;gap:9px;align-items:center}.pill{border:1px solid #2a3c59;border-radius:999px;padding:8px 12px;color:#c3d0e8;font-size:12px}.workspace{max-width:1600px;margin:auto;padding:22px clamp(12px,2vw,28px);display:grid;grid-template-columns:minmax(245px,350px) minmax(320px,1fr) minmax(260px,350px);gap:14px;align-items:stretch}.panel{min-width:0;border:1px solid var(--line);border-radius:var(--radius);background:linear-gradient(150deg,#101b2c,#0b1524);padding:15px}.side{display:flex;flex-direction:column;gap:14px}.big-action{width:100%;display:flex;align-items:center;text-align:left;gap:13px;padding:16px;border:0;font-weight:750;font-size:16px}.big-action .emoji{font-size:27px}.big-action small{display:block;font-size:12px;font-weight:400;opacity:.85;margin-top:2px}.upload{background:linear-gradient(120deg,#7043ff,#168bff)}.camera{background:linear-gradient(120deg,#00a982,#00c7a0)}.subpanel{border:1px solid var(--line);border-radius:12px;padding:12px}.subpanel h3,.setting h3{font-size:14px;margin:0 0 10px}.samples{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.sample{aspect-ratio:1;display:grid;place-items:center;border-radius:9px;background:linear-gradient(135deg,#e7e9ed,#aeb9c9);color:#1c2a3c;font-size:28px;overflow:hidden}.sample img{width:100%;height:100%;object-fit:cover}.help{color:#bac9e1;font-size:13px}.help ol{padding-left:20px;margin:8px 0}.help li{padding:4px 0}.privacy{color:#8fa3c2;font-size:12px;margin-top:12px}.editor{display:flex;flex-direction:column;gap:13px}.toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.iconbtn{padding:9px 12px;font-size:17px}.status{margin-left:auto;display:flex;align-items:center;gap:8px;color:#bdcbe1;font-size:12px;min-height:34px}.spinner{width:17px;height:17px;border:2px solid #3c4e6d;border-top-color:#7c67ff;border-radius:50%;animation:spin .8s linear infinite;display:none}.busy .spinner{display:inline-block}@keyframes spin{to{transform:rotate(360deg)}}.zoom{margin-left:auto;min-width:82px}.canvas-wrap{position:relative;display:grid;place-items:center;min-height:390px;height:min(64vh,690px);padding:14px;border:1px solid #1d2b42;border-radius:12px;background:#08111e;overflow:hidden}.canvas-wrap:fullscreen{height:100vh;background:#07101c}.checker{background-color:#fff;background-image:linear-gradient(45deg,#dfe3e9 25%,transparent 25%),linear-gradient(-45deg,#dfe3e9 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#dfe3e9 75%),linear-gradient(-45deg,transparent 75%,#dfe3e9 75%);background-size:24px 24px;background-position:0 0,0 12px,12px -12px,-12px 0}.canvas-wrap canvas{display:block;max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;box-shadow:0 10px 36px #0005}.empty-state{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:#8094b4;padding:24px;pointer-events:none}.empty-state .empty-icon{font-size:46px;margin-bottom:8px}.empty-state strong{font-size:18px;color:#dce7fb}.empty-state p{max-width:290px;font-size:13px}.thumbs{display:flex;gap:8px;align-items:center;overflow:auto;padding:7px}.thumb{min-width:82px;width:82px;height:82px;padding:4px;background:#08111e;border:1px solid #263750;border-radius:10px;overflow:hidden}.thumb.active{border:2px solid #318bff}.thumb canvas{width:100%;height:100%;object-fit:contain}.setting{border:1px solid var(--line);border-radius:13px;padding:12px;margin-bottom:12px}.setting h3{font-size:15px;display:flex;align-items:center;gap:8px}.choice{display:flex;align-items:center;gap:10px;padding:9px;border:1px solid #263751;border-radius:10px;margin-top:7px;cursor:pointer}.choice:has(input:checked){border-color:#607aff;background:#192744}.choice input{accent-color:#6b7dff;width:17px;height:17px}.swatch{width:36px;height:36px;flex-shrink:0;border-radius:8px;border:1px solid #40506a}.choice b{display:block;font-size:12px}.choice small{display:block;color:#9eafcb;font-size:11px;margin-top:2px}.color-row{display:flex;align-items:center;gap:7px;margin:9px 0 0 36px;flex-wrap:wrap}.color-row input[type=color]{width:34px;height:28px;border:0;background:none;padding:0}.color-chip{width:18px;height:18px;border-radius:50%;border:1px solid #ffffff55;padding:0}.gradients{display:flex;gap:7px;margin:10px 0 0 38px;flex-wrap:wrap}.gradient-chip{width:32px;height:32px;border-radius:8px;padding:0}.ratio-choice{padding:9px;display:flex;align-items:center;gap:10px;border:1px solid #263751;border-radius:10px;margin-top:6px;cursor:pointer}.ratio-choice:has(input:checked){border-color:#607aff;background:#192744}.ratio-choice input{accent-color:#6b7dff}.ratio-icon{width:28px;height:34px;border-radius:5px;background:linear-gradient(135deg,#d8b9ff,#69d5ff);border:1px solid #8fa6cc;flex-shrink:0}.ratio-icon.square{height:29px}.ratio-icon.landscape{width:35px;height:26px}.ratio-icon.story{width:21px;height:36px}.download{width:100%;border:0;background:linear-gradient(110deg,#7847ff,#286dff);font-weight:750;padding:13px}.reset{width:100%;margin-top:8px;font-weight:650}.note{font-size:11px;color:#8da0bd;margin-top:9px}.toast{position:fixed;z-index:50;left:50%;bottom:22px;transform:translate(-50%,20px);opacity:0;pointer-events:none;background:#172842;border:1px solid #3a5276;border-radius:12px;padding:12px 16px;box-shadow:0 8px 30px #0008;transition:.2s;max-width:calc(100vw - 24px)}.toast.show{opacity:1;transform:translate(-50%,0)}.modal{position:fixed;inset:0;background:#020711eF;z-index:40;display:none;align-items:center;justify-content:center;padding:16px}.modal.open{display:flex}.modal-card{width:min(680px,100%);background:#101c2e;border:1px solid #344967;border-radius:16px;padding:16px}.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.modal-head h2{font-size:18px;margin:0}.camera-view{width:100%;max-height:65vh;object-fit:contain;background:#02060d;border-radius:10px}.modal-actions{display:flex;justify-content:space-between;gap:10px;margin-top:12px}.primary{background:linear-gradient(110deg,#7044ff,#247cff);border:0;font-weight:700}.warning{display:none;background:#382a17;border:1px solid #78562a;color:#f4d6a2;padding:10px;border-radius:10px;font-size:12px;margin-top:9px}.warning.show{display:block}.footer{max-width:1600px;margin:0 auto;padding:0 28px 20px;color:#7185a5;font-size:11px}
+@media(max-width:1120px){.workspace{grid-template-columns:260px minmax(300px,1fr)}.right-panel{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.right-panel .setting{margin:0}.right-panel .actions{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:8px}.right-panel .reset{margin:0}}
+@media(max-width:720px){.topbar{align-items:flex-start}.top-right .pill{display:none}.workspace{grid-template-columns:1fr;padding:12px;gap:12px}.left-panel{order:1}.editor{order:0}.right-panel{order:2;grid-template-columns:1fr}.right-panel .actions{grid-column:auto}.canvas-wrap{height:48vh;min-height:290px}.status{width:100%;margin-left:0}.zoom{margin-left:auto}.footer{padding:0 14px 20px}.brand p{font-size:11px}.logo{width:40px;height:40px}.samples{grid-template-columns:repeat(6,1fr)}.sample{font-size:19px}.topbar{padding:12px}}
+</style></head>
 <body>
-
-    <header>
-        <h1>AI Studio & Fon Təmizləyici</h1>
-    </header>
-
-    <div class="container">
-        <!-- Seçim Düymələri -->
-        <div class="btn-group" id="initialControls">
-            <label class="btn-upload btn-primary">
-                📁 Şəkil Seçin
-                <input type="file" id="fileInput" accept="image/*">
-            </label>
-            <button type="button" id="openCamBtn">📷 Kamera ilə Çək</button>
-        </div>
-
-        <!-- Kamera Ekranı -->
-        <div class="camera-modal" id="cameraModal">
-            <video id="webcam" autoplay playsinline></video>
-            <div class="btn-group" style="width: 100%; max-width: 500px; margin-top: 15px;">
-                <button type="button" class="btn-primary" id="captureBtn">📸 Çək</button>
-                <button type="button" id="closeCamBtn" style="background: #ef4444;">Ləğv et</button>
-            </div>
-        </div>
-
-        <!-- Redaktə Sahəsi -->
-        <div class="editor-area" id="editorArea">
-            <div class="canvas-container">
-                <canvas id="mainCanvas"></canvas>
-                <div class="status-badge" id="statusBadge">
-                    <div class="spinner" id="spinner"></div>
-                    <span id="statusText">Şəkil yükləndi. AI hazırlanır...</span>
-                </div>
-            </div>
-
-            <div class="controls">
-                <div class="control-group">
-                    <label for="bgType">Fon Növü</label>
-                    <select id="bgType">
-                        <option value="transparent">Şəffaf (PNG)</option>
-                        <option value="white" selected>Təmiz Ağ (E-Ticarət)</option>
-                        <option value="color">Rəng Seçin</option>
-                        <option value="gradient">Gradient Studiya</option>
-                    </select>
-                </div>
-
-                <div class="control-group" id="colorPickerGroup">
-                    <label for="bgColor">Fon Rəngi</label>
-                    <input type="color" id="bgColor" value="#ffffff">
-                </div>
-
-                <div class="control-group">
-                    <label for="aspectRatio">Ölçü (Format)</label>
-                    <select id="aspectRatio">
-                        <option value="original">Orijinal</option>
-                        <option value="1:1">Kvadrat (1:1 - Tap.az)</option>
-                        <option value="4:3">Məhsul (4:3)</option>
-                        <option value="9:16">Story / TikTok (9:16)</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="btn-group">
-                <button type="button" id="resetBtn" style="background: #475569;">Yenidən Seç</button>
-                <button type="button" class="btn-primary" id="downloadBtn">Yüklə (HD)</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- AI Model Modulu -->
-    <script type="module">
-        import imglyRemoveBackground from 'https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.4.5/+esm';
-
-        const fileInput = document.getElementById('fileInput');
-        const openCamBtn = document.getElementById('openCamBtn');
-        const closeCamBtn = document.getElementById('closeCamBtn');
-        const captureBtn = document.getElementById('captureBtn');
-        const cameraModal = document.getElementById('cameraModal');
-        const webcam = document.getElementById('webcam');
-        const editorArea = document.getElementById('editorArea');
-        const initialControls = document.getElementById('initialControls');
-        const statusBadge = document.getElementById('statusBadge');
-        const statusText = document.getElementById('statusText');
-        const spinner = document.getElementById('spinner');
-        const canvas = document.getElementById('mainCanvas');
-        const ctx = canvas.getContext('2d');
-
-        let cameraStream = null;
-        let originalImage = null;
-        let bgRemovedImage = null;
-
-        // 1. Fayl seçildikdə DƏRHOL ekrana çıxar
-        fileInput.addEventListener('change', (e) => {
-            if (e.target.files && e.target.files[0]) {
-                handleImageInput(e.target.files[0]);
-            }
-        });
-
-        // 2. Kameranı Aç
-        openCamBtn.addEventListener('click', async () => {
-            try {
-                cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-                webcam.srcObject = cameraStream;
-                cameraModal.style.display = 'flex';
-            } catch (err) {
-                alert("Kameraya daxil olmaq mümkün olmadı: " + err.message);
-            }
-        });
-
-        // Kameranı Bağla
-        closeCamBtn.addEventListener('click', stopCamera);
-
-        function stopCamera() {
-            if (cameraStream) {
-                cameraStream.getTracks().forEach(track => track.stop());
-            }
-            cameraModal.style.display = 'none';
-        }
-
-        // 3. Kameradan Şəkil Çək
-        captureBtn.addEventListener('click', () => {
-            const tempCanvas = document.createElement('canvas');
-            tempCanvas.width = webcam.videoWidth;
-            tempCanvas.height = webcam.videoHeight;
-            const tempCtx = tempCanvas.getContext('2d');
-            tempCtx.drawImage(webcam, 0, 0);
-
-            tempCanvas.toBlob((blob) => {
-                stopCamera();
-                handleImageInput(blob);
-            }, 'image/jpeg');
-        });
-
-        // 4. Şəklin Emalı və Göstərilməsi
-        async function handleImageInput(imageSource) {
-            initialControls.style.display = 'none';
-            editorArea.style.display = 'flex';
-            statusBadge.style.display = 'flex';
-            spinner.style.display = 'block';
-            statusText.innerText = "Şəkil göstərilir...";
-
-            const url = URL.createObjectURL(imageSource);
-            originalImage = new Image();
-            originalImage.src = url;
-
-            await originalImage.decode();
-            
-            // Şəkil DƏRHOL canvas-da göstərilir (Gözləmədən!)
-            renderCanvas(originalImage);
-
-            // Fon silmə prosesi arxa fonda sürətli başladılır
-            statusText.innerText = "Süni intellekt fonu silir...";
-            
-            try {
-                const blob = await imglyRemoveBackground(imageSource, {
-                    fetchArgs: { mode: 'cors' },
-                    progress: (key, current, total) => {
-                        const pct = Math.round((current / total) * 100);
-                        if (!isNaN(pct)) statusText.innerText = `Süni İntellekt: ${pct}%`;
-                    }
-                });
-
-                bgRemovedImage = new Image();
-                bgRemovedImage.src = URL.createObjectURL(blob);
-                await bgRemovedImage.decode();
-
-                spinner.style.display = 'none';
-                statusText.innerText = "Fon silindi!";
-                setTimeout(() => { statusBadge.style.display = 'none'; }, 2000);
-
-                renderCanvas(bgRemovedImage);
-            } catch (err) {
-                console.error(err);
-                spinner.style.display = 'none';
-                statusText.innerText = "Orijinal şəkil göstərilir (AI xətası)";
-            }
-        }
-
-        // Canvas Çəkim Funksiyası
-        function renderCanvas(imgToDraw) {
-            if (!imgToDraw) return;
-
-            const bgType = document.getElementById('bgType').value;
-            const bgColor = document.getElementById('bgColor').value;
-            const ratio = document.getElementById('aspectRatio').value;
-
-            let w = imgToDraw.width;
-            let h = imgToDraw.height;
-
-            if (ratio === '1:1') {
-                const max = Math.max(w, h);
-                w = max; h = max;
-            } else if (ratio === '4:3') {
-                h = (w * 3) / 4;
-            } else if (ratio === '9:16') {
-                h = (w * 16) / 9;
-            }
-
-            canvas.width = w;
-            canvas.height = h;
-
-            ctx.clearRect(0, 0, w, h);
-
-            // Fon rəngləri (yalnız fon silinibsə və ya istifadəçi seçibsə)
-            if (bgType === 'white') {
-                ctx.fillStyle = '#ffffff';
-                ctx.fillRect(0, 0, w, h);
-            } else if (bgType === 'color') {
-                ctx.fillStyle = bgColor;
-                ctx.fillRect(0, 0, w, h);
-            } else if (bgType === 'gradient') {
-                const grad = ctx.createLinearGradient(0, 0, 0, h);
-                grad.addColorStop(0, '#38bdf8');
-                grad.addColorStop(1, '#0369a1');
-                ctx.fillStyle = grad;
-                ctx.fillRect(0, 0, w, h);
-            }
-
-            const x = (w - imgToDraw.width) / 2;
-            const y = (h - imgToDraw.height) / 2;
-            ctx.drawImage(imgToDraw, x, y);
-        }
-
-        // Hadisələr (Events)
-        document.getElementById('bgType').addEventListener('change', () => renderCanvas(bgRemovedImage || originalImage));
-        document.getElementById('bgColor').addEventListener('input', () => renderCanvas(bgRemovedImage || originalImage));
-        document.getElementById('aspectRatio').addEventListener('change', () => renderCanvas(bgRemovedImage || originalImage));
-
-        document.getElementById('resetBtn').addEventListener('click', () => {
-            fileInput.value = '';
-            originalImage = null;
-            bgRemovedImage = null;
-            initialControls.style.display = 'flex';
-            editorArea.style.display = 'none';
-        });
-
-        document.getElementById('downloadBtn').addEventListener('click', () => {
-            const bgType = document.getElementById('bgType').value;
-            const ext = bgType === 'transparent' ? 'png' : 'jpg';
-            const link = document.createElement('a');
-            link.download = `studio_${Date.now()}.${ext}`;
-            link.href = canvas.toDataURL(bgType === 'transparent' ? 'image/png' : 'image/jpeg', 0.95);
-            link.click();
-        });
-    </script>
-</body>
-</html>
+<header class="topbar"><div class="brand"><div class="logo">P</div><div><h1>AI Background Remover</h1><p>Remove backgrounds · E-commerce product photo studio</p></div></div><div class="top-right"><span class="pill">⚡ Runs in your browser</span><span class="pill">🔒 No upload server</span></div></header>
+<main class="workspace">
+<aside class="panel side left-panel">
+<button class="big-action upload" id="uploadBtn"><span class="emoji">📁</span><span>Upload Image<small>JPG, PNG, WEBP · up to 20 MB</small></span></button><input id="fileInput" type="file" accept="image/jpeg,image/png,image/webp" hidden>
+<button class="big-action camera" id="cameraBtn"><span class="emoji">📷</span><span>Take Photo with Camera<small>Open camera and capture a product</small></span></button>
+<div class="subpanel"><h3>Sample product images</h3><div class="samples"><button class="sample" data-sample="shoe" aria-label="Sample shoe">👟</button><button class="sample" data-sample="bag" aria-label="Sample bag">👜</button><button class="sample" data-sample="bottle" aria-label="Sample bottle">🧴</button><button class="sample" data-sample="perfume" aria-label="Sample perfume">🧪</button><button class="sample" data-sample="watch" aria-label="Sample watch">⌚</button><button class="sample" data-sample="chair" aria-label="Sample chair">🪑</button></div><p class="note">Samples are illustrative placeholders. Upload your own product photo for processing.</p></div>
+<div class="subpanel help"><h3>✨ How it works</h3><ol><li>Upload an image or take a photo.</li><li>AI attempts to remove the background.</li><li>Choose a background and crop ratio.</li><li>Download your finished image in HD.</li></ol><div class="privacy">🔒 Images are processed in your browser. The AI model may download from a public CDN; your photo is not sent to an app server.</div></div>
+</aside>
+<section class="panel editor">
+<div class="toolbar"><button class="iconbtn" id="undoBtn" title="Restore original">↶</button><button class="iconbtn" id="redoBtn" title="Reprocess background">↻</button><div class="status" id="status"><span class="spinner"></span><span id="statusText">Upload an image to get started</span></div><button class="zoom" id="fitBtn">Fit view ⛶</button></div>
+<div class="canvas-wrap checker" id="canvasWrap"><canvas id="previewCanvas" width="900" height="900" aria-label="Image preview"></canvas><div class="empty-state" id="emptyState"><div class="empty-icon">✦</div><strong>Your product studio</strong><p>Upload a JPG, PNG or WEBP image, or take a photo to begin editing.</p></div></div>
+<div class="subpanel"><h3>Preview versions</h3><div class="thumbs"><button class="thumb active" id="thumbOriginal" title="Current preview"><canvas width="100" height="100" id="thumbCanvas"></canvas></button><button class="thumb" id="thumbWhite" title="White background"><canvas width="100" height="100" id="thumbWhiteCanvas"></canvas></button><button class="thumb" id="thumbDark" title="Dark background"><canvas width="100" height="100" id="thumbDarkCanvas"></canvas></button><button class="thumb" id="thumbGradient" title="Gradient background"><canvas width="100" height="100" id="thumbGradientCanvas"></canvas></button></div></div>
+<div class="warning" id="warning"></div>
+</section>
+<aside class="panel right-panel">
+<div class="setting"><h3>▧ Background</h3>
+<label class="choice"><input type="radio" name="background" value="transparent" checked><span class="swatch checker"></span><span><b>Transparent (PNG)</b><small>Remove background, transparent export</small></span></label>
+<label class="choice"><input type="radio" name="background" value="white"><span class="swatch" style="background:#fff"></span><span><b>Solid White</b><small>Clean catalog look</small></span></label>
+<label class="choice"><input type="radio" name="background" value="color"><span class="swatch" style="background:linear-gradient(135deg,#ff5da2,#6956ff,#36c8ff)"></span><span><b>Custom Color</b><small>Choose your own color</small></span></label>
+<div class="color-row"><input type="color" id="colorPicker" value="#3498db" aria-label="Custom background color"><span id="colorHex">#3498db</span><button class="color-chip" data-color="#ffffff" style="background:#fff"></button><button class="color-chip" data-color="#111827" style="background:#111827"></button><button class="color-chip" data-color="#e8d5bc" style="background:#e8d5bc"></button><button class="color-chip" data-color="#d8e8ff" style="background:#d8e8ff"></button></div>
+<label class="choice"><input type="radio" name="background" value="gradient"><span class="swatch" style="background:linear-gradient(135deg,#22d3ee,#7647ff,#ff70b5)"></span><span><b>Studio Gradient</b><small>Polished studio backdrop</small></span></label>
+<div class="gradients"><button class="gradient-chip" data-gradient="0" style="background:linear-gradient(135deg,#32d8ff,#6c4cff)" title="Blue violet"></button><button class="gradient-chip" data-gradient="1" style="background:linear-gradient(135deg,#ffb36b,#ff5d9e)" title="Warm pink"></button><button class="gradient-chip" data-gradient="2" style="background:linear-gradient(135deg,#b5ff74,#00b9b0)" title="Fresh green"></button><button class="gradient-chip" data-gradient="3" style="background:linear-gradient(135deg,#22244c,#815bff)" title="Night purple"></button><button class="gradient-chip" data-gradient="4" style="background:linear-gradient(135deg,#f4dfc7,#c5a2ff)" title="Soft neutral"></button></div>
+</div>
+<div class="setting"><h3>♧ Aspect ratio / Crop</h3>
+<label class="ratio-choice"><input type="radio" name="ratio" value="original" checked><span class="ratio-icon"></span><span><b>Original</b><small>Keep original proportions</small></span></label>
+<label class="ratio-choice"><input type="radio" name="ratio" value="square"><span class="ratio-icon square"></span><span><b>Square (1:1)</b><small>Instagram / Tap.az</small></span></label>
+<label class="ratio-choice"><input type="radio" name="ratio" value="catalog"><span class="ratio-icon landscape"></span><span><b>Product Catalog (4:3)</b><small>Product listings</small></span></label>
+<label class="ratio-choice"><input type="radio" name="ratio" value="story"><span class="ratio-icon story"></span><span><b>Story / TikTok (9:16)</b><small>Vertical social content</small></span></label>
+</div>
+<div class="actions"><button class="download" id="downloadBtn" disabled>⬇ Download (HD)</button><button class="reset" id="resetBtn">⟳ Reset / New Image</button></div><p class="note">Background removal requires an internet connection to load the AI model on first use. Export is rendered at the image's source resolution (up to 4096 px per side).</p>
+</aside>
+</main><footer class="footer">PixelCut Studio · Client-side image editing · Browser camera access requires HTTPS or localhost.</footer>
+<div class="toast" id="toast" role="status"></div>
+<div class="modal" id="cameraModal" role="dialog" aria-modal="true" aria-label="Camera"><div class="modal-card"><div class="modal-head"><h2>📷 Take a product photo</h2><button id="closeCamera" aria-label="Close camera">✕</button></div><video id="video" class="camera-view" autoplay playsinline></video><div class="modal-actions"><button id="switchCamera">↻ Switch camera</button><button id="captureBtn" class="primary">● Capture photo</button></div><p class="note">Allow camera permission when your browser asks. On mobile, use the rear camera for products.</p></div></div>
+<script type="module">
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const canvas=$('#previewCanvas'),ctx=canvas.getContext('2d',{alpha:true}),thumb=$('#thumbCanvas').getContext('2d'),state={image:null,original:null,removed:null,sourceName:'product',bg:'transparent',ratio:'original',color:'#3498db',gradient:0,stream:null,facing:'environment',processing:false,objectUrl:null};
+const gradients=[['#32d8ff','#6c4cff'],['#ffb36b','#ff5d9e'],['#b5ff74','#00b9b0'],['#22244c','#815bff'],['#f4dfc7','#c5a2ff']];
+function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(toast.timer);toast.timer=setTimeout(()=>t.classList.remove('show'),3200)}
+function status(msg,busy=false){$('#statusText').textContent=msg;$('#status').classList.toggle('busy',busy);state.processing=busy;$('#downloadBtn').disabled=!state.image||busy}
+function warn(msg=''){const el=$('#warning');el.textContent=msg;el.classList.toggle('show',!!msg)}
+function imageDims(img){let w=img.naturalWidth||img.videoWidth||img.width,h=img.naturalHeight||img.videoHeight||img.height;const max=4096,scale=Math.min(1,max/Math.max(w,h));return [Math.max(1,Math.round(w*scale)),Math.max(1,Math.round(h*scale))]}
+function currentSource(){return state.removed||state.original||state.image}
+function cropBox(w,h){let r=state.ratio;if(r==='original')return {x:0,y:0,w,h};let ratio=r==='square'?1:r==='catalog'?4/3:9/16;let cw=w,ch=h;if(w/h>ratio)cw=h*ratio;else ch=w/ratio;return{x:(w-cw)/2,y:(h-ch)/2,w:cw,h:ch}}
+function drawBackground(c,w,h){if(state.bg==='transparent')return;if(state.bg==='white'){c.fillStyle='#fff';c.fillRect(0,0,w,h)}else if(state.bg==='color'){c.fillStyle=state.color;c.fillRect(0,0,w,h)}else{const g=c.createLinearGradient(0,0,w,h);const colors=gradients[state.gradient]||gradients[0];g.addColorStop(0,colors[0]);g.addColorStop(1,colors[1]);c.fillStyle=g;c.fillRect(0,0,w,h)}}
+function render(){if(!state.image)return;const src=currentSource();let [iw,ih]=imageDims(src);const box=cropBox(iw,ih);const ratio=state.ratio==='original'?box.w/box.h:state.ratio==='square'?1:state.ratio==='catalog'?4/3:9/16;let outW=Math.max(1,Math.round(box.w)),outH=Math.max(1,Math.round(box.h));if(state.ratio!=='original'){if(ratio>=1){outW=Math.min(4096,Math.max(1,Math.round(Math.min(iw,4096))));outH=Math.round(outW/ratio)}else{outH=Math.min(4096,Math.max(1,Math.round(Math.min(ih,4096))));outW=Math.round(outH*ratio)}}canvas.width=outW;canvas.height=outH;ctx.clearRect(0,0,outW,outH);drawBackground(ctx,outW,outH);const scale=Math.min(outW/box.w,outH/box.h);const dw=iw*scale,dh=ih*scale;ctx.drawImage(src,0,0,iw,ih,(outW-dw)/2,(outH-dh)/2,dw,dh);if(state.ratio==='original'){ctx.clearRect(0,0,outW,outH);drawBackground(ctx,outW,outH);ctx.drawImage(src,box.x,box.y,box.w,box.h,0,0,outW,outH)}drawThumbs();$('#emptyState').style.display='none';$('#downloadBtn').disabled=state.processing;}
+function drawThumbs(){if(!state.image)return;const source=currentSource();[['thumbCanvas','transparent'],['thumbWhiteCanvas','white'],['thumbDarkCanvas','dark'],['thumbGradientCanvas','gradient']].forEach(([id,bg])=>{const c=$('#'+id),cx=c.getContext('2d');cx.clearRect(0,0,100,100);if(bg==='dark'){cx.fillStyle='#111827';cx.fillRect(0,0,100,100)}else if(bg==='white'){cx.fillStyle='#fff';cx.fillRect(0,0,100,100)}else if(bg==='gradient'){const g=cx.createLinearGradient(0,0,100,100);g.addColorStop(0,'#32d8ff');g.addColorStop(1,'#6c4cff');cx.fillStyle=g;cx.fillRect(0,0,100,100)}else{cx.fillStyle='#fff';cx.fillRect(0,0,100,100);cx.fillStyle='#dfe3e9';for(let y=0;y<100;y+=12)for(let x=0;x<100;x+=12)if((x/12+y/12)%2===0)cx.fillRect(x,y,12,12)}const [w,h]=imageDims(source),box=cropBox(w,h),s=Math.min(88/box.w,88/box.h);cx.drawImage(source,box.x,box.y,box.w,box.h,(100-box.w*s)/2,(100-box.h*s)/2,box.w*s,box.h*s)});}
+async function loadFile(file){if(!file)return;if(!/^image\/(jpeg|png|webp)$/.test(file.type)){toast('Please choose a JPG, PNG or WEBP image.');return}if(file.size>20*1024*1024){toast('Image is larger than 20 MB. Please choose a smaller file.');return}try{status('Loading image…',true);warn('');const url=URL.createObjectURL(file);if(state.objectUrl)URL.revokeObjectURL(state.objectUrl);state.objectUrl=url;const img=new Image();img.decoding='async';img.onload=async()=>{state.image=img;state.original=img;state.removed=null;state.sourceName=(file.name||'product').replace(/\.[^.]+$/,'').replace(/[^a-z0-9_-]+/gi,'-')||'product';render();status('Image ready');await removeBackground()};img.onerror=()=>{status('Could not open image');warn('This image could not be decoded. Try another JPG, PNG or WEBP file.');toast('Image could not be opened.');};img.src=url}catch(e){console.error(e);status('Could not load image');warn('Could not load this image. Please try another file.')}}
+async function removeBackground(){if(!state.image||state.processing)return;status('Loading AI model…',true);warn('');try{if(!navigator.onLine)throw new Error('You appear to be offline.');const mod=await import('https://esm.sh/@imgly/background-removal@1.5.5');if(typeof mod.removeBackground!=='function')throw new Error('Background-removal module was unavailable.');status('Removing background…',true);const blob=await mod.removeBackground(state.original,{output:{format:'image/png',quality:1}});if(!blob||!blob.size)throw new Error('AI returned an empty image.');const url=URL.createObjectURL(blob);const cutout=new Image();cutout.onload=()=>{state.removed=cutout;render();status('Background removed ✓');warn('');toast('Background removed successfully.');URL.revokeObjectURL(url)};cutout.onerror=()=>{URL.revokeObjectURL(url);throw new Error('Could not decode the processed image.')};cutout.src=url}catch(err){console.error('Background removal error:',err);state.removed=null;render();status('Image loaded · AI unavailable');const msg=(err&&err.message)||'Unknown processing error';warn('Automatic background removal did not finish. The original image is still available and the editor remains usable. Check your internet connection, then press ↻ to retry. Details: '+msg);toast('AI removal failed; original image kept safe.')}}
+function setBg(value){state.bg=value;render()}
+$$('input[name="background"]').forEach(el=>el.addEventListener('change',()=>setBg(el.value)));$$('input[name="ratio"]').forEach(el=>el.addEventListener('change',()=>{state.ratio=el.value;render()}));$('#colorPicker').addEventListener('input',e=>{state.color=e.target.value;$('#colorHex').textContent=state.color; if(state.bg==='color')render()});$$('[data-color]').forEach(b=>b.addEventListener('click',()=>{$('#colorPicker').value=b.dataset.color;state.color=b.dataset.color;$('#colorHex').textContent=state.color;$$('input[name="background"]').find(x=>x.value==='color').checked=true;setBg('color')}));$$('[data-gradient]').forEach(b=>b.addEventListener('click',()=>{state.gradient=+b.dataset.gradient;$$('input[name="background"]').find(x=>x.value==='gradient').checked=true;setBg('gradient')}));
+$('#uploadBtn').onclick=()=>$('#fileInput').click();$('#fileInput').onchange=e=>{loadFile(e.target.files[0]);e.target.value=''};$('#resetBtn').onclick=()=>{if(state.objectUrl){URL.revokeObjectURL(state.objectUrl);state.objectUrl=null}state.image=state.original=state.removed=null;ctx.clearRect(0,0,canvas.width,canvas.height);canvas.width=900;canvas.height=900;$('#emptyState').style.display='flex';status('Upload an image to get started');warn('');$('#fileInput').value='';toast('Ready for a new image.')};$('#undoBtn').onclick=()=>{if(!state.image)return toast('Upload an image first.');state.removed=null;render();status('Showing original image');toast('Original image restored.')};$('#redoBtn').onclick=()=>{if(!state.image)return toast('Upload an image first.');removeBackground()};$('#fitBtn').onclick=()=>{const wrap=$('#canvasWrap');if(wrap.requestFullscreen)wrap.requestFullscreen().catch(()=>toast('Fullscreen is not available in this browser.'));else toast('Use pinch/zoom to inspect the preview.')};
+function setActiveThumb(id){$$('.thumb').forEach(x=>x.classList.remove('active'));$('#'+id).classList.add('active');if(!state.image)return;const oldBg=state.bg;state.bg=id==='thumbWhite'?'white':id==='thumbDark'?'color':id==='thumbGradient'?'gradient':'transparent';if(id==='thumbDark')state.color='#111827';render();state.bg=oldBg;$$('input[name="background"]').forEach(x=>x.checked=x.value===oldBg)}$('#thumbOriginal').onclick=()=>setActiveThumb('thumbOriginal');$('#thumbWhite').onclick=()=>setActiveThumb('thumbWhite');$('#thumbDark').onclick=()=>setActiveThumb('thumbDark');$('#thumbGradient').onclick=()=>setActiveThumb('thumbGradient');
+$('#downloadBtn').onclick=()=>{if(!state.image||state.processing)return;try{const transparent=state.bg==='transparent';canvas.toBlob(blob=>{if(!blob){toast('Could not export this image.');return}const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=state.sourceName+'-edited.'+(transparent?'png':'jpg');document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);toast('HD image download started.')},transparent?'image/png':'image/jpeg',.96)}catch(e){console.error(e);toast('Export failed. Try a smaller image.')}};
+// Camera: prefer rear camera on phones, allow switching between rear/front.
+async function stopCamera(){if(state.stream){state.stream.getTracks().forEach(t=>t.stop());state.stream=null}$('#video').srcObject=null}
+async function startCamera(){await stopCamera();try{state.stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:state.facing},width:{ideal:1920},height:{ideal:1080}},audio:false});$('#video').srcObject=state.stream;await $('#video').play().catch(()=>{});$('#cameraModal').classList.add('open')}catch(e){console.error(e);toast(e.name==='NotAllowedError'?'Camera permission was denied. Allow camera access in browser settings.':'Camera unavailable. Use HTTPS and check that no other app is using it.')}}
+$('#cameraBtn').onclick=()=>{if(!navigator.mediaDevices?.getUserMedia){toast('Camera access is not supported here. Use HTTPS or upload an image.');return}startCamera()};$('#closeCamera').onclick=async()=>{$('#cameraModal').classList.remove('open');await stopCamera()};$('#cameraModal').addEventListener('click',e=>{if(e.target===$('#cameraModal'))$('#closeCamera').click()});$('#switchCamera').onclick=async()=>{state.facing=state.facing==='environment'?'user':'environment';await startCamera()};$('#captureBtn').onclick=async()=>{const v=$('#video');if(!v.videoWidth){toast('Camera is not ready yet.');return}const c=document.createElement('canvas');c.width=v.videoWidth;c.height=v.videoHeight;c.getContext('2d').drawImage(v,0,0);c.toBlob(async blob=>{if(blob){$('#cameraModal').classList.remove('open');await stopCamera();const file=new File([blob],'camera-photo.jpg',{type:'image/jpeg'});loadFile(file)}else toast('Could not capture photo. Try again.')},'image/jpeg',.95)};
+// Sample buttons show a clearly labelled illustrative card rather than pretending to be real product photos.
+$$('[data-sample]').forEach(b=>b.addEventListener('click',()=>{const emoji=b.textContent.trim();const c=document.createElement('canvas');c.width=800;c.height=800;const x=c.getContext('2d');const g=x.createLinearGradient(0,0,800,800);g.addColorStop(0,'#eaf1fb');g.addColorStop(1,'#bac8da');x.fillStyle=g;x.fillRect(0,0,800,800);x.fillStyle='#283b57';x.textAlign='center';x.font='190px system-ui';x.fillText(emoji,400,400);x.fillStyle='#283b57';x.font='bold 32px system-ui';x.fillText('SAMPLE PREVIEW',400,690);x.fillStyle='#506582';x.font='22px system-ui';x.fillText('Upload a real product photo for AI cutout',400,735);c.toBlob(blob=>{if(blob)loadFile(new File([blob],'sample-'+b.dataset.sample+'.png',{type:'image/png'}))})}));
+window.addEventListener('beforeunload',()=>{stopCamera();if(state.objectUrl)URL.revokeObjectURL(state.objectUrl)});status('Upload an image to get started');
+</script></body></html>
