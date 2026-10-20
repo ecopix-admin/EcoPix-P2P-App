@@ -1,76 +1,564 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="az">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#08101e"><title>PixelCut Studio — AI Background Remover</title>
-<style>
-:root{color-scheme:dark;--bg:#070e19;--panel:#0e1929;--panel2:#111f33;--line:#243550;--muted:#9aacc8;--text:#f4f7ff;--blue:#397dff;--violet:#7547ff;--green:#00bd96;--radius:16px}*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 50% -20%,#172747 0,transparent 52%),var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}button,input,select{font:inherit}button{cursor:pointer;color:inherit;border:1px solid var(--line);background:#17253a;border-radius:11px;padding:11px 14px;transition:.15s}button:hover{filter:brightness(1.14)}button:disabled{opacity:.45;cursor:not-allowed}.topbar{min-height:84px;padding:16px clamp(14px,3vw,34px);display:flex;align-items:center;justify-content:space-between;gap:18px;border-bottom:1px solid #1b2b43;background:#091220d9}.brand{display:flex;align-items:center;gap:14px}.logo{width:48px;height:48px;border-radius:15px;display:grid;place-items:center;font-weight:900;font-size:27px;background:linear-gradient(135deg,#a43cff,#168eff 70%,#00d4bb);box-shadow:0 8px 28px #345dff35}.brand h1{font-size:clamp(18px,2vw,25px);margin:0}.brand p{margin:2px 0 0;color:#a9bad5;font-size:13px}.top-right{display:flex;gap:9px;align-items:center}.pill{border:1px solid #2a3c59;border-radius:999px;padding:8px 12px;color:#c3d0e8;font-size:12px}.workspace{max-width:1600px;margin:auto;padding:22px clamp(12px,2vw,28px);display:grid;grid-template-columns:minmax(245px,350px) minmax(320px,1fr) minmax(260px,350px);gap:14px;align-items:stretch}.panel{min-width:0;border:1px solid var(--line);border-radius:var(--radius);background:linear-gradient(150deg,#101b2c,#0b1524);padding:15px}.side{display:flex;flex-direction:column;gap:14px}.big-action{width:100%;display:flex;align-items:center;text-align:left;gap:13px;padding:16px;border:0;font-weight:750;font-size:16px}.big-action .emoji{font-size:27px}.big-action small{display:block;font-size:12px;font-weight:400;opacity:.85;margin-top:2px}.upload{background:linear-gradient(120deg,#7043ff,#168bff)}.camera{background:linear-gradient(120deg,#00a982,#00c7a0)}.subpanel{border:1px solid var(--line);border-radius:12px;padding:12px}.subpanel h3,.setting h3{font-size:14px;margin:0 0 10px}.samples{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.sample{aspect-ratio:1;display:grid;place-items:center;border-radius:9px;background:linear-gradient(135deg,#e7e9ed,#aeb9c9);color:#1c2a3c;font-size:28px;overflow:hidden}.sample img{width:100%;height:100%;object-fit:cover}.help{color:#bac9e1;font-size:13px}.help ol{padding-left:20px;margin:8px 0}.help li{padding:4px 0}.privacy{color:#8fa3c2;font-size:12px;margin-top:12px}.editor{display:flex;flex-direction:column;gap:13px}.toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.iconbtn{padding:9px 12px;font-size:17px}.status{margin-left:auto;display:flex;align-items:center;gap:8px;color:#bdcbe1;font-size:12px;min-height:34px}.spinner{width:17px;height:17px;border:2px solid #3c4e6d;border-top-color:#7c67ff;border-radius:50%;animation:spin .8s linear infinite;display:none}.busy .spinner{display:inline-block}@keyframes spin{to{transform:rotate(360deg)}}.zoom{margin-left:auto;min-width:82px}.canvas-wrap{position:relative;display:grid;place-items:center;min-height:390px;height:min(64vh,690px);padding:14px;border:1px solid #1d2b42;border-radius:12px;background:#08111e;overflow:hidden}.canvas-wrap:fullscreen{height:100vh;background:#07101c}.checker{background-color:#fff;background-image:linear-gradient(45deg,#dfe3e9 25%,transparent 25%),linear-gradient(-45deg,#dfe3e9 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#dfe3e9 75%),linear-gradient(-45deg,transparent 75%,#dfe3e9 75%);background-size:24px 24px;background-position:0 0,0 12px,12px -12px,-12px 0}.canvas-wrap canvas{display:block;max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;box-shadow:0 10px 36px #0005}.empty-state{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:#8094b4;padding:24px;pointer-events:none}.empty-state .empty-icon{font-size:46px;margin-bottom:8px}.empty-state strong{font-size:18px;color:#dce7fb}.empty-state p{max-width:290px;font-size:13px}.thumbs{display:flex;gap:8px;align-items:center;overflow:auto;padding:7px}.thumb{min-width:82px;width:82px;height:82px;padding:4px;background:#08111e;border:1px solid #263750;border-radius:10px;overflow:hidden}.thumb.active{border:2px solid #318bff}.thumb canvas{width:100%;height:100%;object-fit:contain}.setting{border:1px solid var(--line);border-radius:13px;padding:12px;margin-bottom:12px}.setting h3{font-size:15px;display:flex;align-items:center;gap:8px}.choice{display:flex;align-items:center;gap:10px;padding:9px;border:1px solid #263751;border-radius:10px;margin-top:7px;cursor:pointer}.choice:has(input:checked){border-color:#607aff;background:#192744}.choice input{accent-color:#6b7dff;width:17px;height:17px}.swatch{width:36px;height:36px;flex-shrink:0;border-radius:8px;border:1px solid #40506a}.choice b{display:block;font-size:12px}.choice small{display:block;color:#9eafcb;font-size:11px;margin-top:2px}.color-row{display:flex;align-items:center;gap:7px;margin:9px 0 0 36px;flex-wrap:wrap}.color-row input[type=color]{width:34px;height:28px;border:0;background:none;padding:0}.color-chip{width:18px;height:18px;border-radius:50%;border:1px solid #ffffff55;padding:0}.gradients{display:flex;gap:7px;margin:10px 0 0 38px;flex-wrap:wrap}.preset-heading{font-size:12px;color:#a9bad5;margin:12px 0 6px}.preset-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}.preset-bg{height:38px;padding:0;border-radius:8px;border:2px solid #344967;min-width:0}.preset-bg.selected{border-color:#fff;outline:2px solid #6385ff}.preset-search{width:100%;margin-top:8px;background:#091321;border:1px solid #293c58;border-radius:9px;padding:9px;color:#fff}.gradient-chip{width:32px;height:32px;border-radius:8px;padding:0}.ratio-choice{padding:9px;display:flex;align-items:center;gap:10px;border:1px solid #263751;border-radius:10px;margin-top:6px;cursor:pointer}.ratio-choice:has(input:checked){border-color:#607aff;background:#192744}.ratio-choice input{accent-color:#6b7dff}.ratio-icon{width:28px;height:34px;border-radius:5px;background:linear-gradient(135deg,#d8b9ff,#69d5ff);border:1px solid #8fa6cc;flex-shrink:0}.ratio-icon.square{height:29px}.ratio-icon.landscape{width:35px;height:26px}.ratio-icon.story{width:21px;height:36px}.download{width:100%;border:0;background:linear-gradient(110deg,#7847ff,#286dff);font-weight:750;padding:13px}.reset{width:100%;margin-top:8px;font-weight:650}.note{font-size:11px;color:#8da0bd;margin-top:9px}.toast{position:fixed;z-index:50;left:50%;bottom:22px;transform:translate(-50%,20px);opacity:0;pointer-events:none;background:#172842;border:1px solid #3a5276;border-radius:12px;padding:12px 16px;box-shadow:0 8px 30px #0008;transition:.2s;max-width:calc(100vw - 24px)}.toast.show{opacity:1;transform:translate(-50%,0)}.modal{position:fixed;inset:0;background:#020711eF;z-index:40;display:none;align-items:center;justify-content:center;padding:16px}.modal.open{display:flex}.modal-card{width:min(680px,100%);background:#101c2e;border:1px solid #344967;border-radius:16px;padding:16px}.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.modal-head h2{font-size:18px;margin:0}.camera-view{width:100%;max-height:65vh;object-fit:contain;background:#02060d;border-radius:10px}.modal-actions{display:flex;justify-content:space-between;gap:10px;margin-top:12px}.primary{background:linear-gradient(110deg,#7044ff,#247cff);border:0;font-weight:700}.warning{display:none;background:#382a17;border:1px solid #78562a;color:#f4d6a2;padding:10px;border-radius:10px;font-size:12px;margin-top:9px}.warning.show{display:block}.footer{max-width:1600px;margin:0 auto;padding:0 28px 20px;color:#7185a5;font-size:11px}
-@media(max-width:1120px){.workspace{grid-template-columns:260px minmax(300px,1fr)}.right-panel{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.right-panel .setting{margin:0}.right-panel .actions{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:8px}.right-panel .reset{margin:0}}
-@media(max-width:720px){.topbar{align-items:flex-start}.top-right .pill{display:none}.workspace{grid-template-columns:1fr;padding:12px;gap:12px}.left-panel{order:1}.editor{order:0}.right-panel{order:2;grid-template-columns:1fr}.right-panel .actions{grid-column:auto}.canvas-wrap{height:48vh;min-height:290px}.status{width:100%;margin-left:0}.zoom{margin-left:auto}.footer{padding:0 14px 20px}.brand p{font-size:11px}.logo{width:40px;height:40px}.samples{grid-template-columns:repeat(6,1fr)}.sample{font-size:19px}.topbar{padding:12px}}
-</style></head>
-<body>
-<header class="topbar"><div class="brand"><div class="logo">P</div><div><h1>AI Background Remover</h1><p>Remove backgrounds · E-commerce product photo studio</p></div></div><div class="top-right"><span class="pill">⚡ Runs in your browser</span><span class="pill">🔒 No upload server</span></div></header>
-<main class="workspace">
-<aside class="panel side left-panel">
-<button class="big-action upload" id="uploadBtn"><span class="emoji">📁</span><span>Upload Image<small>JPG, PNG, WEBP · up to 20 MB</small></span></button><input id="fileInput" type="file" accept="image/jpeg,image/png,image/webp" hidden>
-<button class="big-action camera" id="cameraBtn"><span class="emoji">📷</span><span>Take Photo with Camera<small>Open camera and capture a product</small></span></button>
-<div class="subpanel"><h3>Sample product images</h3><div class="samples"><button class="sample" data-sample="shoe" aria-label="Sample shoe">👟</button><button class="sample" data-sample="bag" aria-label="Sample bag">👜</button><button class="sample" data-sample="bottle" aria-label="Sample bottle">🧴</button><button class="sample" data-sample="perfume" aria-label="Sample perfume">🧪</button><button class="sample" data-sample="watch" aria-label="Sample watch">⌚</button><button class="sample" data-sample="chair" aria-label="Sample chair">🪑</button></div><p class="note">Samples are illustrative placeholders. Upload your own product photo for processing.</p></div>
-<div class="subpanel help"><h3>✨ How it works</h3><ol><li>Upload an image or take a photo.</li><li>AI attempts to remove the background.</li><li>Choose a background and crop ratio.</li><li>Download your finished image in HD.</li></ol><div class="privacy">🔒 Images are processed in your browser. The AI model may download from a public CDN; your photo is not sent to an app server.</div></div>
-</aside>
-<section class="panel editor">
-<div class="toolbar"><button class="iconbtn" id="undoBtn" title="Restore original">↶</button><button class="iconbtn" id="redoBtn" title="Reprocess background">↻</button><div class="status" id="status"><span class="spinner"></span><span id="statusText">Upload an image to get started</span></div><button class="zoom" id="fitBtn">Fit view ⛶</button></div>
-<div class="canvas-wrap checker" id="canvasWrap"><canvas id="previewCanvas" width="900" height="900" aria-label="Image preview"></canvas><div class="empty-state" id="emptyState"><div class="empty-icon">✦</div><strong>Your product studio</strong><p>Upload a JPG, PNG or WEBP image, or take a photo to begin editing.</p></div></div>
-<div class="subpanel"><h3>Preview versions</h3><div class="thumbs"><button class="thumb active" id="thumbOriginal" title="Current preview"><canvas width="100" height="100" id="thumbCanvas"></canvas></button><button class="thumb" id="thumbWhite" title="White background"><canvas width="100" height="100" id="thumbWhiteCanvas"></canvas></button><button class="thumb" id="thumbDark" title="Dark background"><canvas width="100" height="100" id="thumbDarkCanvas"></canvas></button><button class="thumb" id="thumbGradient" title="Gradient background"><canvas width="100" height="100" id="thumbGradientCanvas"></canvas></button></div></div>
-<div class="warning" id="warning"></div>
-</section>
-<aside class="panel right-panel">
-<div class="setting"><h3>▧ Background</h3>
-<label class="choice"><input type="radio" name="background" value="transparent" checked><span class="swatch checker"></span><span><b>Transparent (PNG)</b><small>Remove background, transparent export</small></span></label>
-<label class="choice"><input type="radio" name="background" value="white"><span class="swatch" style="background:#fff"></span><span><b>Solid White</b><small>Clean catalog look</small></span></label>
-<label class="choice"><input type="radio" name="background" value="color"><span class="swatch" style="background:linear-gradient(135deg,#ff5da2,#6956ff,#36c8ff)"></span><span><b>Custom Color</b><small>Choose your own color</small></span></label>
-<div class="color-row"><input type="color" id="colorPicker" value="#3498db" aria-label="Custom background color"><span id="colorHex">#3498db</span><button class="color-chip" data-color="#ffffff" style="background:#fff"></button><button class="color-chip" data-color="#111827" style="background:#111827"></button><button class="color-chip" data-color="#e8d5bc" style="background:#e8d5bc"></button><button class="color-chip" data-color="#d8e8ff" style="background:#d8e8ff"></button></div>
-<label class="choice"><input type="radio" name="background" value="gradient"><span class="swatch" style="background:linear-gradient(135deg,#22d3ee,#7647ff,#ff70b5)"></span><span><b>Studio Gradient</b><small>Polished studio backdrop</small></span></label>
-<div class="gradients"><button class="gradient-chip" data-gradient="0" style="background:linear-gradient(135deg,#32d8ff,#6c4cff)" title="Blue violet"></button><button class="gradient-chip" data-gradient="1" style="background:linear-gradient(135deg,#ffb36b,#ff5d9e)" title="Warm pink"></button><button class="gradient-chip" data-gradient="2" style="background:linear-gradient(135deg,#b5ff74,#00b9b0)" title="Fresh green"></button><button class="gradient-chip" data-gradient="3" style="background:linear-gradient(135deg,#22244c,#815bff)" title="Night purple"></button><button class="gradient-chip" data-gradient="4" style="background:linear-gradient(135deg,#f4dfc7,#c5a2ff)" title="Soft neutral"></button></div>
-</div>
-<div class="setting"><h3>♧ Aspect ratio / Crop</h3>
-<label class="ratio-choice"><input type="radio" name="ratio" value="original" checked><span class="ratio-icon"></span><span><b>Original</b><small>Keep original proportions</small></span></label>
-<label class="ratio-choice"><input type="radio" name="ratio" value="square"><span class="ratio-icon square"></span><span><b>Square (1:1)</b><small>Instagram / Tap.az</small></span></label>
-<label class="ratio-choice"><input type="radio" name="ratio" value="catalog"><span class="ratio-icon landscape"></span><span><b>Product Catalog (4:3)</b><small>Product listings</small></span></label>
-<label class="ratio-choice"><input type="radio" name="ratio" value="story"><span class="ratio-icon story"></span><span><b>Story / TikTok (9:16)</b><small>Vertical social content</small></span></label>
-</div>
-<div class="actions"><button class="download" id="downloadBtn" disabled>⬇ Download (HD)</button><button class="reset" id="resetBtn">⟳ Reset / New Image</button></div><p class="note">Background removal requires an internet connection to load the AI model on first use. Export is rendered at the image's source resolution (up to 4096 px per side).</p>
-</aside>
-</main><footer class="footer">PixelCut Studio · Client-side image editing · Browser camera access requires HTTPS or localhost.</footer>
-<div class="toast" id="toast" role="status"></div>
-<div class="modal" id="cameraModal" role="dialog" aria-modal="true" aria-label="Camera"><div class="modal-card"><div class="modal-head"><h2>📷 Take a product photo</h2><button id="closeCamera" aria-label="Close camera">✕</button></div><video id="video" class="camera-view" autoplay playsinline></video><div class="modal-actions"><button id="switchCamera">↻ Switch camera</button><button id="captureBtn" class="primary">● Capture photo</button></div><p class="note">Allow camera permission when your browser asks. On mobile, use the rear camera for products.</p></div></div>
-<script type="module">
-const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
-const canvas=$('#previewCanvas'),ctx=canvas.getContext('2d',{alpha:true}),thumb=$('#thumbCanvas').getContext('2d'),state={image:null,original:null,removed:null,sourceName:'product',bg:'transparent',ratio:'original',color:'#3498db',gradient:0,stream:null,facing:'environment',processing:false,objectUrl:null};
-const gradients=[['#32d8ff','#6c4cff'],['#ffb36b','#ff5d9e'],['#b5ff74','#00b9b0'],['#22244c','#815bff'],['#f4dfc7','#c5a2ff']];
-const presetPalette=['#ffffff','#f8fafc','#e2e8f0','#cbd5e1','#94a3b8','#64748b','#334155','#0f172a','#000000','#fff7ed','#ffedd5','#fed7aa','#fdba74','#fb923c','#f97316','#c2410c','#fef2f2','#fee2e2','#fecaca','#f87171','#ef4444','#b91c1c','#fdf2f8','#fce7f3','#fbcfe8','#f9a8d4','#ec4899','#be185d','#fdf4ff','#fae8ff','#f5d0fe','#e879f9','#c026d3','#86198f','#f5f3ff','#ede9fe','#ddd6fe','#c4b5fd','#a78bfa','#8b5cf6','#6d28d9','#eef2ff','#e0e7ff','#c7d2fe','#a5b4fc','#818cf8','#6366f1','#4338ca','#eff6ff','#dbeafe','#bfdbfe','#93c5fd','#60a5fa','#3b82f6','#1d4ed8','#0c4a6e','#ecfeff','#cffafe','#a5f3fc','#67e8f9','#22d3ee','#0891b2','#164e63','#f0fdfa','#ccfbf1','#99f6e4','#5eead4','#2dd4bf','#0d9488','#134e4a','#f0fdf4','#dcfce7','#bbf7d0','#86efac','#4ade80','#16a34a','#14532d','#f7fee7','#ecfccb','#d9f99d','#bef264','#84cc16','#3f6212','#fefce8','#fef9c3','#fef08a','#fde047','#eab308','#a16207','#fffbeb','#f5e6ca','#e7d4b5','#d6b995','#c4a484','#a98467','#8b5e3c','#f1f5f9','#e5e7eb','#d1d5db','#9ca3af','#6b7280','#374151','#111827'];
-function initPresets(){const grid=$('#presetGrid');if(!grid)return;const names=['Ağ','Süd ağ','Buz','Gümüş','Boz','Slate','Qrafit','Gecə','Qara','Krem','Vanil','Şaftalı','Bal','Portağal','Narıncı','Kərpic','Qızılı ağ','Solğun çəhrayı','Çəhrayı','Koral','Qırmızı','Tünd qırmızı','Pudra','Pastel çəhrayı','Açıq çəhrayı','Gül','Fuşya','Bordo','Lavanda','Yasəmən','Orxideya','Bənövşəyi','Magenta','Tünd bənövşəyi','Açıq lavanda','Lilac','Lila','Bənövşəyi pastel','Açıq violet','Violet','Tünd violet','Duman','Buz mavi','Göy pastel','Açıq göy','Mavi pastel','Mavi','Royal mavi','Tünd royal','Buz mavisi','Göy','Açıq göy','Sky','Mavi','Tünd mavi','Dəniz','Sian','Açıq sian','Turkuaz açıq','Firuzə','Sian','Dərin sian','Nanə','Açıq nanə','Nanə yaşıl','Pastel yaşıl','Firuzə yaşıl','Yaşıl','Tünd firuzə','Meşə','Açıq yaşıl','Pastel yaşıl','Yumşaq yaşıl','Açıq lime','Yaşıl','Tünd yaşıl','Lime','Limon','Açıq lime','Lime yaşıl','Zeytun','Açıq sarı','Krem sarı','Limon sarı','Sarı','Qızılı','Xardal','İsti krem','Bej','Qum','Karamel','Qəhvəyi','Açıq qəhvəyi','Tünd qəhvəyi','Duman ağ','Açıq boz','Boz','Gümüşü','Tünd boz','Antrasit'];grid.innerHTML='';presetPalette.forEach((color,i)=>{const b=document.createElement('button');b.className='preset-bg';b.style.background=color;b.title=(names[i]||'Fon')+' '+color;b.setAttribute('aria-label',b.title);b.dataset.search=(names[i]||'fon').toLowerCase()+' '+color;b.onclick=()=>{state.color=color;state.bg='color';$('#colorPicker').value=color;$('#colorHex').textContent=color;$$('input[name="background"]').forEach(r=>r.checked=r.value==='color');grid.querySelectorAll('button').forEach(x=>x.classList.remove('selected'));b.classList.add('selected');render()};grid.appendChild(b)});$('#presetSearch').addEventListener('input',e=>{const q=e.target.value.toLowerCase();grid.querySelectorAll('button').forEach(b=>b.hidden=!b.dataset.search.includes(q))})}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UstaMap — Xəritə Üzrə Canlı Usta və Texnika Elanları</title>
+    
+    <!-- Leaflet CSS (Açıq Qaynaqlı Xəritə Kitabxanası) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- FontAwesome İkonlar -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
-function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(toast.timer);toast.timer=setTimeout(()=>t.classList.remove('show'),3200)}
-function status(msg,busy=false){$('#statusText').textContent=msg;$('#status').classList.toggle('busy',busy);state.processing=busy;$('#downloadBtn').disabled=!state.image||busy}
-function warn(msg=''){const el=$('#warning');el.textContent=msg;el.classList.toggle('show',!!msg)}
-function imageDims(img){let w=img.naturalWidth||img.videoWidth||img.width,h=img.naturalHeight||img.videoHeight||img.height;const max=4096,scale=Math.min(1,max/Math.max(w,h));return [Math.max(1,Math.round(w*scale)),Math.max(1,Math.round(h*scale))]}
-function currentSource(){return state.removed||state.original||state.image}
-function cropBox(w,h){let r=state.ratio;if(r==='original')return {x:0,y:0,w,h};let ratio=r==='square'?1:r==='catalog'?4/3:9/16;let cw=w,ch=h;if(w/h>ratio)cw=h*ratio;else ch=w/ratio;return{x:(w-cw)/2,y:(h-ch)/2,w:cw,h:ch}}
-function drawBackground(c,w,h){if(state.bg==='transparent')return;if(state.bg==='white'){c.fillStyle='#fff';c.fillRect(0,0,w,h)}else if(state.bg==='color'){c.fillStyle=state.color;c.fillRect(0,0,w,h)}else{const g=c.createLinearGradient(0,0,w,h);const colors=gradients[state.gradient]||gradients[0];g.addColorStop(0,colors[0]);g.addColorStop(1,colors[1]);c.fillStyle=g;c.fillRect(0,0,w,h)}}
-function render(){if(!state.image)return;const src=currentSource();let [iw,ih]=imageDims(src);const box=cropBox(iw,ih);const ratio=state.ratio==='original'?box.w/box.h:state.ratio==='square'?1:state.ratio==='catalog'?4/3:9/16;let outW=Math.max(1,Math.round(box.w)),outH=Math.max(1,Math.round(box.h));if(state.ratio!=='original'){if(ratio>=1){outW=Math.min(4096,Math.max(1,Math.round(Math.min(iw,4096))));outH=Math.round(outW/ratio)}else{outH=Math.min(4096,Math.max(1,Math.round(Math.min(ih,4096))));outW=Math.round(outH*ratio)}}canvas.width=outW;canvas.height=outH;ctx.clearRect(0,0,outW,outH);drawBackground(ctx,outW,outH);const scale=Math.min(outW/box.w,outH/box.h);const dw=iw*scale,dh=ih*scale;ctx.drawImage(src,0,0,iw,ih,(outW-dw)/2,(outH-dh)/2,dw,dh);if(state.ratio==='original'){ctx.clearRect(0,0,outW,outH);drawBackground(ctx,outW,outH);ctx.drawImage(src,box.x,box.y,box.w,box.h,0,0,outW,outH)}drawThumbs();$('#emptyState').style.display='none';$('#downloadBtn').disabled=state.processing;}
-function drawThumbs(){if(!state.image)return;const source=currentSource();[['thumbCanvas','transparent'],['thumbWhiteCanvas','white'],['thumbDarkCanvas','dark'],['thumbGradientCanvas','gradient']].forEach(([id,bg])=>{const c=$('#'+id),cx=c.getContext('2d');cx.clearRect(0,0,100,100);if(bg==='dark'){cx.fillStyle='#111827';cx.fillRect(0,0,100,100)}else if(bg==='white'){cx.fillStyle='#fff';cx.fillRect(0,0,100,100)}else if(bg==='gradient'){const g=cx.createLinearGradient(0,0,100,100);g.addColorStop(0,'#32d8ff');g.addColorStop(1,'#6c4cff');cx.fillStyle=g;cx.fillRect(0,0,100,100)}else{cx.fillStyle='#fff';cx.fillRect(0,0,100,100);cx.fillStyle='#dfe3e9';for(let y=0;y<100;y+=12)for(let x=0;x<100;x+=12)if((x/12+y/12)%2===0)cx.fillRect(x,y,12,12)}const [w,h]=imageDims(source),box=cropBox(w,h),s=Math.min(88/box.w,88/box.h);cx.drawImage(source,box.x,box.y,box.w,box.h,(100-box.w*s)/2,(100-box.h*s)/2,box.w*s,box.h*s)});}
-async function loadFile(file){if(!file)return;if(!/^image\/(jpeg|png|webp)$/.test(file.type)){toast('Please choose a JPG, PNG or WEBP image.');return}if(file.size>20*1024*1024){toast('Image is larger than 20 MB. Please choose a smaller file.');return}try{status('Loading image…',true);warn('');const url=URL.createObjectURL(file);if(state.objectUrl)URL.revokeObjectURL(state.objectUrl);state.objectUrl=url;const img=new Image();img.decoding='async';img.onload=async()=>{state.image=img;state.original=img;state.removed=null;state.sourceName=(file.name||'product').replace(/\.[^.]+$/,'').replace(/[^a-z0-9_-]+/gi,'-')||'product';render();status('Image ready');await removeBackground()};img.onerror=()=>{status('Could not open image');warn('This image could not be decoded. Try another JPG, PNG or WEBP file.');toast('Image could not be opened.');};img.src=url}catch(e){console.error(e);status('Could not load image');warn('Could not load this image. Please try another file.')}}
-async function removeBackground(){if(!state.image||state.processing)return;status('AI fon silmə hazırlanır…',true);warn('');let resultUrl=null;try{if(!navigator.onLine)throw new Error('İnternet bağlantısı yoxdur.');status('AI kitabxanası yüklənir…',true);const mod=await import('https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.7.0/+esm');const removeFn=mod.default||mod.removeBackground;if(typeof removeFn!=='function')throw new Error('AI funksiyası CDN-dən gəlmədi.');status('AI modeli yüklənir — ilk istifadədə bir neçə dəqiqə çəkə bilər…',true);const inputBlob=await new Promise((resolve,reject)=>{const c=document.createElement('canvas');c.width=state.original.naturalWidth||state.original.width;c.height=state.original.naturalHeight||state.original.height;try{c.getContext('2d').drawImage(state.original,0,0);c.toBlob(b=>b?resolve(b):reject(new Error('Şəkil AI üçün hazırlana bilmədi.')),'image/png')}catch(e){reject(e)}});const blob=await removeFn(inputBlob,{model:'isnet_fp16',publicPath:'https://staticimgly.com/@imgly/background-removal-data/1.7.0/dist/',debug:true,output:{format:'image/png',quality:1}});if(!(blob instanceof Blob)||!blob.size)throw new Error('AI boş nəticə qaytardı.');resultUrl=URL.createObjectURL(blob);const cutout=await new Promise((resolve,reject)=>{const im=new Image();im.onload=()=>resolve(im);im.onerror=()=>reject(new Error('AI nəticəsindəki şəkil açıla bilmədi.'));im.src=resultUrl});state.removed=cutout;render();status('Fon uğurla silindi ✓');warn('');toast('Fon silindi! İndi istədiyin fonu seç.')}catch(err){console.error('AI background removal failed:',err);state.removed=null;render();status('AI fon silmə alınmadı');warn('Fon avtomatik silinmədi. Səbəb: '+((err&&err.message)||String(err)||'Naməlum xəta')+'. İnterneti yoxla və yenidən cəhd et.');toast('AI fon silmə alınmadı — xəta mesajına bax.')}finally{if(resultUrl)URL.revokeObjectURL(resultUrl);state.processing=false;$('#status').classList.remove('busy');$('#downloadBtn').disabled=!state.image}}
-function setBg(value){state.bg=value;render()}
-$$('input[name="background"]').forEach(el=>el.addEventListener('change',()=>setBg(el.value)));$$('input[name="ratio"]').forEach(el=>el.addEventListener('change',()=>{state.ratio=el.value;render()}));$('#colorPicker').addEventListener('input',e=>{state.color=e.target.value;$('#colorHex').textContent=state.color; if(state.bg==='color')render()});$$('[data-color]').forEach(b=>b.addEventListener('click',()=>{$('#colorPicker').value=b.dataset.color;state.color=b.dataset.color;$('#colorHex').textContent=state.color;$$('input[name="background"]').find(x=>x.value==='color').checked=true;setBg('color')}));$$('[data-gradient]').forEach(b=>b.addEventListener('click',()=>{state.gradient=+b.dataset.gradient;$$('input[name="background"]').find(x=>x.value==='gradient').checked=true;setBg('gradient')}));
-$('#uploadBtn').onclick=()=>$('#fileInput').click();$('#fileInput').onchange=e=>{loadFile(e.target.files[0]);e.target.value=''};$('#resetBtn').onclick=()=>{if(state.objectUrl){URL.revokeObjectURL(state.objectUrl);state.objectUrl=null}state.image=state.original=state.removed=null;ctx.clearRect(0,0,canvas.width,canvas.height);canvas.width=900;canvas.height=900;$('#emptyState').style.display='flex';status('Upload an image to get started');warn('');$('#fileInput').value='';toast('Ready for a new image.')};$('#undoBtn').onclick=()=>{if(!state.image)return toast('Upload an image first.');state.removed=null;render();status('Showing original image');toast('Original image restored.')};$('#redoBtn').onclick=()=>{if(!state.image)return toast('Upload an image first.');removeBackground()};$('#fitBtn').onclick=()=>{const wrap=$('#canvasWrap');if(wrap.requestFullscreen)wrap.requestFullscreen().catch(()=>toast('Fullscreen is not available in this browser.'));else toast('Use pinch/zoom to inspect the preview.')};
-function setActiveThumb(id){$$('.thumb').forEach(x=>x.classList.remove('active'));$('#'+id).classList.add('active');if(!state.image)return;const oldBg=state.bg;state.bg=id==='thumbWhite'?'white':id==='thumbDark'?'color':id==='thumbGradient'?'gradient':'transparent';if(id==='thumbDark')state.color='#111827';render();state.bg=oldBg;$$('input[name="background"]').forEach(x=>x.checked=x.value===oldBg)}$('#thumbOriginal').onclick=()=>setActiveThumb('thumbOriginal');$('#thumbWhite').onclick=()=>setActiveThumb('thumbWhite');$('#thumbDark').onclick=()=>setActiveThumb('thumbDark');$('#thumbGradient').onclick=()=>setActiveThumb('thumbGradient');
-$('#downloadBtn').onclick=()=>{if(!state.image||state.processing)return;try{const transparent=state.bg==='transparent';canvas.toBlob(blob=>{if(!blob){toast('Could not export this image.');return}const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=state.sourceName+'-edited.'+(transparent?'png':'jpg');document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);toast('HD image download started.')},transparent?'image/png':'image/jpeg',.96)}catch(e){console.error(e);toast('Export failed. Try a smaller image.')}};
-// Camera: prefer rear camera on phones, allow switching between rear/front.
-async function stopCamera(){if(state.stream){state.stream.getTracks().forEach(t=>t.stop());state.stream=null}$('#video').srcObject=null}
-async function startCamera(){await stopCamera();try{state.stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:state.facing},width:{ideal:1920},height:{ideal:1080}},audio:false});$('#video').srcObject=state.stream;await $('#video').play().catch(()=>{});$('#cameraModal').classList.add('open')}catch(e){console.error(e);toast(e.name==='NotAllowedError'?'Camera permission was denied. Allow camera access in browser settings.':'Camera unavailable. Use HTTPS and check that no other app is using it.')}}
-$('#cameraBtn').onclick=()=>{if(!navigator.mediaDevices?.getUserMedia){toast('Camera access is not supported here. Use HTTPS or upload an image.');return}startCamera()};$('#closeCamera').onclick=async()=>{$('#cameraModal').classList.remove('open');await stopCamera()};$('#cameraModal').addEventListener('click',e=>{if(e.target===$('#cameraModal'))$('#closeCamera').click()});$('#switchCamera').onclick=async()=>{state.facing=state.facing==='environment'?'user':'environment';await startCamera()};$('#captureBtn').onclick=async()=>{const v=$('#video');if(!v.videoWidth){toast('Camera is not ready yet.');return}const c=document.createElement('canvas');c.width=v.videoWidth;c.height=v.videoHeight;c.getContext('2d').drawImage(v,0,0);c.toBlob(async blob=>{if(blob){$('#cameraModal').classList.remove('open');await stopCamera();const file=new File([blob],'camera-photo.jpg',{type:'image/jpeg'});loadFile(file)}else toast('Could not capture photo. Try again.')},'image/jpeg',.95)};
-// Sample buttons show a clearly labelled illustrative card rather than pretending to be real product photos.
-$$('[data-sample]').forEach(b=>b.addEventListener('click',()=>{const emoji=b.textContent.trim();const c=document.createElement('canvas');c.width=800;c.height=800;const x=c.getContext('2d');const g=x.createLinearGradient(0,0,800,800);g.addColorStop(0,'#eaf1fb');g.addColorStop(1,'#bac8da');x.fillStyle=g;x.fillRect(0,0,800,800);x.fillStyle='#283b57';x.textAlign='center';x.font='190px system-ui';x.fillText(emoji,400,400);x.fillStyle='#283b57';x.font='bold 32px system-ui';x.fillText('SAMPLE PREVIEW',400,690);x.fillStyle='#506582';x.font='22px system-ui';x.fillText('Upload a real product photo for AI cutout',400,735);c.toBlob(blob=>{if(blob)loadFile(new File([blob],'sample-'+b.dataset.sample+'.png',{type:'image/png'}))})}));
-initPresets();window.addEventListener('beforeunload',()=>{stopCamera();if(state.objectUrl)URL.revokeObjectURL(state.objectUrl)});status('Upload an image to get started');
-</script></body></html>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body, html {
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        /* Xəritə Konteyneri */
+        #map {
+            width: 100%;
+            height: 100vh;
+            z-index: 1;
+        }
+
+        /* Üst Axtarış və Filter Paneli */
+        .top-panel {
+            position: absolute;
+            top: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            width: 90%;
+            max-width: 500px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 12px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            backdrop-filter: blur(5px);
+        }
+
+        .search-box {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .search-box input {
+            flex: 1;
+            padding: 10px 14px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            outline: none;
+            font-size: 14px;
+        }
+
+        .filter-tags {
+            display: flex;
+            gap: 6px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+        }
+
+        .tag-btn {
+            background: #f0f2f5;
+            border: 1px solid #dcdfe6;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .tag-btn.active {
+            background: #007bff;
+            color: #fff;
+            border-color: #007bff;
+        }
+
+        /* Düymələr Barı (Sağ Aşağı) */
+        .action-buttons {
+            position: absolute;
+            bottom: 25px;
+            right: 15px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .btn-main {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 12px 18px;
+            border-radius: 30px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(40,167,69,0.4);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .btn-locate {
+            background: #ffffff;
+            color: #333;
+            border: none;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            margin-left: auto;
+        }
+
+        /* Profil / Detal Kartı (Modal/Sheet) */
+        .profile-card {
+            position: absolute;
+            bottom: -100%;
+            left: 0;
+            width: 100%;
+            background: white;
+            z-index: 2000;
+            border-radius: 20px 20px 0 0;
+            padding: 20px;
+            box-shadow: 0 -5px 25px rgba(0,0,0,0.25);
+            transition: bottom 0.3s ease-in-out;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .profile-card.open {
+            bottom: 0;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .card-close {
+            background: #f0f2f5;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .contact-btns {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn-call {
+            flex: 1;
+            background: #007bff;
+            color: white;
+            text-decoration: none;
+            text-align: center;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-whatsapp {
+            flex: 1;
+            background: #25D366;
+            color: white;
+            text-decoration: none;
+            text-align: center;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .portfolio-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .portfolio-grid img {
+            width: 100%;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 6px;
+        }
+
+        /* Form Modal (Elan Əlavə Et) */
+        .form-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 3000;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+        }
+
+        .form-content {
+            background: white;
+            width: 100%;
+            max-width: 450px;
+            border-radius: 12px;
+            padding: 20px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            outline: none;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Axtarış və Filter Paneli -->
+    <div class="top-panel">
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="Küçə, rayon və ya xidmət axtarın..." onkeyup="filterMarkers()">
+        </div>
+        <div class="filter-tags">
+            <button class="tag-btn active" onclick="filterCategory('all', this)"><i class="fa-solid fa-border-all"></i> Hamısı</button>
+            <button class="tag-btn" onclick="filterCategory('usta', this)"><i class="fa-solid fa-helmet-safety"></i> Ustalar</button>
+            <button class="tag-btn" onclick="filterCategory('texnika', this)"><i class="fa-solid fa-truck-monster"></i> Xüsusi Texnika</button>
+            <button class="tag-btn" onclick="filterCategory('dukan', this)"><i class="fa-solid fa-store"></i> Material Dükanları</button>
+        </div>
+    </div>
+
+    <!-- Xəritə -->
+    <div id="map"></div>
+
+    <!-- Aşağı Düymələr -->
+    <div class="action-buttons">
+        <button class="btn-locate" onclick="locateUser()" title="Mənim Yerim"><i class="fa-solid fa-crosshairs"></i></button>
+        <button class="btn-main" onclick="openFormModal()"><i class="fa-solid fa-plus"></i> Elan Yerləşdir</button>
+    </div>
+
+    <!-- Profil Detal Pəncərəsi (Modal) -->
+    <div class="profile-card" id="profileCard">
+        <div class="card-header">
+            <div>
+                <h3 id="cardName">Usta Adı</h3>
+                <span id="cardCategory" style="color: #666; font-size: 13px;">Kateqoriya</span>
+            </div>
+            <button class="card-close" onclick="closeProfileCard()">✕</button>
+        </div>
+        <p id="cardDescription" style="font-size: 14px; color: #444; margin-bottom: 10px;">Təsvir məlumatı daxil ediləcək.</p>
+        <p style="font-size: 13px; color: #888;"><i class="fa-solid fa-location-dot"></i> <span id="cardAddress">Bakı ş.</span></p>
+        
+        <div class="contact-btns">
+            <a href="#" id="callBtn" class="btn-call"><i class="fa-solid fa-phone"></i> Zəng Et</a>
+            <a href="#" id="waBtn" target="_blank" class="btn-whatsapp"><i class="fa-brands fa-whatsapp"></i> WhatsApp</a>
+        </div>
+
+        <h4 style="margin-top: 15px; font-size: 14px;">Gördüyü İşlər (Portfolio)</h4>
+        <div class="portfolio-grid" id="portfolioGrid">
+            <!-- Şəkillər JavaScript ilə yüklənir -->
+        </div>
+    </div>
+
+    <!-- Elan Yerləşdirmə Formu (Modal) -->
+    <div class="form-modal" id="formModal">
+        <div class="form-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3>Xəritədə Elan Yarat</h3>
+                <button class="card-close" onclick="closeFormModal()">✕</button>
+            </div>
+            <form id="addListingForm" onsubmit="handleFormSubmit(event)">
+                <div class="form-group">
+                    <label>Adınız / Obyektin Adı</label>
+                    <input type="text" id="formName" placeholder="Məs: Şamxal Usta (Alçipan)" required>
+                </div>
+                <div class="form-group">
+                    <label>Kateqoriya</label>
+                    <select id="formCategory" required>
+                        <option value="usta">Usta (Alçipan, Şpatlyovka, Malyar və s.)</option>
+                        <option value="texnika">Xüsusi Texnika (Kran, Evakuator və s.)</option>
+                        <option value="dukan">Tikinti Materialı Dükanı</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Əlaqə Nömrəsi</label>
+                    <input type="tel" id="formPhone" placeholder="0501234567" required>
+                </div>
+                <div class="form-group">
+                    <label>Ünvan / Ərazi</label>
+                    <input type="text" id="formAddress" placeholder="Məs: Nərimanov r., Təbriz küç." required>
+                </div>
+                <div class="form-group">
+                    <label>Xidmət Haqqında Ətraflı</label>
+                    <textarea id="formDesc" rows="3" placeholder="Gördüyünüz işlər haqqında qısa məlumat..." required></textarea>
+                </div>
+                <p style="font-size: 12px; color: #d9534f; margin-bottom: 10px;">
+                    * Qeyd: Elan saxlanıldıqdan sonra xəritədə cari mərkəz nöqtəsinə əlavə olunacaq.
+                </p>
+                <button type="submit" class="btn-main" style="width: 100%; justify-content: center;">Elanı Yayınla</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+        // 1. Xəritənin İlkin Başladılması (Bakı mərkəzli)
+        const map = L.map('map', { zoomControl: false }).setView([40.4092617, 49.8670924], 12);
+
+        // OpenStreetMap Şəbəkə Qatı (Açıq Qaynaq)
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+
+        // Zoom düyməsini sağ tərəfə əlavə edək
+        L.control.zoom({ position: 'topright' }).addTo(map);
+
+        // 2. Nümunə Bazada Olan Elan Məlumatları (Canlı Baza Əvəzi)
+        let listings = [
+            {
+                id: 1,
+                name: "Usta Şamxal (Alçipan və Şpatlyovka)",
+                category: "usta",
+                phone: "0501234567",
+                address: "Nizami rayonu, Neftçilər",
+                desc: "Alçipan tavanlar, fiqurlar, şpatlyovka və malyar işləri yüksək peşəkarlıqla görülür.",
+                lat: 40.4150,
+                lng: 49.9100,
+                images: [
+                    "https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=200",
+                    "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=200"
+                ]
+            },
+            {
+                id: 2,
+                name: "Kran İcarəsi (25 Tonluq)",
+                category: "texnika",
+                phone: "0559876543",
+                address: "Nərimanov r., Təbriz küç.",
+                desc: "24/7 Avtokran xidməti. Şəhər və rayonlara sifariş qəbul olunur.",
+                lat: 40.4000,
+                lng: 49.8700,
+                images: [
+                    "https://images.unsplash.com/photo-1541888946425-d0fbb186a5b3?w=200"
+                ]
+            },
+            {
+                id: 3,
+                name: "EuroHome Tikinti Materialları Dükanı",
+                category: "dukan",
+                phone: "0123456789",
+                address: "Xətai r., Babək pr.",
+                desc: "Sement, gips, alçipan profilləri, boyalar və hər növ tikinti ləvazimatları.",
+                lat: 40.3800,
+                lng: 49.8900,
+                images: [
+                    "https://images.unsplash.com/photo-1513694203232-719a280e022f?w=200"
+                ]
+            }
+        ];
+
+        let activeMarkers = [];
+        let currentFilter = 'all';
+
+        // Xüsusi İkon Rəngləri Yaratmaq
+        function createCustomIcon(category) {
+            let color = '#007bff'; // Usta (Mavi)
+            let iconClass = 'fa-helmet-safety';
+
+            if (category === 'texnika') {
+                color = '#f39c12'; // Texnika (Qızılı/Sarı)
+                iconClass = 'fa-truck-monster';
+            } else if (category === 'dukan') {
+                color = '#28a745'; // Dükan (Yaşıl)
+                iconClass = 'fa-store';
+            }
+
+            return L.divIcon({
+                className: 'custom-pin',
+                html: `<div style="background-color: ${color}; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; box-shadow: 0 3px 8px rgba(0,0,0,0.4); border: 2px solid white;">
+                        <i class="fa-solid ${iconClass}"></i>
+                       </div>`,
+                iconSize: [36, 36],
+                iconAnchor: [18, 18]
+            });
+        }
+
+        // 3. Markerləri Xəritəyə Düzmək
+        function renderMarkers() {
+            // Əvvəlki markerləri təmizlə
+            activeMarkers.forEach(m => map.removeLayer(m));
+            activeMarkers = [];
+
+            const searchText = document.getElementById('searchInput').value.toLowerCase();
+
+            listings.forEach(item => {
+                const matchesCategory = (currentFilter === 'all' || item.category === currentFilter);
+                const matchesSearch = item.name.toLowerCase().includes(searchText) || 
+                                      item.address.toLowerCase().includes(searchText) ||
+                                      item.desc.toLowerCase().includes(searchText);
+
+                if (matchesCategory && matchesSearch) {
+                    const marker = L.marker([item.lat, item.lng], { icon: createCustomIcon(item.category) }).addTo(map);
+                    
+                    marker.on('click', () => {
+                        openProfileCard(item);
+                    });
+
+                    activeMarkers.push(marker);
+                }
+            });
+        }
+
+        // 4. Profil Kartını Açmaq
+        function openProfileCard(item) {
+            document.getElementById('cardName').innerText = item.name;
+            document.getElementById('cardCategory').innerText = item.category.toUpperCase();
+            document.getElementById('cardDescription').innerText = item.desc;
+            document.getElementById('cardAddress').innerText = item.address;
+
+            document.getElementById('callBtn').href = `tel:${item.phone}`;
+            document.getElementById('waBtn').href = `https://wa.me/${item.phone.replace(/[^0-9]/g, '')}`;
+
+            const portfolioGrid = document.getElementById('portfolioGrid');
+            portfolioGrid.innerHTML = '';
+            
+            if (item.images && item.images.length > 0) {
+                item.images.forEach(imgUrl => {
+                    const img = document.createElement('img');
+                    img.src = imgUrl;
+                    portfolioGrid.appendChild(img);
+                });
+            } else {
+                portfolioGrid.innerHTML = '<p style="font-size:12px; color:#999; grid-column: 1/-1;">Şəkil əlavə edilməyib.</p>';
+            }
+
+            document.getElementById('profileCard').classList.add('open');
+        }
+
+        function closeProfileCard() {
+            document.getElementById('profileCard').classList.remove('open');
+        }
+
+        // 5. Axtarış və Kateqoriya Filterləri
+        function filterCategory(cat, btn) {
+            currentFilter = cat;
+            document.querySelectorAll('.tag-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderMarkers();
+        }
+
+        function filterMarkers() {
+            renderMarkers();
+        }
+
+        // 6. Canlı Geolokasiya (İstifadəçinin Yeri)
+        function locateUser() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(position => {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    
+                    map.setView([lat, lng], 14);
+
+                    L.circle([lat, lng], { radius: 200, color: '#007bff' }).addTo(map);
+                    L.marker([lat, lng]).addTo(map).bindPopup("Sizin Mövqeyiniz").openPopup();
+                }, () => {
+                    alert("Geolokasiya icazəsi verilmədi və ya dəstəklənmir.");
+                });
+            }
+        }
+
+        // 7. Yeni Elan Əlavə Etmə Modalı
+        function openFormModal() {
+            document.getElementById('formModal').style.display = 'flex';
+        }
+
+        function closeFormModal() {
+            document.getElementById('formModal').style.display = 'none';
+        }
+
+        function handleFormSubmit(e) {
+            e.preventDefault();
+            
+            const center = map.getCenter();
+
+            const newListing = {
+                id: listings.length + 1,
+                name: document.getElementById('formName').value,
+                category: document.getElementById('formCategory').value,
+                phone: document.getElementById('formPhone').value,
+                address: document.getElementById('formAddress').value,
+                desc: document.getElementById('formDesc').value,
+                lat: center.lat,
+                lng: center.lng,
+                images: ["https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=200"]
+            };
+
+            listings.push(newListing);
+            renderMarkers();
+            closeFormModal();
+            document.getElementById('addListingForm').reset();
+
+            alert("Təbriklər! Elanınız xəritədə cari mərkəz nöqtəsinə əlavə olundu.");
+        }
+
+        // Başlanğıcda markerləri çək
+        renderMarkers();
+    </script>
+</body>
+</html>
