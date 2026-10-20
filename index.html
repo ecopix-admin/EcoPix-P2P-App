@@ -1,627 +1,819 @@
+```html
 <!DOCTYPE html>
 <html lang="az">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UstaMap & MegaElan — Canlı Xəritə Platforması</title>
-    
-    <!-- Leaflet CSS -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>UstaMap - Yaxınlıqdakı Usta və Xidmətlər</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Leaflet CSS & JS for OpenStreetMap -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <!-- FontAwesome İkonlar -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; }
-        body, html { height: 100%; width: 100%; overflow: hidden; background: #111; }
-        #map { width: 100%; height: 100vh; z-index: 1; }
-
-        /* Üst Panel */
-        .top-panel {
-            position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
-            z-index: 1000; width: 92%; max-width: 550px;
-            background: rgba(255, 255, 255, 0.96); padding: 10px 14px;
-            border-radius: 18px; box-shadow: 0 8px 25px rgba(0,0,0,0.2);
-            backdrop-filter: blur(10px);
+        * {
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
         }
-        .search-box { display: flex; gap: 8px; margin-bottom: 8px; }
-        .search-box input {
-            flex: 1; padding: 10px 14px; border: 1px solid #e0e0e0;
-            border-radius: 12px; outline: none; font-size: 14px; background: #f8f9fa;
+        #map {
+            height: 100vh;
+            width: 100vw;
+            z-index: 1;
         }
-        .btn-fav-header {
-            background: #fff0f2; color: #e63946; border: 1px solid #ffccd5;
-            padding: 0 12px; border-radius: 12px; cursor: pointer; font-weight: bold;
-            display: flex; align-items: center; gap: 6px; font-size: 13px;
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
         }
-
-        .filter-row { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
-        .filter-row::-webkit-scrollbar { display: none; }
-        .tag-btn, .radius-select {
-            background: #f0f2f5; border: 1px solid #dcdfe6; padding: 7px 14px;
-            border-radius: 20px; font-size: 12px; cursor: pointer; white-space: nowrap;
-            display: flex; align-items: center; gap: 6px; font-weight: 500; transition: all 0.2s;
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
         }
-        .tag-btn.active { background: #007bff; color: #fff; border-color: #007bff; box-shadow: 0 3px 10px rgba(0,123,255,0.3); }
-
-        /* Dinamik Böyüyən Pin (Magnify Proximity Marker) */
-        .custom-pin-container {
-            transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.27);
+        /* Pulse Animation for VIP Markers */
+        @keyframes vipPulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(234, 179, 8, 0.7); }
+            70% { transform: scale(1.08); box-shadow: 0 0 0 12px rgba(234, 179, 8, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(234, 179, 8, 0); }
         }
-        .custom-pin {
-            width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center;
-            justify-content: center; color: white; box-shadow: 0 4px 12px rgba(0,0,0,0.35);
-            border: 2px solid white; font-size: 16px;
+        .vip-marker {
+            animation: vipPulse 2s infinite;
+            border: 2px solid #eab308 !important;
         }
-        .custom-pin-container.active-near {
-            transform: scale(1.45); z-index: 999 !important;
+        /* Leaflet Controls Reset */
+        .leaflet-control-zoom {
+            border: none !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+            border-radius: 12px !important;
+            overflow: hidden;
         }
-        .custom-pin-container.active-near .custom-pin {
-            border: 3px solid #ff0055; box-shadow: 0 0 18px rgba(255, 0, 85, 0.7);
+        .leaflet-control-zoom a {
+            background: #ffffff !important;
+            color: #1e293b !important;
+            border: none !important;
         }
-        .vip-border { border: 3px solid #ffd700 !important; box-shadow: 0 0 15px rgba(255, 215, 0, 0.8) !important; }
-
-        /* Düymələr Barı */
-        .action-buttons {
-            position: absolute; bottom: 25px; right: 15px; z-index: 1000;
-            display: flex; flex-direction: column; gap: 10px;
-        }
-        .btn-main {
-            background: #28a745; color: white; border: none; padding: 13px 22px;
-            border-radius: 30px; font-weight: bold; cursor: pointer;
-            box-shadow: 0 4px 18px rgba(40,167,69,0.45); display: flex; align-items: center; gap: 8px; font-size: 15px;
-        }
-        .btn-circle {
-            background: #ffffff; color: #333; border: none; width: 48px; height: 48px;
-            border-radius: 50%; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-            display: flex; align-items: center; justify-content: center; font-size: 18px; margin-left: auto;
-        }
-
-        /* Profil / Detal Kartı */
-        .profile-card {
-            position: absolute; bottom: -100%; left: 0; width: 100%; background: white;
-            z-index: 2000; border-radius: 24px 24px 0 0; padding: 20px;
-            box-shadow: 0 -5px 30px rgba(0,0,0,0.3); transition: bottom 0.35s ease-in-out;
-            max-height: 85vh; overflow-y: auto;
-        }
-        .profile-card.open { bottom: 0; }
-        .card-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid #f0f0f0; padding-bottom: 12px; margin-bottom: 12px; }
-        .card-close { background: #f0f2f5; border: none; width: 34px; height: 34px; border-radius: 50%; cursor: pointer; font-weight: bold; font-size: 16px; }
-        
-        .meta-stats { display: flex; gap: 15px; font-size: 13px; color: #666; margin: 10px 0; }
-        .meta-stats span { display: flex; align-items: center; gap: 5px; }
-
-        .contact-btns { display: flex; gap: 10px; margin-top: 15px; }
-        .btn-call { flex: 1; background: #007bff; color: white; text-decoration: none; text-align: center; padding: 12px; border-radius: 12px; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .btn-whatsapp { flex: 1; background: #25D366; color: white; text-decoration: none; text-align: center; padding: 12px; border-radius: 12px; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .btn-like { background: #fff0f2; color: #e63946; border: 1px solid #ffccd5; padding: 12px; border-radius: 12px; cursor: pointer; font-weight: bold; }
-
-        .gallery-scroll { display: flex; gap: 10px; overflow-x: auto; margin-top: 10px; padding-bottom: 5px; scrollbar-width: none; }
-        .gallery-scroll img { width: 120px; height: 90px; object-fit: cover; border-radius: 12px; flex-shrink: 0; cursor: pointer; border: 1px solid #ddd; }
-
-        /* TikTok-Style Fullscreen Image Viewer Modal */
-        .tiktok-modal {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #000; z-index: 4000; flex-direction: column; justify-content: center; align-items: center;
-        }
-        .tiktok-modal.open { display: flex; }
-        .tiktok-close {
-            position: absolute; top: 25px; left: 20px; color: white; font-size: 24px;
-            background: rgba(255,255,255,0.2); border: none; width: 42px; height: 42px;
-            border-radius: 50%; cursor: pointer; z-index: 4100; backdrop-filter: blur(5px);
-        }
-        .tiktok-slider {
-            width: 100%; height: 100%; display: flex; overflow-x: scroll; snap-type: x mandatory; scrollbar-width: none;
-        }
-        .tiktok-slide {
-            flex: 0 0 100%; height: 100%; snap-align: center; display: flex;
-            align-items: center; justify-content: center; position: relative;
-        }
-        .tiktok-slide img { max-width: 100%; max-height: 100%; object-fit: contain; }
-        .tiktok-counter {
-            position: absolute; top: 30px; color: white; font-weight: bold;
-            background: rgba(0,0,0,0.5); padding: 5px 15px; border-radius: 20px; font-size: 13px;
-        }
-
-        /* Form Modal (Elan Əlavə Et) */
-        .form-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 3000; align-items: center; justify-content: center; padding: 15px; }
-        .form-content { background: white; width: 100%; max-width: 500px; border-radius: 20px; padding: 22px; max-height: 92vh; overflow-y: auto; }
-        .form-group { margin-bottom: 12px; }
-        .form-group label { display: block; font-size: 12px; font-weight: bold; margin-bottom: 5px; color: #333; }
-        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; outline: none; font-size: 13px; }
-        
-        .location-options { display: flex; gap: 8px; margin-bottom: 10px; }
-        .loc-btn { flex: 1; padding: 10px; border: 1px solid #007bff; background: #f0f7ff; color: #007bff; border-radius: 8px; font-size: 12px; cursor: pointer; text-align: center; font-weight: bold; }
-        .loc-btn.selected { background: #007bff; color: white; }
-        .loc-btn.vip-mode { border-color: #ffd700; background: #fffdf0; color: #d97706; }
-        .loc-btn.vip-mode.selected { background: linear-gradient(45deg, #f59e0b, #d97706); color: white; }
-
-        .image-preview-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-top: 8px; }
-        .image-preview-grid img { width: 100%; height: 50px; object-fit: cover; border-radius: 6px; }
     </style>
 </head>
-<body>
+<body class="bg-slate-100 text-slate-800 overflow-hidden select-none">
 
-    <!-- Üst Axtarış və Filter Paneli -->
-    <div class="top-panel">
-        <div class="search-box">
-            <input type="text" id="searchInput" placeholder="Peşə (alçipan, motorist...), məkan və ya obyekt..." onkeyup="autoFilter()">
-            <button class="btn-fav-header" onclick="toggleFavoritesView()"><i class="fa-solid fa-heart"></i> <span id="favCount">0</span></button>
-        </div>
-        <div class="filter-row">
-            <select class="radius-select" id="radiusSelect" onchange="autoFilter()">
-                <option value="all">🌐 Bütün Ərazi</option>
-                <option value="0.1">📍 100 Metr Yaxınlıq</option>
-                <option value="0.5">📍 500 Metr Yaxınlıq</option>
-                <option value="1">📍 1 KM Yaxınlıq</option>
-                <option value="5">📍 5 KM Yaxınlıq</option>
-                <option value="10">📍 10 KM Yaxınlıq</option>
-            </select>
-            <button class="tag-btn active" onclick="filterMainCategory('all', this)"><i class="fa-solid fa-border-all"></i> Hamısı</button>
-            <button class="tag-btn" onclick="filterMainCategory('usta', this)"><i class="fa-solid fa-helmet-safety"></i> Ustalar</button>
-            <button class="tag-btn" onclick="filterMainCategory('xidmet', this)"><i class="fa-solid fa-user-tie"></i> Xidmət/İşçi</button>
-            <button class="tag-btn" onclick="filterMainCategory('dukan', this)"><i class="fa-solid fa-store"></i> Obyekt/Mağaza</button>
-            <button class="tag-btn" onclick="filterMainCategory('heyvan', this)"><i class="fa-solid fa-paw"></i> Heyvandarlıq</button>
-            <button class="tag-btn" onclick="filterMainCategory('texnika', this)"><i class="fa-solid fa-truck-monster"></i> Texnika</button>
-        </div>
-    </div>
-
-    <!-- Xəritə -->
+    <!-- MAP CONTAINER -->
     <div id="map"></div>
 
-    <!-- Aksion Düymələri -->
-    <div class="action-buttons">
-        <button class="btn-circle" onclick="locateUser()" title="Mənim Yerim"><i class="fa-solid fa-crosshairs"></i></button>
-        <button class="btn-main" onclick="openFormModal()"><i class="fa-solid fa-plus"></i> Elan Yerləşdir</button>
-    </div>
-
-    <!-- Detal Profil Kartı -->
-    <div class="profile-card" id="profileCard">
-        <div class="card-header">
-            <div>
-                <h3 id="cardName">Elan Adı</h3>
-                <span id="cardCategory" style="color: #007bff; font-weight: bold; font-size: 11px; background: #eef5ff; padding: 4px 8px; border-radius: 6px;">Kateqoriya</span>
+    <!-- TOP CONTROL PANEL (Floating Search & Filters) -->
+    <div class="fixed top-3 left-0 right-0 z-[1000] px-3 max-w-lg mx-auto flex flex-col gap-2">
+        
+        <!-- SEARCH & FAVORITES BAR -->
+        <div class="bg-white/95 backdrop-blur-md rounded-2xl p-2 shadow-lg border border-slate-100 flex items-center gap-2 transition-all">
+            <!-- Search Input Container -->
+            <div class="flex-1 flex items-center bg-slate-100/80 rounded-xl px-3 py-2 transition focus-within:ring-2 focus-within:ring-blue-500/50">
+                <i class="fa-solid fa-magnifying-glass text-slate-400 text-sm mr-2"></i>
+                <input id="searchInput" type="text" value="Alçipan ustası" placeholder="Usta, xidmət və ya material axtar..." 
+                       class="w-full bg-transparent text-sm font-medium text-slate-800 placeholder-slate-400 focus:outline-none"
+                       onkeypress="if(event.key === 'Enter') handleSearch()">
+                <button onclick="clearSearch()" id="clearBtn" class="hidden text-slate-400 hover:text-slate-600 p-1">
+                    <i class="fa-solid fa-circle-xmark text-xs"></i>
+                </button>
             </div>
-            <button class="card-close" onclick="closeProfileCard()">✕</button>
+
+            <!-- SEARCH BUTTON -->
+            <button onclick="handleSearch()" class="bg-blue-600 hover:bg-blue-700 active:scale-95 text-white px-4 py-2 rounded-xl text-xs font-semibold shadow-md transition flex items-center gap-1.5 shrink-0">
+                <span>Axtar</span>
+            </button>
+
+            <!-- FAVORITES BUTTON -->
+            <button onclick="toggleFavoritesModal(true)" class="relative bg-rose-50 hover:bg-rose-100 active:scale-95 text-rose-500 p-2.5 rounded-xl transition shrink-0 flex items-center justify-center border border-rose-100">
+                <i class="fa-solid fa-heart text-base"></i>
+                <span id="favBadge" class="absolute -top-1 -right-1 bg-rose-600 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center border-2 border-white">0</span>
+            </button>
         </div>
 
-        <div class="meta-stats">
-            <span><i class="fa-solid fa-eye"></i> <b id="cardViews">0</b> baxış</span>
-            <span><i class="fa-solid fa-heart" style="color: #e63946;"></i> <b id="cardLikes">0</b> bəyənmə</span>
-            <span><i class="fa-solid fa-location-arrow"></i> <b id="cardDistance">--</b></span>
-        </div>
-
-        <p id="cardDescription" style="font-size: 14px; color: #444; margin: 10px 0; line-height: 1.4;">Təsvir məlumatı.</p>
-        <p style="font-size: 13px; color: #666;"><i class="fa-solid fa-location-dot" style="color: #e63946;"></i> <span id="cardAddress">Bakı ş.</span></p>
-
-        <h4 style="margin-top: 15px; font-size: 13px; color: #333;">Şəkillər (Baxmaq üçün üzərinə toxunun)</h4>
-        <div class="gallery-scroll" id="galleryScroll"></div>
-
-        <div class="contact-btns">
-            <button class="btn-like" onclick="likeCurrentListing()"><i class="fa-solid fa-heart"></i> Bəyən</button>
-            <button class="btn-like" style="background: #fff8e7; color: #d97706; border-color: #fef3c7;" onclick="toggleFavoriteCurrent()"><i class="fa-solid fa-bookmark"></i> Yadda Saxla</button>
-            <a href="#" id="callBtn" class="btn-call"><i class="fa-solid fa-phone"></i> Zəng Et</a>
-            <a href="#" id="waBtn" target="_blank" class="btn-whatsapp"><i class="fa-brands fa-whatsapp"></i> WhatsApp</a>
-        </div>
-    </div>
-
-    <!-- TikTok-Style Fullscreen Gallery Modal -->
-    <div class="tiktok-modal" id="tiktokModal">
-        <button class="tiktok-close" onclick="closeTikTokGallery()">✕</button>
-        <div class="tiktok-counter" id="tiktokCounter">1 / 1</div>
-        <div class="tiktok-slider" id="tiktokSlider" onscroll="updateTikTokCounter()"></div>
-    </div>
-
-    <!-- Elan Yerləşdirmə Form Modalı -->
-    <div class="form-modal" id="formModal">
-        <div class="form-content">
-            <div style="display: flex; justify-content: space-between; align- items: center; margin-bottom: 15px;">
-                <h3>Xəritədə Elan Yarat</h3>
-                <button class="card-close" onclick="closeFormModal()">✕</button>
+        <!-- FILTERS & RADIUS ROW -->
+        <div class="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none no-scrollbar">
+            <!-- Distance Radius Selector -->
+            <div class="relative shrink-0">
+                <select id="radiusSelect" onchange="onFilterChange()" class="bg-white/90 backdrop-blur-md text-xs font-semibold text-slate-700 pl-7 pr-6 py-2 rounded-xl shadow-md border border-slate-100 appearance-none focus:outline-none cursor-pointer">
+                    <option value="2">📍 2 KM Yaxınlıq</option>
+                    <option value="5">📍 5 KM Yaxınlıq</option>
+                    <option value="10" selected>📍 10 KM Yaxınlıq</option>
+                    <option value="25">📍 25 KM Yaxınlıq</option>
+                    <option value="100">📍 Bütün Şəhər</option>
+                </select>
+                <i class="fa-solid fa-angle-down absolute right-2.5 top-2.5 text-xs text-slate-400 pointer-events-none"></i>
             </div>
-            <form id="addListingForm" onsubmit="handleFormSubmit(event)">
-                
-                <div class="form-group">
-                    <label>Məkan Seçimi Rejimi</label>
-                    <div class="location-options">
-                        <div class="loc-btn selected" id="locCurrentBtn" onclick="setLocMode('current')">📍 Dəqiq Olduğum Yer (Pulsuz)</div>
-                        <div class="loc-btn vip-mode" id="locMapBtn" onclick="setLocMode('map')">👑 Xəritədən Seç (VIP 3 AZN / 30 Gün)</div>
+
+            <!-- Category Filter Pills -->
+            <button onclick="setCategoryFilter('all')" id="cat-all" class="cat-btn shrink-0 bg-blue-600 text-white px-3.5 py-1.5 rounded-xl text-xs font-semibold shadow-md transition flex items-center gap-1.5">
+                <i class="fa-solid fa-grid-2 text-[10px]"></i> Hamısı
+            </button>
+            <button onclick="setCategoryFilter('ustalar')" id="cat-ustalar" class="cat-btn shrink-0 bg-white/90 text-slate-700 hover:bg-slate-100 px-3.5 py-1.5 rounded-xl text-xs font-semibold shadow-sm border border-slate-100 transition flex items-center gap-1.5">
+                <i class="fa-solid fa-helmet-safety text-amber-500"></i> Ustalar
+            </button>
+            <button onclick="setCategoryFilter('material')" id="cat-material" class="cat-btn shrink-0 bg-white/90 text-slate-700 hover:bg-slate-100 px-3.5 py-1.5 rounded-xl text-xs font-semibold shadow-sm border border-slate-100 transition flex items-center gap-1.5">
+                <i class="fa-solid fa-boxes-stacked text-emerald-500"></i> Mal-Material
+            </button>
+            <button onclick="setCategoryFilter('vip')" id="cat-vip" class="cat-btn shrink-0 bg-white/90 text-slate-700 hover:bg-slate-100 px-3.5 py-1.5 rounded-xl text-xs font-semibold shadow-sm border border-slate-100 transition flex items-center gap-1.5">
+                <i class="fa-solid fa-crown text-yellow-500"></i> Yalnız VIP
+            </button>
+        </div>
+    </div>
+
+    <!-- ROTATING VIP BANNER (Subtle Top Overlay) -->
+    <div id="vipBanner" class="fixed top-28 left-0 right-0 z-[900] px-4 pointer-events-none transition-all duration-500">
+        <div class="max-w-md mx-auto bg-gradient-to-r from-amber-500/90 via-yellow-500/90 to-amber-600/90 backdrop-blur-md text-white p-2.5 rounded-2xl shadow-xl border border-yellow-300/40 flex items-center justify-between pointer-events-auto cursor-pointer" onclick="openVipFromBanner()">
+            <div class="flex items-center gap-2.5 overflow-hidden">
+                <div class="relative shrink-0">
+                    <img id="vipBannerImg" src="" class="w-10 h-10 rounded-xl object-cover border-2 border-white/80">
+                    <span class="absolute -top-1 -right-1 bg-yellow-400 text-slate-900 text-[9px] font-black px-1 rounded-md border border-white">VIP</span>
+                </div>
+                <div class="truncate">
+                    <div class="flex items-center gap-1.5">
+                        <span id="vipBannerName" class="font-bold text-xs truncate">...</span>
+                        <span id="vipBannerRating" class="bg-black/20 text-yellow-200 text-[10px] px-1.5 py-0.5 rounded-md font-semibold shrink-0">⭐ 5.0</span>
                     </div>
-                    <input type="hidden" id="formLat">
-                    <input type="hidden" id="formLng">
+                    <p id="vipBannerDesc" class="text-[11px] text-yellow-100 truncate">Sponsorlu Elan - Yaxınlıqdadır</p>
                 </div>
-
-                <div class="form-group">
-                    <label>Avtomatik Təyin Edilən Ünvan</label>
-                    <input type="text" id="formAddress" placeholder="Ünvan avtomatik təyin edilir..." readonly style="background: #f0f4f8; font-weight: bold; color: #007bff;" required>
-                </div>
-
-                <div class="form-group">
-                    <label>Adınız / Obyekt / Xidmət Adı</label>
-                    <input type="text" id="formName" placeholder="Məs: Usta Şamxal (Alçipan), Kran İcarəsi..." required>
-                </div>
-
-                <div class="form-group">
-                    <label>Əsas Kateqoriya</label>
-                    <select id="formMainCat" onchange="updateSubCatDropdown()" required>
-                        <option value="usta">Usta (Tikinti & Təmir)</option>
-                        <option value="xidmet">Xidmət & İşçi Sektoru</option>
-                        <option value="dukan">Obyekt, Mağaza & Restoran</option>
-                        <option value="heyvan">Kənd Təsərrüfatı & Heyvandarlıq</option>
-                        <option value="texnika">Xüsusi Texnika & Avto</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label>Detallı Peşə / Sahə Seçimi</label>
-                    <select id="formSubCat" required></select>
-                </div>
-
-                <div class="form-group">
-                    <label>Əlaqə Nömrəsi (WhatsApp Var)</label>
-                    <input type="tel" id="formPhone" placeholder="0501234567" required>
-                </div>
-
-                <div class="form-group">
-                    <label>Ətraflı Təsvir</label>
-                    <textarea id="formDesc" rows="3" placeholder="Gördüyünüz işlər, qiymətlər haqqında..." required></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label>Şəkillər (10 Şəkilə Qədər Seç/Çək)</label>
-                    <input type="file" id="formImages" accept="image/*" multiple onchange="previewImages(event)">
-                    <div class="image-preview-grid" id="previewGrid"></div>
-                </div>
-
-                <button type="submit" id="submitBtn" class="btn-main" style="width: 100%; justify-content: center; margin-top: 10px;">Elanı Yayımla (Pulsuz)</button>
-            </form>
+            </div>
+            <span class="bg-white/20 hover:bg-white/30 text-xs px-2.5 py-1 rounded-lg font-medium transition shrink-0 ml-2">Bax</span>
         </div>
     </div>
 
-    <!-- Leaflet JS -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- HIGH-RATED SUGGESTION TOAST (Günün Təklifi) -->
+    <div id="recommendationToast" class="fixed bottom-20 left-4 right-4 z-[900] max-w-sm mx-auto transition-all duration-500 transform translate-y-32 opacity-0">
+        <div class="bg-slate-900/95 backdrop-blur-md text-white p-3 rounded-2xl shadow-2xl border border-slate-700/60 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0 border border-amber-500/30">
+                    <i class="fa-solid fa-award text-lg"></i>
+                </div>
+                <div>
+                    <div class="text-[10px] text-amber-400 font-bold tracking-wider uppercase">Keyfiyyətli Usta Təklifi</div>
+                    <div id="recTitle" class="text-xs font-semibold text-slate-100">Rəşad Usta (4.9 ⭐)</div>
+                    <div id="recSub" class="text-[11px] text-slate-400">Yaxınlıqdadır • 38 razı müştəri</div>
+                </div>
+            </div>
+            <button onclick="openProfileFromRec()" class="bg-blue-600 hover:bg-blue-500 text-white text-xs px-3 py-1.5 rounded-xl font-medium shadow-md transition ml-2">
+                Bax
+            </button>
+            <button onclick="closeRecToast()" class="text-slate-400 hover:text-slate-200 text-xs p-1 ml-1">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+    </div>
 
+    <!-- BOTTOM NAVIGATION / STATS BAR -->
+    <div class="fixed bottom-3 left-0 right-0 z-[1000] px-4 max-w-md mx-auto">
+        <div class="bg-white/95 backdrop-blur-md rounded-2xl p-2 shadow-xl border border-slate-100 flex items-center justify-around">
+            <button onclick="recenterMap()" class="flex flex-col items-center gap-1 text-slate-600 hover:text-blue-600 transition p-1.5">
+                <i class="fa-solid fa-crosshairs text-base"></i>
+                <span class="text-[10px] font-medium">Məkanım</span>
+            </button>
+            <div class="h-6 w-[1px] bg-slate-200"></div>
+            <div class="flex flex-col items-center">
+                <span id="activeCount" class="text-xs font-bold text-blue-600">0</span>
+                <span class="text-[10px] text-slate-400 font-medium">Aktiv Elan</span>
+            </div>
+            <div class="h-6 w-[1px] bg-slate-200"></div>
+            <button onclick="openVipAddModal()" class="flex flex-col items-center gap-1 text-amber-600 hover:text-amber-700 transition p-1.5">
+                <i class="fa-solid fa-bullhorn text-base"></i>
+                <span class="text-[10px] font-bold">VIP Elan Yerləşdir</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL 1: FAVORITES SHEET -->
+    <div id="favModal" class="fixed inset-0 z-[2000] bg-black/50 backdrop-blur-sm hidden flex items-end sm:items-center justify-center transition-opacity">
+        <div class="bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl max-h-[80vh] flex flex-col overflow-hidden shadow-2xl animate-in slide-in-from-bottom duration-300">
+            <!-- Header -->
+            <div class="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-full bg-rose-100 text-rose-500 flex items-center justify-center">
+                        <i class="fa-solid fa-heart"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-slate-800 text-sm">Seçilmiş Ustalar və Elanlar</h3>
+                        <p class="text-[11px] text-slate-400">Saxladığınız profillərin siyahısı</p>
+                    </div>
+                </div>
+                <button onclick="toggleFavoritesModal(false)" class="w-8 h-8 rounded-full bg-slate-200/60 text-slate-600 flex items-center justify-center hover:bg-slate-200">
+                    <i class="fa-solid fa-xmark text-sm"></i>
+                </button>
+            </div>
+            <!-- Favorites List -->
+            <div id="favListContainer" class="p-4 overflow-y-auto flex-1 flex flex-col gap-3">
+                <!-- Dynamically populated -->
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: USTA PROFILE / DETAIL SHEET -->
+    <div id="profileModal" class="fixed inset-0 z-[2000] bg-black/50 backdrop-blur-sm hidden flex items-end sm:items-center justify-center transition-opacity">
+        <div class="bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl max-h-[90vh] flex flex-col overflow-hidden shadow-2xl">
+            <!-- Header Image & Badges -->
+            <div class="relative h-44 bg-slate-200 shrink-0">
+                <img id="mCoverImg" src="" class="w-full h-full object-cover">
+                <button onclick="closeProfileModal()" class="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/50 text-white flex items-center justify-center backdrop-blur-md hover:bg-black/70">
+                    <i class="fa-solid fa-xmark text-sm"></i>
+                </button>
+                <button id="mFavBtn" onclick="toggleFavoriteCurrent()" class="absolute top-3 left-3 w-9 h-9 rounded-full bg-white/90 text-slate-400 flex items-center justify-center shadow-lg transition active:scale-95">
+                    <i class="fa-solid fa-heart text-base"></i>
+                </button>
+                <div id="mVipBadge" class="hidden absolute bottom-3 left-3 bg-amber-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-lg shadow-md flex items-center gap-1">
+                    <i class="fa-solid fa-crown"></i> VIP ELAN
+                </div>
+            </div>
+
+            <!-- Profile Info -->
+            <div class="p-4 overflow-y-auto flex-1 flex flex-col gap-3">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <h2 id="mName" class="text-lg font-bold text-slate-900">...</h2>
+                        <p id="mCategory" class="text-xs text-blue-600 font-semibold">...</p>
+                    </div>
+                    <div class="text-right">
+                        <div class="flex items-center gap-1 bg-amber-50 text-amber-700 px-2.5 py-1 rounded-xl border border-amber-200/60">
+                            <i class="fa-solid fa-star text-amber-400 text-xs"></i>
+                            <span id="mRating" class="text-xs font-bold">0.0</span>
+                            <span id="mReviewCount" class="text-[10px] text-amber-600/80">(0)</span>
+                        </div>
+                        <span id="mDistance" class="text-[11px] text-slate-400 block mt-1">... KM uzaqlıqda</span>
+                    </div>
+                </div>
+
+                <p id="mDesc" class="text-xs text-slate-600 leading-relaxed bg-slate-50 p-3 rounded-2xl border border-slate-100">
+                    ...
+                </p>
+
+                <!-- Location Address -->
+                <div class="flex items-center gap-2 text-xs text-slate-500 bg-slate-100/60 p-2.5 rounded-xl">
+                    <i class="fa-solid fa-location-dot text-rose-500 shrink-0"></i>
+                    <span id="mAddress" class="truncate">Ünvan təyin edilir...</span>
+                </div>
+
+                <!-- Gallery / Portfolio -->
+                <div>
+                    <h4 class="text-xs font-bold text-slate-800 mb-2 flex items-center justify-between">
+                        <span>İcra Olunmuş İşlər</span>
+                        <span class="text-[10px] text-slate-400">Şəkilə toxunub baxın</span>
+                    </h4>
+                    <div id="mGallery" class="grid grid-cols-3 gap-2">
+                        <!-- Images -->
+                    </div>
+                </div>
+
+                <!-- User Rating Action -->
+                <div class="border-t border-slate-100 pt-3">
+                    <label class="text-xs font-semibold text-slate-700 block mb-1.5">Ustanın işinə qiymət verin:</label>
+                    <div class="flex items-center gap-2" id="starRatingContainer">
+                        <div class="flex gap-1 text-amber-400 text-lg cursor-pointer">
+                            <i class="fa-regular fa-star hover:text-amber-500" onclick="rateCurrentMaster(1)"></i>
+                            <i class="fa-regular fa-star hover:text-amber-500" onclick="rateCurrentMaster(2)"></i>
+                            <i class="fa-regular fa-star hover:text-amber-500" onclick="rateCurrentMaster(3)"></i>
+                            <i class="fa-regular fa-star hover:text-amber-500" onclick="rateCurrentMaster(4)"></i>
+                            <i class="fa-regular fa-star hover:text-amber-500" onclick="rateCurrentMaster(5)"></i>
+                        </div>
+                        <span id="rateFeedback" class="text-[11px] text-emerald-600 font-medium hidden">Təşəkkürlər!</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Call Buttons -->
+            <div class="p-3 bg-slate-50 border-t border-slate-100 flex gap-2">
+                <a id="mCallBtn" href="#" class="flex-1 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white py-2.5 rounded-2xl font-bold text-xs shadow-md shadow-emerald-600/20 flex items-center justify-center gap-2 transition">
+                    <i class="fa-solid fa-phone"></i> Zəng Et
+                </a>
+                <a id="mWhatsappBtn" href="#" target="_blank" class="flex-1 bg-green-500 hover:bg-green-600 active:scale-95 text-white py-2.5 rounded-2xl font-bold text-xs shadow-md shadow-green-500/20 flex items-center justify-center gap-2 transition">
+                    <i class="fa-brands fa-whatsapp text-sm"></i> WhatsApp
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 3: VIP ADD SIMULATION -->
+    <div id="vipAddModal" class="fixed inset-0 z-[2000] bg-black/50 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-3xl p-5 shadow-2xl relative">
+            <button onclick="closeVipAddModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div class="w-12 h-12 bg-amber-100 rounded-2xl text-amber-500 flex items-center justify-center text-xl mb-3">
+                <i class="fa-solid fa-crown"></i>
+            </div>
+            <h3 class="font-bold text-base text-slate-900 mb-1">VIP Elan Xidməti</h3>
+            <p class="text-xs text-slate-500 mb-4 leading-relaxed">
+                Elanınızı xəritədə ilk sırada peydə edin, sarı VIP çərçivə və bannerlə 10 dəfə çox müştəri qazanın.
+            </p>
+            <div class="bg-slate-50 p-3 rounded-2xl border border-slate-100 mb-4 space-y-2">
+                <div class="flex justify-between text-xs">
+                    <span class="text-slate-500">Müddət:</span>
+                    <span class="font-bold text-slate-800">30 Günlük</span>
+                </div>
+                <div class="flex justify-between text-xs">
+                    <span class="text-slate-500">Məkan təyini:</span>
+                    <span class="font-bold text-emerald-600">Dəqiq GPS daxil</span>
+                </div>
+                <div class="flex justify-between text-xs pt-1 border-t border-slate-200">
+                    <span class="font-bold text-slate-700">Qiymət:</span>
+                    <span class="font-bold text-blue-600 text-sm">3.00 AZN</span>
+                </div>
+            </div>
+            <button onclick="alert('VIP Elan sistemi sınaq rejimindədir. Tezliklə aktiv olacaq!')" class="w-full bg-gradient-to-r from-amber-500 to-yellow-500 text-white font-bold py-3 rounded-2xl text-xs shadow-lg shadow-amber-500/30 hover:opacity-95 active:scale-95 transition">
+                VIP Aktivləşdir (3 AZN)
+            </button>
+        </div>
+    </div>
+
+    <!-- FULLSCREEN IMAGE VIEWER LIGHTBOX -->
+    <div id="imageLightbox" class="fixed inset-0 z-[3000] bg-black/95 hidden flex flex-col justify-between p-4" onclick="closeLightbox()">
+        <div class="flex justify-between items-center text-white">
+            <span class="text-xs text-slate-400">Şəkilə baxış</span>
+            <button class="text-white text-xl p-2"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="flex-1 flex items-center justify-center">
+            <img id="lightboxImg" src="" class="max-h-[80vh] max-w-full rounded-2xl object-contain shadow-2xl">
+        </div>
+        <div class="text-center text-xs text-slate-400 py-2">
+            Bağlamaq üçün ekrana toxunun
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
     <script>
-        const subCategoriesMap = {
-            usta: ["Alçipan Ustası", "Şpatlyovka & Malyar", "Santexnik", "Elektrik", "Motorist", "Maşinist", "Betonçu & Qəlibçi", "Şap Ustası", "Dekor Mebel", "Kafel-Metlax"],
-            xidmet: ["Aşpaz", "Ofisiant", "Bərbər / Qadın Ustası", "Taksi Sürücüsü", "Kuryer", "Dayə / Təmizlikçi"],
-            dukan: ["Tikinti Materialları Dükanı", "Kafe / Restoran", "Avto-Servis & Yağdəyişmə", "Baqqal / Market"],
-            heyvan: ["Ev Heyvanları (Pişik/İt)", "İri/Xırda Buynuzlu Heyvanlar", "Quşçuluq", "Heyvan Yemi Satışı"],
-            texnika: ["Avtokran", "Evakuator", "Betonomexanik", "Ekskavator", "Yük Daşıma (Qazel)"]
-        };
+        // --- 1. INITIAL DATA & STATE ---
+        const USER_LOCATION = [40.4851, 49.8802]; // Digah / Mehdiabad area as in screenshot
 
-        let listings = [
+        // Sample Masters / Listings Data
+        let mastersData = [
             {
-                id: 1, name: "Usta Şamxal (Alçipan, Şpatlyovka)", mainCat: "usta", subCat: "Alçipan Ustası",
-                phone: "0501234567", address: "Bakı, Nizami r., Neftçilər", desc: "Peşəkar alçipan tavanlar, fiqurlar, şpatlyovka və malyar işləri.",
-                lat: 40.4150, lng: 49.9100, views: 185, likes: 32, isVip: true,
-                images: ["https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=800", "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=800"]
+                id: 1,
+                name: "Rəşad Usta",
+                category: "ustalar",
+                subCategory: "Alçipan ustası",
+                title: "Alçipan, Tavan və Dekoraşiya Ustası",
+                lat: 40.4862,
+                lng: 49.8790,
+                rating: 4.9,
+                reviews: 42,
+                isVip: true,
+                phone: "+994501234567",
+                desc: "12 illik iş təcrübəsi. Hər növ alçipan fiqurlarının, asma tavanların, gizli işıq yerlərinin keyfiyyətli və zəmanətlə yığılması. Ən son avadanlıqlarla işləyirik.",
+                img: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=500&auto=format&fit=crop&q=80",
+                gallery: [
+                    "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=500&auto=format&fit=crop&q=80",
+                    "https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=500&auto=format&fit=crop&q=80",
+                    "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=500&auto=format&fit=crop&q=80"
+                ]
             },
             {
-                id: 2, name: "Zaqatala Motorist və Avto-Elektrik", mainCat: "usta", subCat: "Motorist",
-                phone: "0558887766", address: "Zaqatala, Faiq Əmirov küç.", desc: "Mühərriklərin yığılması və diaqnostika.",
-                lat: 41.6312, lng: 46.6425, views: 92, likes: 14, isVip: false,
-                images: ["https://images.unsplash.com/photo-1486006920555-c77dce18193b?w=800"]
+                id: 2,
+                name: "Elşən Məmmədov",
+                category: "ustalar",
+                subCategory: "Alçipan ustası",
+                title: "Professional Alçipan və Malyar",
+                lat: 40.4820,
+                lng: 49.8850,
+                rating: 4.8,
+                reviews: 29,
+                isVip: true,
+                phone: "+994559876543",
+                desc: "Alçipan işləri, arakəsmələr, divar düzləndirilməsi, spaklyovka və rəngsaz işləri. Tez və təmiz təhvil verilir.",
+                img: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=500&auto=format&fit=crop&q=80",
+                gallery: [
+                    "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=500&auto=format&fit=crop&q=80",
+                    "https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=500&auto=format&fit=crop&q=80"
+                ]
             },
             {
-                id: 3, name: "25 Tonluq Avtokran Xidməti", mainCat: "texnika", subCat: "Avtokran",
-                phone: "0559876543", address: "Bakı, Nərimanov r., Təbriz k.", desc: "24/7 Avtokran xidməti.",
-                lat: 40.4000, lng: 49.8700, views: 240, likes: 51, isVip: true,
-                images: ["https://images.unsplash.com/photo-1541888946425-d0fbb186a5b3?w=800"]
+                id: 3,
+                name: "Kənan Usta",
+                category: "ustalar",
+                subCategory: "Elektrik & Alçipan",
+                title: "Gizli işıqlı alçipan və Elektrik montajı",
+                lat: 40.4910,
+                lng: 49.8720,
+                rating: 4.7,
+                reviews: 18,
+                isVip: false,
+                phone: "+994703332211",
+                desc: "Alçipan tavanların yığılması və eyni zamanda spot, led işıqların peşəkar montajı. Bütün xidmət bir əldən.",
+                img: "https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=500&auto=format&fit=crop&q=80",
+                gallery: [
+                    "https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=500&auto=format&fit=crop&q=80"
+                ]
+            },
+            {
+                id: 4,
+                name: "Digah İnşaat Materialları",
+                category: "material",
+                subCategory: "Alçipan materialları",
+                title: "Knauf Alçipan, Profil və Aksesuarlar",
+                lat: 40.4880,
+                lng: 49.8890,
+                rating: 4.9,
+                reviews: 55,
+                isVip: false,
+                phone: "+994504445566",
+                desc: "Topdan və pərakəndə Knauf alçipan vərəqləri, tavan və divar profilləri, şurup, şpaklyovka. Çatdırılma var.",
+                img: "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=500&auto=format&fit=crop&q=80",
+                gallery: [
+                    "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=500&auto=format&fit=crop&q=80"
+                ]
+            },
+            {
+                id: 5,
+                name: "Vüqar Usta",
+                category: "ustalar",
+                subCategory: "Kafel Metlax & Alçipan",
+                title: "Təmir Tikinti Xidmətləri",
+                lat: 40.4750,
+                lng: 49.8680,
+                rating: 4.6,
+                reviews: 14,
+                isVip: false,
+                phone: "+994518889900",
+                desc: "Mənzillərin sıfırdan təmiri. Alçipan, kafel, santexnik və suvaq işləri.",
+                img: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=500&auto=format&fit=crop&q=80",
+                gallery: [
+                    "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=500&auto=format&fit=crop&q=80"
+                ]
             }
         ];
 
-        let userLocation = { lat: 40.4092617, lng: 49.8670924 };
-        let favorites = JSON.parse(localStorage.getItem('favListings') || '[]');
-        let activeMarkersMap = new Map();
-        let currentMainCat = 'all';
-        let currentListingInModal = null;
-        let isVipSelected = false;
+        let favorites = [1]; // Default favorite ID
+        let activeFilterCategory = 'all';
+        let currentActiveMasterId = null;
+        let map, markersGroup;
+        let vipRotateIndex = 0;
 
-        const map = L.map('map', { zoomControl: false }).setView([userLocation.lat, userLocation.lng], 12);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(map);
-        L.control.zoom({ position: 'topright' }).addTo(map);
+        // --- 2. MAP INITIALIZATION ---
+        window.onload = function() {
+            initMap();
+            updateFavoritesUI();
+            startVipBannerRotation();
+            triggerQualityRecommendation();
+        };
 
-        function getDistanceKm(lat1, lon1, lat2, lon2) {
-            const R = 6371;
+        function initMap() {
+            // Initialize Leaflet map centered at user location
+            map = L.map('map', {
+                zoomControl: false
+            }).setView(USER_LOCATION, 14);
+
+            // Add OpenStreetMap tiles
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; OpenStreetMap'
+            }).addTo(map);
+
+            // Zoom Control at bottom right
+            L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+            // User Current Location Blue Pulse Marker
+            const userIcon = L.divIcon({
+                className: 'custom-user-pin',
+                html: `<div class="relative flex items-center justify-center w-6 h-6">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-4 w-4 bg-blue-600 border-2 border-white shadow-md"></span>
+                       </div>`,
+                iconSize: [24, 24],
+                iconAnchor: [12, 12]
+            });
+            L.marker(USER_LOCATION, { icon: userIcon }).addTo(map).bindPopup("<b>Sizin Mövqeyiniz</b>");
+
+            markersGroup = L.layerGroup().addTo(map);
+
+            // Initial render of markers
+            renderMapMarkers();
+        }
+
+        // --- 3. FILTERING & SEARCH ENGINE ---
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371; // Radius of the earth in km
             const dLat = (lat2 - lat1) * Math.PI / 180;
             const dLon = (lon2 - lon1) * Math.PI / 180;
-            const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
-            return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
+            const a = 
+                Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+                Math.sin(dLon/2) * Math.sin(dLon/2); 
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+            return (R * c).toFixed(1); // Distance in km
         }
 
-        function createCustomIcon(mainCat, isVip) {
-            let color = '#007bff'; let iconClass = 'fa-helmet-safety';
-            if (mainCat === 'xidmet') { color = '#6f42c1'; iconClass = 'fa-user-tie'; }
-            else if (mainCat === 'dukan') { color = '#28a745'; iconClass = 'fa-store'; }
-            else if (mainCat === 'heyvan') { color = '#d97706'; iconClass = 'fa-paw'; }
-            else if (mainCat === 'texnika') { color = '#e63946'; iconClass = 'fa-truck-monster'; }
+        function getFilteredData() {
+            const query = document.getElementById('searchInput').value.trim().toLowerCase();
+            const selectedRadius = parseFloat(document.getElementById('radiusSelect').value);
 
-            const vipClass = isVip ? 'vip-border' : '';
+            return mastersData.filter(item => {
+                // Distance Filter
+                const dist = calculateDistance(USER_LOCATION[0], USER_LOCATION[1], item.lat, item.lng);
+                if (parseFloat(dist) > selectedRadius) return false;
 
-            return L.divIcon({
-                className: 'custom-pin-container',
-                html: `<div class="custom-pin ${vipClass}" style="background-color: ${color};">
-                        <i class="fa-solid ${iconClass}"></i>
-                       </div>`,
-                iconSize: [40, 40], iconAnchor: [20, 20]
+                // Category Filter
+                if (activeFilterCategory === 'ustalar' && item.category !== 'ustalar') return false;
+                if (activeFilterCategory === 'material' && item.category !== 'material') return false;
+                if (activeFilterCategory === 'vip' && !item.isVip) return false;
+
+                // Search Query Filter
+                if (query !== '') {
+                    const matchName = item.name.toLowerCase().includes(query);
+                    const matchTitle = item.title.toLowerCase().includes(query);
+                    const matchSub = item.subCategory.toLowerCase().includes(query);
+                    return matchName || matchTitle || matchSub;
+                }
+
+                return true;
             });
         }
 
-        // Auto Reverse Geocoding (Koordinatdan Unvan Tapmaq)
-        async function fetchAddressFromCoords(lat, lng) {
-            try {
-                const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`);
-                const data = await res.json();
-                if(data && data.address) {
-                    const a = data.address;
-                    const city = a.city || a.town || a.village || a.state || "Azərbaycan";
-                    const suburb = a.suburb || a.district || a.county || "";
-                    const road = a.road || a.pedestrian || "";
-                    return `${city}${suburb ? ', ' + suburb : ''}${road ? ', ' + road : ''}`;
-                }
-            } catch(e) {}
-            return `Koordinat: ${lat.toFixed(4)}, ${lng.toFixed(4)}`;
-        }
+        function renderMapMarkers() {
+            markersGroup.clearLayers();
+            const filtered = getFilteredData();
 
-        // Xəritəni Sürüşdürdükdə Yaxındakı Markerlərin Böyüməsi (Magnify Effect)
-        function updateMarkerScales() {
-            const center = map.getCenter();
-            activeMarkersMap.forEach((markerObj, id) => {
-                const dist = getDistanceKm(center.lat, center.lng, markerObj.lat, markerObj.lng);
-                const el = markerObj.marker.getElement();
-                if(el) {
-                    if(dist < 0.8) {
-                        el.classList.add('active-near');
-                    } else {
-                        el.classList.remove('active-near');
-                    }
-                }
-            });
-        }
+            document.getElementById('activeCount').innerText = filtered.length;
 
-        map.on('move', updateMarkerScales);
+            filtered.forEach(item => {
+                const isFav = favorites.includes(item.id);
+                const markerBg = item.isVip ? 'bg-amber-500 vip-marker' : 'bg-blue-600';
+                const iconClass = item.category === 'material' ? 'fa-boxes-stacked' : 'fa-user-gear';
 
-        function renderMarkers() {
-            activeMarkersMap.forEach(obj => map.removeLayer(obj.marker));
-            activeMarkersMap.clear();
-
-            const searchText = document.getElementById('searchInput').value.toLowerCase();
-            const radiusVal = document.getElementById('radiusSelect').value;
-
-            listings.forEach(item => {
-                const distKm = getDistanceKm(userLocation.lat, userLocation.lng, item.lat, item.lng);
-                item.calculatedDistance = distKm;
-
-                const matchesCat = (currentMainCat === 'all' || item.mainCat === currentMainCat);
-                const matchesSearch = item.name.toLowerCase().includes(searchText) || 
-                                      item.subCat.toLowerCase().includes(searchText) ||
-                                      item.address.toLowerCase().includes(searchText);
-
-                let matchesRadius = true;
-                if (radiusVal !== 'all') matchesRadius = distKm <= parseFloat(radiusVal);
-
-                if (matchesCat && matchesSearch && matchesRadius) {
-                    const marker = L.marker([item.lat, item.lng], { icon: createCustomIcon(item.mainCat, item.isVip) }).addTo(map);
-                    marker.on('click', () => { openProfileCard(item); });
-                    activeMarkersMap.set(item.id, { marker: marker, lat: item.lat, lng: item.lng });
-                }
-            });
-
-            updateMarkerScales();
-            document.getElementById('favCount').innerText = favorites.length;
-        }
-
-        function openProfileCard(item) {
-            currentListingInModal = item;
-            item.views += 1;
-
-            document.getElementById('cardName').innerText = item.name;
-            document.getElementById('cardCategory').innerText = item.subCat.toUpperCase();
-            document.getElementById('cardDescription').innerText = item.desc;
-            document.getElementById('cardAddress').innerText = item.address;
-            document.getElementById('cardViews').innerText = item.views;
-            document.getElementById('cardLikes').innerText = item.likes;
-
-            const distStr = item.calculatedDistance < 1 
-                ? `${Math.round(item.calculatedDistance * 1000)} Metr Məsafədə` 
-                : `${item.calculatedDistance.toFixed(1)} KM Məsafədə`;
-            document.getElementById('cardDistance').innerText = distStr;
-
-            document.getElementById('callBtn').href = `tel:${item.phone}`;
-            document.getElementById('waBtn').href = `https://wa.me/${item.phone.replace(/[^0-9]/g, '')}`;
-
-            const galleryScroll = document.getElementById('galleryScroll');
-            galleryScroll.innerHTML = '';
-            if (item.images && item.images.length > 0) {
-                item.images.forEach((imgUrl, index) => {
-                    const img = document.createElement('img');
-                    img.src = imgUrl;
-                    img.onclick = () => openTikTokGallery(item.images, index);
-                    galleryScroll.appendChild(img);
+                const customMarkerIcon = L.divIcon({
+                    className: 'custom-pin',
+                    html: `<div onclick="openProfileModal(${item.id})" class="${markerBg} text-white w-9 h-9 rounded-2xl flex items-center justify-center shadow-xl cursor-pointer border-2 border-white transition transform hover:scale-110">
+                            <i class="fa-solid ${iconClass} text-sm"></i>
+                           </div>`,
+                    iconSize: [36, 36],
+                    iconAnchor: [18, 18]
                 });
+
+                const marker = L.marker([item.lat, item.lng], { icon: customMarkerIcon });
+                markersGroup.addLayer(marker);
+            });
+        }
+
+        // Real-time update triggered upon changing search, category or radius
+        function onFilterChange() {
+            renderMapMarkers();
+        }
+
+        function handleSearch() {
+            const query = document.getElementById('searchInput').value.trim();
+            document.getElementById('clearBtn').classList.toggle('hidden', query === '');
+            renderMapMarkers();
+        }
+
+        function clearSearch() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('clearBtn').classList.add('hidden');
+            renderMapMarkers();
+        }
+
+        function setCategoryFilter(category) {
+            activeFilterCategory = category;
+            
+            // Update active pill button styling
+            document.querySelectorAll('.cat-btn').forEach(btn => {
+                btn.className = "cat-btn shrink-0 bg-white/90 text-slate-700 hover:bg-slate-100 px-3.5 py-1.5 rounded-xl text-xs font-semibold shadow-sm border border-slate-100 transition flex items-center gap-1.5";
+            });
+
+            const activeBtn = document.getElementById(`cat-${category}`);
+            if (activeBtn) {
+                activeBtn.className = "cat-btn shrink-0 bg-blue-600 text-white px-3.5 py-1.5 rounded-xl text-xs font-semibold shadow-md transition flex items-center gap-1.5";
             }
 
-            document.getElementById('profileCard').classList.add('open');
+            renderMapMarkers();
         }
 
-        function closeProfileCard() { document.getElementById('profileCard').classList.remove('open'); }
+        function recenterMap() {
+            map.flyTo(USER_LOCATION, 15, { animate: true, duration: 1 });
+        }
 
-        // TikTok-Style Fullscreen Gallery
-        function openTikTokGallery(images, startIndex) {
-            const slider = document.getElementById('tiktokSlider');
-            slider.innerHTML = '';
-            images.forEach((url, idx) => {
-                const slide = document.createElement('div');
-                slide.className = 'tiktok-slide';
-                slide.innerHTML = `<img src="${url}">`;
-                slider.appendChild(slide);
+        // --- 4. FAVORITES SYSTEM ---
+        function toggleFavoritesModal(show) {
+            const modal = document.getElementById('favModal');
+            if (show) {
+                renderFavoritesList();
+                modal.classList.remove('hidden');
+            } else {
+                modal.classList.add('hidden');
+            }
+        }
+
+        function updateFavoritesUI() {
+            document.getElementById('favBadge').innerText = favorites.length;
+        }
+
+        function renderFavoritesList() {
+            const container = document.getElementById('favListContainer');
+            container.innerHTML = '';
+
+            const favItems = mastersData.filter(m => favorites.includes(m.id));
+
+            if (favItems.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-8 text-slate-400">
+                        <i class="fa-regular fa-heart text-3xl mb-2 block"></i>
+                        <p class="text-xs">Hələ ki heç bir usta və ya elan saxlamaq siyahısına əlavə edilməyib.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            favItems.forEach(item => {
+                const dist = calculateDistance(USER_LOCATION[0], USER_LOCATION[1], item.lat, item.lng);
+                const el = document.createElement('div');
+                el.className = "bg-slate-50 border border-slate-100 p-3 rounded-2xl flex items-center justify-between gap-3 hover:bg-slate-100/80 transition cursor-pointer";
+                el.onclick = () => {
+                    toggleFavoritesModal(false);
+                    map.flyTo([item.lat, item.lng], 16);
+                    openProfileModal(item.id);
+                };
+                el.innerHTML = `
+                    <div class="flex items-center gap-3 overflow-hidden">
+                        <img src="${item.img}" class="w-12 h-12 rounded-xl object-cover shrink-0">
+                        <div class="truncate">
+                            <h4 class="font-bold text-xs text-slate-800 truncate">${item.name}</h4>
+                            <p class="text-[11px] text-blue-600 font-medium truncate">${item.title}</p>
+                            <span class="text-[10px] text-slate-400">⭐ ${item.rating} (${item.reviews} rəy) • ${dist} km</span>
+                        </div>
+                    </div>
+                    <button onclick="event.stopPropagation(); removeFavorite(${item.id})" class="text-rose-500 hover:text-rose-700 p-2 shrink-0">
+                        <i class="fa-solid fa-trash-can text-sm"></i>
+                    </button>
+                `;
+                container.appendChild(el);
             });
-            document.getElementById('tiktokModal').classList.add('open');
-            setTimeout(() => {
-                slider.scrollLeft = startIndex * slider.clientWidth;
-                updateTikTokCounter();
-            }, 50);
         }
 
-        function closeTikTokGallery() { document.getElementById('tiktokModal').classList.remove('open'); }
-
-        function updateTikTokCounter() {
-            const slider = document.getElementById('tiktokSlider');
-            const total = slider.children.length;
-            const current = Math.round(slider.scrollLeft / slider.clientWidth) + 1;
-            document.getElementById('tiktokCounter').innerText = `${current} / ${total}`;
-        }
-
-        function likeCurrentListing() {
-            if(currentListingInModal) {
-                currentListingInModal.likes += 1;
-                document.getElementById('cardLikes').innerText = currentListingInModal.likes;
+        function removeFavorite(id) {
+            favorites = favorites.filter(fId => fId !== id);
+            updateFavoritesUI();
+            renderFavoritesList();
+            if (currentActiveMasterId === id) {
+                updateFavButtonState(false);
             }
         }
 
         function toggleFavoriteCurrent() {
-            if(!currentListingInModal) return;
-            const idx = favorites.indexOf(currentListingInModal.id);
-            if(idx > -1) { favorites.splice(idx, 1); alert("Sevimlilərdən çıxarıldı."); } 
-            else { favorites.push(currentListingInModal.id); alert("Sevimlilərə əlavə olundu ❤️"); }
-            localStorage.setItem('favListings', JSON.stringify(favorites));
-            renderMarkers();
-        }
-
-        function toggleFavoritesView() {
-            if(favorites.length === 0) return alert("Sevimlilərə elan əlavə edilməyib.");
-            alert(`Sevimlilərinizdə ${favorites.length} elan var.`);
-        }
-
-        function locateUser() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(pos => {
-                    userLocation.lat = pos.coords.latitude; userLocation.lng = pos.coords.longitude;
-                    map.setView([userLocation.lat, userLocation.lng], 14);
-                    renderMarkers();
-                });
-            }
-        }
-
-        function updateSubCatDropdown() {
-            const mainCat = document.getElementById('formMainCat').value;
-            const subCatSelect = document.getElementById('formSubCat');
-            subCatSelect.innerHTML = '';
-            subCategoriesMap[mainCat].forEach(sub => {
-                const opt = document.createElement('option'); opt.value = sub; opt.innerText = sub;
-                subCatSelect.appendChild(opt);
-            });
-        }
-
-        let tempPlacementMarker = null;
-
-        async function setLocMode(mode) {
-            isVipSelected = (mode === 'map');
-            document.getElementById('locCurrentBtn').classList.toggle('selected', !isVipSelected);
-            document.getElementById('locMapBtn').classList.toggle('selected', isVipSelected);
-            
-            const submitBtn = document.getElementById('submitBtn');
-
-            if(!isVipSelected) {
-                submitBtn.innerText = "Elanı Yayımla (Pulsuz)";
-                document.getElementById('formLat').value = userLocation.lat;
-                document.getElementById('formLng').value = userLocation.lng;
-                document.getElementById('formAddress').value = "Yüklənir...";
-                const addr = await fetchAddressFromCoords(userLocation.lat, userLocation.lng);
-                document.getElementById('formAddress').value = addr;
+            if (!currentActiveMasterId) return;
+            const index = favorites.indexOf(currentActiveMasterId);
+            if (index > -1) {
+                favorites.splice(index, 1);
+                updateFavButtonState(false);
             } else {
-                submitBtn.innerText = "👑 VIP Elan Yayımla (3 AZN / 30 Gün)";
-                alert("Xəritədə elan qoymaq istədiyiniz yerə toxunun. (VIP Rejim)");
-                closeFormModal();
-                
-                const onMapClick = async function(e) {
-                    if(tempPlacementMarker) map.removeLayer(tempPlacementMarker);
-                    tempPlacementMarker = L.marker(e.latlng).addTo(map);
-                    document.getElementById('formLat').value = e.latlng.lat;
-                    document.getElementById('formLng').value = e.latlng.lng;
-                    map.off('click', onMapClick);
-                    
-                    openFormModal();
-                    document.getElementById('formAddress').value = "Ünvan təyin olunur...";
-                    const addr = await fetchAddressFromCoords(e.latlng.lat, e.latlng.lng);
-                    document.getElementById('formAddress').value = addr;
-                };
-                map.on('click', onMapClick);
+                favorites.push(currentActiveMasterId);
+                updateFavButtonState(true);
+            }
+            updateFavoritesUI();
+        }
+
+        function updateFavButtonState(isFav) {
+            const btn = document.getElementById('mFavBtn');
+            if (isFav) {
+                btn.className = "absolute top-3 left-3 w-9 h-9 rounded-full bg-rose-500 text-white flex items-center justify-center shadow-lg transition active:scale-95";
+            } else {
+                btn.className = "absolute top-3 left-3 w-9 h-9 rounded-full bg-white/90 text-slate-400 flex items-center justify-center shadow-lg transition active:scale-95";
             }
         }
 
-        let uploadedImagesBase64 = [];
-        function previewImages(e) {
-            const files = Array.from(e.target.files).slice(0, 10);
-            const grid = document.getElementById('previewGrid');
-            grid.innerHTML = ''; uploadedImagesBase64 = [];
+        // --- 5. PROFILE MODAL & STAR RATING ---
+        function openProfileModal(id) {
+            const item = mastersData.find(m => m.id === id);
+            if (!item) return;
 
-            files.forEach(file => {
-                const reader = new FileReader();
-                reader.onload = function(evt) {
-                    uploadedImagesBase64.push(evt.target.result);
-                    const img = document.createElement('img'); img.src = evt.target.result;
-                    grid.appendChild(img);
-                }
-                reader.readAsDataURL(file);
+            currentActiveMasterId = id;
+            const dist = calculateDistance(USER_LOCATION[0], USER_LOCATION[1], item.lat, item.lng);
+
+            document.getElementById('mCoverImg').src = item.img;
+            document.getElementById('mName').innerText = item.name;
+            document.getElementById('mCategory').innerText = item.title;
+            document.getElementById('mRating').innerText = item.rating;
+            document.getElementById('mReviewCount').innerText = `(${item.reviews} rəy)`;
+            document.getElementById('mDistance').innerText = `${dist} KM uzaqlıqda`;
+            document.getElementById('mDesc').innerText = item.desc;
+            document.getElementById('mVipBadge').classList.toggle('hidden', !item.isVip);
+
+            // Reverse Geocoding Simulation (Location Address)
+            document.getElementById('mAddress').innerText = `${dist < 2 ? 'Mehdiabad / Digah yolu' : 'Bakı şəhəri, Mərkəzə yaxın'}`;
+
+            // Call / WhatsApp links
+            document.getElementById('mCallBtn').href = `tel:${item.phone}`;
+            document.getElementById('mWhatsappBtn').href = `https://wa.me/${item.phone.replace('+', '')}?text=Salam, UstaMap-dan yazıram.`;
+
+            // Gallery
+            const galleryContainer = document.getElementById('mGallery');
+            galleryContainer.innerHTML = '';
+            item.gallery.forEach(imgUrl => {
+                const imgEl = document.createElement('img');
+                imgEl.src = imgUrl;
+                imgEl.className = "w-full h-20 rounded-xl object-cover cursor-pointer hover:opacity-90 transition border border-slate-100";
+                imgEl.onclick = () => openLightbox(imgUrl);
+                galleryContainer.appendChild(imgEl);
             });
+
+            // Fav Button Status
+            updateFavButtonState(favorites.includes(id));
+
+            // Reset Star Feedback
+            document.getElementById('rateFeedback').classList.add('hidden');
+
+            document.getElementById('profileModal').classList.remove('hidden');
         }
 
-        async function openFormModal() { 
-            updateSubCatDropdown();
-            document.getElementById('formModal').style.display = 'flex';
-            if(!isVipSelected) {
-                document.getElementById('formLat').value = userLocation.lat;
-                document.getElementById('formLng').value = userLocation.lng;
-                const addr = await fetchAddressFromCoords(userLocation.lat, userLocation.lng);
-                document.getElementById('formAddress').value = addr;
+        function closeProfileModal() {
+            document.getElementById('profileModal').classList.add('hidden');
+        }
+
+        function rateCurrentMaster(stars) {
+            if (!currentActiveMasterId) return;
+            const master = mastersData.find(m => m.id === currentActiveMasterId);
+            if (master) {
+                // Update average rating simulation
+                master.reviews += 1;
+                master.rating = (((master.rating * (master.reviews - 1)) + stars) / master.reviews).toFixed(1);
+                document.getElementById('mRating').innerText = master.rating;
+                document.getElementById('mReviewCount').innerText = `(${master.reviews} rəy)`;
+                document.getElementById('rateFeedback').classList.remove('hidden');
+                renderMapMarkers();
             }
         }
 
-        function closeFormModal() { document.getElementById('formModal').style.display = 'none'; }
+        // --- 6. VIP BANNER ROTATION & RECOMMENDATIONS ---
+        function startVipBannerRotation() {
+            const vips = mastersData.filter(m => m.isVip);
+            if (vips.length === 0) return;
 
-        function handleFormSubmit(e) {
-            e.preventDefault();
-            const lat = parseFloat(document.getElementById('formLat').value);
-            const lng = parseFloat(document.getElementById('formLng').value);
-
-            if(isVipSelected) {
-                const payTxs = confirm("Xəritədən seçilən xüsusi elan VIP hesab olunur.\n\n3 AZN ödəniş təsdiqlənsin? (30 Gün Aktiv)");
-                if(!payTxs) return;
+            function updateBanner() {
+                const currentVip = vips[vipRotateIndex];
+                document.getElementById('vipBannerImg').src = currentVip.img;
+                document.getElementById('vipBannerName').innerText = currentVip.name;
+                document.getElementById('vipBannerRating').innerText = `⭐ ${currentVip.rating}`;
+                document.getElementById('vipBannerDesc').innerText = `${currentVip.title} • Yaxınlıqda`;
+                
+                vipRotateIndex = (vipRotateIndex + 1) % vips.length;
             }
 
-            const newListing = {
-                id: Date.now(),
-                name: document.getElementById('formName').value,
-                mainCat: document.getElementById('formMainCat').value,
-                subCat: document.getElementById('formSubCat').value,
-                phone: document.getElementById('formPhone').value,
-                address: document.getElementById('formAddress').value,
-                desc: document.getElementById('formDesc').value,
-                lat: lat, lng: lng, views: 1, likes: 0, isVip: isVipSelected,
-                images: uploadedImagesBase64.length > 0 ? uploadedImagesBase64 : ["https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=800"]
-            };
-
-            listings.push(newListing);
-            if(tempPlacementMarker) map.removeLayer(tempPlacementMarker);
-            renderMarkers();
-            closeFormModal();
-            document.getElementById('addListingForm').reset();
-            document.getElementById('previewGrid').innerHTML = '';
-            alert("Təbriklər! Elanınız dəqiq ünvanla xəritədə canlı yayımlandı.");
+            updateBanner();
+            setInterval(updateBanner, 6000); // Rotates every 6 seconds smoothly
         }
 
-        function filterMainCategory(cat, btn) {
-            currentMainCat = cat;
-            document.querySelectorAll('.filter-row .tag-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            renderMarkers();
+        function openVipFromBanner() {
+            const vips = mastersData.filter(m => m.isVip);
+            const activeVip = vips[(vipRotateIndex - 1 + vips.length) % vips.length];
+            if (activeVip) {
+                map.flyTo([activeVip.lat, activeVip.lng], 16);
+                openProfileModal(activeVip.id);
+            }
         }
 
-        function autoFilter() { renderMarkers(); }
+        function triggerQualityRecommendation() {
+            // Pick highest rated master nearby
+            setTimeout(() => {
+                const bestMaster = [...mastersData].sort((a,b) => b.rating - a.rating)[0];
+                if (bestMaster) {
+                    document.getElementById('recTitle').innerText = `${bestMaster.name} (${bestMaster.rating} ⭐)`;
+                    document.getElementById('recSub').innerText = `${bestMaster.subCategory} • ${bestMaster.reviews} müştəri rəyi`;
+                    
+                    const toast = document.getElementById('recommendationToast');
+                    toast.classList.remove('translate-y-32', 'opacity-0');
+                    
+                    // Auto dismiss after 8 seconds
+                    setTimeout(closeRecToast, 8000);
+                }
+            }, 3000);
+        }
 
-        locateUser();
-        renderMarkers();
+        function closeRecToast() {
+            const toast = document.getElementById('recommendationToast');
+            toast.classList.add('translate-y-32', 'opacity-0');
+        }
+
+        function openProfileFromRec() {
+            const bestMaster = [...mastersData].sort((a,b) => b.rating - a.rating)[0];
+            if (bestMaster) {
+                closeRecToast();
+                map.flyTo([bestMaster.lat, bestMaster.lng], 16);
+                openProfileModal(bestMaster.id);
+            }
+        }
+
+        // --- 7. LIGHTBOX & VIP ADD MODAL ---
+        function openLightbox(url) {
+            document.getElementById('lightboxImg').src = url;
+            document.getElementById('imageLightbox').classList.remove('hidden');
+        }
+
+        function closeLightbox() {
+            document.getElementById('imageLightbox').classList.add('hidden');
+        }
+
+        function openVipAddModal() {
+            document.getElementById('vipAddModal').classList.remove('hidden');
+        }
+
+        function closeVipAddModal() {
+            document.getElementById('vipAddModal').classList.add('hidden');
+        }
     </script>
 </body>
 </html>
+```
