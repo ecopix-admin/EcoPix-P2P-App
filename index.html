@@ -1,689 +1,1153 @@
+```html
 <!DOCTYPE html>
-<html lang="az">
+<html lang="az" class="h-full bg-slate-900 text-slate-100">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UstaMap — Canlı Xəritə Platforması</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>UstaMap & Service Hub - Azərbaycanın Xəritə Əsaslı Xidmət Platforması</title>
     
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#fff7ed',
+                            100: '#ffedd5',
+                            500: '#f97316',
+                            600: '#ea580c',
+                            700: '#c2410c',
+                        }
+                    },
+                    keyframes: {
+                        pulseGlow: {
+                            '0%, 100%': { transform: 'scale(1)', opacity: '0.9', boxShadow: '0 0 15px rgba(249, 115, 22, 0.8)' },
+                            '50%': { transform: 'scale(1.25)', opacity: '1', boxShadow: '0 0 30px rgba(249, 115, 22, 1), 0 0 50px rgba(251, 146, 60, 0.8)' },
+                        },
+                        blueRadar: {
+                            '0%': { transform: 'scale(0.8)', opacity: '0.8' },
+                            '100%': { transform: 'scale(2.5)', opacity: '0' }
+                        },
+                        sunRay: {
+                            '0%': { transform: 'rotate(0deg)' },
+                            '100%': { transform: 'rotate(360deg)' }
+                        }
+                    },
+                    animation: {
+                        'pulse-glow': 'pulseGlow 2s infinite ease-in-out',
+                        'blue-radar': 'blueRadar 2s infinite linear',
+                        'sun-ray': 'sunRay 12s linear infinite'
+                    }
+                }
+            }
+        }
+    </script>
+
     <!-- Leaflet CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    
     <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
-        body, html { height: 100%; width: 100%; overflow: hidden; background: #0f172a; }
-        #map { width: 100%; height: 100vh; z-index: 1; }
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
 
-        /* Üst Panel */
-        .top-panel {
-            position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
-            z-index: 1000; width: 94%; max-width: 550px;
-            background: rgba(255, 255, 255, 0.96); padding: 10px 14px;
-            border-radius: 20px; box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.6);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 9999px;
+        }
+
+        /* Leaflet Dark Theme Overrides & Markers */
+        .leaflet-container {
+            background: #0f172a !important;
+            font-family: inherit;
+        }
+        .leaflet-control-zoom {
+            border: none !important;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5) !important;
+        }
+        .leaflet-control-zoom-in, .leaflet-control-zoom-out {
+            background-color: #1e293b !important;
+            color: #f8fafc !important;
+            border: 1px solid #334155 !important;
+        }
+
+        /* Marker Styles */
+        .custom-sunburst-marker {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .sunburst-ring {
+            position: absolute;
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(249, 115, 22, 0.6) 0%, rgba(249, 115, 22, 0) 70%);
+            animation: pulseGlow 1.8s infinite ease-in-out;
+            pointer-events: none;
+        }
+
+        .sun-rays {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            border: 2px dashed rgba(251, 146, 60, 0.7);
+            border-radius: 50%;
+            animation: sunRay 10s linear infinite;
+            pointer-events: none;
+        }
+
+        .marker-icon-wrapper {
+            position: relative;
+            z-index: 10;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+            border: 2.5px solid #ffffff;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .marker-icon-wrapper.proximity-highlight {
+            transform: scale(1.35) translateY(-5px);
+            border-color: #f97316;
+            box-shadow: 0 0 25px rgba(249, 115, 22, 1);
+        }
+
+        /* Blue Dot GPS Location Marker */
+        .gps-blue-dot {
+            width: 18px;
+            height: 18px;
+            background-color: #3b82f6;
+            border: 3px solid #ffffff;
+            border-radius: 50%;
+            box-shadow: 0 0 12px #3b82f6;
+            position: relative;
+        }
+        .gps-blue-radar {
+            position: absolute;
+            top: -12px;
+            left: -12px;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: rgba(59, 130, 246, 0.4);
+            animation: blueRadar 2s infinite ease-out;
+            pointer-events: none;
+        }
+
+        /* Emergency Beacon Marker */
+        .emergency-beacon {
+            width: 38px;
+            height: 38px;
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.9);
+            animation: pulseGlow 1.2s infinite ease-in-out;
+        }
+
+        .backdrop-blur-md {
             backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
         }
-        .search-box { display: flex; gap: 8px; margin-bottom: 8px; }
-        .search-box input {
-            flex: 1; padding: 11px 16px; border: 1px solid #e2e8f0;
-            border-radius: 14px; outline: none; font-size: 14px; background: #f8fafc;
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
-        }
-        .btn-search-action {
-            background: #2563eb; color: white; border: none; padding: 0 18px;
-            border-radius: 14px; font-weight: 600; cursor: pointer; font-size: 14px;
-            display: flex; align-items: center; gap: 6px; box-shadow: 0 3px 10px rgba(37,99,235,0.3);
-        }
-        .btn-fav-header {
-            background: #fff0f2; color: #e63946; border: 1px solid #ffccd5;
-            padding: 0 12px; border-radius: 14px; cursor: pointer; font-weight: bold;
-            display: flex; align-items: center; gap: 6px; font-size: 13px;
-        }
-
-        .filter-row { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
-        .filter-row::-webkit-scrollbar { display: none; }
-        .tag-btn, .radius-select {
-            background: #f1f5f9; border: 1px solid #cbd5e1; padding: 8px 14px;
-            border-radius: 20px; font-size: 12px; cursor: pointer; white-space: nowrap;
-            display: flex; align-items: center; gap: 6px; font-weight: 600; color: #334155; transition: all 0.2s;
-        }
-        .tag-btn.active { background: #2563eb; color: #fff; border-color: #2563eb; box-shadow: 0 3px 12px rgba(37,99,235,0.35); }
-
-        /* Parlaq Narıncı Animasiyalı VIP Banner Karuseli */
-        .vip-carousel-bar {
-            position: absolute; top: 118px; left: 50%; transform: translateX(-50%);
-            z-index: 999; width: 90%; max-width: 500px;
-            background: linear-gradient(135deg, #ff8c00, #ff4500);
-            border-radius: 16px; padding: 10px 14px; color: white;
-            box-shadow: 0 6px 20px rgba(255, 69, 0, 0.4);
-            display: flex; align-items: center; justify-content: space-between;
-            animation: pulseGlow 2.5s infinite alternate; cursor: pointer;
-        }
-        @keyframes pulseGlow {
-            0% { box-shadow: 0 4px 15px rgba(255, 140, 0, 0.4); transform: translateX(-50%) scale(1); }
-            100% { box-shadow: 0 8px 25px rgba(255, 69, 0, 0.7); transform: translateX(-50%) scale(1.02); }
-        }
-
-        /* Marker Stilləri */
-        .custom-pin-container { transition: transform 0.25s ease-out; }
-        .custom-pin {
-            width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center;
-            justify-content: center; color: white; box-shadow: 0 4px 14px rgba(0,0,0,0.4);
-            border: 2px solid white; font-size: 17px;
-        }
-        .custom-pin-container.active-near { transform: scale(1.4); z-index: 999 !important; }
-        .custom-pin-container.active-near .custom-pin { border: 3px solid #ff0055; box-shadow: 0 0 20px rgba(255, 0, 85, 0.8); }
-        .vip-pin-border { border: 3px solid #ffd700 !important; box-shadow: 0 0 16px rgba(255, 215, 0, 0.9) !important; }
-
-        /* Alt Düymələr Barı */
-        .bottom-nav-bar {
-            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
-            z-index: 1000; width: 92%; max-width: 480px; background: rgba(255,255,255,0.96);
-            border-radius: 25px; padding: 8px 12px; display: flex; justify-content: space-between;
-            align-items: center; box-shadow: 0 10px 30px rgba(0,0,0,0.25); backdrop-filter: blur(10px);
-        }
-        .nav-item-btn {
-            border: none; background: transparent; padding: 8px 14px; border-radius: 20px;
-            cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 3px;
-            font-size: 11px; font-weight: bold; color: #64748b; transition: all 0.2s;
-        }
-        .nav-item-btn.main-add {
-            background: linear-gradient(135deg, #10b981, #059669); color: white;
-            padding: 10px 22px; font-size: 13px; box-shadow: 0 4px 15px rgba(16,185,129,0.4);
-            flex-direction: row; gap: 6px;
-        }
-
-        /* Profil / Detal Kartı */
-        .profile-card {
-            position: absolute; bottom: -100%; left: 0; width: 100%; background: white;
-            z-index: 2000; border-radius: 26px 26px 0 0; padding: 22px;
-            box-shadow: 0 -8px 35px rgba(0,0,0,0.3); transition: bottom 0.35s ease-in-out;
-            max-height: 88vh; overflow-y: auto;
-        }
-        .profile-card.open { bottom: 0; }
-        .card-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid #f1f5f9; padding-bottom: 12px; margin-bottom: 12px; }
-        .card-close { background: #f1f5f9; border: none; width: 34px; height: 34px; border-radius: 50%; cursor: pointer; font-weight: bold; font-size: 16px; color: #475569; }
-        
-        .meta-stats { display: flex; gap: 15px; font-size: 13px; color: #64748b; margin: 10px 0; }
-        .meta-stats span { display: flex; align-items: center; gap: 5px; }
-
-        /* Səliqəli Video Reklam Çərçivəsi */
-        .ad-video-container {
-            margin: 15px 0; border-radius: 14px; overflow: hidden; position: relative;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.12); border: 1px solid #e2e8f0; background: #000;
-        }
-        .ad-video-container video { width: 100%; height: 160px; object-fit: cover; display: block; }
-        .ad-badge {
-            position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.6);
-            color: #ffd700; font-size: 10px; padding: 3px 8px; border-radius: 10px;
-            font-weight: bold; backdrop-filter: blur(4px); border: 1px solid rgba(255,215,0,0.4);
-        }
-
-        .contact-btns { display: flex; gap: 10px; margin-top: 15px; }
-        .btn-call { flex: 1; background: #2563eb; color: white; text-decoration: none; text-align: center; padding: 12px; border-radius: 12px; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .btn-whatsapp { flex: 1; background: #25D366; color: white; text-decoration: none; text-align: center; padding: 12px; border-radius: 12px; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .btn-action-sec { background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; padding: 12px; border-radius: 12px; cursor: pointer; font-weight: bold; }
-
-        .gallery-scroll { display: flex; gap: 10px; overflow-x: auto; margin-top: 10px; padding-bottom: 5px; scrollbar-width: none; }
-        .gallery-scroll img { width: 120px; height: 90px; object-fit: cover; border-radius: 12px; flex-shrink: 0; cursor: pointer; border: 1px solid #e2e8f0; }
-
-        /* Form Modal */
-        .form-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.75); z-index: 3000; align-items: center; justify-content: center; padding: 15px; }
-        .form-content { background: white; width: 100%; max-width: 500px; border-radius: 22px; padding: 22px; max-height: 90vh; overflow-y: auto; }
-        .form-group { margin-bottom: 12px; }
-        .form-group label { display: block; font-size: 12px; font-weight: bold; margin-bottom: 5px; color: #1e293b; }
-        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 11px; border: 1px solid #cbd5e1; border-radius: 10px; outline: none; font-size: 13px; }
-
-        .vip-toggle-box {
-            background: linear-gradient(135deg, #fffdf0, #fef3c7); border: 1px solid #fde68a;
-            padding: 12px; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;
-        }
-
-        .image-preview-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-top: 8px; }
-        .image-preview-grid img { width: 100%; height: 50px; object-fit: cover; border-radius: 6px; }
-
-        /* Sevimlilər Modalı */
-        .fav-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 3500; align-items: flex-end; }
-        .fav-content { background: white; width: 100%; border-radius: 24px 24px 0 0; padding: 20px; max-height: 70vh; overflow-y: auto; }
-        .fav-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee; }
     </style>
 </head>
-<body>
+<body class="h-full flex flex-col overflow-hidden bg-slate-950 text-slate-100">
 
-    <!-- Üst Panel -->
-    <div class="top-panel">
-        <div class="search-box">
-            <input type="text" id="searchInput" placeholder="Peşə (alçipan, motorist...), məkan və ya obyekt..." onkeyup="if(event.key==='Enter') renderMarkers()">
-            <button class="btn-search-action" onclick="renderMarkers()"><i class="fa-solid fa-magnifying-glass"></i> Axtar</button>
-            <button class="btn-fav-header" onclick="openFavModal()"><i class="fa-solid fa-heart"></i> <span id="favCount">0</span></button>
-        </div>
-        <div class="filter-row">
-            <select class="radius-select" id="radiusSelect" onchange="renderMarkers()">
-                <option value="all">🌐 Bütün Ərazi</option>
-                <option value="0.5">📍 500M Yaxınlıq</option>
-                <option value="2">📍 2 KM Yaxınlıq</option>
-                <option value="5">📍 5 KM Yaxınlıq</option>
-                <option value="15">📍 15 KM Yaxınlıq</option>
-            </select>
-            <button class="tag-btn active" onclick="filterMainCategory('all', this)"><i class="fa-solid fa-border-all"></i> Hamısı</button>
-            <button class="tag-btn" onclick="filterMainCategory('usta', this)"><i class="fa-solid fa-helmet-safety"></i> Ustalar</button>
-            <button class="tag-btn" onclick="filterMainCategory('xidmet', this)"><i class="fa-solid fa-user-tie"></i> Xidmət/İşçi</button>
-            <button class="tag-btn" onclick="filterMainCategory('dukan', this)"><i class="fa-solid fa-store"></i> Obyekt/Mağaza</button>
-            <button class="tag-btn" onclick="filterMainCategory('heyvan', this)"><i class="fa-solid fa-paw"></i> Heyvandarlıq</button>
-            <button class="tag-btn" onclick="filterMainCategory('texnika', this)"><i class="fa-solid fa-truck-monster"></i> Texnika</button>
-        </div>
-    </div>
-
-    <!-- VIP Karusel Çubuğu -->
-    <div class="vip-carousel-bar" id="vipBanner" onclick="focusVipListing()">
-        <div style="display:flex; align-items:center; gap:10px;">
-            <span style="background:rgba(255,255,255,0.25); padding:4px 8px; border-radius:8px; font-weight:bold; font-size:11px;">👑 VIP</span>
+    <!-- TOP MOBILE APP BAR -->
+    <header class="relative z-30 bg-slate-900/90 backdrop-blur-md border-b border-slate-800/80 px-4 py-3 flex items-center justify-between shadow-lg">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-amber-500 flex items-center justify-center shadow-lg shadow-brand-600/30">
+                <i class="fa-solid font-black fa-map-location-dot text-white text-lg"></i>
+            </div>
             <div>
-                <div id="vipBannerTitle" style="font-weight:bold; font-size:13px;">Usta Şamxal (Alçipan & Malyar)</div>
-                <div id="vipBannerSub" style="font-size:11px; opacity:0.9;">⭐ 4.9 • Nizami r., Neftçilər</div>
+                <h1 class="font-bold text-lg tracking-tight leading-tight bg-gradient-to-r from-white via-slate-100 to-slate-300 bg-clip-text text-transparent">UstaMap</h1>
+                <p class="text-[10px] text-brand-500 font-semibold uppercase tracking-wider">Service & Master Hub</p>
             </div>
         </div>
-        <i class="fa-solid fa-chevron-right"></i>
-    </div>
 
-    <!-- Xəritə -->
-    <div id="map"></div>
+        <div class="flex items-center gap-2">
+            <!-- Urgent Live Job Requests Toggle -->
+            <button onclick="openLiveRequestsModal()" class="relative bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition">
+                <span class="w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
+                <i class="fa-solid fa-bolt text-red-500"></i>
+                <span class="hidden sm:inline">Canlı Tələblər</span>
+            </button>
 
-    <!-- Alt Düymələr Barı -->
-    <div class="bottom-nav-bar">
-        <button class="nav-item-btn" onclick="locateUser()">
-            <i class="fa-solid fa-crosshairs" style="font-size:16px;"></i>
-            <span>Məkanım</span>
-        </button>
+            <!-- Favorites Button -->
+            <button onclick="openFavoritesModal()" class="w-9 h-9 rounded-xl bg-slate-800 border border-slate-700/60 flex items-center justify-center text-slate-300 hover:text-amber-400 transition">
+                <i class="fa-solid fa-bookmark text-sm"></i>
+            </button>
 
-        <button class="nav-item-btn main-add" onclick="openFormModal()">
-            <i class="fa-solid fa-plus-circle"></i>
-            <span>Elan Yerləşdir</span>
-        </button>
+            <!-- 3-Dot Drawer Toggle -->
+            <button onclick="toggleMenuDrawer()" class="w-9 h-9 rounded-xl bg-slate-800 border border-slate-700/60 flex items-center justify-center text-slate-200 hover:text-white transition">
+                <i class="fa-solid fa-bars text-sm"></i>
+            </button>
+        </div>
+    </header>
 
-        <button class="nav-item-btn" onclick="renderMarkers()">
-            <i class="fa-solid fa-rotate" style="font-size:16px;"></i>
-            <span>Yenilə</span>
-        </button>
-    </div>
+    <!-- MAIN CONTAINER (MAP + OVERLAY FLOATING UI) -->
+    <main class="relative flex-1 w-full h-full overflow-hidden">
+        
+        <!-- MAP CANVAS -->
+        <div id="map" class="w-full h-full z-10"></div>
 
-    <!-- Profil Detal Kartı -->
-    <div class="profile-card" id="profileCard">
-        <div class="card-header">
-            <div>
-                <h3 id="cardName">Elan Adı</h3>
-                <span id="cardCategory" style="color:#2563eb; font-weight:bold; font-size:11px; background:#eff6ff; padding:4px 8px; border-radius:6px;">KATEQORİYA</span>
+        <!-- SEARCH & CATEGORY FILTER BAR OVERLAY (FLOATING AT TOP) -->
+        <div class="absolute top-3 left-3 right-3 z-20 flex flex-col gap-2 max-w-md mx-auto pointer-events-auto">
+            <!-- Search Bar Input -->
+            <div class="relative bg-slate-900/95 backdrop-blur-md border border-slate-700/80 rounded-2xl shadow-2xl flex items-center px-3.5 py-2.5">
+                <i class="fa-solid fa-magnifying-glass text-slate-400 text-sm mr-2.5"></i>
+                <input id="searchInput" type="text" placeholder="Axtarış: Alçipan, Santexnik, Motorist, Xaçmaz..." 
+                       class="w-full bg-transparent text-xs text-white placeholder-slate-400 focus:outline-none"
+                       oninput="handleSearchInput()">
+                <button id="clearSearchBtn" onclick="clearSearch()" class="hidden text-slate-400 hover:text-white ml-2 text-xs">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
             </div>
-            <button class="card-close" onclick="closeProfileCard()">✕</button>
+
+            <!-- Categories Horizontal Scroll Filter -->
+            <div class="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar text-xs">
+                <button onclick="filterCategory('all')" class="cat-btn active border px-3 py-1.5 rounded-xl whitespace-nowrap font-medium transition backdrop-blur-md bg-brand-600 border-brand-500 text-white shadow-md shadow-brand-600/30" data-cat="all">
+                    <i class="fa-solid fa-border-all mr-1"></i> Bütün Elanlar
+                </button>
+                <button onclick="filterCategory('ustalar')" class="cat-btn border px-3 py-1.5 rounded-xl whitespace-nowrap font-medium transition backdrop-blur-md bg-slate-900/90 border-slate-700 text-slate-300 hover:border-slate-500" data-cat="ustalar">
+                    <i class="fa-solid fa-wrench mr-1 text-amber-400"></i> Ustalar
+                </button>
+                <button onclick="filterCategory('xidmet')" class="cat-btn border px-3 py-1.5 rounded-xl whitespace-nowrap font-medium transition backdrop-blur-md bg-slate-900/90 border-slate-700 text-slate-300 hover:border-slate-500" data-cat="xidmet">
+                    <i class="fa-solid fa-briefcase mr-1 text-blue-400"></i> Xidmət & İş
+                </button>
+                <button onclick="filterCategory('obyekt')" class="cat-btn border px-3 py-1.5 rounded-xl whitespace-nowrap font-medium transition backdrop-blur-md bg-slate-900/90 border-slate-700 text-slate-300 hover:border-slate-500" data-cat="obyekt">
+                    <i class="fa-solid fa-store mr-1 text-emerald-400"></i> Obyekt / Mağaza
+                </button>
+                <button onclick="filterCategory('heyvandar')" class="cat-btn border px-3 py-1.5 rounded-xl whitespace-nowrap font-medium transition backdrop-blur-md bg-slate-900/90 border-slate-700 text-slate-300 hover:border-slate-500" data-cat="heyvandar">
+                    <i class="fa-solid fa-cow mr-1 text-purple-400"></i> Heyvandarlıq
+                </button>
+                <button onclick="filterCategory('texnika')" class="cat-btn border px-3 py-1.5 rounded-xl whitespace-nowrap font-medium transition backdrop-blur-md bg-slate-900/90 border-slate-700 text-slate-300 hover:border-slate-500" data-cat="texnika">
+                    <i class="fa-solid fa-truck-monster mr-1 text-rose-400"></i> Xüsusi Texnika
+                </button>
+            </div>
         </div>
 
-        <div class="meta-stats">
-            <span><i class="fa-solid fa-star" style="color:#f59e0b;"></i> <b id="cardRating">4.9</b> (<span id="cardReviews">24</span>)</span>
-            <span><i class="fa-solid fa-eye"></i> <b id="cardViews">0</b> baxış</span>
-            <span><i class="fa-solid fa-location-arrow"></i> <b id="cardDistance">--</b></span>
+        <!-- FLOATING ACTION CONTROLS (MAP RIGHT SIDE) -->
+        <div class="absolute right-3 bottom-20 z-20 flex flex-col gap-2.5">
+            <!-- Center GPS My Location Button -->
+            <button onclick="centerUserLocation()" title="Mənim Məkanım" class="w-11 h-11 rounded-2xl bg-slate-900/90 backdrop-blur-md border border-slate-700 text-blue-400 flex items-center justify-center shadow-xl hover:bg-slate-800 transition">
+                <i class="fa-solid fa-location-crosshairs text-lg"></i>
+            </button>
+            <!-- Radius Distance Filter Button -->
+            <button onclick="cycleRadiusFilter()" id="radiusBtn" title="Axtarış Radiusunu Dəyiş" class="w-11 h-11 rounded-2xl bg-slate-900/90 backdrop-blur-md border border-slate-700 text-amber-400 flex flex-col items-center justify-center shadow-xl hover:bg-slate-800 transition text-[10px] font-bold">
+                <i class="fa-solid fa-bullseye text-sm"></i>
+                <span id="radiusText">Bütün</span>
+            </button>
         </div>
 
-        <p id="cardDescription" style="font-size:14px; color:#334155; margin:10px 0; line-height:1.4;"></p>
-        <p style="font-size:13px; color:#64748b;"><i class="fa-solid fa-location-dot" style="color:#ef4444;"></i> <span id="cardAddress">Bakı ş.</span></p>
-
-        <h4 style="margin-top:15px; font-size:13px; color:#1e293b;">Portfolio / Görülən İşlər</h4>
-        <div class="gallery-scroll" id="galleryScroll"></div>
-
-        <!-- Müasir Video Reklam Paneli -->
-        <div class="ad-video-container">
-            <span class="ad-badge">SPONSORLU VİDEO</span>
-            <video autoplay loop muted playsinline poster="https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=500">
-                <source src="https://assets.mixkit.co/videos/preview/mixkit-construction-worker-working-with-a-level-41555-large.mp4" type="video/mp4">
-            </video>
+        <!-- BOTTOM PANELS HUB CONTAINER -->
+        <!-- VIEW SWITCHER OVERLAY TABS -->
+        <div class="absolute bottom-3 left-3 right-3 z-20 flex items-center justify-between gap-2 max-w-sm mx-auto bg-slate-900/95 backdrop-blur-xl border border-slate-800 p-1.5 rounded-2xl shadow-2xl">
+            <button onclick="switchTab('mapTab')" id="mapTabBtn" class="flex-1 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 bg-brand-600 text-white shadow-md">
+                <i class="fa-solid fa-map-location-dot"></i> Xəritə
+            </button>
+            <button onclick="switchTab('listTab')" id="listTabBtn" class="flex-1 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 text-slate-400 hover:text-white transition">
+                <i class="fa-solid fa-list-ul"></i> Siyahı (<span id="listingsCount">0</span>)
+            </button>
+            <button onclick="switchTab('profileTab')" id="profileTabBtn" class="flex-1 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 text-slate-400 hover:text-white transition relative">
+                <i class="fa-solid fa-user-gear"></i> Profilim
+                <span id="expiringBadge" class="hidden absolute -top-1 -right-1 w-2.5 h-2.5 bg-amber-500 rounded-full"></span>
+            </button>
+            <button onclick="openNewAdModal()" class="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-600 to-amber-500 text-white flex items-center justify-center shadow-lg shadow-brand-600/40">
+                <i class="fa-solid fa-plus text-sm"></i>
+            </button>
         </div>
+    </main>
 
-        <div class="contact-btns">
-            <button class="btn-action-sec" onclick="rateCurrentListing()"><i class="fa-solid fa-star" style="color:#f59e0b;"></i> Qiymətləndir</button>
-            <button class="btn-action-sec" onclick="toggleFavoriteCurrent()"><i class="fa-solid fa-heart" style="color:#ef4444;"></i> Yadda Saxla</button>
-            <a href="#" id="callBtn" class="btn-call"><i class="fa-solid fa-phone"></i> Zəng Et</a>
-            <a href="#" id="waBtn" target="_blank" class="btn-whatsapp"><i class="fa-brands fa-whatsapp"></i> WhatsApp</a>
+    <!-- ================= MODALS & SLIDE-OVER PANELS ================= -->
+
+    <!-- LISTING VIEW TAB PANEL OVERLAY -->
+    <div id="listTabOverlay" class="hidden absolute inset-0 z-30 bg-slate-950/95 backdrop-blur-2xl flex flex-col pt-16 pb-20 px-4 overflow-y-auto">
+        <div class="max-w-2xl mx-auto w-full">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-list-check text-brand-500"></i> Tapılan Elanlar
+                </h2>
+                <span class="text-xs text-slate-400" id="listSummaryText">Axtarışa uyğun nəticələr</span>
+            </div>
+            <!-- Dynamic Listings List -->
+            <div id="listingsCardsContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-3.5"></div>
         </div>
     </div>
 
-    <!-- Elan Yerləşdirmə Form Modalı -->
-    <div class="form-modal" id="formModal">
-        <div class="form-content">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                <h3>Xəritədə Yeni Elan Yarat</h3>
-                <button class="card-close" onclick="closeFormModal()">✕</button>
-            </div>
-            <form id="addListingForm" onsubmit="handleFormSubmit(event)">
-                
-                <div class="vip-toggle-box">
-                    <div>
-                        <div style="font-weight:bold; font-size:13px; color:#d97706;">👑 VIP Elan Rejimi</div>
-                        <div style="font-size:11px; color:#78350f;">Xəritədən istənilən məkana elan qoy (3 AZN / 30 Gün)</div>
+    <!-- PROFILE & MY LISTINGS MANAGEMENT PANEL OVERLAY -->
+    <div id="profileTabOverlay" class="hidden absolute inset-0 z-30 bg-slate-950/95 backdrop-blur-2xl flex flex-col pt-16 pb-20 px-4 overflow-y-auto">
+        <div class="max-w-xl mx-auto w-full space-y-5">
+            <!-- Profile Info Header -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex items-center gap-4">
+                <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-brand-600 to-amber-500 flex items-center justify-center text-2xl font-bold text-white shadow-lg">
+                    <span>MÜ</span>
+                </div>
+                <div class="flex-1">
+                    <div class="flex items-center gap-2">
+                        <h2 class="text-base font-bold text-white">Məmməd Usta (Şəxsi Hesab)</h2>
+                        <span class="bg-emerald-500/10 text-emerald-400 text-[10px] px-2 py-0.5 rounded-full border border-emerald-500/20 font-semibold">Təsdiqlənib</span>
                     </div>
-                    <input type="checkbox" id="vipCheckbox" style="width:20px; height:20px; cursor:pointer;" onchange="toggleVipSelection(this.checked)">
+                    <p class="text-xs text-slate-400 mt-0.5"><i class="fa-solid fa-phone text-slate-500 mr-1"></i> +994 50 789 12 34</p>
+                    <p class="text-xs text-slate-400"><i class="fa-solid fa-location-dot text-slate-500 mr-1"></i> Bakı, Nərimanov r.</p>
+                </div>
+            </div>
+
+            <!-- Profile Quick Stats -->
+            <div class="grid grid-cols-3 gap-2.5">
+                <div class="bg-slate-900/80 border border-slate-800 p-3 rounded-xl text-center">
+                    <p class="text-[10px] text-slate-400 font-medium uppercase">Aktiv Elan</p>
+                    <p class="text-lg font-extrabold text-brand-500 mt-0.5" id="statActiveCount">2</p>
+                </div>
+                <div class="bg-slate-900/80 border border-slate-800 p-3 rounded-xl text-center">
+                    <p class="text-[10px] text-slate-400 font-medium uppercase">Baxış</p>
+                    <p class="text-lg font-extrabold text-blue-400 mt-0.5">1,420</p>
+                </div>
+                <div class="bg-slate-900/80 border border-slate-800 p-3 rounded-xl text-center">
+                    <p class="text-[10px] text-slate-400 font-medium uppercase">Zəng/WP</p>
+                    <p class="text-lg font-extrabold text-emerald-400 mt-0.5">184</p>
+                </div>
+            </div>
+
+            <!-- My Listings Management Section -->
+            <div>
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-sm font-bold text-slate-200 flex items-center gap-2">
+                        <i class="fa-solid fa-folder-open text-brand-500"></i> Elanlarımın İdarə Edilməsi
+                    </h3>
+                    <button onclick="openNewAdModal()" class="text-xs text-brand-500 hover:underline font-semibold">+ Yeni Elan</button>
                 </div>
 
-                <div class="form-group">
-                    <label>Avtomatik Təyin Edilən Ünvan</label>
-                    <input type="text" id="formAddress" placeholder="Məkan müəyyənləşdirilir..." readonly style="background:#f8fafc; font-weight:bold; color:#2563eb;" required>
+                <!-- List of user's own listings -->
+                <div id="myListingsContainer" class="space-y-3">
+                    <!-- Dynamic rendering of user ads -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DETAILS MODAL (SINGLE AD SHOWCASE) -->
+    <div id="adDetailsModal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4 transition-all">
+        <div class="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-t-3xl sm:rounded-3xl max-h-[90vh] flex flex-col overflow-hidden shadow-2xl animate-in slide-in-from-bottom duration-300">
+            <!-- Modal Header / Controls -->
+            <div class="relative bg-slate-950 h-56 w-full overflow-hidden flex items-center justify-center group">
+                <img id="modalAdImage" src="" class="w-full h-full object-cover" alt="Portfolio Image">
+                <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-black/60"></div>
+                
+                <!-- Close Button -->
+                <button onclick="closeAdDetailsModal()" class="absolute top-3 right-3 w-8 h-8 rounded-full bg-slate-900/80 text-white flex items-center justify-center backdrop-blur-md hover:bg-slate-800 transition">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+
+                <!-- Category Badge -->
+                <span id="modalAdCategory" class="absolute top-3 left-3 bg-brand-600/90 text-white text-[10px] font-bold px-2.5 py-1 rounded-full border border-brand-400/30 backdrop-blur-md">Ustalar</span>
+
+                <!-- Title on image bottom -->
+                <div class="absolute bottom-3 left-4 right-4">
+                    <div class="flex items-center gap-2 text-amber-400 text-xs font-semibold mb-1">
+                        <div id="modalAdStars"></div>
+                        <span id="modalAdRatingText">4.9 (28 rəy)</span>
+                    </div>
+                    <h2 id="modalAdTitle" class="text-lg font-bold text-white tracking-tight leading-tight">Usta Elanı</h2>
+                </div>
+            </div>
+
+            <!-- Modal Scrollable Content -->
+            <div class="p-4 overflow-y-auto space-y-4 flex-1">
+                <!-- Location & Price Info -->
+                <div class="flex items-center justify-between p-3 rounded-2xl bg-slate-950/60 border border-slate-800/80">
+                    <div>
+                        <p class="text-[10px] text-slate-400 uppercase font-semibold">Qiymət / Tarif</p>
+                        <p id="modalAdPrice" class="text-lg font-extrabold text-brand-500">Razılaşma ilə</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-[10px] text-slate-400 uppercase font-semibold">Dəqiq Ərazi</p>
+                        <p id="modalAdLocation" class="text-xs font-bold text-slate-200"><i class="fa-solid fa-location-dot text-brand-500 mr-1"></i> Bakı</p>
+                    </div>
                 </div>
 
-                <div class="form-group">
-                    <label>Adınız / Obyekt / Xidmət Adı</label>
-                    <input type="text" id="formName" placeholder="Məs: Usta Şamxal (Alçipan), Kran İcarəsi..." required>
+                <!-- Description -->
+                <div>
+                    <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">Xidmət Haqqında Ətraflı</h4>
+                    <p id="modalAdDescription" class="text-xs text-slate-300 leading-relaxed font-normal bg-slate-950/40 p-3 rounded-xl border border-slate-800/60">
+                        Xidmət təsviri bura yüklənir...
+                    </p>
                 </div>
 
-                <div class="form-group">
-                    <label>Əsas Kateqoriya</label>
-                    <select id="formMainCat" onchange="updateSubCatDropdown()" required>
-                        <option value="usta">Usta (Tikinti & Təmir)</option>
-                        <option value="xidmet">Xidmət & İşçi Sektoru</option>
-                        <option value="dukan">Obyekt, Mağaza & Restoran</option>
-                        <option value="heyvan">Kənd Təsərrüfatı & Heyvandarlıq</option>
+                <!-- Silent Video Preview Section -->
+                <div>
+                    <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5"><i class="fa-solid fa-circle-play text-red-500 mr-1"></i> Qısa İş Nümayiş Videosu</h4>
+                    <div class="relative rounded-xl overflow-hidden bg-slate-950 border border-slate-800 aspect-video flex items-center justify-center">
+                        <video id="modalAdVideo" class="w-full h-full object-cover" autoplay loop muted playsinline poster="https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=600&q=80">
+                            <source src="https://assets.mixkit.co/videos/preview/mixkit-worker-welding-metal-structure-41554-large.mp4" type="video/mp4">
+                        </video>
+                        <span class="absolute bottom-2 right-2 bg-black/70 text-[9px] text-slate-300 px-2 py-0.5 rounded backdrop-blur-md"><i class="fa-solid fa-volume-xmark mr-1"></i> Səssiz</span>
+                    </div>
+                </div>
+
+                <!-- Master Contact Info Bar -->
+                <div class="p-3 bg-slate-950/80 rounded-2xl border border-slate-800 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300 font-bold">
+                            <i class="fa-solid fa-user-check"></i>
+                        </div>
+                        <div>
+                            <p id="modalAdOwner" class="text-xs font-bold text-white">Mütəxəssis Nümayəndə</p>
+                            <p class="text-[10px] text-slate-400">UstaMap tərəfindən doğrulanıb</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Action Buttons Footer -->
+            <div class="p-3 bg-slate-950 border-t border-slate-800 grid grid-cols-2 gap-2.5">
+                <a id="modalCallLink" href="tel:+994500000000" class="py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/30 transition">
+                    <i class="fa-solid fa-phone text-sm"></i> Zəng Et
+                </a>
+                <a id="modalWpLink" href="https://wa.me/994500000000" target="_blank" class="py-3 px-4 rounded-xl bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-700/30 transition">
+                    <i class="fa-brands fa-whatsapp text-base"></i> WhatsApp
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- REVOLUTIONARY 'LIVE REQUEST BOARD' MODAL -->
+    <div id="liveRequestsModal" class="hidden fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-3">
+        <div class="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-3xl max-h-[85vh] flex flex-col overflow-hidden shadow-2xl">
+            <div class="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-950">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-xl bg-red-500/20 text-red-500 flex items-center justify-center border border-red-500/30">
+                        <i class="fa-solid fa-bolt text-sm"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-bold text-white">Canlı İş Tələbi & Vakansiyalar</h3>
+                        <p class="text-[10px] text-slate-400">Müştərilərin xəritədəki təcili iş sifarişləri</p>
+                    </div>
+                </div>
+                <button onclick="closeLiveRequestsModal()" class="w-7 h-7 rounded-full bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center">
+                    <i class="fa-solid fa-xmark text-xs"></i>
+                </button>
+            </div>
+
+            <div class="p-4 overflow-y-auto space-y-3 flex-1" id="liveRequestsContainer">
+                <!-- Dynamic Emergency Request Items -->
+            </div>
+
+            <!-- Add Request Button -->
+            <div class="p-3 bg-slate-950 border-t border-slate-800">
+                <button onclick="openNewLiveRequestForm()" class="w-full py-2.5 bg-gradient-to-r from-red-600 to-amber-600 hover:from-red-500 hover:to-amber-500 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-red-600/30">
+                    <i class="fa-solid fa-circle-plus"></i> Təcili İş / Xidmət Tələbi Paylaş
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- NEW AD CREATION MODAL -->
+    <div id="newAdModal" class="hidden fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-3">
+        <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-3xl max-h-[90vh] flex flex-col overflow-hidden shadow-2xl">
+            <div class="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-950">
+                <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-plus-circle text-brand-500"></i> Yeni Elan Əlavə Et
+                </h3>
+                <button onclick="closeNewAdModal()" class="w-7 h-7 rounded-full bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center">
+                    <i class="fa-solid fa-xmark text-xs"></i>
+                </button>
+            </div>
+
+            <form id="newAdForm" onsubmit="handleAdSubmit(event)" class="p-4 overflow-y-auto space-y-3 flex-1 text-xs">
+                <div>
+                    <label class="block text-slate-400 mb-1 font-semibold">Elanın Başlığı</label>
+                    <input type="text" id="adTitle" required placeholder="Məs: Əlaçıq Alçipan və Asma Tavan Ustası" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-white focus:outline-none focus:border-brand-500">
+                </div>
+                <div>
+                    <label class="block text-slate-400 mb-1 font-semibold">Kateqoriya</label>
+                    <select id="adCategory" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-white focus:outline-none focus:border-brand-500">
+                        <option value="ustalar">Ustalar & Təmir</option>
+                        <option value="xidmet">Xidmət & İş</option>
+                        <option value="obyekt">Obyekt / Mağaza</option>
+                        <option value="heyvandar">Heyvandarlıq & Kənd Təsərrüfatı</option>
                         <option value="texnika">Xüsusi Texnika & Avto</option>
                     </select>
                 </div>
-
-                <div class="form-group">
-                    <label>Detallı Peşə Seçimi</label>
-                    <select id="formSubCat" required></select>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-slate-400 mb-1 font-semibold">Qiymət (AZN)</label>
+                        <input type="text" id="adPrice" placeholder="Məs: 50 AZN / Razılaşma" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-white focus:outline-none focus:border-brand-500">
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 mb-1 font-semibold">Şəhər / Ərazi</label>
+                        <input type="text" id="adLocation" required placeholder="Məs: Bakı, Nərimanov" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-white focus:outline-none focus:border-brand-500">
+                    </div>
                 </div>
-
-                <div class="form-group">
-                    <label>Əlaqə Nömrəsi (WhatsApp Var)</label>
-                    <input type="tel" id="formPhone" placeholder="0501234567" required>
+                <div>
+                    <label class="block text-slate-400 mb-1 font-semibold">Əlaqə Nömrəsi</label>
+                    <input type="tel" id="adPhone" required placeholder="+994 50 123 45 67" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-white focus:outline-none focus:border-brand-500">
                 </div>
-
-                <div class="form-group">
-                    <label>Ətraflı Təsvir</label>
-                    <textarea id="formDesc" rows="3" placeholder="Gördüyünüz işlər haqqında..." required></textarea>
+                <div>
+                    <label class="block text-slate-400 mb-1 font-semibold">Ətraflı Məlumat</label>
+                    <textarea id="adDesc" rows="3" required placeholder="Gördüyünüz işlər və şərtlər haqqında qısa yazın..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-white focus:outline-none focus:border-brand-500"></textarea>
                 </div>
-
-                <div class="form-group">
-                    <label>Şəkillər (10 Şəkilə Qədər)</label>
-                    <input type="file" id="formImages" accept="image/*" multiple onchange="previewImages(event)">
-                    <div class="image-preview-grid" id="previewGrid"></div>
-                </div>
-
-                <input type="hidden" id="formLat">
-                <input type="hidden" id="formLng">
-
-                <button type="submit" id="submitBtn" class="nav-item-btn main-add" style="width:100%; justify-content:center; margin-top:10px;">Elanı Yayımla (Pulsuz)</button>
+                <button type="submit" class="w-full py-3 bg-brand-600 hover:bg-brand-500 text-white font-bold rounded-xl shadow-lg shadow-brand-600/30 transition mt-2">
+                    <i class="fa-solid fa-paper-plane mr-1"></i> Elanı Paylaş (Xəritədə Nümayiş Et)
+                </button>
             </form>
         </div>
     </div>
 
-    <!-- Sevimlilər Modalı -->
-    <div class="fav-modal" id="favModal">
-        <div class="fav-content">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                <h3>❤️ Yadda Saxlanılan Elanlar</h3>
-                <button class="card-close" onclick="closeFavModal()">✕</button>
+    <!-- FAVORITES MODAL -->
+    <div id="favoritesModal" class="hidden fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-3">
+        <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-3xl max-h-[80vh] flex flex-col overflow-hidden shadow-2xl">
+            <div class="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-950">
+                <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-bookmark text-amber-400"></i> Seçilmiş Elanlar
+                </h3>
+                <button onclick="closeFavoritesModal()" class="w-7 h-7 rounded-full bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center">
+                    <i class="fa-solid fa-xmark text-xs"></i>
+                </button>
             </div>
-            <div id="favListContainer"></div>
+            <div id="favoritesContainer" class="p-4 overflow-y-auto space-y-2.5 flex-1">
+                <!-- Dynamic Fav List -->
+            </div>
         </div>
     </div>
 
-    <!-- Leaflet JS -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- 3-DOT / BURGER LEGAL DRAWER MENU -->
+    <div id="legalMenuDrawer" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex justify-end">
+        <div class="bg-slate-900 border-l border-slate-800 w-full max-w-md h-full flex flex-col shadow-2xl animate-in slide-in-from-right duration-300">
+            <!-- Drawer Header -->
+            <div class="p-4 bg-slate-950 border-b border-slate-800 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-shield-halved text-brand-500 text-lg"></i>
+                    <h3 class="text-base font-bold text-white">Məxfilik & Hüquqi Şərtlər</h3>
+                </div>
+                <button onclick="toggleMenuDrawer()" class="w-8 h-8 rounded-full bg-slate-800 text-slate-300 flex items-center justify-center hover:bg-slate-700">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Scrollable Legal Terms Content -->
+            <div class="p-5 overflow-y-auto space-y-4 text-xs text-slate-300 leading-relaxed flex-1">
+                <div class="bg-brand-500/10 border border-brand-500/30 p-3 rounded-xl text-brand-300">
+                    <i class="fa-solid fa-gavel text-brand-400 mr-1.5"></i>
+                    <strong>Hüquqi Sığorta & Vasitəçilik Bəyanatı:</strong> UstaMap platforması yalnız istifadəçilər və xidmət göstərən müstəqil mütəxəssislər arasında məlumat mübadiləsi üçün vasitəçi elan lövhəsidir.
+                </div>
+
+                <div>
+                    <h4 class="font-bold text-white text-sm mb-1">1. Məsuliyyətdən İmtina</h4>
+                    <p>UstaMap platforması saytda yerləşdirilən elanların, ustaların göstərdiyi xidmətlərin keyfiyyətinə, ödəniş razılaşmalarına və ya yarana biləcək hər hansı maddi/mənəvi zərərə görə hüquqi cavabdehlik daşımır. Sifarişçi və usta arasında olan bütün sövdələşmələr tərəflərin öz öhdəliyindədir.</p>
+                </div>
+
+                <div>
+                    <h4 class="font-bold text-white text-sm mb-1">2. Məxfilik Siyasəti</h4>
+                    <p>İstifadəçilərin GPS geolokasiya məlumatları yalnız xəritədə ən yaxın xidmətləri göstərmək üçün istifadə edilir və üçüncü tərəflərə ötürülmür. Nömrə və əlaqə vasitələri elan sahibinin öz razılığı ilə ictimaiyyətə təqdim olunur.</p>
+                </div>
+
+                <div>
+                    <h4 class="font-bold text-white text-sm mb-1">3. Platforma Qaydaları</h4>
+                    <ul class="list-disc pl-4 space-y-1">
+                        <li>Dələduzluq və ya yalan məlumat ehtiva edən elanlar dərhal silinir.</li>
+                        <li>Platformada təhqiramiz ifadələr və qanunsuz xidmətlər qadağandır.</li>
+                        <li>Elanların qüvvədə olma müddəti 30 gündür. Müddət bitdikdə elanlar Profil bölməsindən pulsuz yenilənə bilər.</li>
+                    </ul>
+                </div>
+
+                <div class="pt-3 border-t border-slate-800 text-center">
+                    <p class="text-[10px] text-slate-500">© 2026 UstaMap & Service Hub. Bütün hüquqlar qorunur.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LEAFLET JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
     <script>
-        const subCategoriesMap = {
-            usta: ["Alçipan Ustası", "Şpatlyovka & Malyar", "Santexnik", "Elektrik", "Motorist", "Maşinist", "Betonçu & Qəlibçi", "Şap Ustası", "Dekor Mebel", "Kafel-Metlax"],
-            xidmet: ["Aşpaz", "Ofisiant", "Bərbər / Qadın Ustası", "Taksi Sürücüsü", "Kuryer"],
-            dukan: ["Tikinti Materialları Dükanı", "Kafe / Restoran", "Avto-Servis & Yağdəyişmə", "Baqqal / Market", "Geyim Mağazası"],
-            heyvan: ["Ev Heyvanları (Pişik/İt)", "İri/Xırda Buynuzlu Heyvanlar", "Quşçuluq", "Heyvan Yemi Satışı", "Baytar Xidməti"],
-            texnika: ["Avtokran", "Evakuator", "Betonomexanik", "Ekskavator", "Yük Daşıma (Qazel)"]
-        };
-
-        // 30 Ədəd Zəngin Və Müxtəlif Profil Baza
-        let listings = [
-            // USTALAR (10 Profil)
-            { id: 1, name: "Usta Şamxal (Alçipan & Malyar)", mainCat: "usta", subCat: "Alçipan Ustası", phone: "0501234567", address: "Bakı, Nizami r., Neftçilər", desc: "Peşəkar alçipan tavanlar, figurlar, şpatlyovka və malyar işləri.", lat: 40.4150, lng: 49.9100, rating: 4.9, reviews: 38, views: 210, isVip: true, images: ["https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=800"] },
-            { id: 2, name: "Zaqatala Motorist və Avto-Elektrik", mainCat: "usta", subCat: "Motorist", phone: "0558887766", address: "Zaqatala, Faiq Əmirov küç.", desc: "Mühərriklərin yüksək dəqiqliklə yığılması və diaqnostikası.", lat: 41.6312, lng: 46.6425, rating: 4.8, reviews: 19, views: 115, isVip: false, images: ["https://images.unsplash.com/photo-1486006920555-c77dce18193b?w=800"] },
-            { id: 3, name: "Usta Rauf (Santexnik və Qızdırıcılar)", mainCat: "usta", subCat: "Santexnik", phone: "0702223344", address: "Bakı, Nərimanov r., Təbriz k.", desc: "Kombi, istipol və mürəkkəb santexnika xətlərinin çəkilməsi.", lat: 40.4020, lng: 49.8710, rating: 5.0, reviews: 42, views: 305, isVip: true, images: ["https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=800"] },
-            { id: 4, name: "Elektrik Usta Murad", mainCat: "usta", subCat: "Elektrik", phone: "0514445566", address: "Bakı, Yasamal r., İnşaatçılar", desc: "Mənzil və obyektlərdə sıfırdan elektrik montaj işləri.", lat: 40.3850, lng: 49.8120, rating: 4.7, reviews: 15, views: 98, isVip: false, images: ["https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=800"] },
-            { id: 5, name: "Maşinist Əli (Ağır Texnika)", mainCat: "usta", subCat: "Maşinist", phone: "0509998877", address: "Bakı, Binəqədi r., Dərnəgül", desc: "Ekskavator və yükləyici operatoru.", lat: 40.4280, lng: 49.8550, rating: 4.6, reviews: 11, views: 80, isVip: false, images: ["https://images.unsplash.com/photo-1541888946425-d0fbb186a5b3?w=800"] },
-            { id: 6, name: "Betonçu və Qəlibçi Komandası", mainCat: "usta", subCat: "Betonçu & Qəlibçi", phone: "0553334455", address: "Bakı, Xətai r., Həzi Aslanov", desc: "Bünövrə, mertebe-arası monolit şap və qəlib işləri.", lat: 40.3710, lng: 49.9530, rating: 4.9, reviews: 29, views: 180, isVip: false, images: ["https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=800"] },
-            { id: 7, name: "Lazerlə Dəqiq Şap Ustası", mainCat: "usta", subCat: "Şap Ustası", phone: "0706667788", address: "Bakı, Sabunçu r., Bakıxanov", desc: "Helikopterlə hamar beton və şap vurulması.", lat: 40.4220, lng: 49.9610, rating: 4.8, reviews: 22, views: 140, isVip: false, images: ["https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=800"] },
-            { id: 8, name: "Dekor Mebel və Mətbəx Yığılması", mainCat: "usta", subCat: "Dekor Mebel", phone: "0507771122", address: "Bakı, Suraxanı r., Qaraçuxur", desc: "Xüsusi ölçü ilə laminat və MDF mebellərin hazırlanması.", lat: 40.3980, lng: 49.9750, rating: 5.0, reviews: 50, views: 420, isVip: true, images: ["https://images.unsplash.com/photo-1513694203232-719a280e022f?w=800"] },
-            { id: 9, name: "Kafel-Metlax və Mərmər Ustası", mainCat: "usta", subCat: "Kafel-Metlax", phone: "0554441100", address: "Gəncə şəhəri, Mərkəz", desc: "İspan keramika və kermoqranitlərin dəqiq kəsilib döşənməsi.", lat: 40.6828, lng: 46.3606, rating: 4.9, reviews: 31, views: 195, isVip: false, images: ["https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=800"] },
-            { id: 10, name: "Dam Örtüyü və Çardaq Ustası", mainCat: "usta", subCat: "Dam Örtüyü", phone: "0708889900", address: "Sumqayıt ş., 13-cü mkr", desc: "Cherepitsa, profnastil damların çəkilməsi.", lat: 40.5897, lng: 49.6686, rating: 4.7, reviews: 14, views: 110, isVip: false, images: ["https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=800"] },
-
-            // XİDMƏT & İŞÇİ (5 Profil)
-            { id: 11, name: "Aşpaz Nəriman (Milli Və Avropa)", mainCat: "xidmet", subCat: "Aşpaz", phone: "0502221133", address: "Bakı, Səbail r., İçərişəhər", desc: "Xüsusi tədbirlər və restoranlar üçün səyyar aşpazlıq.", lat: 40.3660, lng: 49.8350, rating: 5.0, reviews: 60, views: 510, isVip: true, images: ["https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=800"] },
-            { id: 12, name: "Səyyar Bərbər xidməti", mainCat: "xidmet", subCat: "Bərbər / Qadın Ustası", phone: "0556665544", address: "Bakı, Nəsimi r., 28 May", desc: "Kişi saç və saqqal kəsimi evlərə sifarişlə.", lat: 40.3790, lng: 49.8480, rating: 4.8, reviews: 25, views: 230, isVip: false, images: ["https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=800"] },
-            { id: 13, name: "Ekspress Taksi & VİP Sürücü", mainCat: "xidmet", subCat: "Taksi Sürücüsü", phone: "0701112233", address: "Bakı, Aeroport Yolu", desc: "Komfort avtomobillə rayonlara və şəhəriçi transfer.", lat: 40.4500, lng: 50.0500, rating: 4.9, reviews: 40, views: 310, isVip: false, images: ["https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=800"] },
-            { id: 14, name: "Kuryer Xidməti (Mopedlə)", mainCat: "xidmet", subCat: "Kuryer", phone: "0519991122", address: "Bakı, Nizami r.", desc: "Sənəd və kiçik bağlamaların anında çatdırılması.", lat: 40.4080, lng: 49.9150, rating: 4.6, reviews: 18, views: 145, isVip: false, images: ["https://images.unsplash.com/photo-1526367790999-0150786686a2?w=800"] },
-            { id: 15, name: "Ofisiant Briqadası (Tədbirlərə)", mainCat: "xidmet", subCat: "Ofisiant", phone: "0503332211", address: "Bakı, Xətai r.", desc: "Ad günləri və ziyafətlər üçün peşəkar ofisiantlar.", lat: 40.3820, lng: 49.9010, rating: 4.7, reviews: 13, views: 120, isVip: false, images: ["https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=800"] },
-
-            // OBYEKT & DÜKANLAR (5 Profil)
-            { id: 16, name: "EuroHome Tikinti Materialları", mainCat: "dukan", subCat: "Tikinti Materialları Dükanı", phone: "0123456789", address: "Bakı, Babək pr.", desc: "Sement, gips, alçipan profilləri və boyalar topsatış.", lat: 40.3880, lng: 49.8920, rating: 4.9, reviews: 45, views: 600, isVip: true, images: ["https://images.unsplash.com/photo-1513694203232-719a280e022f?w=800"] },
-            { id: 17, name: "Avto-Servis & Yağdəyişmə Mərkəzi", mainCat: "dukan", subCat: "Avto-Servis & Yağdəyişmə", phone: "0505554433", address: "Bakı, Ziya Bünyadov pr.", desc: "Orijinal yağlar və mühərrik diaqnostikası.", lat: 40.4180, lng: 49.8620, rating: 4.8, reviews: 33, views: 280, isVip: false, images: ["https://images.unsplash.com/photo-1486006920555-c77dce18193b?w=800"] },
-            { id: 18, name: "Milli Mətbəx Kafe & Dönər", mainCat: "dukan", subCat: "Kafe / Restoran", phone: "0552223311", address: "Bakı, Torqovaya", desc: "Sərfəli və ləzzətli yeməklər, çatdırılma var.", lat: 40.3720, lng: 49.8380, rating: 4.7, reviews: 28, views: 340, isVip: false, images: ["https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=800"] },
-            { id: 19, name: "24/7 Ərzaq və Baqqal Market", mainCat: "dukan", subCat: "Baqqal / Market", phone: "0704445511", address: "Bakı, Qara Qarayev pr.", desc: "Geniş çeşid və mənzillərə çatdırılma.", lat: 40.3970, lng: 49.9180, rating: 4.5, reviews: 10, views: 90, isVip: false, images: ["https://images.unsplash.com/photo-1513694203232-719a280e022f?w=800"] },
-            { id: 20, name: "Xüsusi İş Geyimləri Mağazası", mainCat: "dukan", subCat: "Geyim Mağazası", phone: "0508883322", address: "Bakı, Dərnəgül Şosesi", desc: "Ustalar və inşaatçılar üçün keyfiyyətli kombinzonlar və çəkmələr.", lat: 40.4300, lng: 49.8600, rating: 4.9, reviews: 20, views: 170, isVip: false, images: ["https://images.unsplash.com/photo-1513694203232-719a280e022f?w=800"] },
-
-            // HEYVANDARLIQ (5 Profil)
-            { id: 21, name: "Damazlıq Qoyun və Keçi Təsərrüfatı", mainCat: "heyvan", subCat: "İri/Xırda Buynuzlu Heyvanlar", phone: "0703332211", address: "Zaqatala, Qazangül qəs.", desc: "Sağlam damazlıq heyvanlar, fermadan satış.", lat: 41.6250, lng: 46.6500, rating: 4.9, reviews: 27, views: 210, isVip: true, images: ["https://images.unsplash.com/photo-1484557052118-f32bd25b45b5?w=800"] },
-            { id: 22, name: "Cins Pişik və İt Balaları", mainCat: "heyvan", subCat: "Ev Heyvanları (Pişik/İt)", phone: "0557778899", address: "Bakı, Xətai r.", desc: "Peyvənd olunmuş passportlu balalar.", lat: 40.3800, lng: 49.9100, rating: 5.0, reviews: 36, views: 390, isVip: false, images: ["https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=800"] },
-            { id: 23, name: "Kənd Cücəsi və Təmiz Yumurta Satışı", mainCat: "heyvan", subCat: "Quşçuluq", phone: "0501114477", address: "Abşeron, Saray qəs.", desc: "Təbii yemlə bəslənmiş kənd quşları.", lat: 40.5300, lng: 49.7200, rating: 4.8, reviews: 16, views: 130, isVip: false, images: ["https://images.unsplash.com/photo-1484557052118-f32bd25b45b5?w=800"] },
-            { id: 24, name: "Keyfiyyətli Arpa və Yem Üyütmə", mainCat: "heyvan", subCat: "Heyvan Yemi Satışı", phone: "0554448899", address: "Bərdə şəhəri", desc: "Topdan və pərakəndə yem satışı.", lat: 40.3750, lng: 47.1260, rating: 4.7, reviews: 12, views: 95, isVip: false, images: ["https://images.unsplash.com/photo-1484557052118-f32bd25b45b5?w=800"] },
-            { id: 25, name: "Səyyar Baytar Xidməti 24/7", mainCat: "heyvan", subCat: "Baytar Xidməti", phone: "0702229911", address: "Bakı və Abşeron", desc: "Təcili heyvan müayinəsi və əməliyyatlar.", lat: 40.4200, lng: 49.8200, rating: 4.9, reviews: 23, views: 180, isVip: false, images: ["https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=800"] },
-
-            // XÜSUSİ TEXNİKA (5 Profil)
-            { id: 26, name: "25 Tonluq Avtokran Xidməti", mainCat: "texnika", subCat: "Avtokran", phone: "0559876543", address: "Bakı, Nərimanov r.", desc: "Ağır yüklərin qaldırılması və montaj işləri.", lat: 40.4000, lng: 49.8700, rating: 5.0, reviews: 55, views: 480, isVip: true, images: ["https://images.unsplash.com/photo-1541888946425-d0fbb186a5b3?w=800"] },
-            { id: 27, name: "Təcili Evakuator 24 Saat", mainCat: "texnika", subCat: "Evakuator", phone: "0506663322", address: "Bakı və Bütün Rayonlar", desc: "Şəhəriçi və rayonlararası təhlükəsiz daşıma.", lat: 40.3900, lng: 49.8500, rating: 4.9, reviews: 41, views: 320, isVip: false, images: ["https://images.unsplash.com/photo-1541888946425-d0fbb186a5b3?w=800"] },
-            { id: 28, name: "Betonomexanik Pompa Xidməti", mainCat: "texnika", subCat: "Betonomexanik", phone: "0705551122", address: "Bakı, Lökbatan", desc: "Uzaq məsafəyə hazır beton vurulması.", lat: 40.3200, lng: 49.7300, rating: 4.8, reviews: 17, views: 150, isVip: false, images: ["https://images.unsplash.com/photo-1541888946425-d0fbb186a5b3?w=800"] },
-            { id: 29, name: "Mini Ekskavator Qazıntı İşləri", mainCat: "texnika", subCat: "Ekskavator", phone: "0518882233", address: "Bakı, Xırdalan ş.", desc: "Dar ərazilərdə xəndək və bünövrə qazılması.", lat: 40.4480, lng: 49.7550, rating: 4.7, reviews: 15, views: 135, isVip: false, images: ["https://images.unsplash.com/photo-1541888946425-d0fbb186a5b3?w=800"] },
-            { id: 30, name: "Yük Daşıma Qazel & Fəhlə", mainCat: "texnika", subCat: "Yük Daşıma (Qazel)", phone: "0551119988", address: "Bakı, Nəsimi r.", desc: "Mənzil daşınması, mebel sökülüb yığılması.", lat: 40.3850, lng: 49.8400, rating: 4.9, reviews: 30, views: 260, isVip: false, images: ["https://images.unsplash.com/photo-1541888946425-d0fbb186a5b3?w=800"] }
+        /* ================= MOCK DATABASE & DEMO DATA Engine ================= */
+        const DEMO_ADS = [
+            { id: 1, category: 'ustalar', title: 'Peşəkar Alçipan & Asma Tavan Ustası', owner: 'Əli Usta', phone: '+994502113344', price: '12 AZN/m²', locName: 'Bakı, Nərimanov r.', lat: 40.4025, lng: 49.8705, rating: 4.9, reviews: 34, expiresInDays: 22, desc: '12 illik iş təcrübəsi. Hər növ fiqurlu alçipan, gizli işıq və tavan təmiri işlərini dəqiq və zəmanətlə təhvil verirəm.', image: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=600&q=80' },
+            { id: 2, category: 'ustalar', title: 'Kombi, Pitiminutka və Santexnik Təmiri', owner: 'Rəşad Usta', phone: '+994553224455', price: '25 AZN-dən', locName: 'Bakı, Yasamal r.', lat: 40.3790, lng: 49.8120, rating: 4.8, reviews: 19, expiresInDays: 3, desc: 'Kombi yuyulması, radiatorların təmizlənməsi, su və kanalizasiya xətlərinin çəkilməsi. Operativ gəliş.', image: 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=600&q=80' },
+            { id: 3, category: 'ustalar', title: 'Avto Motorist & Diaqnostika Usta Mərkəzi', owner: 'Səbuhi Məmmədov', phone: '+994709998877', price: 'Razılaşma ilə', locName: 'Bakı, Xətai r.', lat: 40.3850, lng: 49.9010, rating: 5.0, reviews: 52, expiresInDays: 28, desc: 'Mühərrikin sıfırdan yığılması, kompüter diaqnostikası, yağ dəyişmə və asqı sistemlərinin təmiri.', image: 'https://images.unsplash.com/photo-1486006920555-c77dce18193b?auto=format&fit=crop&w=600&q=80' },
+            { id: 4, category: 'xidmet', title: 'Təcrübəli Aşpaz Və Milli Yeməklər Servisi', owner: 'Leyla Xanım', phone: '+994504445566', price: '40 AZN/gün', locName: 'Sumqayıt, 3-cü mkr', lat: 40.5890, lng: 49.6680, rating: 4.7, reviews: 15, expiresInDays: 0, desc: 'Xınayaxdı, ad günləri və ev tədbirləri üçün milli yeməklərin və şirniyyatların yüksək səviyyədə hazırlanması.', image: 'https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&w=600&q=80' },
+            { id: 5, category: 'texnika', title: 'Kran-Manipulyator & Avtoevakuator 24/7', owner: 'Elvin Hüseynov', phone: '+994506112233', price: '35 AZN-dən', locName: 'Gəncə şəhəri', lat: 40.6828, lng: 46.3606, rating: 4.9, reviews: 41, expiresInDays: 14, desc: '7 tonluq yük qaldırma gücünə malik kran-manipulyator. Bütün bölgələrə təcili sifarişlər qəbul olunur.', image: 'https://images.unsplash.com/photo-1541888946425-d0fbb186a5b7?auto=format&fit=crop&w=600&q=80' },
+            { id: 6, category: 'heyvandar', title: 'Cins Qoyun və Qarabağ Atları Təsərrüfatı', owner: 'Hacı Qurban', phone: '+994518882211', price: '220 AZN', locName: 'Bərdə rayonu', lat: 40.3758, lng: 47.1261, rating: 4.6, reviews: 8, expiresInDays: 19, desc: 'Təmiz cins bəslənilmiş heyvanlar. Diri çəki ilə və ya kəsim olunaraq çatdırılma imkanı var.', image: 'https://images.unsplash.com/photo-1484557052118-f32bd25b45b5?auto=format&fit=crop&w=600&q=80' },
+            { id: 7, category: 'obyekt', title: 'Mərkəzdə Hazır Avtoyuma Obyekti İcarəyə Verilir', owner: 'Vüqar M.', phone: '+994503332211', price: '800 AZN/ay', locName: 'Xaçmaz şəhəri', lat: 41.4633, lng: 48.8020, rating: 4.5, reviews: 12, expiresInDays: 1, desc: 'Hər bir avadanlığı olan hazır fəaliyyət göstərən 2 bokslu avtoyuma obyekti.', image: 'https://images.unsplash.com/photo-1520340356584-f9917d1eea6f?auto=format&fit=crop&w=600&q=80' },
+            { id: 8, category: 'ustalar', title: 'Mebel Ustası - Metbex Və Yataq Mebeli', owner: 'Orxan Usta', phone: '+994705551122', price: 'Razılaşma ilə', locName: 'Bakı, Binəqədi r.', lat: 40.4210, lng: 49.8420, rating: 4.9, reviews: 30, expiresInDays: 25, desc: 'Sifarişlə istənilən dizaynda mətbəx mebelləri, qarderob və yumşaq mebellərin yığılması və təmiri.', image: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=600&q=80' }
         ];
 
-        let userLocation = { lat: 40.4092617, lng: 49.8670924 };
-        let favorites = JSON.parse(localStorage.getItem('favListings') || '[]');
-        let activeMarkersMap = new Map();
-        let currentMainCat = 'all';
-        let currentListingInModal = null;
-        let vipIndex = 0;
+        let adsData = [...DEMO_ADS];
+        let favoriteIds = [];
+        let currentFilterCat = 'all';
+        let currentRadiusKm = 0; // 0 = All Azerbaijan
+        let map, userMarker, accuracyCircle;
+        let mapMarkers = [];
+        let userLocation = { lat: 40.4093, lng: 49.8671 }; // Default Baku
+        let liveJobRequests = [
+            { id: 101, title: 'Təcili Santexnik Lazımdır', loc: 'Nizami r., Neftçilər', budget: '50 AZN', phone: '+994501112233', time: '10 dəq əvvəl' },
+            { id: 102, title: 'Yükdaşıma üçün 2 nəfər fəhlə', loc: 'Yasamal, Elmlər', budget: '40 AZN', phone: '+994552223344', time: '25 dəq əvvəl' }
+        ];
 
-        const map = L.map('map', { zoomControl: false }).setView([userLocation.lat, userLocation.lng], 12);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(map);
-        L.control.zoom({ position: 'topright' }).addTo(map);
+        /* ================= INITIALIZATION ================= */
+        window.onload = function() {
+            initMap();
+            setupGPSLocation();
+            renderListings();
+            renderMyListingsProfile();
+            renderLiveRequests();
+        };
+
+        /* ================= MAP ENGINE SETUP ================= */
+        function initMap() {
+            // Leaflet map setup using dark tile layer
+            map = L.map('map', {
+                center: [userLocation.lat, userLocation.lng],
+                zoom: 12,
+                zoomControl: false
+            });
+
+            // CartoDB Dark Matter Tiles
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; UstaMap & OpenStreetMap',
+                subdomains: 'abcd',
+                maxZoom: 19
+            }).addTo(map);
+
+            // Re-render markers on drag/pan to simulate proximity glowing effect
+            map.on('move', highlightProximityMarkers);
+
+            // Populate Map
+            updateMapMarkers();
+        }
+
+        /* ================= USER REAL GPS LOCATION BLUE DOT ================= */
+        function setupGPSLocation() {
+            if ("geolocation" in navigator) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        userLocation.lat = position.coords.latitude;
+                        userLocation.lng = position.coords.longitude;
+                        addUserBlueDotMarker(userLocation.lat, userLocation.lng);
+                    },
+                    (error) => {
+                        console.warn("GPS Location access denied or unavailable, using Baku center.");
+                        addUserBlueDotMarker(userLocation.lat, userLocation.lng);
+                    },
+                    { enableHighAccuracy: true }
+                );
+            } else {
+                addUserBlueDotMarker(userLocation.lat, userLocation.lng);
+            }
+        }
+
+        function addUserBlueDotMarker(lat, lng) {
+            if (userMarker) map.removeLayer(userMarker);
+            if (accuracyCircle) map.removeLayer(accuracyCircle);
+
+            // Custom Blue GPS Dot HTML
+            const blueDotIcon = L.divIcon({
+                className: 'gps-marker-wrapper',
+                html: `<div class="gps-blue-dot"><div class="gps-blue-radar"></div></div>`,
+                iconSize: [20, 20],
+                iconAnchor: [10, 10]
+            });
+
+            userMarker = L.marker([lat, lng], { icon: blueDotIcon }).addTo(map);
+            userMarker.bindPopup('<b class="text-xs text-slate-900">Sizin Faktiki Mövqeyiniz</b>');
+            
+            // Accuracy Pulse Ring
+            accuracyCircle = L.circle([lat, lng], {
+                radius: 400,
+                color: '#3b82f6',
+                fillColor: '#3b82f6',
+                fillOpacity: 0.1,
+                weight: 1
+            }).addTo(map);
+        }
+
+        function centerUserLocation() {
+            if (map && userLocation) {
+                map.flyTo([userLocation.lat, userLocation.lng], 14, { duration: 1.2 });
+            }
+        }
+
+        /* ================= DYNAMIC SUNBURST MARKERS ================= */
+        function getCategoryColor(cat) {
+            switch(cat) {
+                case 'ustalar': return '#f97316'; // Orange
+                case 'xidmet': return '#3b82f6'; // Blue
+                case 'obyekt': return '#10b981'; // Emerald
+                case 'heyvandar': return '#a855f7'; // Purple
+                case 'texnika': return '#f43f5e'; // Rose
+                default: return '#f97316';
+            }
+        }
+
+        function getCategoryIcon(cat) {
+            switch(cat) {
+                case 'ustalar': return 'fa-wrench';
+                case 'xidmet': return 'fa-briefcase';
+                case 'obyekt': return 'fa-store';
+                case 'heyvandar': return 'fa-cow';
+                case 'texnika': return 'fa-truck-monster';
+                default: return 'fa-location-dot';
+            }
+        }
+
+        function updateMapMarkers() {
+            // Clear existing
+            mapMarkers.forEach(m => map.removeLayer(m.marker));
+            mapMarkers = [];
+
+            const filtered = getFilteredData();
+
+            filtered.forEach(item => {
+                const color = getCategoryColor(item.category);
+                const iconClass = getCategoryIcon(item.category);
+
+                const icon = L.divIcon({
+                    className: 'custom-sunburst-marker',
+                    html: `
+                        <div class="sunburst-ring" style="background: radial-gradient(circle, ${color}90 0%, ${color}00 70%);"></div>
+                        <div class="sun-rays" style="border-color: ${color}aa"></div>
+                        <div class="marker-icon-wrapper" id="marker-icon-${item.id}" style="background-color: ${color}; font-size: 14px;">
+                            <i class="fa-solid ${iconClass}"></i>
+                        </div>
+                    `,
+                    iconSize: [50, 50],
+                    iconAnchor: [25, 25]
+                });
+
+                const marker = L.marker([item.lat, item.lng], { icon: icon }).addTo(map);
+                
+                marker.on('click', () => {
+                    openAdDetailsModal(item.id);
+                });
+
+                mapMarkers.push({ id: item.id, lat: item.lat, lng: item.lng, marker: marker });
+            });
+        }
+
+        // Proximity Ray Magnification as Map Center moves
+        function highlightProximityMarkers() {
+            const mapCenter = map.getCenter();
+            mapMarkers.forEach(m => {
+                const distanceMeter = mapCenter.distanceTo([m.lat, m.lng]);
+                const wrapperElem = document.getElementById(`marker-icon-${m.id}`);
+                
+                if (wrapperElem) {
+                    if (distanceMeter < 1200) { // Near map center
+                        wrapperElem.classList.add('proximity-highlight');
+                    } else {
+                        wrapperElem.classList.remove('proximity-highlight');
+                    }
+                }
+            });
+        }
+
+        /* ================= FILTERING ENGINE ================= */
+        function getFilteredData() {
+            const searchVal = document.getElementById('searchInput').value.toLowerCase().trim();
+            
+            return adsData.filter(item => {
+                // Category Filter
+                if (currentFilterCat !== 'all' && item.category !== currentFilterCat) {
+                    return false;
+                }
+
+                // Search Filter
+                if (searchVal) {
+                    const matchTitle = item.title.toLowerCase().includes(searchVal);
+                    const matchLoc = item.locName.toLowerCase().includes(searchVal);
+                    const matchDesc = item.desc.toLowerCase().includes(searchVal);
+                    if (!matchTitle && !matchLoc && !matchDesc) return false;
+                }
+
+                // Radius Filter
+                if (currentRadiusKm > 0) {
+                    const distKm = getDistanceKm(userLocation.lat, userLocation.lng, item.lat, item.lng);
+                    if (distKm > currentRadiusKm) return false;
+                }
+
+                return true;
+            });
+        }
+
+        function filterCategory(cat) {
+            currentFilterCat = cat;
+            document.querySelectorAll('.cat-btn').forEach(btn => {
+                if (btn.dataset.cat === cat) {
+                    btn.className = "cat-btn active border px-3 py-1.5 rounded-xl whitespace-nowrap font-medium transition backdrop-blur-md bg-brand-600 border-brand-500 text-white shadow-md shadow-brand-600/30";
+                } else {
+                    btn.className = "cat-btn border px-3 py-1.5 rounded-xl whitespace-nowrap font-medium transition backdrop-blur-md bg-slate-900/90 border-slate-700 text-slate-300 hover:border-slate-500";
+                }
+            });
+
+            updateMapMarkers();
+            renderListings();
+        }
+
+        function handleSearchInput() {
+            const inputVal = document.getElementById('searchInput').value;
+            document.getElementById('clearSearchBtn').classList.toggle('hidden', inputVal.length === 0);
+            updateMapMarkers();
+            renderListings();
+        }
+
+        function clearSearch() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('clearSearchBtn').classList.add('hidden');
+            updateMapMarkers();
+            renderListings();
+        }
+
+        function cycleRadiusFilter() {
+            const radii = [0, 2, 5, 15, 50]; // 0 means all
+            const currentIndex = radii.indexOf(currentRadiusKm);
+            const nextIndex = (currentIndex + 1) % radii.length;
+            currentRadiusKm = radii[nextIndex];
+
+            const btnText = document.getElementById('radiusText');
+            btnText.innerText = currentRadiusKm === 0 ? 'Bütün' : `${currentRadiusKm} km`;
+
+            updateMapMarkers();
+            renderListings();
+        }
 
         function getDistanceKm(lat1, lon1, lat2, lon2) {
             const R = 6371;
             const dLat = (lat2 - lat1) * Math.PI / 180;
             const dLon = (lon2 - lon1) * Math.PI / 180;
-            const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
-            return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                      Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
         }
 
-        function createCustomIcon(mainCat, isVip) {
-            let color = '#2563eb'; let iconClass = 'fa-helmet-safety';
-            if (mainCat === 'xidmet') { color = '#7c3aed'; iconClass = 'fa-user-tie'; }
-            else if (mainCat === 'dukan') { color = '#10b981'; iconClass = 'fa-store'; }
-            else if (mainCat === 'heyvan') { color = '#d97706'; iconClass = 'fa-paw'; }
-            else if (mainCat === 'texnika') { color = '#ef4444'; iconClass = 'fa-truck-monster'; }
+        /* ================= RENDERING LISTINGS & CARDS ================= */
+        function renderListings() {
+            const container = document.getElementById('listingsCardsContainer');
+            const filtered = getFilteredData();
+            document.getElementById('listingsCount').innerText = filtered.length;
 
-            const vipClass = isVip ? 'vip-pin-border' : '';
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full text-center py-12 text-slate-500">
+                        <i class="fa-solid fa-magnifying-glass-slash text-3xl mb-2"></i>
+                        <p class="text-xs font-semibold">Bu kriteriyaya uyğun elan tapılmadı.</p>
+                    </div>
+                `;
+                return;
+            }
 
-            return L.divIcon({
-                className: 'custom-pin-container',
-                html: `<div class="custom-pin ${vipClass}" style="background-color: ${color};">
-                        <i class="fa-solid ${iconClass}"></i>
-                       </div>`,
-                iconSize: [42, 42], iconAnchor: [21, 21]
-            });
+            container.innerHTML = filtered.map(item => `
+                <div onclick="openAdDetailsModal(${item.id})" class="bg-slate-900 border border-slate-800 rounded-2xl p-3 flex gap-3 cursor-pointer hover:border-slate-700 transition relative overflow-hidden group">
+                    <img src="${item.image}" class="w-24 h-24 rounded-xl object-cover" alt="Thumb">
+                    <div class="flex-1 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-[9px] uppercase font-bold text-brand-500 bg-brand-500/10 px-2 py-0.5 rounded-full border border-brand-500/20">${item.category}</span>
+                                <button onclick="toggleFavorite(event, ${item.id})" class="text-slate-400 hover:text-amber-400 p-1">
+                                    <i class="${favoriteIds.includes(item.id) ? 'fa-solid text-amber-400' : 'fa-regular'} fa-bookmark"></i>
+                                </button>
+                            </div>
+                            <h4 class="text-xs font-bold text-white mt-1 line-clamp-1">${item.title}</h4>
+                            <p class="text-[10px] text-slate-400 mt-0.5"><i class="fa-solid fa-location-dot text-brand-500 mr-1"></i> ${item.locName}</p>
+                        </div>
+                        <div class="flex items-center justify-between mt-2 pt-1.5 border-t border-slate-800/80">
+                            <span class="text-xs font-extrabold text-brand-500">${item.price}</span>
+                            <span class="text-[10px] text-amber-400 font-semibold"><i class="fa-solid fa-star mr-0.5"></i> ${item.rating} (${item.reviews})</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
         }
 
-        async function fetchAddressFromCoords(lat, lng) {
-            try {
-                const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`);
-                const data = await res.json();
-                if(data && data.address) {
-                    const a = data.address;
-                    const city = a.city || a.town || a.village || a.county || "Azərbaycan";
-                    const suburb = a.suburb || a.district || "";
-                    const road = a.road || a.pedestrian || "";
-                    return `${city}${suburb ? ', ' + suburb : ''}${road ? ', ' + road : ''}`;
+        /* ================= USER PROFILE & 'MY LISTINGS' DASHBOARD ================= */
+        function renderMyListingsProfile() {
+            const container = document.getElementById('myListingsContainer');
+            // Mock 2 listings belonging to active user (id 1 and 4 for demo)
+            const myAds = adsData.filter(ad => ad.id === 1 || ad.id === 4);
+            
+            document.getElementById('statActiveCount').innerText = myAds.length;
+
+            // Check if any ad is expiring soon (< 5 days)
+            const hasExpiring = myAds.some(a => a.expiresInDays <= 5);
+            document.getElementById('expiringBadge').classList.toggle('hidden', !hasExpiring);
+
+            container.innerHTML = myAds.map(ad => {
+                let statusBadge = '';
+                if (ad.expiresInDays === 0) {
+                    statusBadge = `<span class="bg-red-500/20 text-red-400 text-[10px] px-2 py-0.5 rounded-full border border-red-500/30 font-semibold"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Müddəti Bitib</span>`;
+                } else if (ad.expiresInDays <= 5) {
+                    statusBadge = `<span class="bg-amber-500/20 text-amber-400 text-[10px] px-2 py-0.5 rounded-full border border-amber-500/30 font-semibold"><i class="fa-solid fa-clock mr-1"></i> ${ad.expiresInDays} gün qaldı</span>`;
+                } else {
+                    statusBadge = `<span class="bg-emerald-500/20 text-emerald-400 text-[10px] px-2 py-0.5 rounded-full border border-emerald-500/30 font-semibold"><i class="fa-solid fa-check mr-1"></i> Aktiv (${ad.expiresInDays} gün)</span>`;
                 }
-            } catch(e) {}
-            return `Koordinat: ${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+
+                return `
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3 flex flex-col gap-2.5">
+                        <div class="flex items-center justify-between">
+                            ${statusBadge}
+                            <span class="text-[10px] text-slate-500">Elan ID: #00${ad.id}</span>
+                        </div>
+                        <div class="flex gap-3 items-center">
+                            <img src="${ad.image}" class="w-14 h-14 rounded-xl object-cover" alt="">
+                            <div class="flex-1">
+                                <h4 class="text-xs font-bold text-white leading-tight">${ad.title}</h4>
+                                <p class="text-[10px] text-slate-400 mt-0.5">${ad.locName} • ${ad.price}</p>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-800/80">
+                            <button onclick="renewListing(${ad.id})" class="py-1.5 px-3 bg-brand-600/20 hover:bg-brand-600/30 text-brand-400 border border-brand-500/30 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition">
+                                <i class="fa-solid fa-arrows-rotate"></i> 1-Kliklə Yenilə
+                            </button>
+                            <button onclick="deleteListing(${ad.id})" class="py-1.5 px-3 bg-slate-800 hover:bg-red-500/20 text-slate-400 hover:text-red-400 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition">
+                                <i class="fa-solid fa-trash-can"></i> Sil
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
         }
 
-        function updateMarkerScales() {
-            const center = map.getCenter();
-            activeMarkersMap.forEach((markerObj) => {
-                const dist = getDistanceKm(center.lat, center.lng, markerObj.lat, markerObj.lng);
-                const el = markerObj.marker.getElement();
-                if(el) {
-                    if(dist < 0.8) el.classList.add('active-near');
-                    else el.classList.remove('active-near');
-                }
-            });
-        }
-        map.on('move', updateMarkerScales);
-
-        function renderMarkers() {
-            activeMarkersMap.forEach(obj => map.removeLayer(obj.marker));
-            activeMarkersMap.clear();
-
-            const searchText = document.getElementById('searchInput').value.toLowerCase();
-            const radiusVal = document.getElementById('radiusSelect').value;
-
-            listings.forEach(item => {
-                const distKm = getDistanceKm(userLocation.lat, userLocation.lng, item.lat, item.lng);
-                item.calculatedDistance = distKm;
-
-                const matchesCat = (currentMainCat === 'all' || item.mainCat === currentMainCat);
-                const matchesSearch = item.name.toLowerCase().includes(searchText) || 
-                                      item.subCat.toLowerCase().includes(searchText) ||
-                                      item.address.toLowerCase().includes(searchText);
-
-                let matchesRadius = true;
-                if (radiusVal !== 'all') matchesRadius = distKm <= parseFloat(radiusVal);
-
-                if (matchesCat && matchesSearch && matchesRadius) {
-                    const marker = L.marker([item.lat, item.lng], { icon: createCustomIcon(item.mainCat, item.isVip) }).addTo(map);
-                    marker.on('click', () => { openProfileCard(item); });
-                    activeMarkersMap.set(item.id, { marker: marker, lat: item.lat, lng: item.lng, data: item });
-                }
-            });
-
-            updateMarkerScales();
-            document.getElementById('favCount').innerText = favorites.length;
+        function renewListing(id) {
+            const item = adsData.find(a => a.id === id);
+            if (item) {
+                item.expiresInDays = 30; // Reset 30 days
+                renderMyListingsProfile();
+                showCustomToast('Elanınızın vaxtı 30 gün müddətinə pulsuz yeniləndi!');
+            }
         }
 
-        function openProfileCard(item) {
-            currentListingInModal = item;
-            item.views += 1;
+        function deleteListing(id) {
+            adsData = adsData.filter(a => a.id !== id);
+            renderMyListingsProfile();
+            updateMapMarkers();
+            renderListings();
+            showCustomToast('Elan uğurla silindi.');
+        }
 
-            document.getElementById('cardName').innerText = item.name;
-            document.getElementById('cardCategory').innerText = item.subCat.toUpperCase();
-            document.getElementById('cardDescription').innerText = item.desc;
-            document.getElementById('cardAddress').innerText = item.address;
-            document.getElementById('cardRating').innerText = item.rating;
-            document.getElementById('cardReviews').innerText = item.reviews;
-            document.getElementById('cardViews').innerText = item.views;
+        /* ================= DETAILS MODAL SHOWCASE ================= */
+        function openAdDetailsModal(id) {
+            const item = adsData.find(a => a.id === id);
+            if (!item) return;
 
-            const distStr = item.calculatedDistance < 1 
-                ? `${Math.round(item.calculatedDistance * 1000)} Metr Məsafədə` 
-                : `${item.calculatedDistance.toFixed(1)} KM Məsafədə`;
-            document.getElementById('cardDistance').innerText = distStr;
+            document.getElementById('modalAdImage').src = item.image;
+            document.getElementById('modalAdCategory').innerText = item.category.toUpperCase();
+            document.getElementById('modalAdTitle').innerText = item.title;
+            document.getElementById('modalAdPrice').innerText = item.price;
+            document.getElementById('modalAdLocation').innerText = item.locName;
+            document.getElementById('modalAdDescription').innerText = item.desc;
+            document.getElementById('modalAdOwner').innerText = item.owner;
+            document.getElementById('modalAdRatingText').innerText = `${item.rating} (${item.reviews} rəy)`;
 
-            document.getElementById('callBtn').href = `tel:${item.phone}`;
-            document.getElementById('waBtn').href = `https://wa.me/${item.phone.replace(/[^0-9]/g, '')}`;
+            // Call / WP links
+            document.getElementById('modalCallLink').href = `tel:${item.phone}`;
+            document.getElementById('modalWpLink').href = `https://wa.me/${item.phone.replace('+', '')}`;
 
-            const galleryScroll = document.getElementById('galleryScroll');
-            galleryScroll.innerHTML = '';
-            if (item.images && item.images.length > 0) {
-                item.images.forEach(imgUrl => {
-                    const img = document.createElement('img'); img.src = imgUrl;
-                    galleryScroll.appendChild(img);
+            // Rating Stars
+            const starsContainer = document.getElementById('modalAdStars');
+            starsContainer.innerHTML = Array(5).fill(0).map((_, i) => 
+                `<i class="fa-solid fa-star ${i < Math.floor(item.rating) ? 'text-amber-400' : 'text-slate-600'}"></i>`
+            ).join('');
+
+            document.getElementById('adDetailsModal').classList.remove('hidden');
+        }
+
+        function closeAdDetailsModal() {
+            document.getElementById('adDetailsModal').classList.add('hidden');
+        }
+
+        /* ================= REVOLUTIONARY 'LIVE REQUEST BOARD' ================= */
+        function renderLiveRequests() {
+            const container = document.getElementById('liveRequestsContainer');
+            container.innerHTML = liveJobRequests.map(req => `
+                <div class="bg-slate-950 border border-slate-800 rounded-2xl p-3 space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-[10px] text-red-400 font-bold bg-red-500/10 px-2 py-0.5 rounded-full border border-red-500/20">
+                            <i class="fa-solid fa-bolt mr-1"></i> Təcili İş
+                        </span>
+                        <span class="text-[10px] text-slate-500">${req.time}</span>
+                    </div>
+                    <h4 class="text-xs font-bold text-white">${req.title}</h4>
+                    <div class="flex items-center justify-between text-xs pt-1 border-t border-slate-900">
+                        <span class="text-slate-400"><i class="fa-solid fa-location-dot text-brand-500 mr-1"></i> ${req.loc}</span>
+                        <span class="font-extrabold text-emerald-400">${req.budget}</span>
+                    </div>
+                    <a href="tel:${req.phone}" class="w-full py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] rounded-xl flex items-center justify-center gap-1.5 transition">
+                        <i class="fa-solid fa-phone"></i> Ustayı/İşə Təklif Et
+                    </a>
+                </div>
+            `).join('');
+        }
+
+        function openLiveRequestsModal() {
+            document.getElementById('liveRequestsModal').classList.remove('hidden');
+        }
+        function closeLiveRequestsModal() {
+            document.getElementById('liveRequestsModal').classList.add('hidden');
+        }
+
+        function openNewLiveRequestForm() {
+            const title = prompt("Təcili nə işiniz var? (Məs: Təcili kran ustası lazımdır)");
+            if (title) {
+                liveJobRequests.unshift({
+                    id: Date.now(),
+                    title: title,
+                    loc: 'Bakı (GPS ilə)',
+                    budget: 'Razılaşma ilə',
+                    phone: '+994507891234',
+                    time: 'İndi'
                 });
-            }
-
-            document.getElementById('profileCard').classList.add('open');
-        }
-
-        function closeProfileCard() { document.getElementById('profileCard').classList.remove('open'); }
-
-        // VIP Banner Avtomatik Rotasiyası
-        function rotateVipBanner() {
-            const vips = listings.filter(l => l.isVip);
-            if(vips.length === 0) return;
-            vipIndex = (vipIndex + 1) % vips.length;
-            const currentVip = vips[vipIndex];
-            document.getElementById('vipBannerTitle').innerText = currentVip.name;
-            document.getElementById('vipBannerSub').innerText = `⭐ ${currentVip.rating} • ${currentVip.address}`;
-            document.getElementById('vipBanner').dataset.vipId = currentVip.id;
-        }
-        setInterval(rotateVipBanner, 7000);
-
-        function focusVipListing() {
-            const vips = listings.filter(l => l.isVip);
-            const currentVip = vips[vipIndex];
-            if(currentVip) {
-                map.setView([currentVip.lat, currentVip.lng], 14);
-                openProfileCard(currentVip);
+                renderLiveRequests();
+                showCustomToast('Canlı tələbiniz xəritə lövhəsinə əlavə olundu!');
             }
         }
 
-        // Dəqiq GPS Mövqeyi (High Accuracy)
-        function locateUser() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(pos => {
-                    userLocation.lat = pos.coords.latitude; userLocation.lng = pos.coords.longitude;
-                    map.setView([userLocation.lat, userLocation.lng], 14);
-                    renderMarkers();
-                }, (err) => {
-                    alert("GPS daxil edilmədi və ya icazə verilmədi.");
-                }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 });
-            }
-        }
-
-        function rateCurrentListing() {
-            if(!currentListingInModal) return;
-            const stars = prompt("Ustaya 1-dən 5-ə qədər qiymət verin:", "5");
-            if(stars && stars >= 1 && stars <= 5) {
-                currentListingInModal.reviews += 1;
-                document.getElementById('cardReviews').innerText = currentListingInModal.reviews;
-                alert("Təşəkkür edirik! Qiymətləndirməniz qeydə alındı.");
-            }
-        }
-
-        function toggleFavoriteCurrent() {
-            if(!currentListingInModal) return;
-            const idx = favorites.indexOf(currentListingInModal.id);
-            if(idx > -1) { favorites.splice(idx, 1); alert("Sevimlilərdən çıxarıldı."); } 
-            else { favorites.push(currentListingInModal.id); alert("Sevimlilərə əlavə olundu ❤️"); }
-            localStorage.setItem('favListings', JSON.stringify(favorites));
-            document.getElementById('favCount').innerText = favorites.length;
-        }
-
-        function openFavModal() {
-            const container = document.getElementById('favListContainer');
-            container.innerHTML = '';
-            if(favorites.length === 0) {
-                container.innerHTML = '<p style="color:#666; font-size:13px;">Hələ heç bir elanı sevimlilərə əlavə etməmisiniz.</p>';
+        /* ================= FAVORITES ENGINE ================= */
+        function toggleFavorite(e, id) {
+            e.stopPropagation();
+            if (favoriteIds.includes(id)) {
+                favoriteIds = favoriteIds.filter(favId => favId !== id);
             } else {
-                const favItems = listings.filter(l => favorites.includes(l.id));
-                favItems.forEach(item => {
-                    const div = document.createElement('div');
-                    div.className = 'fav-item';
-                    div.innerHTML = `<div><b>${item.name}</b><br><small>${item.address}</small></div>
-                                     <button style="background:#2563eb; color:white; border:none; padding:6px 12px; border-radius:8px; cursor:pointer;" onclick="closeFavModal(); map.setView([${item.lat}, ${item.lng}], 14); openProfileCard(listings.find(x=>x.id===${item.id}))">Bax</button>`;
-                    container.appendChild(div);
-                });
+                favoriteIds.push(id);
             }
-            document.getElementById('favModal').style.display = 'flex';
+            renderListings();
+            renderFavorites();
         }
 
-        function closeFavModal() { document.getElementById('favModal').style.display = 'none'; }
+        function renderFavorites() {
+            const container = document.getElementById('favoritesContainer');
+            const favItems = adsData.filter(a => favoriteIds.includes(a.id));
 
-        function updateSubCatDropdown() {
-            const mainCat = document.getElementById('formMainCat').value;
-            const subCatSelect = document.getElementById('formSubCat');
-            subCatSelect.innerHTML = '';
-            subCategoriesMap[mainCat].forEach(sub => {
-                const opt = document.createElement('option'); opt.value = sub; opt.innerText = sub;
-                subCatSelect.appendChild(opt);
-            });
-        }
-
-        let isVipSelectedForm = false;
-        function toggleVipSelection(checked) {
-            isVipSelectedForm = checked;
-            const submitBtn = document.getElementById('submitBtn');
-            if(checked) {
-                submitBtn.innerText = "👑 VIP Elan Yayımla (3 AZN / 30 Gün)";
-                alert("VIP Rejim: Xəritədən istədiyiniz məkanı sıxaraq seçə bilərsiniz.");
-                closeFormModal();
-                const onMapClick = async function(e) {
-                    document.getElementById('formLat').value = e.latlng.lat;
-                    document.getElementById('formLng').value = e.latlng.lng;
-                    map.off('click', onMapClick);
-                    openFormModal();
-                    document.getElementById('formAddress').value = "Ünvan təyin olunur...";
-                    const addr = await fetchAddressFromCoords(e.latlng.lat, e.latlng.lng);
-                    document.getElementById('formAddress').value = addr;
-                };
-                map.on('click', onMapClick);
-            } else {
-                submitBtn.innerText = "Elanı Yayımla (Pulsuz)";
-                document.getElementById('formLat').value = userLocation.lat;
-                document.getElementById('formLng').value = userLocation.lng;
+            if (favItems.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-500 text-center py-6">Hələ heç bir elan seçilməyib.</p>`;
+                return;
             }
+
+            container.innerHTML = favItems.map(item => `
+                <div onclick="openAdDetailsModal(${item.id})" class="bg-slate-950 border border-slate-800 p-2.5 rounded-2xl flex items-center gap-3 cursor-pointer">
+                    <img src="${item.image}" class="w-12 h-12 rounded-xl object-cover" alt="">
+                    <div class="flex-1">
+                        <h4 class="text-xs font-bold text-white line-clamp-1">${item.title}</h4>
+                        <p class="text-[10px] text-brand-500 font-semibold">${item.price}</p>
+                    </div>
+                </div>
+            `).join('');
         }
 
-        let uploadedImagesBase64 = [];
-        function previewImages(e) {
-            const files = Array.from(e.target.files).slice(0, 10);
-            const grid = document.getElementById('previewGrid');
-            grid.innerHTML = ''; uploadedImagesBase64 = [];
-            files.forEach(file => {
-                const reader = new FileReader();
-                reader.onload = function(evt) {
-                    uploadedImagesBase64.push(evt.target.result);
-                    const img = document.createElement('img'); img.src = evt.target.result;
-                    grid.appendChild(img);
-                }
-                reader.readAsDataURL(file);
-            });
+        function openFavoritesModal() {
+            renderFavorites();
+            document.getElementById('favoritesModal').classList.remove('hidden');
+        }
+        function closeFavoritesModal() {
+            document.getElementById('favoritesModal').classList.add('hidden');
         }
 
-        async function openFormModal() { 
-            updateSubCatDropdown();
-            document.getElementById('formModal').style.display = 'flex';
-            if(!isVipSelectedForm) {
-                document.getElementById('formLat').value = userLocation.lat;
-                document.getElementById('formLng').value = userLocation.lng;
-                document.getElementById('formAddress').value = "Məkan müəyyənləşdirilir...";
-                const addr = await fetchAddressFromCoords(userLocation.lat, userLocation.lng);
-                document.getElementById('formAddress').value = addr;
-            }
+        /* ================= NEW AD FORM HANDLER ================= */
+        function openNewAdModal() {
+            document.getElementById('newAdModal').classList.remove('hidden');
+        }
+        function closeNewAdModal() {
+            document.getElementById('newAdModal').classList.add('hidden');
         }
 
-        function closeFormModal() { document.getElementById('formModal').style.display = 'none'; }
-
-        function handleFormSubmit(e) {
+        function handleAdSubmit(e) {
             e.preventDefault();
-            const lat = parseFloat(document.getElementById('formLat').value);
-            const lng = parseFloat(document.getElementById('formLng').value);
-
-            if(isVipSelectedForm) {
-                const pay = confirm("Xəritədən seçilən xüsusi məkan VIP elan sayılır.\n\n3 AZN balansınızdan çıxılsın?");
-                if(!pay) return;
-            }
-
-            const newListing = {
+            const newAd = {
                 id: Date.now(),
-                name: document.getElementById('formName').value,
-                mainCat: document.getElementById('formMainCat').value,
-                subCat: document.getElementById('formSubCat').value,
-                phone: document.getElementById('formPhone').value,
-                address: document.getElementById('formAddress').value,
-                desc: document.getElementById('formDesc').value,
-                lat: lat, lng: lng, rating: 5.0, reviews: 1, views: 1, isVip: isVipSelectedForm,
-                images: uploadedImagesBase64.length > 0 ? uploadedImagesBase64 : ["https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=800"]
+                title: document.getElementById('adTitle').value,
+                category: document.getElementById('adCategory').value,
+                price: document.getElementById('adPrice').value || 'Razılaşma ilə',
+                locName: document.getElementById('adLocation').value,
+                phone: document.getElementById('adPhone').value,
+                desc: document.getElementById('adDesc').value,
+                owner: 'Məmməd Usta',
+                lat: userLocation.lat + (Math.random() - 0.5) * 0.02,
+                lng: userLocation.lng + (Math.random() - 0.5) * 0.02,
+                rating: 5.0,
+                reviews: 1,
+                expiresInDays: 30,
+                image: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=600&q=80'
             };
 
-            listings.push(newListing);
-            renderMarkers();
-            closeFormModal();
-            document.getElementById('addListingForm').reset();
-            document.getElementById('previewGrid').innerHTML = '';
-            alert("Təbriklər! Elanınız dəqiq ünvanla xəritədə yayımlandı.");
+            adsData.unshift(newAd);
+            closeNewAdModal();
+            updateMapMarkers();
+            renderListings();
+            renderMyListingsProfile();
+            showCustomToast('Yeni elanınız uğurla yerləşdirildi və xəritədə qeyd olundu!');
+            document.getElementById('newAdForm').reset();
         }
 
-        function filterMainCategory(cat, btn) {
-            currentMainCat = cat;
-            document.querySelectorAll('.filter-row .tag-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            renderMarkers();
+        /* ================= UI NAVIGATION TABS & DRAWER ================= */
+        function switchTab(tabId) {
+            document.getElementById('listTabOverlay').classList.add('hidden');
+            document.getElementById('profileTabOverlay').classList.add('hidden');
+
+            document.getElementById('mapTabBtn').className = "flex-1 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 text-slate-400 hover:text-white transition";
+            document.getElementById('listTabBtn').className = "flex-1 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 text-slate-400 hover:text-white transition";
+            document.getElementById('profileTabBtn').className = "flex-1 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 text-slate-400 hover:text-white transition relative";
+
+            if (tabId === 'mapTab') {
+                document.getElementById('mapTabBtn').className = "flex-1 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 bg-brand-600 text-white shadow-md";
+            } else if (tabId === 'listTab') {
+                document.getElementById('listTabOverlay').classList.remove('hidden');
+                document.getElementById('listTabBtn').className = "flex-1 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 bg-brand-600 text-white shadow-md";
+            } else if (tabId === 'profileTab') {
+                document.getElementById('profileTabOverlay').classList.remove('hidden');
+                document.getElementById('profileTabBtn').className = "flex-1 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 bg-brand-600 text-white shadow-md relative";
+            }
         }
 
-        locateUser();
-        renderMarkers();
+        function toggleMenuDrawer() {
+            const drawer = document.getElementById('legalMenuDrawer');
+            drawer.classList.toggle('hidden');
+        }
+
+        /* ================= UTILITY TOAST NOTIFICATION ================= */
+        function showCustomToast(msg) {
+            const toast = document.createElement('div');
+            toast.className = 'fixed top-16 left-1/2 -translate-x-1/2 z-50 bg-slate-900 border border-brand-500 text-white text-xs px-4 py-2.5 rounded-2xl shadow-2xl flex items-center gap-2 animate-bounce';
+            toast.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-400"></i> <span>${msg}</span>`;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3500);
+        }
     </script>
 </body>
 </html>
+```
