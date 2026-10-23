@@ -1,56 +1,461 @@
-<!doctype html>
-<html lang="az">
+<!DOCTYPE html>
+<html lang="az" class="dark">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Canlı Sözlər — demo</title>
-<style>
-*{box-sizing:border-box}body{margin:0;background:#090b12;color:#f7f8ff;font:14px system-ui,-apple-system,Segoe UI,sans-serif}
-.top{height:62px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;background:#111522;position:sticky;top:0;z-index:5;border-bottom:1px solid #252b3c}
-.logo{font-size:23px;font-weight:900;letter-spacing:-1px}.logo b{color:#63e6ff}.hint{color:#aeb7cc;font-size:12px}
-.feed{width:min(560px,100%);margin:18px auto;padding:0 10px}.post{height:690px;position:relative;overflow:hidden;border-radius:22px;margin:18px 0;border:1px solid #2a3043;background:#171b2a}
-.scene{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:92px;overflow:hidden}
-.scene:after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,#080a12e8 0%,transparent 45%,#080a1255 100%)}
-.one{background:radial-gradient(circle at 70% 22%,#ffd66b,transparent 12%),linear-gradient(145deg,#5b213e,#101b4c)}
-.two{background:radial-gradient(circle at 30% 28%,#8df1ff,transparent 10%),linear-gradient(145deg,#073a4b,#16163d)}
-.three{background:radial-gradient(circle at 70% 35%,#ff9e83,transparent 13%),linear-gradient(145deg,#321c3e,#c55e48)}
-.four{background:linear-gradient(145deg,#204f46,#102b3d)}
-.five{background:radial-gradient(circle at 55% 27%,#fff0ab,transparent 9%),linear-gradient(145deg,#394d7c,#17192f)}
-.six{background:linear-gradient(145deg,#1b243a,#74324e)}.seven{background:linear-gradient(145deg,#614d2f,#0e2831)}
-.eight{background:linear-gradient(145deg,#2e205b,#9d4e8d)}.nine{background:linear-gradient(145deg,#182f28,#6d8e6e)}
-.ten{background:linear-gradient(145deg,#3d1f24,#c46e42)}.eleven{background:linear-gradient(145deg,#282d55,#3d8a9a)}.twelve{background:linear-gradient(145deg,#29202f,#bd5272)}
-.scene small{position:relative;z-index:1;font-size:12px;letter-spacing:3px;color:#ffffff99;margin-top:180px}
-.topinfo,.meta,.tools{position:absolute;left:18px;right:18px;z-index:2}.topinfo{top:18px;display:flex;justify-content:space-between;color:#dce5ff}.live{color:#8affbf}.meta{bottom:68px}.meta strong{font-size:16px}.meta p{color:#d3d8e5;margin:8px 0 0;max-width:410px}.tools{bottom:15px;display:flex;gap:8px;align-items:center}
-button{border:0;border-radius:12px;padding:10px 13px;color:#fff;background:#ffffff1c;cursor:pointer}button:hover{background:#63e6ff33}.heart.active{background:#ff53834d;color:#ff7c9d}
-.open{margin-left:auto;background:#63e6ff22;color:#8eecff}.count{color:#aeb7cc;font-size:12px}.badge{font-size:11px;border:1px solid #ffffff33;border-radius:9px;padding:6px 8px;color:#d6dcf0}
-.words{position:absolute;z-index:3;left:16px;right:16px;top:90px;display:flex;flex-direction:column;gap:8px;pointer-events:none}.word{align-self:flex-start;max-width:90%;background:#050711c9;border:1px solid #ffffff36;border-radius:13px;padding:9px 12px;box-shadow:0 6px 20px #0005;animation:in .25s ease}.word b{color:#83ebff;font-size:11px}.word em{font-style:normal;color:#bdc5d8;font-size:11px;margin-left:8px}
-@keyframes in{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
-.sheet{position:fixed;inset:0;background:#0009;z-index:10;display:none;align-items:flex-end}.sheet.show{display:flex}.panel{width:min(560px,100%);margin:auto;background:#151a29;border:1px solid #31384d;border-radius:22px 22px 0 0;padding:20px}.panel h2{margin:0 0 14px}.panel textarea{width:100%;height:80px;resize:none;background:#0b0e17;color:#fff;border:1px solid #384158;border-radius:12px;padding:12px;font:inherit}.row{display:flex;gap:8px;align-items:center;margin-top:12px}.row label{color:#aeb7cc}.row button{border:1px solid #384158;background:#20283b}.row button.sel{border-color:#63e6ff;color:#63e6ff}.send{margin-left:auto;background:#65e7ff;color:#061018;font-weight:800}.close{background:transparent;color:#aeb7cc}.note{text-align:center;color:#8d98b2;font-size:12px;margin:14px}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CANLI SÖZLƏR — Sosial Video & Ürək Sözləri Platforması</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            dark: '#0B0C10',
+                            card: '#1F2833',
+                            purple: '#8B5CF6',
+                            violet: '#6D28D9',
+                            pink: '#EC4899',
+                            cyan: '#06B6D4'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @keyframes floatAnim {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-5px); }
+        }
+        .animate-float {
+            animation: floatAnim 4s ease-in-out infinite;
+        }
+        /* Hide scrollbar for clean vertical feed */
+        ::-webkit-scrollbar {
+            display: none;
+        }
+        body {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
 </head>
-<body>
-<header class="top"><div class="logo">canlı<b>·</b>sözlər</div><div class="hint">Videonun üstünə öz sözünü yaz</div></header>
-<main class="feed" id="feed"></main>
-<div class="sheet" id="sheet"><div class="panel">
-<h2>Videoya ürək sözün</h2><textarea id="txt" maxlength="90" placeholder="Məsələn: Bu bizim mahnımızdır..."></textarea>
-<div class="row"><label>Görünmə müddəti:</label><button data-sec="30" class="sel">30 san</button><button data-sec="60">60 san</button><button data-sec="90">90 san</button></div>
-<div class="row"><button class="close" id="cancel">Ləğv et</button><button class="send" id="send">Videonun üstünə əlavə et</button></div>
-</div></div>
-<script>
-const posts=[
-["one","🌅","Lalə","Günəş batanda şəhər başqa cür görünür.","Bakı sahili"],["two","🌊","Murad","Bu səs mənə uşaqlığımı xatırladır.","Dəniz səsi"],["three","🌹","Aysel","Bəzi xatirələr heç vaxt silinmir.","Romantik an"],["four","🌲","Nihat","Sakitlik də bəzən cavabdır.","Meşədə səhər"],["five","🏔️","Kamal","Bu mənzərəni birlikdə görəcəyik.","Dağ yolu"],["six","🎧","Zəhra","Bu mahnını kim tanıyır?","Gecə musiqisi"],["seven","🚗","Elvin","Yolun özü də hekayədir.","Uzun yol"],["eight","🌃","Sevinc","Şəhərin işıqları altında bir arzu.","Gecə şəhəri"],["nine","☕","Rauf","Səhər qəhvəsi və yeni başlanğıc.","Sakit səhər"],["ten","🔥","Nərgiz","Bu gecə unudulmaz olacaq.","Dostlarla gecə"],["eleven","🌧️","Tural","Yağışlı havanın öz romantikası var.","Yağış sonrası"],["twelve","🎈","Günel","Bu anı saxlayın, sonra darıxacağıq.","Xatirə günü"]
-];
-const feed=document.getElementById("feed");let active=null, duration=30;
-posts.forEach((p,i)=>{const el=document.createElement("article");el.className="post";el.dataset.id=i;el.innerHTML=`
-<div class="scene ${p[0]}"><span>${p[1]}</span><small>${p[4].toUpperCase()}</small></div>
-<div class="topinfo"><span class="live">● CANLI</span><span>${i+1} / ${posts.length}</span></div>
-<div class="words"></div><div class="meta"><strong>@${p[2]}</strong><p>${p[3]}</p></div>
-<div class="tools"><button class="heart">♡ <span>0</span></button><span class="count">bəyənmə</span><button class="open">✍ Videonun üstünə yaz</button></div>`;feed.appendChild(el)});
-document.querySelectorAll("[data-sec]").forEach(b=>b.onclick=()=>{duration=+b.dataset.sec;document.querySelectorAll("[data-sec]").forEach(x=>x.classList.remove("sel"));b.classList.add("sel")});
-document.querySelectorAll(".open").forEach(b=>b.onclick=()=>{active=b.closest(".post");document.getElementById("txt").value="";document.getElementById("sheet").classList.add("show");document.getElementById("txt").focus()});
-document.getElementById("cancel").onclick=()=>document.getElementById("sheet").classList.remove("show");
-document.getElementById("send").onclick=()=>{const t=document.getElementById("txt").value.trim();if(!t)return alert("Əvvəlcə qısa söz yazın.");const w=document.createElement("div");w.className="word";w.innerHTML=`<b>SƏN</b> <em>${duration} saniyə</em><br>${esc(t)}<br><button class="mini">♡ <span>0</span></button>`;active.querySelector(".words").appendChild(w);document.getElementById("sheet").classList.remove("show");w.querySelector(".mini").onclick=()=>{const n=w.querySelector("span");n.textContent=+n.textContent+1;const h=active.querySelector(".heart"),c=h.querySelector("span");c.textContent=+c.textContent+1;w.querySelector("em").textContent=(duration+Math.min(+n.textContent*5,120))+" saniyə"}};
-document.querySelectorAll(".heart").forEach(b=>b.onclick=()=>{b.classList.toggle("active");const n=b.querySelector("span");n.textContent=+n.textContent+(b.classList.contains("active")?1:-1)});
-function esc(s){return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
-</script>
+<body class="bg-brand-dark text-white h-screen overflow-hidden font-sans select-none">
+
+    <!-- Navbar -->
+    <header class="fixed top-0 left-0 right-0 z-50 bg-[#1F2833]/80 backdrop-blur-md px-4 py-3 flex items-center justify-between border-b border-white/10">
+        <div class="flex items-center gap-2 cursor-pointer" onclick="App.resetFeed()">
+            <i class="fa-solid fa-heart text-brand-pink text-xl animate-pulse"></i>
+            <span class="font-black text-lg bg-gradient-to-r from-brand-purple via-brand-pink to-brand-cyan bg-clip-text text-transparent">CANLI SÖZLƏR</span>
+        </div>
+        <div class="flex items-center gap-3">
+            <button onclick="App.openUploadModal()" class="bg-gradient-to-r from-brand-purple to-brand-pink px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1.5 shadow-lg hover:opacity-90 transition">
+                <i class="fa-solid fa-plus-square"></i> Paylaş
+            </button>
+            <div id="user-badge" class="flex items-center gap-2 bg-black/40 px-3 py-1 rounded-full border border-white/10 text-xs">
+                <img id="nav-avatar" src="https://i.pravatar.cc/150?img=12" class="w-6 h-6 rounded-full object-cover">
+                <span id="nav-username" class="font-bold">qonaq</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Feed Container -->
+    <main id="feed-container" class="h-screen w-full overflow-y-scroll snap-y snap-mandatory pt-16 pb-4">
+        <!-- Dynamic Video Cards Rendered Here -->
+    </main>
+
+    <!-- Modals -->
+    <!-- Add Heart Message Modal -->
+    <div id="msg-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm hidden">
+        <div class="bg-brand-card border border-white/10 rounded-3xl w-full max-w-md p-6 relative shadow-2xl">
+            <button onclick="App.closeModals()" class="absolute top-4 right-4 text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            <h2 class="text-lg font-bold text-white mb-4"><i class="fa-solid fa-comment-medical text-brand-purple"></i> Videonun Üstünə Söz Yaz</h2>
+            <form onsubmit="App.handleCreateMessage(event)" class="space-y-4">
+                <div>
+                    <textarea id="msg-content" maxlength="120" rows="3" required placeholder="Ürək sözünüzü yazın... (Maks. 120 simvol)" class="w-full bg-black/40 border border-white/10 rounded-2xl p-3 text-white text-sm focus:outline-none focus:border-brand-purple"></textarea>
+                </div>
+                <div>
+                    <label class="text-xs font-semibold text-gray-300 block mb-1">Ekranda Mövqe:</label>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button type="button" onclick="App.setMsgPos('TOP', this)" class="pos-btn py-2 text-xs font-bold rounded-xl border bg-brand-purple border-brand-purple text-white">Yuxarı</button>
+                        <button type="button" onclick="App.setMsgPos('CENTER', this)" class="pos-btn py-2 text-xs font-bold rounded-xl border bg-black/30 border-white/10 text-gray-400">Orta</button>
+                        <button type="button" onclick="App.setMsgPos('BOTTOM', this)" class="pos-btn py-2 text-xs font-bold rounded-xl border bg-black/30 border-white/10 text-gray-400">Aşağı</button>
+                    </div>
+                </div>
+                <div>
+                    <label class="text-xs font-semibold text-gray-300 block mb-1">İlkin Görünmə Müddəti:</label>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button type="button" onclick="App.setMsgDur('30', this)" class="dur-btn py-2 text-xs font-bold rounded-xl border bg-brand-purple border-brand-purple text-white">30 Saniyə</button>
+                        <button type="button" onclick="App.setMsgDur('60', this)" class="dur-btn py-2 text-xs font-bold rounded-xl border bg-black/30 border-white/10 text-gray-400">60 Saniyə</button>
+                        <button type="button" onclick="App.setMsgDur('90', this)" class="dur-btn py-2 text-xs font-bold rounded-xl border bg-black/30 border-white/10 text-gray-400">90 Saniyə</button>
+                    </div>
+                </div>
+                <button type="submit" class="w-full bg-gradient-to-r from-brand-purple to-brand-pink py-3 rounded-2xl font-bold text-white shadow-lg hover:opacity-90 transition text-sm">
+                    Göndər
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Upload Modal -->
+    <div id="upload-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm hidden">
+        <div class="bg-brand-card border border-white/10 rounded-3xl w-full max-w-md p-6 relative shadow-2xl">
+            <button onclick="App.closeModals()" class="absolute top-4 right-4 text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            <h2 class="text-lg font-bold text-white mb-4"><i class="fa-solid fa-video text-brand-pink"></i> Yeni Paylaşım Yaradın</h2>
+            <form onsubmit="App.handleUploadPost(event)" class="space-y-4">
+                <div>
+                    <label class="text-xs text-gray-300 mb-1 block">Başlıq</label>
+                    <input type="text" id="upload-title" required placeholder="Paylaşım başlığı..." class="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-white text-sm focus:outline-none focus:border-brand-purple">
+                </div>
+                <div>
+                    <label class="text-xs text-gray-300 mb-1 block">Mövzu</label>
+                    <select id="upload-topic" class="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-white text-sm bg-gray-900">
+                        <option value="Şəhər">Şəhər</option>
+                        <option value="Dəniz">Dəniz</option>
+                        <option value="Romantik">Romantik</option>
+                        <option value="Musiqi">Musiqi</option>
+                        <option value="Səyahət">Səyahət</option>
+                        <option value="Yağış">Yağış</option>
+                        <option value="Xatirə">Xatirə</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-xs text-gray-300 mb-1 block">Video / Şəkil Linki (MP4 və ya Image URL)</label>
+                    <input type="url" id="upload-url" required placeholder="https://assets.mixkit.co/... ya da şəkil linki" class="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-white text-sm focus:outline-none focus:border-brand-purple">
+                </div>
+                <button type="submit" class="w-full bg-gradient-to-r from-brand-purple to-brand-pink py-3 rounded-2xl font-bold text-white shadow-lg hover:opacity-90 transition text-sm">
+                    Paylaş
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Application Script -->
+    <script>
+        const App = (() => {
+            let currentUser = { id: 'user-1', username: 'murad_88', avatar: 'https://i.pravatar.cc/150?img=11' };
+            let selectedPos = 'CENTER';
+            let selectedDur = '30';
+            let activePostIdForMsg = null;
+
+            // Initial Seed Posts if empty in localStorage
+            const defaultPosts = [
+                {
+                    id: 'post-1',
+                    userId: 'user-2',
+                    username: 'leyla_m',
+                    userAvatar: 'https://i.pravatar.cc/150?img=5',
+                    title: 'Gecə Bakısının işıqları',
+                    topic: 'Gecə',
+                    mediaUrl: 'https://assets.mixkit.co/videos/preview/mixkit-city-lights-at-night-41221-large.mp4',
+                    mediaType: 'video',
+                    likes: ['user-1'],
+                    messages: [
+                        {
+                            id: 'msg-1',
+                            userId: 'user-1',
+                            username: 'murad_88',
+                            content: 'Mən də burada olmuşam, çox gözəl xatirədir!',
+                            position: 'CENTER',
+                            color: '#8B5CF6',
+                            baseDuration: 60,
+                            createdAt: Date.now() - 10000,
+                            reactions: { HEART: ['user-2'], LAUGH: [] }
+                        }
+                    ]
+                },
+                {
+                    id: 'post-2',
+                    userId: 'user-3',
+                    username: 'elnur_traveller',
+                    userAvatar: 'https://i.pravatar.cc/150?img=15',
+                    title: 'Dəniz kənarında sakitlik',
+                    topic: 'Dəniz',
+                    mediaUrl: 'https://assets.mixkit.co/videos/preview/mixkit-waves-in-the-water-1164-large.mp4',
+                    mediaType: 'video',
+                    likes: [],
+                    messages: [
+                        {
+                            id: 'msg-2',
+                            userId: 'user-2',
+                            username: 'leyla_m',
+                            content: 'Bu bizim mahnımızdır 🎶',
+                            position: 'TOP',
+                            color: '#EC4899',
+                            baseDuration: 30,
+                            createdAt: Date.now() - 5000,
+                            reactions: { HEART: ['user-1', 'user-3'] }
+                        }
+                    ]
+                },
+                {
+                    id: 'post-3',
+                    userId: 'user-1',
+                    username: 'murad_88',
+                    userAvatar: 'https://i.pravatar.cc/150?img=11',
+                    title: 'Yağışlı payız günü',
+                    topic: 'Yağış',
+                    mediaUrl: 'https://assets.mixkit.co/videos/preview/mixkit-rain-drops-on-a-window-glass-1804-large.mp4',
+                    mediaType: 'video',
+                    likes: ['user-2'],
+                    messages: []
+                }
+            ];
+
+            let posts = JSON.parse(localStorage.getItem('canli_sozler_posts')) || defaultPosts;
+
+            const savePosts = () => localStorage.setItem('canli_sozler_posts', JSON.stringify(posts));
+
+            const renderFeed = () => {
+                const container = document.getElementById('feed-container');
+                container.innerHTML = '';
+
+                posts.forEach((post, index) => {
+                    const isLiked = post.likes.includes(currentUser.id);
+                    const cardDiv = document.createElement('div');
+                    cardDiv.className = 'h-[calc(100vh-4rem)] w-full flex items-center justify-center p-2 snap-center';
+                    
+                    cardDiv.innerHTML = `
+                        <div class="relative w-full h-full max-w-md mx-auto bg-black rounded-3xl overflow-hidden shadow-2xl flex items-center justify-center select-none">
+                            <video src="${post.mediaUrl}" loop muted playsInline class="w-full h-full object-cover cursor-pointer video-el" onclick="App.togglePlay(this)"></video>
+
+                            <!-- Top Header -->
+                            <div class="absolute top-4 left-4 right-4 flex justify-between items-center z-30">
+                                <div class="flex items-center gap-2 bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10">
+                                    <img src="${post.userAvatar}" class="w-6 h-6 rounded-full object-cover">
+                                    <span class="text-xs font-bold text-white">@${post.username}</span>
+                                </div>
+                                <button onclick="App.toggleMute(this)" class="bg-black/40 backdrop-blur-md p-2 rounded-full text-white hover:bg-black/60 transition mute-btn">
+                                    <i class="fa-solid fa-volume-xmark text-xs"></i>
+                                </button>
+                            </div>
+
+                            <!-- Heart Messages Overlays -->
+                            <div id="messages-layer-${post.id}" class="absolute inset-0 pointer-events-none z-20 overflow-hidden">
+                                ${renderMessages(post.messages, post.userId)}
+                            </div>
+
+                            <!-- Bottom Info -->
+                            <div class="absolute bottom-4 left-4 right-16 z-30 pointer-events-none">
+                                <h3 class="text-white font-bold text-base drop-shadow-md">${post.title}</h3>
+                                <p class="text-xs text-brand-cyan font-medium mt-1">#${post.topic}</p>
+                            </div>
+
+                            <!-- Right Sidebar Actions -->
+                            <div class="absolute right-3 bottom-12 z-30 flex flex-col items-center gap-4">
+                                <button onclick="App.toggleLike('${post.id}')" class="flex flex-col items-center group">
+                                    <div class="p-3 rounded-full backdrop-blur-md border border-white/10 transition group-hover:scale-110 ${isLiked ? 'bg-pink-600 text-white' : 'bg-black/40 text-white'}">
+                                        <i class="fa-solid fa-heart ${isLiked ? 'fill-white' : ''}"></i>
+                                    </div>
+                                    <span class="text-xs font-bold text-white mt-1">${post.likes.length}</span>
+                                </button>
+
+                                <button onclick="App.openMsgModal('${post.id}')" class="flex flex-col items-center group">
+                                    <div class="p-3 rounded-full bg-brand-purple/80 text-white backdrop-blur-md border border-white/10 transition group-hover:scale-110 shadow-lg animate-pulse">
+                                        <i class="fa-solid fa-comment-medical"></i>
+                                    </div>
+                                    <span class="text-xs font-bold text-white mt-1">Söz Yaz</span>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    container.appendChild(cardDiv);
+                });
+
+                initObserver();
+            };
+
+            const renderMessages = (messages, postOwnerId) => {
+                const now = Date.now();
+                return messages.map(msg => {
+                    const elapsed = Math.floor((now - msg.createdAt) / 1000);
+                    const totalReactions = Object.values(msg.reactions).reduce((a, b) => a + b.length, 0);
+                    const bonus = Math.floor(totalReactions / 10) * 5;
+                    const totalSec = Math.min(msg.baseDuration + bonus, 300);
+                    const remain = totalSec - elapsed;
+
+                    if (remain <= 0) return '';
+
+                    const posStyle = msg.position === 'TOP' ? 'top-16' : msg.position === 'BOTTOM' ? 'bottom-20' : 'top-1/2 -translate-y-1/2';
+                    const isOwner = currentUser.id === msg.userId || currentUser.id === postOwnerId;
+
+                    const heartCount = msg.reactions.HEART.length;
+                    const laughCount = msg.reactions.LAUGH.length;
+
+                    return `
+                        <div class="absolute left-4 right-4 pointer-events-auto transition-all duration-500 animate-float ${posStyle}">
+                            <div style="background-color: ${msg.color}dd;" class="p-3 rounded-2xl backdrop-blur-md border border-white/20 text-white shadow-2xl">
+                                <div class="flex justify-between items-center text-xs opacity-90 mb-1">
+                                    <span class="font-bold">@${msg.username || 'istifadəçi'}</span>
+                                    <div class="flex items-center gap-2">
+                                        <span class="bg-black/40 px-2 py-0.5 rounded-full font-mono text-[10px]">${remain}s</span>
+                                        ${isOwner ? `<button onclick="App.deleteMessage('${msg.id}')" class="text-red-200 hover:text-white"><i class="fa-solid fa-trash text-xs"></i></button>` : ''}
+                                    </div>
+                                </div>
+                                <p class="text-sm font-semibold leading-snug drop-shadow">${msg.content}</p>
+                                <div class="flex items-center gap-2 mt-2 pt-2 border-t border-white/10 text-xs">
+                                    <button onclick="App.reactMessage('${msg.id}', 'HEART')" class="flex items-center gap-1 bg-black/30 px-2 py-1 rounded-lg hover:scale-105 transition">
+                                        <i class="fa-solid fa-heart text-pink-400"></i> <span>${heartCount}</span>
+                                    </button>
+                                    <button onclick="App.reactMessage('${msg.id}', 'LAUGH')" class="flex items-center gap-1 bg-black/30 px-2 py-1 rounded-lg hover:scale-105 transition">
+                                        <i class="fa-solid fa-face-smile text-yellow-300"></i> <span>${laughCount}</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            };
+
+            // Intersection Observer for autoplaying active video
+            const initObserver = () => {
+                const videos = document.querySelectorAll('video');
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        const vid = entry.target;
+                        if (entry.isIntersecting) {
+                            vid.play().catch(() => {});
+                        } else {
+                            vid.pause();
+                        }
+                    });
+                }, { threshold: 0.6 });
+
+                videos.forEach(v => observer.observe(v));
+            };
+
+            return {
+                init: () => {
+                    document.getElementById('nav-username').innerText = currentUser.username;
+                    document.getElementById('nav-avatar').src = currentUser.avatar;
+                    renderFeed();
+                    // Periodic timer to refresh countdowns every second
+                    setInterval(() => {
+                        renderFeed();
+                    }, 1000);
+                },
+                resetFeed: () => window.scrollTo({ top: 0, behavior: 'smooth' }),
+                togglePlay: (vid) => {
+                    if (vid.paused) vid.play(); else vid.pause();
+                },
+                toggleMute: (btn) => {
+                    const video = btn.closest('.relative').querySelector('video');
+                    video.muted = !video.muted;
+                    btn.innerHTML = video.muted ? '<i class="fa-solid fa-volume-xmark text-xs"></i>' : '<i class="fa-solid fa-volume-high text-xs"></i>';
+                },
+                toggleLike: (postId) => {
+                    const post = posts.find(p => p.id === postId);
+                    const idx = post.likes.indexOf(currentUser.id);
+                    if (idx > -1) post.likes.splice(idx, 1);
+                    else post.likes.push(currentUser.id);
+                    savePosts();
+                    renderFeed();
+                },
+                openMsgModal: (postId) => {
+                    activePostIdForMsg = postId;
+                    document.getElementById('msg-modal').classList.remove('hidden');
+                },
+                openUploadModal: () => {
+                    document.getElementById('upload-modal').classList.remove('hidden');
+                },
+                closeModals: () => {
+                    document.getElementById('msg-modal').classList.add('hidden');
+                    document.getElementById('upload-modal').classList.add('hidden');
+                },
+                setMsgPos: (pos, btn) => {
+                    selectedPos = pos;
+                    document.querySelectorAll('.pos-btn').forEach(b => {
+                        b.classList.remove('bg-brand-purple', 'border-brand-purple', 'text-white');
+                        b.classList.add('bg-black/30', 'border-white/10', 'text-gray-400');
+                    });
+                    btn.classList.add('bg-brand-purple', 'border-brand-purple', 'text-white');
+                    btn.classList.remove('bg-black/30', 'border-white/10', 'text-gray-400');
+                },
+                setMsgDur: (dur, btn) => {
+                    selectedDur = dur;
+                    document.querySelectorAll('.dur-btn').forEach(b => {
+                        b.classList.remove('bg-brand-purple', 'border-brand-purple', 'text-white');
+                        b.classList.add('bg-black/30', 'border-white/10', 'text-gray-400');
+                    });
+                    btn.classList.add('bg-brand-purple', 'border-brand-purple', 'text-white');
+                    btn.classList.remove('bg-black/30', 'border-white/10', 'text-gray-400');
+                },
+                handleCreateMessage: (e) => {
+                    e.preventDefault();
+                    const content = document.getElementById('msg-content').value.trim();
+                    if (!content) return;
+
+                    const post = posts.find(p => p.id === activePostIdForMsg);
+                    post.messages.push({
+                        id: 'msg-' + Date.now(),
+                        userId: currentUser.id,
+                        username: currentUser.username,
+                        content,
+                        position: selectedPos,
+                        color: selectedPos === 'TOP' ? '#EC4899' : '#8B5CF6',
+                        baseDuration: parseInt(selectedDur),
+                        createdAt: Date.now(),
+                        reactions: { HEART: [], LAUGH: [] }
+                    });
+
+                    savePosts();
+                    App.closeModals();
+                    document.getElementById('msg-content').value = '';
+                    renderFeed();
+                },
+                reactMessage: (msgId, type) => {
+                    posts.forEach(p => {
+                        p.messages.forEach(m => {
+                            if (m.id === msgId) {
+                                const arr = m.reactions[type];
+                                const uIdx = arr.indexOf(currentUser.id);
+                                if (uIdx > -1) arr.splice(uIdx, 1);
+                                else arr.push(currentUser.id);
+                            }
+                        });
+                    });
+                    savePosts();
+                    renderFeed();
+                },
+                deleteMessage: (msgId) => {
+                    posts.forEach(p => {
+                        p.messages = p.messages.filter(m => m.id !== msgId);
+                    });
+                    savePosts();
+                    renderFeed();
+                },
+                handleUploadPost: (e) => {
+                    e.preventDefault();
+                    const title = document.getElementById('upload-title').value;
+                    const topic = document.getElementById('upload-topic').value;
+                    const mediaUrl = document.getElementById('upload-url').value;
+
+                    posts.unshift({
+                        id: 'post-' + Date.now(),
+                        userId: currentUser.id,
+                        username: currentUser.username,
+                        userAvatar: currentUser.avatar,
+                        title,
+                        topic,
+                        mediaUrl,
+                        mediaType: 'video',
+                        likes: [],
+                        messages: []
+                    });
+
+                    savePosts();
+                    App.closeModals();
+                    renderFeed();
+                }
+            };
+        })();
+
+        window.addEventListener('DOMContentLoaded', () => App.init());
+    </script>
 </body>
 </html>
