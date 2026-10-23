@@ -1,68 +1,428 @@
-<!doctype html>
-<html lang="az">
+<!DOCTYPE html>
+<html lang="az" class="dark">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#050b16"><title>CANLI SÖZLƏR — Hər kadrda bir söz</title>
-<style>
-:root{--bg:#050b16;--panel:#0b1424;--panel2:#101d32;--line:#203451;--text:#f3f6ff;--muted:#9db0ce;--blue:#4385ff;--violet:#7b42ff;--pink:#ff4f91}*{box-sizing:border-box}html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}body{overflow:hidden}button,input,textarea,select{font:inherit}button{cursor:pointer;color:inherit;border:0}button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid #70a5ff;outline-offset:2px}.app{height:100dvh;display:grid;grid-template-rows:68px 1fr 58px;background:radial-gradient(ellipse at 55% 0,#14264a 0,transparent 45%),var(--bg)}header{display:flex;align-items:center;gap:18px;padding:10px 20px;border-bottom:1px solid #17263d;background:#050b16ed;z-index:5}.brand{display:flex;align-items:center;gap:10px;min-width:225px}.logo{width:38px;height:38px;border-radius:13px;background:linear-gradient(140deg,#36a2ff,#7b42ff);display:grid;place-items:center;font-size:23px;font-weight:900;box-shadow:0 0 24px #4a67ff44}.brand b{font-size:19px;letter-spacing:.4px}.brand small{display:block;color:var(--muted);font-size:11px;margin-top:1px}.search{flex:1;max-width:650px;margin:auto;display:flex;align-items:center;gap:10px;background:#111e33;border:1px solid #30496d;border-radius:30px;padding:10px 16px}.search input{width:100%;background:transparent;border:0;color:white;outline:0}.head-actions{display:flex;gap:10px;align-items:center}.iconbtn{width:40px;height:40px;border-radius:50%;background:#14223a;border:1px solid #263e5e;font-size:19px;display:grid;place-items:center}.layout{min-height:0;display:grid;grid-template-columns:190px minmax(300px,1fr) 245px;gap:14px;padding:14px;max-width:1500px;width:100%;margin:auto}.sidebar{border-right:1px solid #182840;padding-right:12px;display:flex;flex-direction:column;gap:7px}.nav{padding:12px 13px;border-radius:13px;text-align:left;background:transparent;color:#c9d7ee;display:flex;gap:12px;align-items:center}.nav span:first-child{font-size:20px;width:22px;text-align:center}.nav.active,.nav:hover{background:linear-gradient(110deg,#273a9c,#29245f);color:white}.navnote{margin-top:auto;border:1px solid var(--line);border-radius:15px;padding:13px;background:#0b1424;color:var(--muted);font-size:12px;line-height:1.5}.center{min-width:0;min-height:0;display:flex;flex-direction:column;gap:9px}.tabs{display:flex;align-items:center;gap:24px;padding:2px 12px 7px}.tab{background:none;color:var(--muted);padding:6px 0}.tab.active{color:white;font-weight:700;border-bottom:3px solid #527bff}.feed{min-height:0;overflow-y:auto;scroll-snap-type:y mandatory;display:flex;flex-direction:column;gap:14px;scrollbar-width:thin;scrollbar-color:#31476a transparent}.post{position:relative;min-height:500px;height:calc(100dvh - 184px);max-height:900px;flex:0 0 auto;scroll-snap-align:start;border:1px solid #263c5b;border-radius:19px;overflow:hidden;background:#08111f;isolation:isolate}.media{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#101a2b}.post:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,#02071375 0%,transparent 24%,transparent 54%,#02071335 68%,#020713e8 100%);pointer-events:none;z-index:1}.post-top,.post-bottom,.side-actions,.heart-layer,.sound-control{position:absolute;z-index:2}.post-top{top:14px;left:15px;right:15px;display:flex;justify-content:space-between;align-items:center;font-size:12px;text-shadow:0 1px 4px #000}.post-bottom{left:15px;right:76px;bottom:15px}.userrow{display:flex;align-items:center;gap:9px;margin-bottom:9px}.avatar{width:35px;height:35px;border-radius:50%;object-fit:cover;background:#24395a;border:1px solid #9eb5df}.username{font-weight:750;font-size:14px}.follow{padding:7px 13px;border-radius:9px;background:#493eff;font-size:12px}.caption{font-size:14px;line-height:1.45;text-shadow:0 1px 4px #000;margin-bottom:10px}.tags{color:#b9d4ff}.metrics{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;background:#071020a8;backdrop-filter:blur(8px);border:1px solid #ffffff21;border-radius:22px;padding:8px 11px;width:max-content;max-width:100%}.metrics button{background:none;padding:0}.music{font-size:12px;margin-top:9px;text-shadow:0 1px 4px black}.side-actions{right:10px;bottom:75px;display:flex;flex-direction:column;align-items:center;gap:13px}.action{background:transparent;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:12px;text-shadow:0 1px 4px black}.action .emoji{font-size:27px;filter:drop-shadow(0 2px 3px #000)}.action.liked .emoji{color:#ff4b84}.heart-layer{left:12%;right:15%;top:27%;display:flex;flex-direction:column;gap:8px;pointer-events:none}.heart-message{align-self:flex-start;max-width:95%;padding:10px 13px;border-radius:14px;background:#0b1837a1;border:1px solid #ffffff44;backdrop-filter:blur(5px);box-shadow:0 8px 25px #0002;animation:pop .35s ease;color:white;font-size:clamp(12px,2vw,15px);line-height:1.35;text-shadow:0 1px 3px #000}.heart-message .hm-user{font-size:11px;opacity:.82;margin-bottom:4px;font-weight:700}.heart-message .hm-meta{font-size:10px;opacity:.9;margin-top:5px;display:flex;gap:8px;flex-wrap:wrap}.heart-message.top{top:12%}.heart-message.middle{align-self:center}.heart-message.bottom{align-self:flex-start}.heart-message .hm-react{pointer-events:auto;background:#ffffff20;border-radius:10px;padding:2px 5px}.sound-control{top:52px;right:13px;background:#0610208c;border:1px solid #ffffff2c;border-radius:30px;padding:7px 10px}.rightbar{min-height:0;overflow:auto;display:flex;flex-direction:column;gap:14px;scrollbar-width:thin}.panel{border:1px solid var(--line);border-radius:17px;background:#091321d9;padding:14px}.panel h3{font-size:14px;margin:0 0 13px}.trend{padding:8px 0;border-bottom:1px solid #1a2b43;color:#a9c6fa;font-size:13px}.trend:last-child{border:0}.trend small{display:block;color:var(--muted);margin-top:4px}.topheart{font-size:12px;color:#c9d9f3;padding:9px 0;border-bottom:1px solid #1a2b43}.topheart:last-child{border:0}.reacts{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}.reactbtn{background:#101f35;border:1px solid #263d5d;border-radius:13px;padding:9px 3px;font-size:11px}.reactbtn span{display:block;font-size:21px;margin-bottom:4px}.commentform{display:flex;gap:6px;margin-bottom:12px}.commentform input{min-width:0;flex:1;border:1px solid #30476b;background:#0c1a2d;border-radius:22px;padding:10px;color:white;font-size:12px}.send{background:linear-gradient(135deg,#377aff,#7545ff);border-radius:50%;width:35px;flex:0 0 35px}.comments{max-height:210px;overflow:auto}.comment{font-size:12px;line-height:1.4;padding:8px 0;border-bottom:1px solid #17263c}.comment b{display:block;color:#c3d6ff;margin-bottom:3px}.comment .c-react{background:transparent;color:#ff729d;float:right}.empty{color:var(--muted);font-size:12px;padding:10px 0}.bottomnav{display:none;align-items:center;justify-content:space-around;border-top:1px solid #1b2a42;background:#050b16;z-index:5}.bottomnav button{background:none;color:#9cb2d2;display:grid;justify-items:center;gap:2px;font-size:10px}.bottomnav b{font-size:20px}.primary{background:linear-gradient(120deg,#3b78ff,#753fff);padding:11px 15px;border-radius:12px;font-weight:700}.secondary{background:#14223a;border:1px solid #2b4265;padding:10px 13px;border-radius:11px}.modalback{position:fixed;inset:0;background:#020611bd;backdrop-filter:blur(9px);z-index:20;display:none;align-items:center;justify-content:center;padding:16px}.modalback.open{display:flex}.modal{width:min(520px,100%);max-height:92dvh;overflow:auto;background:#0b1526;border:1px solid #30476b;border-radius:22px;padding:20px;box-shadow:0 25px 90px #0009}.modalhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:15px}.modalhead h2{font-size:19px;margin:0}.close{width:34px;height:34px;border-radius:50%;background:#182942;font-size:20px}.field{display:block;font-size:12px;color:#b6c7e2;margin:13px 0 6px}.modal input[type=text],.modal textarea,.modal select{width:100%;background:#071121;color:white;border:1px solid #30476b;border-radius:12px;padding:11px}.modal textarea{resize:vertical;min-height:85px}.options{display:flex;gap:7px;flex-wrap:wrap}.choice{background:#101e33;border:1px solid #2c4364;border-radius:10px;padding:9px 12px;font-size:12px}.choice.selected{border-color:#6893ff;background:#263c86}.colorchoice{width:28px;height:28px;border-radius:50%;border:2px solid #ffffff55}.colorchoice.selected{outline:2px solid white;outline-offset:2px}.preview{height:210px;border-radius:14px;overflow:hidden;background:#030914;position:relative;margin:10px 0;border:1px solid #263d5e}.preview img,.preview video{width:100%;height:100%;object-fit:contain}.preview span{position:absolute;inset:auto 12px 12px;background:#071020aa;padding:6px;border-radius:8px;font-size:11px}.filehint{font-size:11px;color:var(--muted);line-height:1.5;margin-top:7px}.modalfoot{display:flex;gap:8px;justify-content:flex-end;margin-top:17px}.toast{position:fixed;z-index:40;bottom:75px;left:50%;transform:translate(-50%,15px);background:#172945;border:1px solid #48648d;border-radius:12px;padding:12px 17px;font-size:13px;opacity:0;pointer-events:none;transition:.25s;max-width:90vw;text-align:center}.toast.show{opacity:1;transform:translate(-50%,0)}.hidden{display:none!important}.feed-empty{padding:30px;text-align:center;color:var(--muted)}
-@keyframes pop{from{opacity:0;transform:translateY(8px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
-@media(max-width:1050px){.layout{grid-template-columns:65px minmax(280px,1fr);padding:10px;gap:10px}.brand{min-width:190px}.sidebar{align-items:center;padding-right:8px}.nav{width:47px;height:47px;padding:0;justify-content:center}.nav .navlabel{display:none}.navnote,.rightbar{display:none}.center{grid-column:2}.post{height:calc(100dvh - 170px)}}
-@media(max-width:650px){body{overflow:hidden}.app{grid-template-rows:58px 1fr 57px}.app header{padding:7px 10px;gap:8px}.brand{min-width:0;gap:7px}.brand b{font-size:14px}.brand small{display:none}.logo{width:34px;height:34px}.search{padding:9px 11px;max-width:none}.search input{font-size:12px}.head-actions .iconbtn:first-child{display:none}.layout{display:block;padding:0;height:100%;min-height:0}.sidebar{display:none}.center{height:100%;gap:0}.tabs{padding:6px 14px;gap:20px}.feed{gap:8px;padding:0 7px 8px}.post{height:calc(100dvh - 151px);min-height:420px;border-radius:15px}.post-bottom{left:12px;right:68px;bottom:12px}.caption{font-size:13px}.metrics{gap:9px;font-size:11px}.side-actions{right:7px;bottom:63px;gap:12px}.action .emoji{font-size:25px}.heart-layer{left:8%;right:13%;top:25%}.heart-message{padding:8px 10px}.sound-control{top:44px}.bottomnav{display:flex}.modal{padding:16px}.post-top{top:11px}.preview{height:175px}}
-</style></head>
-<body><div class="app">
-<header><div class="brand"><div class="logo">▶</div><div><b>CANLI SÖZLƏR</b><small>Hər kadrda bir söz</small></div></div><label class="search">⌕ <input id="searchInput" placeholder="İstifadəçi, mövzu və ya hashtag axtar..." aria-label="Axtarış"></label><div class="head-actions"><button class="iconbtn" id="notifyBtn" aria-label="Bildirişlər">♧</button><button class="iconbtn" id="profileBtn" aria-label="Profil">👤</button></div></header>
-<div class="layout"><aside class="sidebar"><button class="nav active" data-nav="home"><span>⌂</span><span class="navlabel">Əsas səhifə</span></button><button class="nav" data-nav="discover"><span>◎</span><span class="navlabel">Kəşf et</span></button><button class="nav" data-nav="trending"><span>↗</span><span class="navlabel">Trend</span></button><button class="nav" id="createNav"><span>⊞</span><span class="navlabel">Paylaşım et</span></button><hr style="width:90%;border:0;border-top:1px solid #203451;margin:10px 0"><button class="nav" id="profileNav"><span>♙</span><span class="navlabel">Profilim</span></button><button class="nav" id="savedNav"><span>♡</span><span class="navlabel">İzlədiklərim</span></button><button class="nav" id="messagesNav"><span>☏</span><span class="navlabel">Mesajlar</span></button><button class="nav" id="notifyNav"><span>♧</span><span class="navlabel">Bildirişlər</span></button><button class="nav" id="settingsNav"><span>⚙</span><span class="navlabel">Parametrlər</span></button><div class="navnote">✨ <b style="color:#fff">CANLI SÖZLƏR</b><br>Şəkil və videolar bu brauzerdə saxlanır. Yaddaşı idarə etmək üçün Parametrlər bölməsindən istifadə et.</div></aside>
-<main class="center"><div class="tabs"><button class="tab active" id="forYou">Sizin üçün</button><button class="tab" id="followingTab">İzlənilənlər</button><button class="tab" id="allTab" style="margin-left:auto">•••</button></div><section class="feed" id="feed" aria-label="Video lenti"></section></main>
-<aside class="rightbar"><section class="panel"><h3>Trend mövzular</h3><div class="trend">#təbiət<small>12.4K paylaşım</small></div><div class="trend">#səyahət<small>8.7K paylaşım</small></div><div class="trend">#sevgi<small>6.2K paylaşım</small></div><div class="trend">#motivasiya<small>4.9K paylaşım</small></div><div class="trend">#musiqi<small>3.8K paylaşım</small></div></section><section class="panel"><h3>Ən çox reaksiya alan ürək sözləri</h3><div id="topHearts"></div></section><section class="panel"><h3>Reaksiyalar</h3><div class="reacts"><button class="reactbtn" data-quick="heart"><span>❤️</span>Bəyən</button><button class="reactbtn" data-quick="laugh"><span>😂</span>Gülüş</button><button class="reactbtn" data-quick="moved"><span>🥹</span>Kövrəlmə</button><button class="reactbtn" data-quick="support"><span>✋</span>Dəstək</button></div></section><section class="panel"><h3>Şərhlər</h3><form class="commentform" id="commentForm"><input id="commentInput" placeholder="Şərh yaz..." maxlength="300" aria-label="Şərh yaz"><button class="send" aria-label="Şərhi göndər">➤</button></form><div class="comments" id="comments"></div></section></aside></div>
-<nav class="bottomnav"><button data-nav="home"><b>⌂</b>Əsas səhifə</button><button data-nav="discover"><b>◎</b>Kəşf et</button><button id="mobileCreate" style="color:white"><b style="background:linear-gradient(135deg,#347aff,#7b3fff);border-radius:13px;padding:5px 15px;font-size:26px">＋</b>Paylaş</button><button id="mobileComments"><b>☏</b>Şərhlər</button><button id="mobileProfile"><b>♙</b>Profil</button></nav></div>
-<div class="modalback" id="heartModal"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="heartTitle"><div class="modalhead"><h2 id="heartTitle">💜 Videonun üstünə yaz</h2><button class="close" data-close="heartModal" aria-label="Bağla">×</button></div><label class="field" for="heartText">Ürək sözün (maksimum 120 simvol)</label><textarea id="heartText" maxlength="120" placeholder="Bu mənim ən gözəl xatirəmdir..."></textarea><div style="text-align:right;color:var(--muted);font-size:11px"><span id="charCount">0</span>/120</div><span class="field">Görünmə müddəti</span><div class="options" id="durationOptions"><button class="choice selected" data-duration="30">30 saniyə</button><button class="choice" data-duration="60">60 saniyə</button><button class="choice" data-duration="90">90 saniyə</button></div><span class="field">Yerləşmə</span><div class="options" id="placementOptions"><button class="choice" data-place="top">Yuxarı</button><button class="choice selected" data-place="middle">Orta</button><button class="choice" data-place="bottom">Aşağı</button></div><span class="field">Mətn rəngi</span><div class="options" id="colorOptions"><button class="colorchoice selected" data-color="#ffffff" style="background:#fff" aria-label="Ağ"></button><button class="colorchoice" data-color="#a9d2ff" style="background:#a9d2ff" aria-label="Açıq mavi"></button><button class="colorchoice" data-color="#ffd166" style="background:#ffd166" aria-label="Sarı"></button><button class="colorchoice" data-color="#ff8db5" style="background:#ff8db5" aria-label="Çəhrayı"></button><button class="colorchoice" data-color="#b9ffca" style="background:#b9ffca" aria-label="Yaşıl"></button></div><span class="field">Fon</span><div class="options" id="backgroundOptions"><button class="choice selected" data-bg="transparent">Şəffaf</button><button class="choice" data-bg="dark">Qara şəffaf</button><button class="choice" data-bg="blue">Mavi şəffaf</button></div><p class="filehint">Ürək sözü videonun görüntüsünü mümkün qədər örtməyən şəffaf paneldə görünür. Müddət bitəndə lentdən gizlənir.</p><div class="modalfoot"><button class="secondary" data-close="heartModal">Ləğv et</button><button class="primary" id="publishHeart">Paylaş</button></div></div></div>
-<div class="modalback" id="createModal"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="createTitle"><div class="modalhead"><h2 id="createTitle">＋ Yeni paylaşım</h2><button class="close" data-close="createModal" aria-label="Bağla">×</button></div><label class="field" for="mediaFile">Telefonundan şəkil və ya video seç</label><input id="mediaFile" type="file" accept="image/*,video/*" style="width:100%;color:#b8c9e2;font-size:12px"><div class="filehint">Şəkil və video bu brauzerin yerli yaddaşında saxlanacaq. Böyük video faylları yaddaş limitinə görə qəbul edilməyə bilər.</div><div class="preview" id="uploadPreview"><span>Önizləmə burada görünəcək</span></div><label class="field" for="postTitle">Başlıq / açıqlama</label><textarea id="postTitle" maxlength="500" placeholder="Bu anı bizimlə paylaş..."></textarea><label class="field" for="postTopic">Mövzu</label><select id="postTopic"><option>Gündəlik həyat</option><option>Təbiət</option><option>Səyahət</option><option>Musiqi</option><option>Sevgi</option><option>Motivasiya</option><option>Yemək</option><option>Xatirə</option></select><label class="field" for="postPrivacy">Kim görə bilər?</label><select id="postPrivacy"><option value="public">İctimai</option><option value="followers">Yalnız izləyicilər</option><option value="private">Gizli (yalnız mən)</option></select><div class="modalfoot"><button class="secondary" data-close="createModal">Ləğv et</button><button class="primary" id="publishPost">Paylaşımı dərc et</button></div></div></div>
-<div class="modalback" id="profileModal"><div class="modal" role="dialog" aria-modal="true"><div class="modalhead"><h2>👤 Profilim</h2><button class="close" data-close="profileModal">×</button></div><label class="field" for="profileName">İstifadəçi adı</label><input id="profileName" type="text" maxlength="30" value="@SəninProfilin"><label class="field" for="profileBio">Bio</label><textarea id="profileBio" maxlength="160" placeholder="Özün haqqında qısa məlumat..."></textarea><div class="modalfoot"><button class="primary" id="saveProfile">Yadda saxla</button></div></div></div>
-<div class="modalback" id="settingsModal"><div class="modal" role="dialog" aria-modal="true"><div class="modalhead"><h2>⚙ Parametrlər və yaddaş</h2><button class="close" data-close="settingsModal">×</button></div><p class="filehint">Paylaşımlar, şərhlər və reaksiyalar bu brauzerdə saxlanır. Yerli media IndexedDB-də saxlanılır. Brauzer məlumatlarını silməzdən əvvəl nəzərə al ki, lokal paylaşımlar itə bilər.</p><button class="secondary" id="storageInfo">Yaddaş vəziyyətini yoxla</button><p id="storageStatus" class="filehint"></p><button class="secondary" id="exportData">Məlumatların ehtiyat nüsxəsini endir</button><label class="field" for="importData">Ehtiyat nüsxəsini bərpa et (JSON)</label><input type="file" id="importData" accept="application/json" style="color:#b8c9e2;font-size:12px;width:100%"><div class="modalfoot"><button class="secondary" id="clearLocal">Yalnız mənim əlavə etdiklərimi sil</button></div></div></div>
-<div class="toast" id="toast" role="status" aria-live="polite"></div>
-<script>
-(()=>{'use strict';
-const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];const DB_NAME='canli-sozler-db',DB_STORE='media',STATE_KEY='canli-sozler-state-v1';let db=null,activePostId=null,feedPosts=[],state=null,feedMode='forYou',selectedFile=null,previewUrl=null,heartOpts={duration:30,place:'middle',color:'#ffffff',bg:'transparent'},toastTimer=null,observer=null;
-const seedImages=[
-['Şəhər işıqları','#şəhər #gecə','https://images.unsplash.com/photo-1519608487953-e999c86e7455?auto=format&fit=crop&w=900&q=85'],
-['Dəniz və sakitlik','#dəniz #sakitlik','https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=900&q=85'],
-['Romantik an','#sevgi #xatirə','https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&w=900&q=85'],
-['Musiqinin sehri','#musiqi #əhval','https://images.unsplash.com/photo-1516280440614-37939bbacd81?auto=format&fit=crop&w=900&q=85'],
-['Yeni səyahət','#səyahət #kəşf','https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=900&q=85'],
-['Yağışlı gün','#yağış #sakitlik','https://images.unsplash.com/photo-1519692933481-e162a57d6721?auto=format&fit=crop&w=900&q=85'],
-['Dostlarla vaxt','#dostluq #gülüş','https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=900&q=85'],
-['Təbiətin nəfəsi','#təbiət #yaşıl','https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=900&q=85'],
-['Gecə görüntüsü','#gecə #şəhər','https://images.unsplash.com/photo-1519608487953-e999c86e7455?auto=format&fit=crop&w=900&q=85'],
-['Özünə inan','#motivasiya #irəli','https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=85'],
-['Dadlı anlar','#yemək #dad','https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?auto=format&fit=crop&w=900&q=85'],
-['Unudulmaz xatirə','#xatirə #həyat','https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?auto=format&fit=crop&w=900&q=85']];
-function uid(){return 'id'+Date.now().toString(36)+Math.random().toString(36).slice(2,8)}function now(){return Date.now()}function escapeHtml(s=''){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}function format(n){return n>=1000?(n/1000).toFixed(n>=10000?0:1)+'K':String(n)}function toast(s){const t=$('#toast');t.textContent=s;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),2500)}
-function openDB(){return new Promise((resolve,reject)=>{if(!('indexedDB'in window)){reject(Error('IndexedDB dəstəklənmir'));return}const r=indexedDB.open(DB_NAME,1);r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains(DB_STORE))r.result.createObjectStore(DB_STORE)};r.onsuccess=()=>{db=r.result;resolve(db)};r.onerror=()=>reject(r.error)})}function putMedia(id,blob){return new Promise((res,rej)=>{if(!db)return rej(Error('Yaddaş açılmayıb'));const tx=db.transaction(DB_STORE,'readwrite');tx.objectStore(DB_STORE).put(blob,id);tx.oncomplete=()=>res(true);tx.onerror=()=>rej(tx.error)})}function getMedia(id){return new Promise((res,rej)=>{if(!db)return res(null);const r=db.transaction(DB_STORE,'readonly').objectStore(DB_STORE).get(id);r.onsuccess=()=>res(r.result||null);r.onerror=()=>rej(r.error)})}function deleteMedia(id){return new Promise(res=>{if(!db)return res();const tx=db.transaction(DB_STORE,'readwrite');tx.objectStore(DB_STORE).delete(id);tx.oncomplete=()=>res();tx.onerror=()=>res()})}
-function defaultState(){return {profile:{name:'@SəninProfilin',bio:'Hər kadrda bir söz 💜'},posts:seedImages.map((x,i)=>({id:'seed'+i,seed:true,user:['@Tural_777','@Leyla_Az','@Orxan_021','@Nigar_05'][i%4],title:x[0]+' — hər anın öz hekayəsi var.',tags:x[1],src:x[2],type:'image',views:28400-i*1300,likes:3200-i*115,liked:false,privacy:'public',topic:x[1].split(' ')[0].replace('#',''),created:now()-i*50000,hearts:[{id:'h'+i,text:['Təbiət hər zaman çox gözəldir... 🤍','Mən də burada olmuşam ❤️','Bu bizim mahnımızdır 🎵','Çox gözəl xatirədir ✨'][i%4],user:['@Nigar_05','@Murad_77','@Aysel','@Orxan_021'][i%4],duration:60,created:now()-i*20000,place:['bottom','middle','top'][i%3],color:'#ffffff',bg:'transparent',reactions:{heart:24-i,laugh:6,moved:3,support:2},mine:false}],comments:[{id:uid(),user:'@Nazrin_05',text:'Çox gözəl mənzərədir! ❤️',likes:12},{id:uid(),user:'@Elvin_777',text:'Mən də burada olmuşam 😍',likes:8}]})),saved:[],following:[],userHearts:[],blocked:[],reports:[]}}
-function save(){try{localStorage.setItem(STATE_KEY,JSON.stringify(state));return true}catch(e){toast('Məlumat yaddaşa sığmadı. Böyük fayllar IndexedDB-də saxlanmalıdır.');return false}}function load(){try{const s=localStorage.getItem(STATE_KEY);if(s){const parsed=JSON.parse(s);if(parsed&&Array.isArray(parsed.posts))return parsed}}catch(e){}return defaultState()}
-function allPosts(){let posts=state.posts.filter(p=>p.privacy!=='private'||p.user===state.profile.name);if(feedMode==='following')posts=posts.filter(p=>state.following.includes(p.user));if(feedMode==='trending')posts.sort((a,b)=>(b.likes||0)-(a.likes||0));return posts}function heartCount(p){return p.hearts?.length||0}function reactionsTotal(h){return Object.values(h.reactions||{}).reduce((a,b)=>a+b,0)}function heartLive(h){const end=h.created+(h.duration||30)*1000+Math.min(270,Math.floor(reactionsTotal(h)/10)*5)*1000;return end>now()}
-function mediaHTML(p){if(p.type==='video'&&p.src)return `<video class="media" src="${escapeHtml(p.src)}" playsinline muted loop preload="metadata"></video>`;return `<img class="media" src="${escapeHtml(p.src)}" alt="${escapeHtml(p.title)}" loading="lazy">`}
-function render(){const feed=$('#feed');const q=($('#searchInput').value||'').trim().toLowerCase();let posts=allPosts();if(q)posts=posts.filter(p=>(p.title+' '+p.tags+' '+p.user).toLowerCase().includes(q));feed.innerHTML='';if(!posts.length){feed.innerHTML='<div class="feed-empty">Heç nə tapılmadı. Başqa söz axtar və ya yeni paylaşım əlavə et.</div>';return}for(const p of posts){const live=(p.hearts||[]).filter(heartLive);const comments=p.comments||[];const isLiked=!!p.liked;const article=document.createElement('article');article.className='post';article.dataset.id=p.id;article.innerHTML=`${mediaHTML(p)}<div class="post-top"><b>▶ CANLI SÖZLƏR</b><span>${p.type==='video'?'▶ Video':'▧ Şəkil'}</span></div><button class="sound-control" data-action="sound" aria-label="Səsi aç və ya bağla">🔇</button><div class="heart-layer">${live.map(h=>`<div class="heart-message ${escapeHtml(h.place||'middle')}" data-heart="${escapeHtml(h.id)}" style="color:${escapeHtml(h.color||'#fff')};background:${h.bg==='dark'?'#020611b8':h.bg==='blue'?'#102f63a8':'#0b1837a1'}"><div class="hm-user">${escapeHtml(h.user)}</div>${escapeHtml(h.text)}<div class="hm-meta"><span>◷ <span class="remaining" data-created="${h.created}" data-duration="${h.duration}">${Math.max(0,Math.ceil(((h.created+(h.duration||30)*1000+Math.min(270,Math.floor(reactionsTotal(h)/10)*5)*1000)-now())/1000))}</span> san.</span><button class="hm-react" data-action="heartReact" data-heart-id="${escapeHtml(h.id)}" data-kind="heart">❤️ ${reactionsTotal(h)}</button>${h.mine||p.user===state.profile.name?`<button class="hm-react" data-action="editHeart" data-heart-id="${escapeHtml(h.id)}">✎</button><button class="hm-react" data-action="deleteHeart" data-heart-id="${escapeHtml(h.id)}">🗑</button>`:''}</div></div>`).join('')}</div><div class="side-actions"><button class="action ${isLiked?'liked':''}" data-action="like"><span class="emoji">${isLiked?'❤️':'♡'}</span><span>${format(p.likes||0)}</span></button><button class="action" data-action="comments"><span class="emoji">💬</span><span>${comments.length}</span></button><button class="action" data-action="share"><span class="emoji">↗</span><span>Paylaş</span></button><button class="action" data-action="addHeart"><span class="emoji">💜</span><span>Üstünə yaz</span></button><button class="action" data-action="fullscreen"><span class="emoji">⛶</span><span>Tam ekran</span></button></div><div class="post-bottom"><div class="userrow"><img class="avatar" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=70" alt="Avatar"><span class="username">${escapeHtml(p.user)}</span><button class="follow" data-action="follow">${state.following.includes(p.user)?'İzlənilir':'İzlə'}</button></div><div class="caption">${escapeHtml(p.title)}<br><span class="tags">${escapeHtml(p.tags||'#xatirə')}</span></div><div class="metrics"><span>◉ ${format(p.views||0)}</span><button data-action="like">♡ ${format(p.likes||0)}</button><button data-action="comments">☏ ${comments.length}</button><span>💜 ${heartCount(p)}</span><button data-action="report">⚑ Şikayət</button></div><div class="music">♫ CANLI SÖZLƏR · Hər kadrda bir söz</div></div>`;feed.appendChild(article)}renderRight();attachMediaObserver();tickTimers()}
-function renderRight(){const posts=allPosts();let hs=[];posts.forEach(p=>(p.hearts||[]).forEach(h=>hs.push({...h,postId:p.id,total:reactionsTotal(h)})));hs.sort((a,b)=>b.total-a.total);$('#topHearts').innerHTML=hs.slice(0,4).map(h=>`<div class="topheart">“${escapeHtml(h.text.slice(0,45))}”<br><span style="color:#ff6b9a">❤️ ${format(h.total)}</span></div>`).join('')||'<div class="empty">Hələ ürək sözü yoxdur.</div>';const p=posts.find(x=>x.id===activePostId)||posts[0];if(p){activePostId=p.id;$('#comments').innerHTML=(p.comments||[]).slice(-15).reverse().map(c=>`<div class="comment"><button class="c-react" data-comment-like="${escapeHtml(c.id)}">❤️ ${c.likes||0}</button><b>${escapeHtml(c.user)}</b>${escapeHtml(c.text)}</div>`).join('')||'<div class="empty">İlk şərhi sən yaz!</div>'}}
-function attachMediaObserver(){if(observer)observer.disconnect();observer=new IntersectionObserver(entries=>{entries.forEach(e=>{const v=e.target.querySelector('video');if(!v)return;if(e.isIntersecting&&e.intersectionRatio>.65){$$('.post video').forEach(other=>{if(other!==v)other.pause()});v.muted=true;v.play().catch(()=>{})}else v.pause()})},{threshold:[.25,.65,.9]});$$('.post').forEach(p=>observer.observe(p))}
-function tickTimers(){ $$('.remaining').forEach(el=>{const h=el.closest('[data-heart]');if(!h)return;const created=Number(el.dataset.created),duration=Number(el.dataset.duration);const card=h.closest('.post');const p=state.posts.find(x=>x.id===card?.dataset.id);const heart=p?.hearts.find(x=>x.id===h.dataset.heart);if(!heart)return;const extra=Math.min(270,Math.floor(reactionsTotal(heart)/10)*5);const left=Math.ceil((created+(duration+extra)*1000-now())/1000);el.textContent=Math.max(0,left);if(left<=0){heart.expired=true;h.remove();save()}})}setInterval(tickTimers,1000);
-function currentPost(){return state.posts.find(p=>p.id===activePostId)||state.posts.find(p=>p.id===$('.post')?.dataset.id)}function openModal(id){$('#'+id).classList.add('open')}function closeModal(id){$('#'+id).classList.remove('open')}function openHeart(post,heart=null){const p=post||currentPost();if(!p){toast('Əvvəl paylaşım seç.');return}activePostId=p.id;$('#heartText').value=heart?.text||'';$('#charCount').textContent=$('#heartText').value.length;heartOpts={duration:heart?.duration||30,place:heart?.place||'middle',color:heart?.color||'#ffffff',bg:heart?.bg||'transparent',editId:heart?.id||null};setOptions();openModal('heartModal')}
-function setOptions(){ $$('#durationOptions [data-duration]').forEach(b=>b.classList.toggle('selected',Number(b.dataset.duration)===heartOpts.duration));$$('#placementOptions [data-place]').forEach(b=>b.classList.toggle('selected',b.dataset.place===heartOpts.place));$$('#colorOptions [data-color]').forEach(b=>b.classList.toggle('selected',b.dataset.color===heartOpts.color));$$('#backgroundOptions [data-bg]').forEach(b=>b.classList.toggle('selected',b.dataset.bg===heartOpts.bg))}
-function badText(t){const bad=['səni öldür','öldürəcəm','nifrət et','şəxsi ünvan'];return bad.some(x=>t.toLowerCase().includes(x))}function publishHeart(){const p=state.posts.find(x=>x.id===activePostId);const text=$('#heartText').value.trim();if(!p){toast('Paylaşım tapılmadı.');return}if(!text){toast('Ürək sözünü yaz.');return}if(text.length>120){toast('Maksimum 120 simvol yazmaq olar.');return}if(badText(text)){toast('Bu yazıda uyğun olmayan ifadə var.');return}if(heartOpts.editId){const h=p.hearts.find(x=>x.id===heartOpts.editId);if(!h||(!h.mine&&p.user!==state.profile.name)){toast('Bu yazını redaktə etmək icazən yoxdur.');return}Object.assign(h,{text,duration:heartOpts.duration,place:heartOpts.place,color:heartOpts.color,bg:heartOpts.bg,created:now(),expired:false})}else{p.hearts.unshift({id:uid(),text,user:state.profile.name,duration:heartOpts.duration,created:now(),place:heartOpts.place,color:heartOpts.color,bg:heartOpts.bg,reactions:{heart:0,laugh:0,moved:0,support:0},mine:true,reactedBy:[]});p.hearts=p.hearts.slice(0,80)}save();closeModal('heartModal');render();toast(heartOpts.editId?'Ürək sözü yeniləndi.':'Ürək sözün paylaşıldı!')}
-function reactHeart(postId,heartId,kind='heart'){const p=state.posts.find(x=>x.id===postId),h=p?.hearts.find(x=>x.id===heartId);if(!h)return;h.reactedBy=h.reactedBy||[];const key=state.profile.name+'|'+kind;if(h.reactedBy.includes(key)){toast('Bu reaksiya artıq sayılıb.');return}h.reactedBy.push(key);h.reactions=h.reactions||{};h.reactions[kind]=(h.reactions[kind]||0)+1;save();render();toast('Reaksiyan əlavə edildi!')}
-function addComment(text){const p=currentPost();text=text.trim();if(!p||!text)return;if(text.length>300){toast('Şərh maksimum 300 simvol ola bilər.');return}p.comments=p.comments||[];p.comments.push({id:uid(),user:state.profile.name,text,likes:0});save();$('#commentInput').value='';render();toast('Şərh əlavə edildi.')}
-function toggleLike(p){if(!p)return;p.liked=!p.liked;p.likes=Math.max(0,(p.likes||0)+(p.liked?1:-1));save();render()}
-function renderUploadPreview(file){const el=$('#uploadPreview');if(previewUrl)URL.revokeObjectURL(previewUrl);previewUrl=null;if(!file){el.innerHTML='<span>Önizləmə burada görünəcək</span>';return}previewUrl=URL.createObjectURL(file);el.innerHTML=file.type.startsWith('video/')?`<video src="${previewUrl}" controls muted playsinline></video>`:`<img src="${previewUrl}" alt="Önizləmə">`}
-function openCreate(){selectedFile=null;$('#mediaFile').value='';$('#postTitle').value='';$('#postTopic').value='Gündəlik həyat';$('#postPrivacy').value='public';renderUploadPreview(null);openModal('createModal')}
-async function publishPost(){const file=selectedFile,title=$('#postTitle').value.trim(),topic=$('#postTopic').value,privacy=$('#postPrivacy').value;if(!file){toast('Əvvəl telefonundan şəkil və ya video seç.');return}if(file.size>100*1024*1024){toast('Fayl 100 MB-dan böyükdür. Daha kiçik fayl seç.');return}if(!/^image\/(jpeg|png|webp|gif|avif)$/.test(file.type)&&!/^video\/(mp4|webm|ogg|quicktime)$/.test(file.type)){toast('Bu fayl formatı dəstəklənmir.');return}if(!db){toast('Brauzer yaddaşı açıla bilmədi.');return}const id=uid();try{await putMedia(id,file);const url=URL.createObjectURL(file);const p={id,user:state.profile.name,title:title||'Yeni paylaşımım',tags:'#'+topic.toLowerCase().replace(/\s+/g,''),src:url,mediaKey:id,type:file.type.startsWith('video/')?'video':'image',views:0,likes:0,liked:false,privacy,topic,created:now(),hearts:[],comments:[],local:true};state.posts.unshift(p);save();closeModal('createModal');render();$('#feed').scrollTop=0;toast('Paylaşım bu brauzerdə əlavə edildi!')}catch(e){toast('Fayl yadda saxlanmadı. Brauzer yaddaşı dolu ola bilər.')} }
-async function hydrateLocalMedia(){for(const p of state.posts){if(p.mediaKey){try{const blob=await getMedia(p.mediaKey);if(blob){if(p._url)URL.revokeObjectURL(p._url);p._url=URL.createObjectURL(blob);p.src=p._url}}catch(e){}}}}
-function exportBackup(){const clean={...state,posts:state.posts.filter(p=>!p.mediaKey).map(p=>({...p}))};const blob=new Blob([JSON.stringify(clean,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='canli-sozler-ehtiyat.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1500);toast('Media faylları deyil, mətn məlumatları endirildi.')}
-async function clearLocal(){if(!confirm('Öz əlavə etdiyin paylaşımlar və onların media faylları silinsin? Demo paylaşımlar qalacaq.'))return;const local=state.posts.filter(p=>p.local);for(const p of local)if(p.mediaKey)await deleteMedia(p.mediaKey);state.posts=state.posts.filter(p=>!p.local);save();render();toast('Öz paylaşım və media faylların silindi.')}
-function handleAction(btn){const card=btn.closest('.post'),p=card?state.posts.find(x=>x.id===card.dataset.id):currentPost(),act=btn.dataset.action;if(!p&&act!=='create')return;if(card)activePostId=p.id;switch(act){case'like':toggleLike(p);break;case'comments':$('#commentInput').focus();if(window.innerWidth<1050)toast('Şərhini aşağıdakı sahəyə yaz.');break;case'share':if(navigator.share)navigator.share({title:'CANLI SÖZLƏR',text:p.title,url:location.href}).catch(()=>{});else if(navigator.clipboard)navigator.clipboard.writeText(location.href+'#'+p.id).then(()=>toast('Paylaşım keçidi kopyalandı.')).catch(()=>toast('Paylaşım: '+p.title));else toast('Paylaşım: '+p.title);break;case'addHeart':openHeart(p);break;case'fullscreen':if(card.requestFullscreen)card.requestFullscreen().catch(()=>toast('Tam ekran dəstəklənmir.'));break;case'sound':{const v=card.querySelector('video');if(v){v.muted=!v.muted;btn.textContent=v.muted?'🔇':'🔊'}else toast('Bu paylaşım şəkildir.');break}case'follow':if(state.following.includes(p.user)){state.following=state.following.filter(x=>x!==p.user);toast('İzləmədən çıxıldı.')}else{state.following.push(p.user);toast('İzləməyə başladın.')}save();render();break;case'heartReact':reactHeart(p.id,btn.dataset.heartId,btn.dataset.kind||'heart');break;case'editHeart':{const h=p.hearts.find(x=>x.id===btn.dataset.heartId);openHeart(p,h);break}case'deleteHeart':{const h=p.hearts.find(x=>x.id===btn.dataset.heartId);if(h&&(h.mine||p.user===state.profile.name)&&confirm('Ürək sözü silinsin?')){p.hearts=p.hearts.filter(x=>x.id!==h.id);save();render();toast('Ürək sözü silindi.')}else if(h)toast('Yalnız öz yazını silə bilərsən.');break}case'report':if(confirm('Bu paylaşım barədə şikayət göndərilsin?')){state.reports.push({id:uid(),postId:p.id,by:state.profile.name,created:now(),reason:'İstifadəçi şikayəti'});save();toast('Şikayət qeydə alındı.');}break}}
-$('#feed').addEventListener('click',e=>{const b=e.target.closest('[data-action]');if(b)handleAction(b)});document.addEventListener('click',e=>{const b=e.target.closest('[data-close]');if(b)closeModal(b.dataset.close);const c=e.target.closest('[data-comment-like]');if(c){const p=currentPost(),com=p?.comments.find(x=>x.id===c.dataset.commentLike);if(com){com.likes=(com.likes||0)+1;save();render()}}});$$('[data-close]').forEach(b=>b.addEventListener('click',()=>closeModal(b.dataset.close)));$$('.modalback').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open')}));$('#heartText').addEventListener('input',()=>$('#charCount').textContent=$('#heartText').value.length);$$('#durationOptions [data-duration]').forEach(b=>b.onclick=()=>{heartOpts.duration=Number(b.dataset.duration);setOptions()});$$('#placementOptions [data-place]').forEach(b=>b.onclick=()=>{heartOpts.place=b.dataset.place;setOptions()});$$('#colorOptions [data-color]').forEach(b=>b.onclick=()=>{heartOpts.color=b.dataset.color;setOptions()});$$('#backgroundOptions [data-bg]').forEach(b=>b.onclick=()=>{heartOpts.bg=b.dataset.bg;setOptions()});$('#publishHeart').onclick=publishHeart;$('#mediaFile').addEventListener('change',e=>{selectedFile=e.target.files?.[0]||null;renderUploadPreview(selectedFile)});$('#publishPost').onclick=publishPost;$('#createNav').onclick=$('#mobileCreate').onclick=openCreate;$('#profileBtn').onclick=$('#profileNav').onclick=$('#mobileProfile').onclick=()=>{ $('#profileName').value=state.profile.name;$('#profileBio').value=state.profile.bio||'';openModal('profileModal')};$('#saveProfile').onclick=()=>{const n=$('#profileName').value.trim();if(!n){toast('İstifadəçi adı boş ola bilməz.');return}state.profile.name=n.startsWith('@')?n:'@'+n;state.profile.bio=$('#profileBio').value.trim();save();closeModal('profileModal');render();toast('Profil saxlanıldı.')};$('#settingsNav').onclick=()=>openModal('settingsModal');$('#storageInfo').onclick=async()=>{let out='Brauzer yaddaş göstəricisi mövcud deyil.';try{if(navigator.storage?.estimate){const e=await navigator.storage.estimate();out=`İstifadə: ${(e.usage/1048576).toFixed(1)} MB · Təxmini limit: ${(e.quota/1048576).toFixed(0)} MB`}}catch(e){}$('#storageStatus').textContent=out};$('#exportData').onclick=exportBackup;$('#clearLocal').onclick=clearLocal;$('#importData').onchange=async e=>{const f=e.target.files?.[0];if(!f)return;try{const imported=JSON.parse(await f.text());if(!Array.isArray(imported.posts))throw Error();if(confirm('Ehtiyat nüsxəsinin mətn məlumatları mövcud məlumatlarla birləşdirilsin?')){const ids=new Set(state.posts.map(p=>p.id));state.posts.push(...imported.posts.filter(p=>!ids.has(p.id)));save();render();toast('Məlumatlar bərpa edildi. Media faylları daxil deyil.')}}catch(err){toast('Ehtiyat faylı oxunmadı.')}e.target.value=''};$('#commentForm').onsubmit=e=>{e.preventDefault();addComment($('#commentInput').value)};$('#searchInput').oninput=()=>render();$('#forYou').onclick=()=>{feedMode='forYou';$('#forYou').classList.add('active');$('#followingTab').classList.remove('active');render()};$('#followingTab').onclick=()=>{feedMode='following';$('#followingTab').classList.add('active');$('#forYou').classList.remove('active');render();if(!allPosts().length)toast('İzlədiyin istifadəçilərin paylaşımı yoxdur. İstifadəçini lentdəki İzlə düyməsi ilə izlə.')};$('#allTab').onclick=()=>{feedMode='trending';toast('Trend lent: bəyənmə sayına görə sıralanır.');$('#searchInput').value='';render()};$('#notifyBtn').onclick=$('#notifyNav').onclick=()=>toast('Hələ yeni bildiriş yoxdur.');$('#savedNav').onclick=()=>{toast('İzlədiklərin: '+state.following.length+' istifadəçi.');};$('#messagesNav').onclick=()=>toast('Mesajlar funksiyası bu lokal MVP-də aktiv deyil.');$('#mobileComments').onclick=()=>$('#commentInput').focus();$$('[data-nav="discover"],[data-nav="trending"]').forEach(b=>b.onclick=()=>{const q=b.dataset.nav==='trending'?'#':'təbiət';$('#searchInput').value=q;render();toast(b.dataset.nav==='trending'?'Trend axtarışı':'Kəşf et: axtarış lentdə tətbiq olundu.')});$$('[data-quick]').forEach(b=>b.onclick=()=>{const p=currentPost(),h=p?.hearts?.find(heartLive);if(h)reactHeart(p.id,h.id,b.dataset.quick);else toast('Əvvəl videoya ürək sözü əlavə et.')});
-// Klaviatura ilə lentdə növbəti/əvvəlki paylaşım
-window.addEventListener('keydown',e=>{if(['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName))return;if(['ArrowDown','PageDown'].includes(e.key)){e.preventDefault();$('#feed').scrollBy({top:$('#feed').clientHeight*.88,behavior:'smooth'})}if(['ArrowUp','PageUp'].includes(e.key)){e.preventDefault();$('#feed').scrollBy({top:-$('#feed').clientHeight*.88,behavior:'smooth'})}if(e.key==='Escape')$$('.modalback.open').forEach(m=>m.classList.remove('open'))});
-// Touch swipe: brauzerin təbii şaquli scroll-snap davranışından istifadə edilir.
-async function init(){try{await openDB()}catch(e){console.warn(e);toast('IndexedDB açılmadı: media yükləmə işləməyə bilər.')}state=load();await hydrateLocalMedia();render();if(navigator.storage?.persist)navigator.storage.persist().catch(()=>{});}
-init();
-})();
-</script></body></html>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CANLI SÖZLƏR — Hər kadrda bir söz</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            dark: '#07080b',
+                            card: '#12151f',
+                            border: 'rgba(255, 255, 255, 0.08)',
+                            purple: '#8B5CF6',
+                            pink: '#EC4899',
+                            cyan: '#06B6D4'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @keyframes floatAnim {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-4px); }
+        }
+        .animate-float { animation: floatAnim 4s ease-in-out infinite; }
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-brand-dark text-white h-screen overflow-hidden font-sans flex flex-col">
+
+    <!-- Top Header -->
+    <header class="h-16 border-b border-brand-border bg-brand-dark/80 backdrop-blur-md px-6 flex items-center justify-between shrink-0 z-50">
+        <div class="flex items-center gap-3 cursor-pointer">
+            <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-purple to-brand-pink flex items-center justify-center shadow-lg shadow-brand-purple/20">
+                <i class="fa-solid fa-heart text-white text-sm"></i>
+            </div>
+            <div>
+                <h1 class="font-black text-lg tracking-wider bg-gradient-to-r from-white via-gray-200 to-brand-pink bg-clip-text text-transparent">CANLI SÖZLƏR</h1>
+                <p class="text-[10px] text-gray-400 font-medium tracking-wide">Hər kadrda bir söz</p>
+            </div>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="max-w-md w-full mx-4 relative hidden md:block">
+            <i class="fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-gray-400 text-sm"></i>
+            <input type="text" placeholder="İstifadəçi, mövzu və ya hashtag axtar..." class="w-full bg-brand-card border border-brand-border rounded-2xl pl-11 pr-4 py-2.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-brand-purple transition">
+        </div>
+
+        <!-- Right Icons -->
+        <div class="flex items-center gap-4">
+            <button class="relative w-10 h-10 rounded-2xl bg-brand-card border border-brand-border flex items-center justify-center text-gray-300 hover:text-white transition">
+                <i class="fa-solid fa-bell text-sm"></i>
+                <span class="absolute top-2 right-2 w-2 h-2 rounded-full bg-brand-pink animate-pulse"></span>
+            </button>
+            <div class="w-10 h-10 rounded-2xl border-2 border-brand-purple overflow-hidden cursor-pointer shadow-md">
+                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100" class="w-full h-full object-cover">
+            </div>
+        </div>
+    </header>
+
+    <!-- App Body Layout -->
+    <div class="flex-1 flex overflow-hidden">
+        
+        <!-- Left Sidebar -->
+        <aside class="w-64 border-r border-brand-border bg-brand-dark flex flex-col justify-between p-4 shrink-0 hidden lg:flex">
+            <nav class="space-y-1.5">
+                <a href="#" class="flex items-center gap-3.5 px-4 py-3 rounded-2xl bg-gradient-to-r from-brand-purple/20 to-transparent border border-brand-purple/30 text-white text-xs font-bold transition">
+                    <i class="fa-solid fa-house text-brand-purple text-sm"></i> Əsas səhifə
+                </a>
+                <a href="#" class="flex items-center gap-3.5 px-4 py-3 rounded-2xl text-gray-400 hover:text-white hover:bg-brand-card/50 text-xs font-semibold transition">
+                    <i class="fa-solid fa-compass text-sm"></i> Kəşf et
+                </a>
+                <a href="#" class="flex items-center gap-3.5 px-4 py-3 rounded-2xl text-gray-400 hover:text-white hover:bg-brand-card/50 text-xs font-semibold transition">
+                    <i class="fa-solid fa-fire text-sm"></i> Trend
+                </a>
+                <a href="#" class="flex items-center gap-3.5 px-4 py-3 rounded-2xl text-gray-400 hover:text-white hover:bg-brand-card/50 text-xs font-semibold transition">
+                    <i class="fa-solid fa-circle-plus text-sm"></i> Paylaşım et
+                </a>
+                <div class="pt-4 pb-2"><hr class="border-brand-border"></div>
+                <a href="#" class="flex items-center gap-3.5 px-4 py-3 rounded-2xl text-gray-400 hover:text-white hover:bg-brand-card/50 text-xs font-semibold transition">
+                    <i class="fa-solid fa-user text-sm"></i> Profilim
+                </a>
+                <a href="#" class="flex items-center gap-3.5 px-4 py-3 rounded-2xl text-gray-400 hover:text-white hover:bg-brand-card/50 text-xs font-semibold transition">
+                    <i class="fa-solid fa-heart text-sm"></i> İzlədiklərim
+                </a>
+                <a href="#" class="flex items-center gap-3.5 px-4 py-3 rounded-2xl text-gray-400 hover:text-white hover:bg-brand-card/50 text-xs font-semibold transition">
+                    <i class="fa-solid fa-message text-sm"></i> Mesajlar
+                </a>
+                <a href="#" class="flex items-center gap-3.5 px-4 py-3 rounded-2xl text-gray-400 hover:text-white hover:bg-brand-card/50 text-xs font-semibold transition">
+                    <i class="fa-solid fa-bell text-sm"></i> Bildirişlər
+                </a>
+                <a href="#" class="flex items-center gap-3.5 px-4 py-3 rounded-2xl text-gray-400 hover:text-white hover:bg-brand-card/50 text-xs font-semibold transition">
+                    <i class="fa-solid fa-gear text-sm"></i> Parametrlər
+                </a>
+            </nav>
+
+            <!-- Premium Box -->
+            <div class="bg-gradient-to-br from-brand-card to-[#1a162b] border border-brand-border rounded-2xl p-4 relative overflow-hidden shadow-xl">
+                <div class="absolute -right-4 -bottom-4 w-20 h-20 bg-amber-500/10 rounded-full blur-xl"></div>
+                <div class="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center mb-3">
+                    <i class="fa-solid fa-crown text-sm"></i>
+                </div>
+                <p class="text-[11px] text-gray-300 font-medium mb-3 leading-relaxed">Daha çox imkanlar üçün premium üzvlük</p>
+                <button class="w-full bg-gradient-to-r from-brand-purple to-brand-pink text-white py-2 rounded-xl text-xs font-bold shadow-md hover:opacity-90 transition">Keçid</button>
+            </div>
+        </aside>
+
+        <!-- Main Feed Central Section -->
+        <main class="flex-1 flex flex-col lg:flex-row overflow-y-auto lg:overflow-hidden">
+            
+            <!-- Center Column: Video & Active Modal -->
+            <div class="flex-1 flex flex-col items-center justify-start p-4 lg:p-6 overflow-y-auto">
+                
+                <!-- Feed Tabs -->
+                <div class="flex gap-6 mb-4 text-xs font-bold">
+                    <button class="text-white border-b-2 border-brand-pink pb-1">Sizin üçün</button>
+                    <button class="text-gray-400 hover:text-white transition pb-1">İzlənilənlər</button>
+                </div>
+
+                <!-- Video Card Container (TikTok style player) -->
+                <div class="relative w-full max-w-sm h-[520px] bg-black rounded-3xl overflow-hidden shadow-2xl border border-brand-border flex items-center justify-center shrink-0">
+                    <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800" class="w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/80"></div>
+
+                    <!-- Top Video Status -->
+                    <div class="absolute top-4 left-4 right-4 flex justify-between items-center z-20">
+                        <span class="text-[11px] font-bold text-white bg-black/40 backdrop-blur-md px-3 py-1 rounded-full border border-white/10">CANLI SÖZLƏR</span>
+                        <div class="flex items-center gap-2">
+                            <span class="text-[10px] text-gray-300 font-mono">00:45 / 01:00</span>
+                            <i class="fa-solid fa-volume-high text-xs text-white bg-black/40 p-2 rounded-full backdrop-blur-md"></i>
+                        </div>
+                    </div>
+
+                    <!-- Floating Heart Message Card -->
+                    <div class="absolute top-16 left-4 right-4 z-20 animate-float">
+                        <div class="bg-[#1a1c29]/90 backdrop-blur-xl border border-white/15 p-3.5 rounded-2xl shadow-2xl text-white">
+                            <div class="flex items-center gap-2 mb-1.5">
+                                <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100" class="w-6 h-6 rounded-full object-cover">
+                                <span class="text-xs font-bold">@Orxan_021</span>
+                            </div>
+                            <p class="text-xs font-medium text-gray-200 mb-2">Bu mənim ən sevdiyim mənzərdir... ❤️</p>
+                            <div class="flex items-center justify-between text-[10px] text-gray-400 pt-2 border-t border-white/10">
+                                <span class="bg-black/40 px-2 py-0.5 rounded-md font-mono text-gray-300">⏱️ 60 saniya</span>
+                                <div class="flex items-center gap-2">
+                                    <span>❤️ 24</span>
+                                    <span>😆 6</span>
+                                    <span>😢 3</span>
+                                    <span>✋ 2</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- On-screen Static Message -->
+                    <div class="absolute inset-x-4 top-1/2 -translate-y-8 text-center z-10 pointer-events-none">
+                        <p class="text-lg font-bold text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] italic">"Təbiət hər zaman çox gözəldir... 🤍"</p>
+                    </div>
+
+                    <!-- Right Action Buttons -->
+                    <div class="absolute right-3 bottom-16 z-20 flex flex-col items-center gap-3">
+                        <div class="relative group cursor-pointer">
+                            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100" class="w-10 h-10 rounded-full border-2 border-white object-cover">
+                            <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-4 h-4 bg-brand-pink rounded-full flex items-center justify-center text-white text-[10px] font-bold">+</div>
+                        </div>
+                        <button class="flex flex-col items-center group">
+                            <div class="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white group-hover:bg-brand-pink transition"><i class="fa-solid fa-heart text-sm"></i></div>
+                            <span class="text-[10px] font-bold text-white mt-0.5">12.4K</span>
+                        </button>
+                        <button class="flex flex-col items-center group">
+                            <div class="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white group-hover:bg-brand-purple transition"><i class="fa-solid fa-comment text-sm"></i></div>
+                            <span class="text-[10px] font-bold text-white mt-0.5">342</span>
+                        </button>
+                        <button class="flex flex-col items-center group">
+                            <div class="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white group-hover:bg-brand-cyan transition"><i class="fa-solid fa-share text-sm"></i></div>
+                            <span class="text-[10px] font-bold text-white mt-0.5">1.2K</span>
+                        </button>
+                        <!-- Action: Üstünə yaz button -->
+                        <button class="flex flex-col items-center group">
+                            <div class="w-11 h-11 rounded-full bg-gradient-to-tr from-brand-purple to-brand-pink backdrop-blur-md flex items-center justify-center text-white shadow-lg animate-pulse"><i class="fa-solid fa-pen-nib text-xs"></i></div>
+                            <span class="text-[9px] font-extrabold text-white mt-0.5 text-center leading-tight">Üstünə<br>yaz</span>
+                        </button>
+                    </div>
+
+                    <!-- Bottom Video Info -->
+                    <div class="absolute bottom-3 left-4 right-16 z-20">
+                        <div class="flex items-center gap-2 mb-1">
+                            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100" class="w-6 h-6 rounded-full object-cover">
+                            <span class="text-xs font-bold text-white">@Tural_777</span>
+                            <i class="fa-solid fa-circle-check text-brand-cyan text-[10px]"></i>
+                            <button class="bg-brand-purple text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full ml-1">İzləyən</button>
+                        </div>
+                        <p class="text-[11px] text-gray-200 line-clamp-1 mb-1">Təbiət insanı həqiqətən sağaldır... 🌱 #təbiət #səyahət #azərbaycan #dağlar</p>
+                        <div class="flex items-center gap-3 text-[10px] text-gray-300 font-medium">
+                            <span><i class="fa-solid fa-eye mr-1"></i> 28.4K</span>
+                            <span><i class="fa-solid fa-heart mr-1"></i> 3.2K</span>
+                            <span><i class="fa-solid fa-comment mr-1"></i> 156</span>
+                            <span><i class="fa-solid fa-share mr-1"></i> 12</span>
+                        </div>
+                        <div class="flex items-center gap-2 mt-2 text-[10px] text-gray-400">
+                            <i class="fa-solid fa-music animate-spin text-brand-pink"></i>
+                            <span class="truncate">Relaxing Music – Nature Sounds</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Active Modal Card: "Videonun üstünə yaz" (as shown in image) -->
+                <div class="w-full max-w-sm bg-brand-card border border-brand-border rounded-3xl p-4 mt-4 shadow-2xl relative">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="text-xs font-bold text-white flex items-center gap-2"><i class="fa-solid fa-pen-nib text-brand-pink"></i> Videonun üstünə yaz</h3>
+                        <i class="fa-solid fa-xmark text-gray-400 text-xs cursor-pointer hover:text-white"></i>
+                    </div>
+
+                    <div class="relative mb-3">
+                        <textarea rows="2" placeholder="Ürək sözünü yaz..." class="w-full bg-black/40 border border-brand-border rounded-2xl p-2.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-brand-purple resize-none"></textarea>
+                        <span class="absolute bottom-2 right-3 text-[9px] text-gray-500 font-mono">0/120</span>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3 mb-3 text-[11px]">
+                        <div>
+                            <span class="text-gray-400 text-[10px] block mb-1">Görünmə müddəti</span>
+                            <div class="flex bg-black/40 rounded-xl p-0.5 border border-brand-border">
+                                <button class="flex-1 py-1 rounded-lg bg-brand-purple text-white font-bold text-[10px]">30s</button>
+                                <button class="flex-1 py-1 text-gray-400 font-bold text-[10px]">60s</button>
+                                <button class="flex-1 py-1 text-gray-400 font-bold text-[10px]">90s</button>
+                            </div>
+                        </div>
+                        <div>
+                            <span class="text-gray-400 text-[10px] block mb-1">Yerləşmə</span>
+                            <div class="flex bg-black/40 rounded-xl p-0.5 border border-brand-border">
+                                <button class="flex-1 py-1 text-gray-400 font-bold text-[10px]">Yuxarı</button>
+                                <button class="flex-1 py-1 rounded-lg bg-brand-purple text-white font-bold text-[10px]">Orta</button>
+                                <button class="flex-1 py-1 text-gray-400 font-bold text-[10px]">Aşağı</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center gap-1.5">
+                            <span class="w-5 h-5 rounded-full bg-white cursor-pointer ring-2 ring-white/50"></span>
+                            <span class="w-5 h-5 rounded-full bg-black border border-white/20 cursor-pointer"></span>
+                            <span class="w-5 h-5 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-600 cursor-pointer"></span>
+                            <span class="w-5 h-5 rounded-full bg-pink-500 cursor-pointer"></span>
+                            <span class="w-5 h-5 rounded-full bg-purple-500 cursor-pointer"></span>
+                            <span class="w-5 h-5 rounded-full bg-orange-500 cursor-pointer"></span>
+                            <span class="w-5 h-5 rounded-full bg-emerald-500 cursor-pointer"></span>
+                        </div>
+                        <div class="flex gap-1 text-[9px] bg-black/40 p-1 rounded-xl border border-brand-border">
+                            <span class="px-2 py-0.5 rounded-lg bg-white/10 text-white font-bold">Şəffaf</span>
+                            <span class="px-2 py-0.5 text-gray-400">Qara fon</span>
+                        </div>
+                    </div>
+
+                    <button class="w-full bg-gradient-to-r from-brand-purple to-brand-pink text-white py-2 rounded-xl text-xs font-bold shadow-lg hover:opacity-90 transition">Paylaş</button>
+                </div>
+
+            </div>
+
+            <!-- Right Sidebar: Trends, Heart Messages & Comments -->
+            <aside class="w-full lg:w-80 border-t lg:border-t-0 lg:border-l border-brand-border bg-brand-dark p-4 space-y-4 overflow-y-auto shrink-0">
+                
+                <!-- Trend Mövzular -->
+                <div class="bg-brand-card border border-brand-border rounded-2xl p-3.5">
+                    <h3 class="text-xs font-bold text-white mb-3">Trend mövzular</h3>
+                    <div class="space-y-2.5 text-xs">
+                        <div>
+                            <p class="font-bold text-white hover:text-brand-pink cursor-pointer">#təbiət</p>
+                            <span class="text-[10px] text-gray-500">12.4K paylaşım</span>
+                        </div>
+                        <div>
+                            <p class="font-bold text-white hover:text-brand-pink cursor-pointer">#səyahət</p>
+                            <span class="text-[10px] text-gray-500">8.7K paylaşım</span>
+                        </div>
+                        <div>
+                            <p class="font-bold text-white hover:text-brand-pink cursor-pointer">#sevgi</p>
+                            <span class="text-[10px] text-gray-500">6.2K paylaşım</span>
+                        </div>
+                        <div>
+                            <p class="font-bold text-white hover:text-brand-pink cursor-pointer">#motivasiya</p>
+                            <span class="text-[10px] text-gray-500">4.9K paylaşım</span>
+                        </div>
+                        <div>
+                            <p class="font-bold text-white hover:text-brand-pink cursor-pointer">#musiqi</p>
+                            <span class="text-[10px] text-gray-500">3.8K paylaşım</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ən çox reaksiya alan ürək sözləri -->
+                <div class="bg-brand-card border border-brand-border rounded-2xl p-3.5">
+                    <h3 class="text-xs font-bold text-white mb-3">Ən çox reaksiya alan ürək sözləri</h3>
+                    <div class="space-y-3 text-xs">
+                        <div class="border-b border-white/5 pb-2.5">
+                            <p class="text-gray-200 font-medium mb-1">"Həyat gözəldir..."</p>
+                            <div class="flex items-center gap-1 text-[10px] text-brand-pink font-bold">
+                                <i class="fa-solid fa-heart"></i> 4.2K
+                            </div>
+                        </div>
+                        <div class="border-b border-white/5 pb-2.5">
+                            <p class="text-gray-200 font-medium mb-1">"Sənə də uğurlar!"</p>
+                            <div class="flex items-center gap-1 text-[10px] text-brand-pink font-bold">
+                                <i class="fa-solid fa-heart"></i> 3.7K
+                            </div>
+                        </div>
+                        <div class="border-b border-white/5 pb-2.5">
+                            <p class="text-gray-200 font-medium mb-1">"Bu mahnı bizimdir!"</p>
+                            <div class="flex items-center gap-1 text-[10px] text-brand-pink font-bold">
+                                <i class="fa-solid fa-heart"></i> 3.1K
+                            </div>
+                        </div>
+                        <div>
+                            <p class="text-gray-200 font-medium mb-1">"Çox gözəl xatirədir..."</p>
+                            <div class="flex items-center gap-1 text-[10px] text-brand-pink font-bold">
+                                <i class="fa-solid fa-heart"></i> 2.8K
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reaksiyalar -->
+                <div class="bg-brand-card border border-brand-border rounded-2xl p-3.5">
+                    <h3 class="text-xs font-bold text-white mb-3">Reaksiyalar</h3>
+                    <div class="grid grid-cols-4 gap-2 text-center">
+                        <div class="bg-black/40 border border-brand-border p-2 rounded-xl flex flex-col items-center cursor-pointer hover:bg-white/5 transition">
+                            <span class="text-lg mb-1">❤️</span>
+                            <span class="text-[9px] text-gray-400 font-semibold">Bəyən</span>
+                        </div>
+                        <div class="bg-black/40 border border-brand-border p-2 rounded-xl flex flex-col items-center cursor-pointer hover:bg-white/5 transition">
+                            <span class="text-lg mb-1">😆</span>
+                            <span class="text-[9px] text-gray-400 font-semibold">Gülüş</span>
+                        </div>
+                        <div class="bg-black/40 border border-brand-border p-2 rounded-xl flex flex-col items-center cursor-pointer hover:bg-white/5 transition">
+                            <span class="text-lg mb-1">😢</span>
+                            <span class="text-[9px] text-gray-400 font-semibold">Kövrəlmə</span>
+                        </div>
+                        <div class="bg-black/40 border border-brand-border p-2 rounded-xl flex flex-col items-center cursor-pointer hover:bg-white/5 transition">
+                            <span class="text-lg mb-1">✋</span>
+                            <span class="text-[9px] text-gray-400 font-semibold">Dəstək</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Şərhlər -->
+                <div class="bg-brand-card border border-brand-border rounded-2xl p-3.5">
+                    <h3 class="text-xs font-bold text-white mb-3">Şərhlər</h3>
+                    
+                    <div class="relative mb-3">
+                        <input type="text" placeholder="Şərh yaz..." class="w-full bg-black/40 border border-brand-border rounded-xl pl-3 pr-9 py-2 text-[11px] text-white placeholder-gray-500 focus:outline-none focus:border-brand-purple">
+                        <button class="absolute right-2 top-2 w-6 h-6 rounded-lg bg-brand-purple text-white flex items-center justify-center text-[10px]"><i class="fa-solid fa-paper-plane"></i></button>
+                    </div>
+
+                    <div class="space-y-3 text-xs">
+                        <div class="flex items-start gap-2.5">
+                            <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100" class="w-7 h-7 rounded-full object-cover shrink-0">
+                            <div class="flex-1">
+                                <div class="flex justify-between items-center"><span class="font-bold text-[11px] text-white">Nazrin_05</span></div>
+                                <p class="text-[11px] text-gray-300 mt-0.5">Çox gözəl mənzərdir! ❤️</p>
+                                <div class="flex items-center gap-3 text-[10px] text-gray-500 mt-1">
+                                    <span>5 daq</span>
+                                    <span class="text-brand-pink flex items-center gap-1"><i class="fa-solid fa-heart"></i> 12</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start gap-2.5">
+                            <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100" class="w-7 h-7 rounded-full object-cover shrink-0">
+                            <div class="flex-1">
+                                <div class="flex justify-between items-center"><span class="font-bold text-[11px] text-white">Elvin_777</span></div>
+                                <p class="text-[11px] text-gray-300 mt-0.5">Mən də burada olmuşam 😍</p>
+                                <div class="flex items-center gap-3 text-[10px] text-gray-500 mt-1">
+                                    <span>12 daq</span>
+                                    <span class="text-brand-pink flex items-center gap-1"><i class="fa-solid fa-heart"></i> 8</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start gap-2.5">
+                            <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100" class="w-7 h-7 rounded-full object-cover shrink-0">
+                            <div class="flex-1">
+                                <div class="flex justify-between items-center"><span class="font-bold text-[11px] text-white">Leyla_Az</span></div>
+                                <p class="text-[11px] text-gray-300 mt-0.5">Təbiət həqiqətən möcüzədir...</p>
+                                <div class="flex items-center gap-3 text-[10px] text-gray-500 mt-1">
+                                    <span>18 daq</span>
+                                    <span class="text-brand-pink flex items-center gap-1"><i class="fa-solid fa-heart"></i> 6</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start gap-2.5">
+                            <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100" class="w-7 h-7 rounded-full object-cover shrink-0">
+                            <div class="flex-1">
+                                <div class="flex justify-between items-center"><span class="font-bold text-[11px] text-white">Rauf_123</span></div>
+                                <p class="text-[11px] text-gray-300 mt-0.5">Çox gözəl xatirədir! ✨</p>
+                                <div class="flex items-center gap-3 text-[10px] text-gray-500 mt-1">
+                                    <span>25 daq</span>
+                                    <span class="text-brand-pink flex items-center gap-1"><i class="fa-solid fa-heart"></i> 4</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </aside>
+        </main>
+    </div>
+
+    <!-- Mobile Bottom Navigation -->
+    <nav class="h-14 border-t border-brand-border bg-brand-dark flex items-center justify-around shrink-0 md:hidden z-50">
+        <a href="#" class="text-brand-purple flex flex-col items-center"><i class="fa-solid fa-house text-sm"></i><span class="text-[9px] mt-0.5 font-bold">Əsas səhifə</span></a>
+        <a href="#" class="text-gray-400 flex flex-col items-center"><i class="fa-solid fa-compass text-sm"></i><span class="text-[9px] mt-0.5 font-semibold">Kəşf et</span></a>
+        <a href="#" class="w-10 h-10 rounded-full bg-gradient-to-tr from-brand-purple to-brand-pink text-white flex items-center justify-center shadow-lg"><i class="fa-solid fa-plus text-xs"></i></a>
+        <a href="#" class="text-gray-400 flex flex-col items-center"><i class="fa-solid fa-message text-sm"></i><span class="text-[9px] mt-0.5 font-semibold">Mesajlar</span></a>
+        <a href="#" class="text-gray-400 flex flex-col items-center"><i class="fa-solid fa-user text-sm"></i><span class="text-[9px] mt-0.5 font-semibold">Profil</span></a>
+    </nav>
+
+</body>
+</html>
