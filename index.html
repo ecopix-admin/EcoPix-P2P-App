@@ -3,565 +3,648 @@
 <html lang="az">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#ffffff">
-<title>LinguaQuest — Dil öyrən</title>
+<meta name="description" content="Dil öyrənmək üçün interaktiv dərslər və 1000 mərhələli öyrənmə xəritəsi.">
+<title>LINGUA — Dil Akademiyası</title>
 <style>
 :root{
- --green:#58cc02;--green3d:#46a302;
- --blue:#1cb0f6;--blue3d:#1899d6;
- --red:#ff4b4b;--red3d:#ea2b2b;
- --gold:#ffc800;--gold3d:#e5b200;
- --purple:#ce82ff;--bg:#f7f9fa;
- --white:#fff;--border:#e5e5e5;
- --text:#3c3c3c;--muted:#afafaf;
+ --green:#58cc02;--green-dark:#46a302;--green-soft:#e5f8d6;
+ --blue:#1cb0f6;--blue-dark:#168bc4;--blue-soft:#ddf4ff;
+ --red:#ff4b4b;--red-soft:#ffe6e6;--gold:#ffc800;
+ --purple:#ce82ff;--ink:#263238;--muted:#777f86;
+ --line:#e5e5e5;--paper:#fff;--bg:#f7f8f8;
+ --shadow:0 4px 0 rgba(0,0,0,.12);
 }
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--text);
- font-family:Nunito,"Trebuchet MS",system-ui,-apple-system,sans-serif}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,input,select{font:inherit}
 button{cursor:pointer;touch-action:manipulation}
-button:focus-visible{outline:3px solid var(--blue);outline-offset:3px}
-.topbar{height:72px;background:white;border-bottom:2px solid var(--border);
- position:sticky;top:0;z-index:20;display:flex;align-items:center;
- justify-content:space-between;padding:0 max(16px,calc((100vw - 920px)/2));gap:8px}
-.brand{font-size:20px;font-weight:1000;color:var(--green3d);white-space:nowrap}
-.brand span{font-size:25px}
-.stats{display:flex;align-items:center;gap:clamp(7px,2vw,22px)}
-.stat{display:flex;align-items:center;gap:4px;font-size:14px;font-weight:900;white-space:nowrap}
-.stat .emoji{font-size:20px}
-.page{max-width:900px;margin:auto;padding:18px 16px 110px}
-.panel{background:white;border:2px solid var(--border);border-radius:18px;padding:16px;margin-bottom:18px}
-.row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
-h1,h2,h3,p{margin-top:0}
-h1{font-size:25px;margin-bottom:6px}
-h2{font-size:20px}
-.muted{color:#888;font-size:14px;line-height:1.5}
-.btn{border:0;border-radius:13px;padding:12px 16px;font-weight:900;
- box-shadow:0 4px 0 rgba(0,0,0,.14);transition:transform .08s,filter .15s;
- color:white;background:var(--green);border-bottom:2px solid var(--green3d)}
-.btn:active,.node:active,.choice:active{transform:translateY(4px);box-shadow:none}
-.btn.blue{background:var(--blue);border-bottom-color:var(--blue3d)}
-.btn.red{background:var(--red);border-bottom-color:var(--red3d)}
-.btn.gold{background:var(--gold);border-bottom-color:var(--gold3d);color:#604800}
-.btn.purple{background:var(--purple);border-bottom-color:#a35ad8}
-.btn.gray{background:#f0f0f0;color:#555;border-bottom-color:#d0d0d0}
-.btn:disabled{opacity:.4;cursor:not-allowed}
-.test-toggle{font-size:12px;padding:9px 11px}
-.unit{margin:24px 0 12px;background:var(--green);color:white;border-radius:16px;
- padding:17px;border-bottom:5px solid var(--green3d)}
-.unit h2{margin:0 0 4px}
-.unit p{margin:0;font-size:13px;opacity:.95}
-.map{position:relative;padding:8px 0 20px;overflow:hidden}
-.lesson-row{display:flex;justify-content:center;align-items:center;height:96px;position:relative}
-.node{width:66px;height:66px;border-radius:50%;border:0;background:var(--green);
- color:white;font-size:25px;font-weight:1000;position:relative;z-index:2;
- border-bottom:6px solid var(--green3d);box-shadow:0 1px 0 rgba(0,0,0,.05)}
-.node.locked{background:#e5e5e5;border-bottom-color:#c8c8c8;color:#999}
-.node.completed{background:var(--gold);border-bottom-color:var(--gold3d);color:#8b6500}
-.node.current{outline:5px solid #b8ef91;outline-offset:4px;animation:pulse 2s infinite}
-.node small{display:block;font-size:10px;margin-top:0}
-@keyframes pulse{50%{outline-color:#e2f8d4}}
-.path{position:absolute;width:6px;height:100%;left:50%;top:0;transform:translateX(-50%);
- background:repeating-linear-gradient(to bottom,#d7d7d7 0 10px,transparent 10px 20px)}
-.lesson-row .node{flex-shrink:0}
-.lesson-row:nth-child(odd) .node{transform:translateX(-65px)}
-.lesson-row:nth-child(even) .node{transform:translateX(65px)}
-.lesson-row .node:active{translate:0 4px}
-.lesson-row:nth-child(odd) .node:active{transform:translate(-65px,4px)}
-.lesson-row:nth-child(even) .node:active{transform:translate(65px,4px)}
-.section-title{font-size:14px;font-weight:900;color:#888;margin:14px 0 0}
-.bottomnav{position:fixed;bottom:0;left:0;right:0;z-index:30;background:white;
- border-top:2px solid var(--border);display:flex;justify-content:center;gap:0;
- padding:6px max(6px,calc((100vw - 600px)/2)) env(safe-area-inset-bottom)}
-.navbtn{flex:1;max-width:150px;border:0;background:white;color:#999;padding:7px 4px;
- font-weight:900;font-size:11px;border-radius:12px}
-.navbtn .ico{display:block;font-size:24px;margin-bottom:2px}
-.navbtn.active{color:var(--green3d);background:#f1fce9}
-.screen{display:none}.screen.active{display:block}
-.lesson-head{display:flex;align-items:center;gap:14px;margin:8px 0 24px}
-.close{border:0;background:transparent;font-size:27px;color:#aaa}
-.progress{height:14px;border-radius:20px;background:#e5e5e5;flex:1;overflow:hidden}
-.progress span{height:100%;width:0;background:var(--green);display:block;transition:width .25s}
-.hearts{font-weight:900;color:var(--red)}
-.question{font-size:24px;line-height:1.35;font-weight:1000;margin:22px 0}
-.question small{display:block;font-size:13px;color:#999;font-weight:700;margin-bottom:8px}
-.speak{border:0;border-radius:15px;background:#ddf5ff;color:#168ac0;
- font-size:27px;padding:14px 19px;border-bottom:4px solid #a8e3fa}
-.answer-area{min-height:64px;border-bottom:2px solid #ddd;display:flex;gap:8px;
- flex-wrap:wrap;padding:8px 0;margin:16px 0 20px}
-.chips,.choices,.matchgrid{display:flex;gap:9px;flex-wrap:wrap}
-.choice,.chip{background:white;border:2px solid #e5e5e5;border-bottom-width:4px;
- border-radius:13px;padding:12px 14px;font-weight:800;color:#444}
-.choice{flex:1 1 42%;min-height:62px}
-.choice.selected,.chip.selected{border-color:var(--blue);background:#e5f7ff}
-.choice.correct{border-color:var(--green);background:#e6ffd5}
-.choice.wrong{border-color:var(--red);background:#ffe4e4}
-.chip.used{opacity:.25;pointer-events:none}
-.chip.answerchip{background:#e5f7ff;border-color:var(--blue)}
-.matchgrid{display:grid;grid-template-columns:1fr 1fr}
-.matchgrid button{min-height:58px}
-.lesson-footer{position:fixed;bottom:0;left:0;right:0;background:white;border-top:2px solid #eee;
- padding:12px max(16px,calc((100vw - 900px)/2));z-index:22;display:flex;justify-content:space-between;gap:12px}
-.lesson-footer .btn{min-width:120px}
-.sheet{position:fixed;z-index:50;bottom:0;left:0;right:0;padding:25px max(18px,calc((100vw - 850px)/2)) 28px;
- transform:translateY(110%);transition:transform .25s;border-top:3px solid transparent}
-.sheet.open{transform:translateY(0)}
-.sheet.good{background:#d7ffb8;border-color:var(--green)}
-.sheet.bad{background:#ffdfe0;border-color:var(--red)}
-.sheet h2{font-size:25px;margin-bottom:8px}
-.sheet p{line-height:1.5}
-.sheet .btn{width:100%;margin-top:8px}
-.listitem{padding:14px 0;border-bottom:1px solid #eee}
-.listitem:last-child{border:0}
-.big-number{font-size:27px;font-weight:1000}
-.profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.profile-card{border:2px solid var(--border);border-radius:15px;padding:14px}
-select{width:100%;padding:12px;border:2px solid var(--border);border-radius:12px;background:white;margin:6px 0 15px}
-.toast{position:fixed;top:82px;left:50%;transform:translateX(-50%);z-index:80;
- background:#333;color:white;border-radius:12px;padding:12px 18px;display:none;max-width:90%;text-align:center}
-.empty{padding:35px 10px;text-align:center;color:#888}
-@media(max-width:450px){
- .topbar{height:62px;padding:0 10px}.brand{font-size:16px}.brand span{font-size:21px}
- .stats{gap:8px}.stat{font-size:12px}.stat .emoji{font-size:17px}
- .page{padding:13px 12px 100px}.panel{padding:13px}
- h1{font-size:22px}.node{width:59px;height:59px}
- .lesson-row{height:88px}.question{font-size:22px}
- .btn{padding:11px 12px}.test-toggle{max-width:145px}
+button:focus-visible,select:focus-visible{outline:3px solid #1cb0f6;outline-offset:3px}
+button:disabled{opacity:.45;cursor:not-allowed}
+.topbar{height:64px;position:sticky;top:0;z-index:20;background:#fff;border-bottom:2px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 max(16px,calc((100% - 1000px)/2));gap:12px}
+.brand{font-size:21px;font-weight:950;color:var(--green-dark);letter-spacing:-.8px;white-space:nowrap}
+.stats{display:flex;gap:10px;align-items:center;font-weight:850;font-size:14px}
+.stat{display:flex;align-items:center;gap:4px;white-space:nowrap}
+.heart{color:var(--red)}.gem{color:#1cb0f6}.xp{color:#d99c00}
+.layout{max-width:1000px;margin:auto;display:grid;grid-template-columns:210px minmax(0,1fr);gap:26px;padding:22px 18px}
+.sidebar{position:sticky;top:84px;height:max-content;display:flex;flex-direction:column;gap:7px}
+.navbtn{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:13px;border:2px solid transparent;background:#fff;border-radius:14px;color:#586169;font-weight:800}
+.navbtn.active{border-color:#84d94e;background:#f5ffef;color:#347e0a}
+.navicon{font-size:23px;width:28px;text-align:center}
+.sidecard{border:2px solid var(--line);border-radius:16px;padding:13px;margin-top:12px}
+.sidecard h3{margin:0 0 10px;font-size:14px}
+.sidecard p{font-size:12px;color:var(--muted);line-height:1.5;margin:7px 0}
+select{width:100%;border:2px solid var(--line);background:#fff;color:var(--ink);border-radius:10px;padding:10px;margin:5px 0;font-weight:700}
+main{min-width:0}
+.page{display:none}.page.active{display:block}
+.hero{border:2px solid var(--line);border-radius:20px;padding:21px;margin-bottom:20px;background:linear-gradient(135deg,#f4ffec,#fff 65%)}
+.hero h1{font-size:25px;line-height:1.2;margin:0 0 8px;letter-spacing:-.6px}
+.hero p{color:#697178;margin:0 0 16px;line-height:1.5}
+.primary,.secondary,.danger{border:0;border-radius:13px;padding:13px 17px;font-weight:900;box-shadow:0 4px 0 var(--green-dark);background:var(--green);color:white}
+.primary:active,.secondary:active,.danger:active{transform:translateY(3px);box-shadow:0 1px 0 var(--green-dark)}
+.secondary{background:#fff;color:#168bc4;border:2px solid #bce9ff;box-shadow:0 3px 0 #b4e5fb}
+.danger{background:var(--red);box-shadow:0 4px 0 #d82e2e}
+.sectionhead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:22px 0 12px}
+.sectionhead h2{margin:0;font-size:20px}
+.sectionhead small{color:var(--muted)}
+.unit{border:2px solid var(--line);border-radius:18px;margin:15px 0;overflow:hidden}
+.unithead{padding:16px;background:#f1fbe9;border-bottom:2px solid var(--line)}
+.unithead h3{margin:0 0 5px;font-size:17px}
+.unithead p{margin:0;color:#5c6b55;font-size:13px}
+.mapgrid{padding:22px 10px 26px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));justify-items:center;gap:20px 2px;position:relative}
+.stagebtn{position:relative;z-index:1;width:49px;height:49px;border-radius:50%;border:0;background:#e3e5e5;color:#929797;font-size:14px;font-weight:950;box-shadow:0 5px 0 #c6c9c9}
+.stagebtn.unlocked{background:var(--green);color:white;box-shadow:0 5px 0 var(--green-dark)}
+.stagebtn.done{background:#ffc800;color:#765600;box-shadow:0 5px 0 #dca900}
+.stagebtn.current{outline:4px solid #c9f1ae;outline-offset:3px;transform:scale(1.09)}
+.stagebtn.test{background:#1cb0f6;color:white;box-shadow:0 5px 0 #168bc4}
+.stagelabel{display:block;position:absolute;top:54px;left:50%;transform:translateX(-50%);font-size:10px;white-space:nowrap;color:#8a9296;font-weight:750}
+.progressrow{display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:13px;font-weight:800;margin-top:14px}
+.progressbar{height:9px;border-radius:99px;background:#e8ebec;overflow:hidden;margin-top:8px}
+.progressfill{height:100%;width:0;background:var(--green);border-radius:99px;transition:width .25s}
+.switchrow{display:flex;gap:10px;align-items:center;font-size:13px;font-weight:750;margin-top:12px}
+.switchrow input{width:19px;height:19px;accent-color:var(--green)}
+.panel{border:2px solid var(--line);border-radius:18px;padding:19px;margin:16px 0}
+.panel h2,.panel h3{margin-top:0}
+.bigemoji{font-size:45px}
+.kpigrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.kpi{border:2px solid var(--line);border-radius:15px;padding:14px 8px;text-align:center}
+.kpi strong{display:block;font-size:23px}.kpi span{font-size:12px;color:var(--muted);font-weight:750}
+.empty{padding:30px 15px;text-align:center;color:var(--muted)}
+/* Lesson */
+.lesson{display:none;position:fixed;inset:0;background:#fff;z-index:100;overflow:auto}
+.lesson.open{display:block}
+.lessonbar{height:67px;max-width:760px;margin:auto;display:flex;align-items:center;gap:15px;padding:12px 18px}
+.iconbtn{border:0;background:transparent;color:#9ba2a5;font-size:25px;font-weight:800;padding:5px}
+.lessonprogress{height:13px;background:#e9eeee;border-radius:99px;flex:1;overflow:hidden}
+.lessonprogress div{height:100%;width:0;background:var(--green);border-radius:99px;transition:width .25s}
+.lessonhearts{font-weight:900;color:var(--red);white-space:nowrap}
+.lessonbody{max-width:650px;margin:24px auto;padding:0 20px 140px}
+.lessonbody h1{font-size:25px;line-height:1.3;margin:15px 0}
+.prompt{color:#737d82;font-weight:750;margin:7px 0 18px}
+.wordcard{border:2px solid var(--line);border-radius:17px;padding:17px;margin:16px 0;display:flex;align-items:center;gap:14px}
+.wordcard .emoji{font-size:34px}
+.wordcard strong{display:block;font-size:21px}
+.wordcard span{color:var(--muted);font-size:13px}
+.soundbtn{width:66px;height:62px;border:0;border-radius:15px;background:#dff4ff;box-shadow:0 4px 0 #9cdcf6;color:#168bc4;font-size:27px}
+.answers{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}
+.answer{min-height:61px;border:2px solid #dce1e3;border-radius:14px;background:#fff;color:var(--ink);padding:12px;font-weight:800;box-shadow:0 3px 0 #e0e3e4}
+.answer.selected{border-color:var(--blue);background:#eaf8ff;color:#087eb3;box-shadow:0 3px 0 #a8e0fa}
+.answer.correct{border-color:var(--green);background:#efffe6;color:#347e0a;box-shadow:0 3px 0 #b7e99b}
+.answer.wrong{border-color:var(--red);background:#fff0f0;color:#b21d1d;box-shadow:0 3px 0 #ffc2c2}
+.wordbank{display:flex;gap:9px;flex-wrap:wrap;justify-content:center;margin:20px 0;min-height:55px}
+.chip{border:2px solid #dce1e3;border-radius:12px;background:#fff;padding:11px 13px;font-weight:850;box-shadow:0 3px 0 #dce1e3;color:#38454b}
+.chip.selected{border-color:var(--blue);background:var(--blue-soft)}
+.chip.used{visibility:hidden}
+.matchgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.matchcol{display:flex;flex-direction:column;gap:10px}
+.matchitem{min-height:65px;border:2px solid #dce1e3;border-radius:13px;background:#fff;padding:10px 5px;font-weight:800;overflow-wrap:anywhere}
+.matchitem.selected{border-color:var(--blue);background:var(--blue-soft)}
+.matchitem.matched{border-color:var(--green);background:#f0ffe6;color:#3b830d}
+.matchitem.missed{border-color:var(--red);background:#fff0f0}
+.lessonfooter{position:fixed;bottom:0;left:0;right:0;padding:14px 20px calc(14px + env(safe-area-inset-bottom));background:#fff;border-top:2px solid var(--line);z-index:5}
+.footerinner{max-width:650px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:14px}
+.feedback{display:none;position:fixed;z-index:110;bottom:0;left:0;right:0;padding:20px 20px calc(20px + env(safe-area-inset-bottom));background:#e8f9df;border-top:3px solid #b6e99d}
+.feedback.show{display:block}.feedback.bad{background:#fff0f0;border-color:#ffc6c6}
+.feedbackinner{max-width:650px;margin:auto}
+.feedback h2{margin:0 0 5px;font-size:21px}.feedback p{margin:0 0 15px;line-height:1.5}
+.feedback .primary{min-width:145px}
+.toast{position:fixed;z-index:200;left:50%;bottom:25px;transform:translateX(-50%);background:#263238;color:white;padding:12px 17px;border-radius:13px;font-weight:750;max-width:90%;text-align:center;display:none}
+.toast.show{display:block}
+.modalback{position:fixed;inset:0;background:#0008;z-index:150;display:none;align-items:center;justify-content:center;padding:20px}
+.modalback.show{display:flex}
+.modal{width:min(100%,440px);background:white;border-radius:20px;padding:23px;max-height:85vh;overflow:auto}
+.modal h2{margin-top:0}
+.modalactions{display:flex;gap:10px;margin-top:20px}
+.modalactions button{flex:1}
+.footer-note{font-size:12px;color:var(--muted);line-height:1.6}
+@media(max-width:700px){
+ .topbar{height:59px;padding:0 12px}.brand{font-size:18px}.stats{gap:8px;font-size:12px}
+ .layout{display:block;padding:15px 12px 92px}.sidebar{position:fixed;top:auto;bottom:0;left:0;right:0;z-index:30;height:67px;background:#fff;border-top:2px solid var(--line);display:flex;flex-direction:row;justify-content:space-around;padding:4px 5px calc(4px + env(safe-area-inset-bottom));gap:2px}
+ .navbtn{width:25%;padding:5px 2px;flex-direction:column;justify-content:center;gap:1px;font-size:10px;border-radius:10px}
+ .navicon{font-size:21px;width:auto}.sidecard{display:none}
+ .hero{padding:17px}.hero h1{font-size:22px}.mapgrid{gap:19px 1px;padding:21px 3px 27px}.stagebtn{width:43px;height:43px;font-size:12px}.stagelabel{top:48px;font-size:9px}
+ .lessonbody{margin:12px auto;padding:0 16px 140px}.lessonbody h1{font-size:22px}.answers{gap:8px}.answer{padding:10px 7px;font-size:14px;min-height:58px}
+ .matchitem{font-size:13px;min-height:59px}.footerinner{gap:8px}.primary,.secondary{padding:12px 13px}
 }
 </style>
 </head>
 <body>
 <header class="topbar">
- <div class="brand"><span>🦉</span> LinguaQuest</div>
+ <div class="brand">LINGUA<span style="color:#263238">+</span></div>
  <div class="stats">
-  <div class="stat"><span class="emoji">🔥</span><span id="streak">0</span></div>
-  <div class="stat"><span class="emoji">⚡</span><span id="xp">0</span></div>
-  <div class="stat"><span class="emoji">💎</span><span id="gems">100</span></div>
-  <div class="stat"><span class="emoji">❤️</span><span id="hearts">5</span></div>
+  <div class="stat" title="Gündəlik seriya">🔥 <span id="streak">0</span></div>
+  <div class="stat xp" title="Təcrübə xalı">⚡ <span id="xp">0</span></div>
+  <div class="stat heart" title="Ürəklər">♥ <span id="hearts">5</span></div>
+  <div class="stat gem" title="Daşlar">💎 <span id="gems">0</span></div>
  </div>
 </header>
 
-<main class="page">
-<section id="mapScreen" class="screen active">
- <div class="panel">
-  <div class="row">
-   <div><h1 id="welcome">Dil yolçuluğuna başla!</h1>
-   <div class="muted" id="courseInfo">İngilis dili · A1–C1</div></div>
-   <button class="btn gray test-toggle" id="unlockBtn">🔓 Test rejimi: OFF</button>
+<div class="layout">
+ <aside class="sidebar">
+  <button class="navbtn active" data-page="learn"><span class="navicon">🗺️</span><span data-i18n="learn">Öyrən</span></button>
+  <button class="navbtn" data-page="words"><span class="navicon">📚</span><span data-i18n="words">Lüğət</span></button>
+  <button class="navbtn" data-page="stats"><span class="navicon">📊</span><span data-i18n="stats">Nəticələr</span></button>
+  <button class="navbtn" data-page="settings"><span class="navicon">⚙️</span><span data-i18n="settings">Ayarlar</span></button>
+  <div class="sidecard">
+   <h3>🌍 <span data-i18n="learningLang">Öyrəndiyin dil</span></h3>
+   <select id="learnLang">
+    <option value="en">🇬🇧 English</option><option value="de">🇩🇪 Deutsch</option>
+    <option value="zh">🇨🇳 中文</option><option value="tr">🇹🇷 Türkçe</option>
+   </select>
+   <h3 style="margin-top:12px">🗣️ <span data-i18n="interfaceLang">İnterfeys dili</span></h3>
+   <select id="uiLang">
+    <option value="az">Azərbaycan dili</option><option value="en">English</option>
+    <option value="tr">Türkçe</option><option value="ru">Русский</option><option value="de">Deutsch</option>
+   </select>
   </div>
-  <div class="row" style="margin-top:16px">
-   <div><div class="muted">Ümumi irəliləyiş</div><strong id="progressText">0 / 1000 mərhələ</strong></div>
-   <div style="width:42%;min-width:100px" class="progress"><span id="mapProgress"></span></div>
-  </div>
- </div>
- <div id="mapContainer"></div>
- <div class="panel">
-  <h2>📚 Öyrənmə qaydası</h2>
-  <p class="muted">Tapşırıqları həll et, XP qazan və mərhələləri aç. Gündəlik seriyanı davam etdirmək üçün hər gün ən azı bir dərsi bitir.</p>
- </div>
-</section>
+ </aside>
 
-<section id="leagueScreen" class="screen">
- <div class="panel">
-  <h1>🏆 Həftəlik liqa</h1><p class="muted">XP qazanaraq liqada irəlilə.</p>
-  <div class="row"><div><span class="big-number" id="leagueXP">0</span><div class="muted">Sənin XP-n</div></div><div style="font-size:42px">🏆</div></div>
-  <div id="leagueList"></div>
- </div>
-</section>
+ <main>
+  <section id="page-learn" class="page active">
+   <div class="hero">
+    <h1 data-i18n="heroTitle">Hər gün bir addım. Yeni dil, yeni imkanlar.</h1>
+    <p data-i18n="heroText">Öyrən, məşq et və irəliləyişini izləyərək növbəti mərhələyə keç.</p>
+    <button class="primary" id="continueBtn" data-i18n="continue">▶ Dərsə davam et</button>
+    <div class="progressrow"><span data-i18n="overallProgress">Ümumi irəliləyiş</span><span id="overallText">0 / 1000</span></div>
+    <div class="progressbar"><div id="overallBar" class="progressfill"></div></div>
+    <label class="switchrow"><input type="checkbox" id="testMode"><span data-i18n="testMode">Test rejimi: bütün mərhələləri aç</span></label>
+   </div>
+   <div class="sectionhead"><h2 data-i18n="roadmap">Öyrənmə xəritəsi</h2><small id="levelBadge">A1 · Başlanğıc</small></div>
+   <div id="map"></div>
+  </section>
 
-<section id="shopScreen" class="screen">
- <div class="panel">
-  <h1>🛒 Mağaza</h1><p class="muted">Gems-dən istifadə edərək əlavə can al.</p>
-  <div class="listitem row"><div><b>❤️ 1 əlavə can</b><div class="muted">Canların 5-dən az olmalıdır.</div></div><button class="btn red" id="buyHeart">💎 30</button></div>
-  <div class="listitem row"><div><b>💎 Sınaq mükafatı</b><div class="muted">Gündəlik məşq bonusu.</div></div><button class="btn gold" id="dailyBonus">+10 XP</button></div>
- </div>
-</section>
+  <section id="page-words" class="page">
+   <div class="hero"><h1 data-i18n="dictionaryTitle">📚 Söz bazası</h1><p data-i18n="dictionaryText">Öyrəndiyin dildə sözləri nəzərdən keçir və səsləndir.</p>
+    <input id="wordSearch" type="search" placeholder="Söz axtar..." style="width:100%;padding:13px;border:2px solid var(--line);border-radius:12px">
+   </div>
+   <div id="wordList"></div>
+  </section>
 
-<section id="profileScreen" class="screen">
- <div class="panel">
-  <h1>👤 Profil</h1><p class="muted">Dilini və tətbiqin görünən dilini seç.</p>
-  <div class="profile-grid">
-   <div class="profile-card"><div class="muted">Ümumi XP</div><div class="big-number" id="profileXP">0</div></div>
-   <div class="profile-card"><div class="muted">Tamamlanan mərhələ</div><div class="big-number" id="profileDone">0</div></div>
-   <div class="profile-card"><div class="muted">Seriya</div><div class="big-number" id="profileStreak">0 🔥</div></div>
-   <div class="profile-card"><div class="muted">Mükafat daşları</div><div class="big-number" id="profileGems">100 💎</div></div>
-  </div>
-  <label for="learnLang">Öyrənilən dil</label>
-  <select id="learnLang"><option value="en">İngilis dili</option><option value="de">Alman dili</option><option value="zh">Çin dili</option><option value="tr">Türk dili</option></select>
-  <label for="uiLang">Tətbiqin dili</label>
-  <select id="uiLang"><option value="az">Azərbaycan</option><option value="en">English</option><option value="tr">Türkçe</option><option value="ru">Русский</option><option value="de">Deutsch</option></select>
-  <button class="btn" id="saveSettings" style="width:100%">Parametrləri saxla</button>
-  <button class="btn gray" id="resetBtn" style="width:100%;margin-top:15px">Tərəqqini sıfırla</button>
- </div>
-</section>
+  <section id="page-stats" class="page">
+   <div class="hero"><h1 data-i18n="statsTitle">📊 Sənin inkişafın</h1><p data-i18n="statsText">Məşqlərini davam etdir və nəticələrini artır.</p></div>
+   <div class="kpigrid">
+    <div class="kpi"><strong id="statXP">0</strong><span data-i18n="totalXP">Ümumi XP</span></div>
+    <div class="kpi"><strong id="statLessons">0</strong><span data-i18n="lessonsDone">Bitən dərs</span></div>
+    <div class="kpi"><strong id="statAccuracy">0%</strong><span data-i18n="accuracy">Dəqiqlik</span></div>
+    <div class="kpi"><strong id="statStreak">0 🔥</strong><span data-i18n="streakLabel">Gündəlik seriya</span></div>
+    <div class="kpi"><strong id="statGems">0 💎</strong><span data-i18n="gemsLabel">Daşlar</span></div>
+    <div class="kpi"><strong id="statStage">1 / 1000</strong><span data-i18n="currentStage">Növbəti mərhələ</span></div>
+   </div>
+   <div class="panel"><h3 data-i18n="levelProgress">Səviyyə irəliləyişi</h3><p id="levelDescription"></p><div class="progressbar"><div id="levelBar" class="progressfill"></div></div></div>
+   <div class="panel"><h3 data-i18n="honestTitle">Tətbiq haqqında</h3><p class="footer-note" data-i18n="honestText">Bu versiya məlumatları bu brauzerdə saxlayır. Hesab, onlayn reytinq və cihazlararası sinxronizasiya üçün server lazımdır.</p></div>
+  </section>
 
-<section id="lessonScreen" class="screen">
- <div class="lesson-head">
-  <button class="close" id="exitLesson" aria-label="Dərsdən çıx">×</button>
-  <div class="progress"><span id="lessonProgress"></span></div>
-  <div class="hearts">❤️ <span id="lessonHearts">5</span></div>
- </div>
- <div id="questionArea"></div>
-</section>
-</main>
-
-<nav class="bottomnav" id="bottomNav">
- <button class="navbtn active" data-screen="mapScreen"><span class="ico">🗺️</span>Xəritə</button>
- <button class="navbtn" data-screen="leagueScreen"><span class="ico">🏆</span>Liqa</button>
- <button class="navbtn" data-screen="shopScreen"><span class="ico">🛒</span>Mağaza</button>
- <button class="navbtn" data-screen="profileScreen"><span class="ico">👤</span>Profil</button>
-</nav>
-
-<div class="lesson-footer" id="lessonFooter" style="display:none">
- <button class="btn gray" id="clearAnswer">Təmizlə</button>
- <button class="btn" id="checkAnswer">Cavabı yoxla</button>
+  <section id="page-settings" class="page">
+   <div class="hero"><h1 data-i18n="settingsTitle">⚙️ Tətbiq ayarları</h1><p data-i18n="settingsText">Öyrənmə dilini və görünüşü özünə uyğunlaşdır.</p></div>
+   <div class="panel"><h3 data-i18n="learningLang">Öyrəndiyin dil</h3><select id="learnLang2"><option value="en">🇬🇧 English</option><option value="de">🇩🇪 Deutsch</option><option value="zh">🇨🇳 中文</option><option value="tr">🇹🇷 Türkçe</option></select>
+   <h3 style="margin-top:18px" data-i18n="interfaceLang">İnterfeys dili</h3><select id="uiLang2"><option value="az">Azərbaycan dili</option><option value="en">English</option><option value="tr">Türkçe</option><option value="ru">Русский</option><option value="de">Deutsch</option></select>
+   <label class="switchrow"><input id="soundToggle" type="checkbox" checked><span data-i18n="soundOn">Səsli tapşırıqlar aktiv olsun</span></label>
+   </div>
+   <div class="panel"><h3 data-i18n="dataTitle">Məlumatların idarəsi</h3><p class="footer-note" data-i18n="dataText">İrəliləyiş bu brauzerin yaddaşında saxlanılır. Məlumatları silmək bütün nəticələri sıfırlayacaq.</p><button class="danger" id="resetBtn" data-i18n="reset">Bütün irəliləyişi sıfırla</button></div>
+   <div class="panel"><h3>LINGUA+ · v1.0</h3><p class="footer-note">Offline əsaslı tək HTML tətbiqi. Səs dəstəyi cihazın brauzerindən asılıdır.</p></div>
+  </section>
+ </main>
 </div>
-<div class="sheet" id="feedback">
- <h2 id="feedbackTitle">Mükəmməl!</h2><p id="feedbackText"></p>
- <button class="btn" id="continueBtn">Davam et</button>
+
+<div class="lesson" id="lesson">
+ <div class="lessonbar">
+  <button class="iconbtn" id="closeLesson" aria-label="Dərsi bağla">✕</button>
+  <div class="lessonprogress"><div id="lessonBar"></div></div>
+  <div class="lessonhearts">♥ <span id="lessonHearts">5</span></div>
+ </div>
+ <div class="lessonbody">
+  <div id="questionEmoji" class="bigemoji">🌱</div>
+  <h1 id="questionTitle">Tapşırıq</h1>
+  <p id="questionPrompt" class="prompt"></p>
+  <div id="questionContent"></div>
+ </div>
+ <div class="lessonfooter" id="lessonFooter">
+  <div class="footerinner"><span id="questionCount" style="font-size:13px;color:#7d858a;font-weight:800">1 / 10</span><button id="checkBtn" class="primary" data-i18n="check">Yoxla</button></div>
+ </div>
+</div>
+
+<div class="feedback" id="feedback">
+ <div class="feedbackinner">
+  <h2 id="feedbackTitle">Əla!</h2><p id="feedbackText"></p>
+  <button id="nextBtn" class="primary" data-i18n="continue">Davam et</button>
+ </div>
 </div>
 <div class="toast" id="toast"></div>
 
+<div class="modalback" id="modalback">
+ <div class="modal">
+  <div id="modalEmoji" class="bigemoji">🎉</div>
+  <h2 id="modalTitle">Dərs bitdi!</h2>
+  <p id="modalText"></p>
+  <div class="kpigrid"><div class="kpi"><strong id="modalXP">+0</strong><span>XP</span></div><div class="kpi"><strong id="modalCorrect">0/10</strong><span data-i18n="correctAnswers">Düzgün cavab</span></div><div class="kpi"><strong id="modalAccuracy">0%</strong><span data-i18n="accuracy">Dəqiqlik</span></div></div>
+  <div class="modalactions"><button class="secondary" id="modalHome" data-i18n="mapBtn">Xəritəyə qayıt</button><button class="primary" id="modalAgain" data-i18n="retry">Yenidən məşq</button></div>
+ </div>
+</div>
+
 <script>
 "use strict";
-const $=s=>document.querySelector(s);
-const $$=s=>[...document.querySelectorAll(s)];
-const TOTAL=1000;
-const STORE="linguaquest_v1";
-const today=()=>new Date().toISOString().slice(0,10);
-const defaults={xp:0,gems:100,hearts:5,streak:0,lastDay:"",done:[],unlock:false,learnLang:"en",uiLang:"az",dailyClaim:"",opened:1};
-let state;
-try{state={...defaults,...JSON.parse(localStorage.getItem(STORE)||"{}")}}catch(e){state={...defaults}}
-state.done=Array.isArray(state.done)?state.done:[];
-state.hearts=Math.max(0,Math.min(5,Number(state.hearts)||0));
-state.xp=Math.max(0,Number(state.xp)||0);
-state.gems=Math.max(0,Number(state.gems)||0);
 
-const units=[
- {name:"A1 Əsaslar",sub:"Salamlaşma, insanlar və gündəlik sözlər",start:1,end:200},
- {name:"A2 Gündəlik həyat",sub:"Ev, yemək, vaxt və gündəlik vərdişlər",start:201,end:400},
- {name:"B1 Səyahət",sub:"Səyahət, ünsiyyət və təcrübələr",start:401,end:600},
- {name:"B2 İş və karyera",sub:"Peşəkar ünsiyyət və müzakirələr",start:601,end:800},
- {name:"C1 Dərin bilik",sub:"Mürəkkəb fikirlər və akademik ifadələr",start:801,end:1000}
+/* -------------------------------------------------------
+   LINGUA+ — single-file language learning application
+   Local progress, lesson engine, matching, audio, roadmap.
+-------------------------------------------------------- */
+
+const WORDS = [
+ {az:"Salam",en:"Hello",de:"Hallo",zh:"你好",tr:"Merhaba",e:"👋"},
+ {az:"Sabahın xeyir",en:"Good morning",de:"Guten Morgen",zh:"早上好",tr:"Günaydın",e:"🌅"},
+ {az:"Sağ ol",en:"Thank you",de:"Danke",zh:"谢谢",tr:"Teşekkürler",e:"🙏"},
+ {az:"Zəhmət olmasa",en:"Please",de:"Bitte",zh:"请",tr:"Lütfen",e:"🤝"},
+ {az:"Bəli",en:"Yes",de:"Ja",zh:"是",tr:"Evet",e:"✅"},
+ {az:"Xeyr",en:"No",de:"Nein",zh:"不",tr:"Hayır",e:"❌"},
+ {az:"Bağışlayın",en:"Sorry",de:"Entschuldigung",zh:"对不起",tr:"Özür dilerim",e:"🙇"},
+ {az:"Necəsən?",en:"How are you?",de:"Wie geht es dir?",zh:"你好吗？",tr:"Nasılsın?",e:"🙂"},
+ {az:"Yaxşıyam",en:"I am fine",de:"Mir geht es gut",zh:"我很好",tr:"İyiyim",e:"😊"},
+ {az:"Görüşənədək",en:"See you",de:"Bis später",zh:"再见",tr:"Görüşürüz",e:"👋"},
+ {az:"Su",en:"Water",de:"Wasser",zh:"水",tr:"Su",e:"💧"},
+ {az:"Çörək",en:"Bread",de:"Brot",zh:"面包",tr:"Ekmek",e:"🍞"},
+ {az:"Alma",en:"Apple",de:"Apfel",zh:"苹果",tr:"Elma",e:"🍎"},
+ {az:"Süd",en:"Milk",de:"Milch",zh:"牛奶",tr:"Süt",e:"🥛"},
+ {az:"Qəhvə",en:"Coffee",de:"Kaffee",zh:"咖啡",tr:"Kahve",e:"☕"},
+ {az:"Çay",en:"Tea",de:"Tee",zh:"茶",tr:"Çay",e:"🍵"},
+ {az:"Ev",en:"House",de:"Haus",zh:"房子",tr:"Ev",e:"🏠"},
+ {az:"Kitab",en:"Book",de:"Buch",zh:"书",tr:"Kitap",e:"📘"},
+ {az:"Məktəb",en:"School",de:"Schule",zh:"学校",tr:"Okul",e:"🏫"},
+ {az:"İş",en:"Work",de:"Arbeit",zh:"工作",tr:"İş",e:"🛠️"},
+ {az:"Dost",en:"Friend",de:"Freund",zh:"朋友",tr:"Arkadaş",e:"🧑‍🤝‍🧑"},
+ {az:"Ailə",en:"Family",de:"Familie",zh:"家庭",tr:"Aile",e:"👨‍👩‍👧"},
+ {az:"Uşaq",en:"Child",de:"Kind",zh:"孩子",tr:"Çocuk",e:"🧒"},
+ {az:"Kişi",en:"Man",de:"Mann",zh:"男人",tr:"Erkek",e:"👨"},
+ {az:"Qadın",en:"Woman",de:"Frau",zh:"女人",tr:"Kadın",e:"👩"},
+ {az:"Gün",en:"Day",de:"Tag",zh:"天",tr:"Gün",e:"☀️"},
+ {az:"Gecə",en:"Night",de:"Nacht",zh:"夜晚",tr:"Gece",e:"🌙"},
+ {az:"Bu gün",en:"Today",de:"Heute",zh:"今天",tr:"Bugün",e:"📅"},
+ {az:"Sabah",en:"Tomorrow",de:"Morgen",zh:"明天",tr:"Yarın",e:"➡️"},
+ {az:"Dünən",en:"Yesterday",de:"Gestern",zh:"昨天",tr:"Dün",e:"⬅️"},
+ {az:"Böyük",en:"Big",de:"Groß",zh:"大",tr:"Büyük",e:"🐘"},
+ {az:"Kiçik",en:"Small",de:"Klein",zh:"小",tr:"Küçük",e:"🐭"},
+ {az:"Yaxşı",en:"Good",de:"Gut",zh:"好",tr:"İyi",e:"👍"},
+ {az:"Pis",en:"Bad",de:"Schlecht",zh:"坏",tr:"Kötü",e:"👎"},
+ {az:"Gözəl",en:"Beautiful",de:"Schön",zh:"漂亮",tr:"Güzel",e:"🌸"},
+ {az:"İsti",en:"Hot",de:"Heiß",zh:"热",tr:"Sıcak",e:"🔥"},
+ {az:"Soyuq",en:"Cold",de:"Kalt",zh:"冷",tr:"Soğuk",e:"❄️"},
+ {az:"Bir",en:"One",de:"Eins",zh:"一",tr:"Bir",e:"1️⃣"},
+ {az:"İki",en:"Two",de:"Zwei",zh:"二",tr:"İki",e:"2️⃣"},
+ {az:"Üç",en:"Three",de:"Drei",zh:"三",tr:"Üç",e:"3️⃣"},
+ {az:"Dörd",en:"Four",de:"Vier",zh:"四",tr:"Dört",e:"4️⃣"},
+ {az:"Beş",en:"Five",de:"Fünf",zh:"五",tr:"Beş",e:"5️⃣"},
+ {az:"Harada?",en:"Where?",de:"Wo?",zh:"在哪里？",tr:"Nerede?",e:"📍"},
+ {az:"Nə?",en:"What?",de:"Was?",zh:"什么？",tr:"Ne?",e:"❓"},
+ {az:"Kim?",en:"Who?",de:"Wer?",zh:"谁？",tr:"Kim?",e:"👤"},
+ {az:"Niyə?",en:"Why?",de:"Warum?",zh:"为什么？",tr:"Neden?",e:"🤔"},
+ {az:"Mən",en:"I",de:"Ich",zh:"我",tr:"Ben",e:"🙋"},
+ {az:"Sən",en:"You",de:"Du",zh:"你",tr:"Sen",e:"👉"},
+ {az:"Yemək",en:"Food",de:"Essen",zh:"食物",tr:"Yemek",e:"🍽️"},
+ {az:"Pul",en:"Money",de:"Geld",zh:"钱",tr:"Para",e:"💰"},
+ {az:"Avtobus",en:"Bus",de:"Bus",zh:"公共汽车",tr:"Otobüs",e:"🚌"},
+ {az:"Maşın",en:"Car",de:"Auto",zh:"汽车",tr:"Araba",e:"🚗"},
+ {az:"Yol",en:"Road",de:"Straße",zh:"道路",tr:"Yol",e:"🛣️"},
+ {az:"Şəhər",en:"City",de:"Stadt",zh:"城市",tr:"Şehir",e:"🏙️"},
+ {az:"Suall",en:"Question",de:"Frage",zh:"问题",tr:"Soru",e:"❔"},
+ {az:"Cavab",en:"Answer",de:"Antwort",zh:"答案",tr:"Cevap",e:"💬"},
+ {az:"Danışmaq",en:"Speak",de:"Sprechen",zh:"说话",tr:"Konuşmak",e:"🗣️"},
+ {az:"Dinləmək",en:"Listen",de:"Zuhören",zh:"听",tr:"Dinlemek",e:"👂"},
+ {az:"Oxumaq",en:"Read",de:"Lesen",zh:"阅读",tr:"Okumak",e:"📖"},
+ {az:"Yazmaq",en:"Write",de:"Schreiben",zh:"写",tr:"Yazmak",e:"✍️"},
+ {az:"Öyrənmək",en:"Learn",de:"Lernen",zh:"学习",tr:"Öğrenmek",e:"🧠"},
+ {az:"Anlamaq",en:"Understand",de:"Verstehen",zh:"理解",tr:"Anlamak",e:"💡"},
+ {az:"İstəmək",en:"Want",de:"Wollen",zh:"想要",tr:"İstemek",e:"🙌"},
+ {az:"Getmək",en:"Go",de:"Gehen",zh:"去",tr:"Gitmek",e:"🚶"},
+ {az:"Gəlmək",en:"Come",de:"Kommen",zh:"来",tr:"Gelmek",e:"➡️"},
+ {az:"Görmək",en:"See",de:"Sehen",zh:"看见",tr:"Görmek",e:"👀"},
+ {az:"Bilmək",en:"Know",de:"Wissen",zh:"知道",tr:"Bilmek",e:"🧠"},
+ {az:"Kömək",en:"Help",de:"Hilfe",zh:"帮助",tr:"Yardım",e:"🆘"},
+ {az:"Xəstəxana",en:"Hospital",de:"Krankenhaus",zh:"医院",tr:"Hastane",e:"🏥"},
+ {az:"Həkim",en:"Doctor",de:"Arzt",zh:"医生",tr:"Doktor",e:"🩺"},
+ {az:"Pul kisəsi",en:"Wallet",de:"Geldbörse",zh:"钱包",tr:"Cüzdan",e:"👛"},
+ {az:"Telefon",en:"Phone",de:"Telefon",zh:"电话",tr:"Telefon",e:"📱"},
+ {az:"Vaxt",en:"Time",de:"Zeit",zh:"时间",tr:"Zaman",e:"⏰"},
+ {az:"Səhər",en:"Morning",de:"Morgen",zh:"早晨",tr:"Sabah",e:"🌄"},
+ {az:"Axşam",en:"Evening",de:"Abend",zh:"晚上",tr:"Akşam",e:"🌆"},
+ {az:"İndi",en:"Now",de:"Jetzt",zh:"现在",tr:"Şimdi",e:"⏱️"},
+ {az:"Sonra",en:"Later",de:"Später",zh:"以后",tr:"Sonra",e:"➡️"},
+ {az:"Burada",en:"Here",de:"Hier",zh:"这里",tr:"Burada",e:"📌"},
+ {az:"Orada",en:"There",de:"Dort",zh:"那里",tr:"Orada",e:"📍"},
+ {az:"Bağlı",en:"Closed",de:"Geschlossen",zh:"关闭",tr:"Kapalı",e:"🚪"},
+ {az:"Açıq",en:"Open",de:"Offen",zh:"打开",tr:"Açık",e:"🚪"},
+ {az:"Bahalı",en:"Expensive",de:"Teuer",zh:"贵",tr:"Pahalı",e:"💸"},
+ {az:"Ucuz",en:"Cheap",de:"Billig",zh:"便宜",tr:"Ucuz",e:"🏷️"},
+ {az:"Gözləmək",en:"Wait",de:"Warten",zh:"等待",tr:"Beklemek",e:"⌛"},
+ {az:"Başlamaq",en:"Start",de:"Starten",zh:"开始",tr:"Başlamak",e:"▶️"},
+ {az:"Bitirmək",en:"Finish",de:"Beenden",zh:"结束",tr:"Bitirmek",e:"🏁"},
+ {az:"Xoşbəxt",en:"Happy",de:"Glücklich",zh:"快乐",tr:"Mutlu",e:"😄"},
+ {az:"Yorğun",en:"Tired",de:"Müde",zh:"累",tr:"Yorgun",e:"🥱"},
+ {az:"Ac",en:"Hungry",de:"Hungrig",zh:"饿",tr:"Aç",e:"🍽️"},
+ {az:"Susuz",en:"Thirsty",de:"Durstig",zh:"渴",tr:"Susamış",e:"🥤"},
+ {az:"Təhlükəsiz",en:"Safe",de:"Sicher",zh:"安全",tr:"Güvenli",e:"🛡️"},
+ {az:"Vacib",en:"Important",de:"Wichtig",zh:"重要",tr:"Önemli",e:"⭐"},
+ {az:"Hazır",en:"Ready",de:"Bereit",zh:"准备好",tr:"Hazır",e:"👌"},
+ {az:"Asan",en:"Easy",de:"Einfach",zh:"容易",tr:"Kolay",e:"🟢"},
+ {az:"Çətin",en:"Difficult",de:"Schwierig",zh:"困难",tr:"Zor",e:"🧗"}
 ];
 
-/* Hər nümunədə unikal məna və tərcümə var. Baza sonradan əlavə edilə bilər. */
-const bank={
- en:[
- ["Hello","Salam"],["Good morning","Sabahınız xeyir"],["Good evening","Axşamınız xeyir"],["Good night","Gecəniz xeyrə"],["Thank you","Təşəkkür edirəm"],["You are welcome","Buyur"],["Please sit down","Zəhmət olmasa oturun"],["Excuse me","Bağışlayın"],["I am ready","Mən hazıram"],["What is your name?","Sənin adın nədir?"],["My name is Sam","Mənim adım Samdır"],["Where are you from?","Sən haralısan?"],["I live in Baku","Mən Bakıda yaşayıram"],["I speak Azerbaijani","Mən azərbaycanca danışıram"],["She is my sister","O mənim bacımdır"],["He is my neighbour","O mənim qonşumdur"],["We are good friends","Biz yaxşı dostlarıq"],["They are at home","Onlar evdədirlər"],["This is my book","Bu mənim kitabımdır"],["That is your chair","O sənin stulundur"],
- ["I need some water","Mənə bir az su lazımdır"],["The shop opens at nine","Mağaza saat doqquzda açılır"],["I usually walk to work","Mən adətən işə piyada gedirəm"],["We are cooking dinner","Biz axşam yeməyi hazırlayırıq"],["She bought fresh vegetables","O təzə tərəvəzlər aldı"],["There is a pharmacy nearby","Yaxınlıqda aptek var"],["The bus is late today","Avtobus bu gün gecikir"],["I forgot my umbrella","Çətirimi unutmuşam"],["Please turn off the light","Zəhmət olmasa işığı söndür"],["He cleans the kitchen every morning","O hər səhər mətbəxi təmizləyir"],
- ["I have already booked a hotel","Mən artıq otel sifariş etmişəm"],["How long does the journey take?","Səyahət nə qədər vaxt aparır?"],["We missed the last train","Son qatarı qaçırdıq"],["Could you recommend a local restaurant?","Yerli restoran tövsiyə edə bilərsiniz?"],["The flight was delayed because of fog","Uçuş duman səbəbindən gecikdi"],["I would like a window seat","Pəncərə kənarında yer istəyirəm"],["Keep your passport in a safe place","Pasportunu təhlükəsiz yerdə saxla"],["The village lies beyond the river","Kənd çayın o biri tərəfində yerləşir"],["We explored the old town on foot","Köhnə şəhəri piyada gəzdik"],["The weather changed unexpectedly","Hava gözlənilmədən dəyişdi"],
- ["I submitted my application yesterday","Ərizəmi dünən təqdim etdim"],["The manager postponed the meeting","Menecer görüşü təxirə saldı"],["We need a more reliable solution","Bizə daha etibarlı həll lazımdır"],["She negotiated a better contract","O daha yaxşı müqavilə üzrə danışıqlar apardı"],["The project requires careful planning","Layihə diqqətli planlaşdırma tələb edir"],["Please clarify your main concern","Zəhmət olmasa əsas narahatlığınızı dəqiqləşdirin"],["Our team exceeded its quarterly target","Komandamız rüblük hədəfini aşdı"],["The company is expanding overseas","Şirkət xarici bazarlara genişlənir"],["I appreciate your constructive feedback","Faydalı rəyinizi yüksək qiymətləndirirəm"],["The deadline remains unchanged","Son tarix dəyişməz qalır"],
- ["The evidence contradicts the initial assumption","Sübut ilkin fərziyyəyə ziddir"],["We must assess the long-term implications","Uzunmüddətli nəticələri qiymətləndirməliyik"],["Her argument was remarkably coherent","Onun arqumenti diqqətəlayiq dərəcədə məntiqli idi"],["The policy aims to reduce inequality","Siyasət bərabərsizliyi azaltmağı hədəfləyir"],["The findings warrant further investigation","Nəticələr əlavə araşdırma tələb edir"],["Economic resilience depends on several factors","İqtisadi dayanıqlılıq bir neçə amildən asılıdır"],["He challenged the prevailing interpretation","O, üstünlük təşkil edən şərhi sorğuladı"],["The proposal is feasible in principle","Təklif prinsipcə həyata keçirilə bilər"],["Their conclusions remain open to debate","Onların nəticələri müzakirəyə açıq qalır"],["We should distinguish correlation from causation","Korrelyasiyanı səbəb-nəticə əlaqəsindən ayırmalıyıq"],
- ["The library closes at six","Kitabxana saat altıda bağlanır"],["I left my keys on the table","Açarlarımı masanın üstündə qoydum"],["Can you help me carry this box?","Bu qutunu daşımağa kömək edə bilərsən?"],["My brother works in construction","Qardaşım tikintidə işləyir"],["The walls need another coat of paint","Divarlara daha bir qat boya lazımdır"],["We repaired the broken window","Sınıq pəncərəni təmir etdik"],["The floor is completely dry","Döşəmə tam qurudur"],["She learned to drive last summer","O, keçən yay maşın sürməyi öyrəndi"],["I prefer tea without sugar","Mən şəkərsiz çaya üstünlük verirəm"],["The children are playing outside","Uşaqlar çöldə oynayırlar"],
- ["If it rains, we will stay indoors","Yağış yağsa, evdə qalacağıq"],["I have been working here for years","Mən illərdir burada işləyirəm"],["Although he was tired, he continued","Yorğun olsa da, o davam etdi"],["The train had left before we arrived","Biz çatmamış qatar getmişdi"],["She speaks more confidently now","O, indi daha inamlı danışır"],["I wish I had more free time","Kaş daha çox boş vaxtım olaydı"],["They are considering a different approach","Onlar başqa yanaşmanı nəzərdən keçirirlər"],["The instructions were easy to follow","Təlimatları izləmək asan idi"],["We should avoid unnecessary expenses","Lazımsız xərclərdən qaçmalıyıq"],["He gradually became more independent","O, tədricən daha müstəqil oldu"]
- ],
- de:[
- ["Guten Morgen","Sabahınız xeyir"],["Wie geht es dir?","Necəsən?"],["Ich heiße Anna","Mənim adım Annadır"],["Ich wohne in Berlin","Mən Berlində yaşayıram"],["Vielen Dank","Çox sağ olun"],["Wo ist der Bahnhof?","Dəmiryol vağzalı haradadır?"],["Ich brauche etwas Wasser","Mənə bir az su lazımdır"],["Die Rechnung, bitte","Hesabı, zəhmət olmasa"],["Ich arbeite auf einer Baustelle","Mən tikinti meydançasında işləyirəm"],["Können Sie mir helfen?","Mənə kömək edə bilərsiniz?"],["Der Zug hat Verspätung","Qatar gecikir"],["Wir müssen die Arbeit planen","İşi planlaşdırmalıyıq"],["Ich habe einen Termin vereinbart","Görüş vaxtı təyin etmişəm"],["Die Entscheidung war schwierig","Qərar çətin idi"],["Wir sollten die Ergebnisse überprüfen","Nəticələri yoxlamalıyıq"]
- ],
- tr:[
- ["Merhaba","Salam"],["Günaydın","Sabahınız xeyir"],["Nasılsın?","Necəsən?"],["Ben Bakü'de yaşıyorum","Mən Bakıda yaşayıram"],["Teşekkür ederim","Təşəkkür edirəm"],["Bir bardak su istiyorum","Bir stəkan su istəyirəm"],["Otobüs ne zaman geliyor?","Avtobus nə vaxt gəlir?"],["Bugün işe erken gittim","Bu gün işə tez getdim"],["Yardımınıza ihtiyacım var","Köməyinizə ehtiyacım var"],["Toplantıyı yarına erteledik","Görüşü sabaha təxirə saldıq"]
- ],
- zh:[
- ["你好","Salam"],["谢谢","Təşəkkür edirəm"],["再见","Sağ ol"],["早上好","Sabahınız xeyir"],["我叫安娜","Mənim adım Annadır"],["你住在哪里？","Harada yaşayırsan?"],["我想喝水","Su içmək istəyirəm"],["火车站在哪里？","Dəmiryol vağzalı haradadır?"],["今天很热","Bu gün hava istidir"],["请慢一点说","Zəhmət olmasa yavaş danışın"]
- ]
+const UI = {
+ az:{learn:"Öyrən",words:"Lüğət",stats:"Nəticələr",settings:"Ayarlar",learningLang:"Öyrəndiyin dil",interfaceLang:"İnterfeys dili",heroTitle:"Hər gün bir addım. Yeni dil, yeni imkanlar.",heroText:"Öyrən, məşq et və irəliləyişini izləyərək növbəti mərhələyə keç.",continue:"▶ Dərsə davam et",overallProgress:"Ümumi irəliləyiş",testMode:"Test rejimi: bütün mərhələləri aç",roadmap:"Öyrənmə xəritəsi",dictionaryTitle:"📚 Söz bazası",dictionaryText:"Sözləri nəzərdən keçir və səsləndir.",statsTitle:"📊 Sənin inkişafın",statsText:"Məşqlərini davam etdir və nəticələrini artır.",totalXP:"Ümumi XP",lessonsDone:"Bitən dərs",accuracy:"Dəqiqlik",streakLabel:"Gündəlik seriya",gemsLabel:"Daşlar",currentStage:"Növbəti mərhələ",levelProgress:"Səviyyə irəliləyişi",honestTitle:"Tətbiq haqqında",honestText:"Bu versiya məlumatları bu brauzerdə saxlayır. Hesab, onlayn reytinq və sinxronizasiya üçün server lazımdır.",settingsTitle:"⚙️ Tətbiq ayarları",settingsText:"Öyrənmə dilini və səs seçimlərini dəyiş.",soundOn:"Səsli tapşırıqlar aktiv olsun",dataTitle:"Məlumatların idarəsi",dataText:"İrəliləyiş bu brauzerdə saxlanılır. Sıfırlamaq bütün nəticələri siləcək.",reset:"Bütün irəliləyişi sıfırla",check:"Yoxla",correctAnswers:"Düzgün cavab",mapBtn:"Xəritəyə qayıt",retry:"Yenidən məşq",choose:"Düzgün tərcüməni seç",listen:"Dinlə və düzgün mənanı seç",wordbank:"Bu sözün tərcüməsini qur",match:"Uyğun cütləri tap",right:"Düzgün!",wrong:"Tam düzgün deyil",correct:"Düzgün cavab:",lessonDone:"Dərs bitdi!",stage:"Mərhələ",beginner:"Başlanğıc",elementary:"İlkin",intermediate:"Orta",upper:"Yuxarı orta",advanced:"İrəli",search:"Söz axtar...",empty:"Uyğun söz tapılmadı.",resetConfirm:"Bütün XP, dərslər və irəliləyiş silinsin? Bu əməliyyat geri qaytarılmır.",notEnough:"Ürəklərin bitib. Test rejimini aç və ya sonra yenidən cəhd et.",level:"Səviyyə",unit:"Bölmə",daily:"Gündəlik məqsəd",complete:"Mərhələ tamamlandı!",correctN:"düzgün cavab",error:"Cavabı seçməmisən.",exitConfirm:"Dərsdən çıxmaq istəyirsən? Bu dərsin nəticəsi saxlanmayacaq."},
+ en:{learn:"Learn",words:"Vocabulary",stats:"Progress",settings:"Settings",learningLang:"Learning language",interfaceLang:"Interface language",heroTitle:"One step every day. A new language, new possibilities.",heroText:"Practice, learn and track your progress.",continue:"▶ Continue lesson",overallProgress:"Overall progress",testMode:"Test mode: unlock all stages",roadmap:"Learning map",dictionaryTitle:"📚 Vocabulary",dictionaryText:"Review words and listen to pronunciation.",statsTitle:"📊 Your progress",statsText:"Keep practising to improve your results.",totalXP:"Total XP",lessonsDone:"Lessons completed",accuracy:"Accuracy",streakLabel:"Day streak",gemsLabel:"Gems",currentStage:"Next stage",levelProgress:"Level progress",honestTitle:"About this app",honestText:"Progress is saved in this browser. Accounts, online rankings and cross-device sync require a server.",settingsTitle:"⚙️ Settings",settingsText:"Change your learning language and sound options.",soundOn:"Enable spoken exercises",dataTitle:"Manage data",dataText:"Progress is saved in this browser. Resetting removes all results.",reset:"Reset all progress",check:"Check",correctAnswers:"Correct answers",mapBtn:"Back to map",retry:"Practise again",choose:"Choose the correct translation",listen:"Listen and choose the meaning",wordbank:"Choose the translation",match:"Match the pairs",right:"Correct!",wrong:"Not quite",correct:"Correct answer:",lessonDone:"Lesson complete!",stage:"Stage",beginner:"Beginner",elementary:"Elementary",intermediate:"Intermediate",upper:"Upper intermediate",advanced:"Advanced",search:"Search words...",empty:"No matching words.",resetConfirm:"Delete all XP, lessons and progress? This cannot be undone.",notEnough:"You are out of hearts. Enable test mode or try again later.",level:"Level",unit:"Unit",daily:"Daily goal",complete:"Stage complete!",correctN:"correct answers",error:"Choose an answer first.",exitConfirm:"Leave the lesson? This lesson's result will not be saved."},
+ tr:{learn:"Öğren",words:"Sözlük",stats:"İlerleme",settings:"Ayarlar",learningLang:"Öğrenilen dil",interfaceLang:"Arayüz dili",heroTitle:"Her gün bir adım. Yeni dil, yeni fırsatlar.",heroText:"Pratik yap, öğren ve ilerlemeni takip et.",continue:"▶ Derse devam et",overallProgress:"Genel ilerleme",testMode:"Test modu: tüm aşamaları aç",roadmap:"Öğrenme haritası",dictionaryTitle:"📚 Kelime hazinesi",dictionaryText:"Kelimeleri gözden geçir ve dinle.",statsTitle:"📊 İlerlemen",statsText:"Pratik yapmaya devam et.",totalXP:"Toplam XP",lessonsDone:"Tamamlanan ders",accuracy:"Doğruluk",streakLabel:"Gün serisi",gemsLabel:"Taşlar",currentStage:"Sonraki aşama",levelProgress:"Seviye ilerlemesi",honestTitle:"Uygulama hakkında",honestText:"İlerleme bu tarayıcıda saklanır. Hesaplar ve cihazlar arası senkronizasyon için sunucu gerekir.",settingsTitle:"⚙️ Ayarlar",settingsText:"Dil ve ses seçeneklerini değiştir.",soundOn:"Sesli alıştırmaları etkinleştir",dataTitle:"Verileri yönet",dataText:"Sıfırlama tüm ilerlemeyi siler.",reset:"Tüm ilerlemeyi sıfırla",check:"Kontrol et",correctAnswers:"Doğru cevap",mapBtn:"Haritaya dön",retry:"Tekrar çalış",choose:"Doğru çeviriyi seç",listen:"Dinle ve anlamı seç",wordbank:"Çeviriyi seç",match:"Eşleşen çiftleri bul",right:"Doğru!",wrong:"Tam doğru değil",correct:"Doğru cevap:",lessonDone:"Ders tamamlandı!",stage:"Aşama",beginner:"Başlangıç",elementary:"Temel",intermediate:"Orta",upper:"Orta üstü",advanced:"İleri",search:"Kelime ara...",empty:"Kelime bulunamadı.",resetConfirm:"Tüm ilerleme silinsin mi?",notEnough:"Canın kalmadı. Test modunu aç veya sonra tekrar dene.",level:"Seviye",unit:"Ünite",daily:"Günlük hedef",complete:"Aşama tamamlandı!",correctN:"doğru cevap",error:"Önce bir cevap seç.",exitConfirm:"Dersten çıkmak istiyor musun? Sonuç kaydedilmeyecek."},
+ ru:{learn:"Учиться",words:"Словарь",stats:"Прогресс",settings:"Настройки",learningLang:"Изучаемый язык",interfaceLang:"Язык интерфейса",heroTitle:"Шаг каждый день. Новый язык — новые возможности.",heroText:"Учись, практикуйся и следи за прогрессом.",continue:"▶ Продолжить урок",overallProgress:"Общий прогресс",testMode:"Тестовый режим: открыть все этапы",roadmap:"Карта обучения",dictionaryTitle:"📚 Словарь",dictionaryText:"Повторяй слова и слушай произношение.",statsTitle:"📊 Твой прогресс",statsText:"Продолжай заниматься.",totalXP:"Всего XP",lessonsDone:"Уроки завершены",accuracy:"Точность",streakLabel:"Дней подряд",gemsLabel:"Кристаллы",currentStage:"Следующий этап",levelProgress:"Прогресс уровня",honestTitle:"О приложении",honestText:"Прогресс хранится в этом браузере. Для аккаунтов и синхронизации нужен сервер.",settingsTitle:"⚙️ Настройки",settingsText:"Измени язык обучения и звук.",soundOn:"Включить озвученные задания",dataTitle:"Управление данными",dataText:"Сброс удалит весь прогресс.",reset:"Сбросить прогресс",check:"Проверить",correctAnswers:"Правильные ответы",mapBtn:"К карте",retry:"Повторить",choose:"Выбери правильный перевод",listen:"Прослушай и выбери значение",wordbank:"Выбери перевод",match:"Найди пары",right:"Верно!",wrong:"Не совсем",correct:"Правильный ответ:",lessonDone:"Урок завершён!",stage:"Этап",beginner:"Начальный",elementary:"Элементарный",intermediate:"Средний",upper:"Выше среднего",advanced:"Продвинутый",search:"Поиск слова...",empty:"Слова не найдены.",resetConfirm:"Удалить весь прогресс?",notEnough:"Сердца закончились. Включи тестовый режим или попробуй позже.",level:"Уровень",unit:"Раздел",daily:"Дневная цель",complete:"Этап завершён!",correctN:"правильных ответов",error:"Сначала выбери ответ.",exitConfirm:"Выйти из урока? Результат не будет сохранён."},
+ de:{learn:"Lernen",words:"Wörterbuch",stats:"Fortschritt",settings:"Einstellungen",learningLang:"Lernsprache",interfaceLang:"Oberflächensprache",heroTitle:"Jeden Tag ein Schritt. Eine neue Sprache, neue Chancen.",heroText:"Übe, lerne und verfolge deinen Fortschritt.",continue:"▶ Lektion fortsetzen",overallProgress:"Gesamtfortschritt",testMode:"Testmodus: alle Stufen freischalten",roadmap:"Lernkarte",dictionaryTitle:"📚 Wortschatz",dictionaryText:"Wiederhole Wörter und höre ihre Aussprache.",statsTitle:"📊 Dein Fortschritt",statsText:"Übe weiter, um dich zu verbessern.",totalXP:"Gesamt-XP",lessonsDone:"Abgeschlossene Lektionen",accuracy:"Genauigkeit",streakLabel:"Tages-Serie",gemsLabel:"Edelsteine",currentStage:"Nächste Stufe",levelProgress:"Level-Fortschritt",honestTitle:"Über diese App",honestText:"Der Fortschritt wird in diesem Browser gespeichert. Konten und Synchronisierung benötigen einen Server.",settingsTitle:"⚙️ Einstellungen",settingsText:"Ändere Lernsprache und Tonoptionen.",soundOn:"Gesprochene Übungen aktivieren",dataTitle:"Daten verwalten",dataText:"Das Zurücksetzen löscht den gesamten Fortschritt.",reset:"Fortschritt zurücksetzen",check:"Prüfen",correctAnswers:"Richtige Antworten",mapBtn:"Zur Karte",retry:"Erneut üben",choose:"Wähle die richtige Übersetzung",listen:"Höre zu und wähle die Bedeutung",wordbank:"Wähle die Übersetzung",match:"Finde die passenden Paare",right:"Richtig!",wrong:"Nicht ganz",correct:"Richtige Antwort:",lessonDone:"Lektion abgeschlossen!",stage:"Stufe",beginner:"Anfänger",elementary:"Grundstufe",intermediate:"Mittelstufe",upper:"Obere Mittelstufe",advanced:"Fortgeschritten",search:"Wörter suchen...",empty:"Keine Wörter gefunden.",resetConfirm:"Gesamten Fortschritt löschen?",notEnough:"Keine Herzen mehr. Aktiviere den Testmodus oder versuche es später.",level:"Level",unit:"Einheit",daily:"Tagesziel",complete:"Stufe abgeschlossen!",correctN:"richtige Antworten",error:"Wähle zuerst eine Antwort.",exitConfirm:"Lektion verlassen? Das Ergebnis wird nicht gespeichert."}
 };
-const langNames={en:"İngilis dili",de:"Alman dili",zh:"Çin dili",tr:"Türk dili"};
-const uiText={
- az:{map:"Xəritə",league:"Liqa",shop:"Mağaza",profile:"Profil",check:"Cavabı yoxla",next:"Davam et",correct:"Mükəmməl!",wrong:"Tam düzgün deyil",welcome:"Dil yolçuluğuna başla!"},
- en:{map:"Map",league:"League",shop:"Shop",profile:"Profile",check:"Check answer",next:"Continue",correct:"Excellent!",wrong:"Not quite",welcome:"Start your language journey!"},
- tr:{map:"Harita",league:"Lig",shop:"Mağaza",profile:"Profil",check:"Cevabı kontrol et",next:"Devam et",correct:"Mükemmel!",wrong:"Tam doğru değil",welcome:"Dil yolculuğuna başla!"},
- ru:{map:"Карта",league:"Лига",shop:"Магазин",profile:"Профиль",check:"Проверить",next:"Продолжить",correct:"Отлично!",wrong:"Не совсем",welcome:"Начни изучение языка!"},
- de:{map:"Karte",league:"Liga",shop:"Shop",profile:"Profil",check:"Antwort prüfen",next:"Weiter",correct:"Ausgezeichnet!",wrong:"Nicht ganz",welcome:"Starte deine Sprachreise!"}
-};
-function save(){try{localStorage.setItem(STORE,JSON.stringify(state))}catch(e){toast("Yaddaş doludur. Brauzer məlumatlarını yoxla.")}}
-function toast(msg){const t=$("#toast");t.textContent=msg;t.style.display="block";clearTimeout(toast.timer);toast.timer=setTimeout(()=>t.style.display="none",2300)}
-function speak(text){
- if(!("speechSynthesis" in window)){toast("Bu brauzer səsli oxunu dəstəkləmir.");return}
- speechSynthesis.cancel();
- const u=new SpeechSynthesisUtterance(text);
- u.lang=state.learnLang==="de"?"de-DE":state.learnLang==="zh"?"zh-CN":state.learnLang==="tr"?"tr-TR":"en-US";
- u.rate=.86;
- const voices=speechSynthesis.getVoices();
- const v=voices.find(x=>x.lang.toLowerCase().startsWith(u.lang.slice(0,2)));
- if(v)u.voice=v;
- speechSynthesis.speak(u);
+
+const LANG_NAMES={en:"English",de:"Deutsch",zh:"中文",tr:"Türkçe"};
+const SPEECH={en:"en-US",de:"de-DE",zh:"zh-CN",tr:"tr-TR"};
+const LEVELS=[
+ {name:"A1",key:"beginner",start:1,end:100},
+ {name:"A2",key:"elementary",start:101,end:250},
+ {name:"B1",key:"intermediate",start:251,end:500},
+ {name:"B2",key:"upper",start:501,end:750},
+ {name:"C1",key:"advanced",start:751,end:1000}
+];
+const STORE="lingua_plus_v1";
+const freshState=()=>({learnLang:"en",uiLang:"az",xp:0,gems:0,hearts:5,streak:0,lastDay:"",completed:[],correct:0,answered:0,sound:true,testMode:false,dailyXP:0,dailyDay:""});
+let state;
+try{
+ const saved=JSON.parse(localStorage.getItem(STORE)||"null");
+ state={...freshState(),...(saved&&typeof saved==="object"?saved:{})};
+ if(!Array.isArray(state.completed))state.completed=[];
+}catch(e){state=freshState()}
+
+let lesson=null;
+let toastTimer=null;
+const $=id=>document.getElementById(id);
+const t=key=>(UI[state.uiLang]&&UI[state.uiLang][key])||UI.az[key]||key;
+const save=()=>{try{localStorage.setItem(STORE,JSON.stringify(state))}catch(e){showToast("Yaddaş doludur. Köhnə məlumatları ixrac et və ya yer aç.")}};
+const today=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
+const shuffle=a=>{const b=a.slice();for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]]}return b};
+const unique=a=>[...new Set(a)];
+const target=w=>w[state.learnLang];
+const levelFor=n=>LEVELS.find(l=>n>=l.start&&n<=l.end)||LEVELS[4];
+const nextStage=()=>{let n=1;while(state.completed.includes(n)&&n<1000)n++;return n};
+const isUnlocked=n=>state.testMode||n===1||state.completed.includes(n-1)||state.completed.includes(n);
+const escapeHTML=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function showToast(msg){const el=$("toast");el.textContent=msg;el.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove("show"),2400)}
+function speak(text){if(!state.sound)return;if(!("speechSynthesis" in window)){showToast("Bu brauzer səsli oxunuşu dəstəkləmir.");return}try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang=SPEECH[state.learnLang]||"en-US";u.rate=.82;speechSynthesis.speak(u)}catch(e){showToast("Səs açıla bilmədi.")}}
+
+function syncSettings(){
+ $("learnLang").value=state.learnLang;$("learnLang2").value=state.learnLang;
+ $("uiLang").value=state.uiLang;$("uiLang2").value=state.uiLang;
+ $("soundToggle").checked=state.sound;$("testMode").checked=state.testMode;
+ document.documentElement.lang=state.uiLang;
+ document.querySelectorAll("[data-i18n]").forEach(el=>{const k=el.dataset.i18n;if(t(k))el.textContent=t(k)});
+ $("wordSearch").placeholder=t("search");
 }
-function tone(ok){
- try{
-  const C=window.AudioContext||window.webkitAudioContext;if(!C)return;
-  const c=new C(),o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);
-  o.type="sine";o.frequency.value=ok?660:180;g.gain.value=.12;
-  o.start();o.frequency.setValueAtTime(ok?880:130,c.currentTime+.12);
-  g.gain.exponentialRampToValueAtTime(.001,c.currentTime+.28);
-  o.stop(c.currentTime+.3);o.onended=()=>c.close();
- }catch(e){}
-}
-function updateStats(){
- $("#xp").textContent=state.xp;$("#gems").textContent=state.gems;
- $("#hearts").textContent=state.hearts;$("#streak").textContent=state.streak;
- $("#lessonHearts").textContent=state.hearts;
- $("#progressText").textContent=state.done.length+" / 1000 mərhələ";
- $("#mapProgress").style.width=(state.done.length/10)+"%";
- $("#profileXP").textContent=state.xp;$("#profileDone").textContent=state.done.length;
- $("#profileStreak").textContent=state.streak+" 🔥";$("#profileGems").textContent=state.gems+" 💎";
- $("#leagueXP").textContent=state.xp;
- $("#courseInfo").textContent=(langNames[state.learnLang]||"Dil") +" · A1–C1";
+function renderStats(){
+ $("xp").textContent=state.xp;$("gems").textContent=state.gems;$("hearts").textContent=state.hearts;$("streak").textContent=state.streak;
+ $("statXP").textContent=state.xp;$("statLessons").textContent=state.completed.length;
+ $("statAccuracy").textContent=(state.answered?Math.round(state.correct/state.answered*100):0)+"%";
+ $("statStreak").textContent=state.streak+" 🔥";$("statGems").textContent=state.gems+" 💎";
+ $("statStage").textContent=nextStage()+" / 1000";
+ const n=nextStage(),lv=levelFor(n),done=state.completed.length;
+ $("levelDescription").textContent=lv.name+" · "+t(lv.key)+" · "+Math.min(done,lv.end-lv.start+1)+" / "+(lv.end-lv.start+1);
+ $("levelBar").style.width=(Math.min(100,Math.max(0,(done-(lv.start-1))/(lv.end-lv.start+1)*100)))+"%";
+ $("overallText").textContent=done+" / 1000";
+ $("overallBar").style.width=(done/10)+"%";
+ $("levelBadge").textContent=lv.name+" · "+t(lv.key);
 }
 function renderMap(){
- const root=$("#mapContainer");root.innerHTML="";
- units.forEach((u,ui)=>{
-  const section=document.createElement("section");
-  section.innerHTML=`<div class="unit"><h2>UNIT ${ui+1} · ${u.name}</h2><p>${u.sub}</p></div><div class="map"><div class="path"></div></div>`;
-  const map=section.querySelector(".map");
-  for(let n=u.start;n<=u.end;n++){
-   const row=document.createElement("div");row.className="lesson-row";
-   const done=state.done.includes(n);
-   const unlocked=state.unlock||done||n===1||state.done.includes(n-1)||n<=state.opened;
-   const b=document.createElement("button");b.className="node "+(done?"completed":unlocked?"current":"locked");
-   b.innerHTML=done?"★":unlocked?"✦":"🔒";
-   const small=document.createElement("small");small.textContent=n;b.appendChild(small);
-   b.setAttribute("aria-label",`Mərhələ ${n}${unlocked?"":" kilidli"}`);
-   b.addEventListener("click",()=>{
-    if(!unlocked){toast("Əvvəlki mərhələni tamamla və ya test rejimini aç.");return}
-    startLesson(n);
+ const root=$("map");root.innerHTML="";
+ for(let unit=0;unit<10;unit++){
+  const first=unit*100+1,last=first+99,lv=levelFor(first);
+  const box=document.createElement("div");box.className="unit";
+  const head=document.createElement("div");head.className="unithead";
+  head.innerHTML="<h3>🧭 "+escapeHTML(t("unit"))+" "+(unit+1)+" · "+lv.name+"</h3><p>"+escapeHTML(t(lv.key))+" · "+state.completed.filter(n=>n>=first&&n<=last).length+"/100</p>";
+  box.appendChild(head);
+  const grid=document.createElement("div");grid.className="mapgrid";
+  for(let row=0;row<20;row++){
+   const nums=Array.from({length:5},(_,i)=>first+row*5+i);
+   if(row%2===1)nums.reverse();
+   nums.forEach(n=>{
+    const b=document.createElement("button");b.className="stagebtn";
+    const done=state.completed.includes(n),unlocked=isUnlocked(n),current=n===nextStage();
+    b.classList.toggle("done",done);b.classList.toggle("unlocked",unlocked&&!done);b.classList.toggle("current",current);b.classList.toggle("test",state.testMode&&!done);
+    b.textContent=done?"✓":(n%5===0?"★":n);
+    b.title=t("stage")+" "+n+(done?" ✓":unlocked?"":" 🔒");
+    b.setAttribute("aria-label",b.title);
+    if(!unlocked)b.disabled=true;
+    b.addEventListener("click",()=>startLesson(n));
+    grid.appendChild(b);
    });
-   row.appendChild(b);map.appendChild(row);
   }
-  root.appendChild(section);
- });
- renderLeague();updateStats();
-}
-function renderLeague(){
- const names=["Aysel","Murad","Leyla","Sən","Nigar","Elvin"];
- const scores=[260,210,170,state.xp,95,60].sort((a,b)=>b-a);
- $("#leagueList").innerHTML=names.map((name,i)=>{
-  const score=i===3?state.xp:scores[i];
-  return `<div class="listitem row"><b>${i+1}. ${name}</b><span>⚡ ${score}</span></div>`;
- }).join("");
-}
-let lesson={stage:1,index:0,items:[],current:null,answer:[],selected:null,matched:[],mode:"",finished:false};
-function corpus(){
- let arr=bank[state.learnLang]||bank.en;
- return arr.map((p,i)=>({target:p[0],az:p[1],id:i}));
-}
-function getItems(stage){
- const arr=corpus();const out=[];
- for(let i=0;i<5;i++){
-  let idx=(stage*3+i*7+i*i)%arr.length;
-  out.push(arr[idx]);
+  box.appendChild(grid);root.appendChild(box);
  }
- // Tapşırıqlar bir dərsdə fərqli nümunələrdən seçilir.
- return out;
+}
+function renderWords(){
+ const q=($("wordSearch").value||"").trim().toLocaleLowerCase();
+ const root=$("wordList");root.innerHTML="";
+ let count=0;
+ WORDS.forEach(w=>{
+  const word=target(w);
+  if(q&&!word.toLocaleLowerCase().includes(q)&&!w.az.toLocaleLowerCase().includes(q))return;
+  count++;
+  const card=document.createElement("div");card.className="wordcard";
+  card.innerHTML='<div class="emoji">'+w.e+'</div><div style="flex:1;min-width:0"><strong>'+escapeHTML(word)+'</strong><span>'+escapeHTML(w.az)+'</span></div><button class="soundbtn" aria-label="Səsləndir">🔊</button>';
+  card.querySelector("button").addEventListener("click",()=>speak(word));root.appendChild(card);
+ });
+ if(!count)root.innerHTML='<div class="empty">'+escapeHTML(t("empty"))+'</div>';
+}
+function renderAll(){syncSettings();renderStats();renderMap();renderWords()}
+
+function showPage(name){
+ document.querySelectorAll(".page").forEach(p=>p.classList.toggle("active",p.id==="page-"+name));
+ document.querySelectorAll(".navbtn").forEach(b=>b.classList.toggle("active",b.dataset.page===name));
+ if(name==="words")renderWords();
+ if(name==="stats")renderStats();
+ window.scrollTo({top:0,behavior:"smooth"});
+}
+document.querySelectorAll(".navbtn").forEach(b=>b.addEventListener("click",()=>showPage(b.dataset.page)));
+
+function buildQuestion(stage,index){
+ const base=(stage*7+index*11+index*index)%WORDS.length;
+ const w=WORDS[base];
+ const type=["choice","bank","match","listen"][index%4];
+ if(type==="match"){
+  const ids=unique(Array.from({length:8},(_,i)=>(base+i*7)%WORDS.length)).slice(0,4);
+  const pairs=ids.map(id=>({id,az:WORDS[id].az,word:target(WORDS[id])}));
+  return {type,emoji:"🧩",title:t("match"),prompt:t("match"),pairs,left:shuffle(pairs.map(p=>({...p}))),right:shuffle(pairs.map(p=>({...p})))};
+ }
+ const distractors=shuffle(WORDS.map((v,i)=>({v,i})).filter(x=>x.i!==base)).slice(0,3).map(x=>x.v);
+ const options=shuffle([w,...distractors]);
+ if(type==="listen")return {type,emoji:"🎧",title:t("listen"),prompt:t("listen"),word:w,options,answer:w.az};
+ if(type==="bank")return {type,emoji:"🧱",title:t("wordbank"),prompt:t("wordbank"),word:w,options:shuffle([w,...distractors]),answer:target(w)};
+ return {type,emoji:"💡",title:t("choose"),prompt:t("choose"),word:w,options,answer:target(w)};
 }
 function startLesson(stage){
- if(state.hearts<=0){toast("Canların bitib. Mağazadan can al və ya sonra qayıt.");return}
- lesson={stage,index:0,items:getItems(stage),current:null,answer:[],selected:null,matched:[],mode:"",finished:false};
- $$(".screen").forEach(x=>x.classList.remove("active"));
- $("#lessonScreen").classList.add("active");
- $("#bottomNav").style.display="none";$("#lessonFooter").style.display="flex";
- $("#feedback").classList.remove("open","good","bad");
+ if(!isUnlocked(stage)){showToast("🔒");return}
+ if(state.hearts<=0&&!state.testMode){showToast(t("notEnough"));return}
+ lesson={stage,index:0,total:10,questions:Array.from({length:10},(_,i)=>buildQuestion(stage,i)),correct:0,answered:0,earned:0,selected:null,selectedTokens:[],matched:[],selectedLeft:null,matchMistake:false,locked:false,wrong:false};
+ $("lesson").classList.add("open");$("feedback").classList.remove("show","bad");$("modalback").classList.remove("show");
  renderQuestion();
-}
-function chooseMode(item,index){
- // Tapşırıq növləri dövr edir.
- return ["bank","choice","match","listen"][(lesson.stage+lesson.index+index)%4];
 }
 function renderQuestion(){
- const area=$("#questionArea");
- if(lesson.index>=lesson.items.length){completeLesson();return}
- const item=lesson.items[lesson.index];lesson.current=item;
- lesson.mode=chooseMode(item,lesson.index);lesson.answer=[];lesson.selected=null;lesson.matched=[];
- $("#lessonProgress").style.width=(lesson.index/lesson.items.length*100)+"%";
- $("#checkAnswer").disabled=false;
- const type=lesson.mode;
- if(type==="bank")renderBank(area,item);
- else if(type==="choice")renderChoice(area,item);
- else if(type==="match")renderMatch(area,item);
- else renderListen(area,item);
-}
-function renderBank(area,item){
- const words=item.target.replace(/[?.!,]/g,"").split(/\s+/);
- const shuffled=[...words].sort(()=>Math.random()-.5);
- area.innerHTML=`<div class="muted">Cümləni düzgün qur</div><div class="question"><small>AZƏRBAYCANCA</small>${item.az}</div>
- <button class="speak" id="hearPrompt" aria-label="Dinlə">🔊</button>
- <div class="answer-area" id="answerArea"></div><div class="chips" id="wordChips"></div>`;
- $("#hearPrompt").onclick=()=>speak(item.target);
- shuffled.forEach((word,i)=>{
-  const b=document.createElement("button");b.className="chip";b.textContent=word;b.dataset.word=word;b.dataset.index=i;
-  b.onclick=()=>{
-   if(b.classList.contains("used"))return;
-   b.classList.add("used");lesson.answer.push({word,index:i});
-   drawAnswer();
-  };$("#wordChips").appendChild(b);
- });
- function drawAnswer(){
-  const a=$("#answerArea");a.innerHTML="";
-  lesson.answer.forEach((x,pos)=>{
-   const b=document.createElement("button");b.className="chip answerchip";b.textContent=x.word;
-   b.onclick=()=>{lesson.answer.splice(pos,1);const origin=$("#wordChips").querySelector(`[data-index="${x.index}"]`);if(origin)origin.classList.remove("used");drawAnswer()};
-   a.appendChild(b);
+ if(!lesson)return;
+ const q=lesson.questions[lesson.index];lesson.selected=null;lesson.selectedTokens=[];lesson.matched=[];lesson.selectedLeft=null;lesson.matchMistake=false;lesson.locked=false;lesson.wrong=false;
+ $("questionEmoji").textContent=q.emoji;$("questionTitle").textContent=q.title;$("questionPrompt").textContent=q.prompt;
+ $("questionCount").textContent=(lesson.index+1)+" / "+lesson.total;
+ $("lessonBar").style.width=(lesson.index/lesson.total*100)+"%";
+ $("lessonHearts").textContent=state.hearts;
+ $("lessonFooter").style.display="block";$("checkBtn").disabled=false;$("checkBtn").textContent=t("check");
+ $("feedback").classList.remove("show","bad");
+ const root=$("questionContent");root.innerHTML="";
+ if(q.type==="match"){renderMatch(q,root);return}
+ if(q.type==="listen"){
+  const card=document.createElement("div");card.className="wordcard";
+  card.innerHTML='<button class="soundbtn" id="playSound" aria-label="Səsləndir">🔊</button><div><strong>'+escapeHTML(target(q.word))+'</strong><span>'+escapeHTML(LANG_NAMES[state.learnLang])+'</span></div>';
+  root.appendChild(card);
+  card.querySelector("button").addEventListener("click",()=>speak(target(q.word)));
+  setTimeout(()=>{if(lesson&&lesson.questions[lesson.index]===q)speak(target(q.word))},250);
+ }else if(q.type==="bank"){
+  const card=document.createElement("div");card.className="wordcard";card.innerHTML='<div class="emoji">'+q.word.e+'</div><div><strong>'+escapeHTML(q.word.az)+'</strong><span>Azərbaycan dilində</span></div>';root.appendChild(card);
+  const chosen=document.createElement("div");chosen.className="wordbank";chosen.id="chosenBank";root.appendChild(chosen);
+  const bank=document.createElement("div");bank.className="wordbank";
+  q.options.forEach((opt,i)=>{
+   const b=document.createElement("button");b.className="chip";b.textContent=target(opt);
+   b.addEventListener("click",()=>{
+    if(lesson.locked)return;
+    lesson.selectedTokens=[target(opt)];lesson.selected=target(opt);
+    chosen.innerHTML="";
+    const selected=document.createElement("button");selected.className="chip selected";selected.textContent=target(opt);selected.title="Dəyişmək üçün yenidən seç";
+    selected.addEventListener("click",()=>{lesson.selected=null;lesson.selectedTokens=[];chosen.innerHTML="";bank.querySelectorAll(".chip").forEach(c=>c.classList.remove("used"));});
+    chosen.appendChild(selected);
+    bank.querySelectorAll(".chip").forEach(c=>c.classList.remove("selected"));
+    b.classList.add("selected");
+   });
+   bank.appendChild(b);
   });
+  root.appendChild(bank);
+ }else{
+  const card=document.createElement("div");card.className="wordcard";card.innerHTML='<div class="emoji">'+q.word.e+'</div><div><strong>'+escapeHTML(q.word.az)+'</strong><span>Azərbaycan dilində</span></div>';root.appendChild(card);
+  const answers=document.createElement("div");answers.className="answers";
+  q.options.forEach(opt=>{
+   const b=document.createElement("button");b.className="answer";b.textContent=target(opt);
+   b.addEventListener("click",()=>{if(lesson.locked)return;lesson.selected=target(opt);answers.querySelectorAll(".answer").forEach(x=>x.classList.toggle("selected",x===b))});
+   answers.appendChild(b);
+  });root.appendChild(answers);
  }
 }
-function renderChoice(area,item){
- const arr=corpus();
- const distract=arr.filter(x=>x.id!==item.id).sort(()=>Math.random()-.5).slice(0,3).map(x=>x.az);
- const opts=[item.az,...distract].sort(()=>Math.random()-.5);
- area.innerHTML=`<div class="muted">Düzgün tərcüməni seç</div><div class="question"><small>${langNames[state.learnLang].toUpperCase()}</small>${item.target}</div><button class="speak" id="hearPrompt">🔊</button><div class="choices" id="choiceList" style="margin-top:20px"></div>`;
- $("#hearPrompt").onclick=()=>speak(item.target);
- opts.forEach(opt=>{
-  const b=document.createElement("button");b.className="choice";b.textContent=opt;
-  b.onclick=()=>{$$("#choiceList .choice").forEach(x=>x.classList.remove("selected"));b.classList.add("selected");lesson.selected=opt};
-  $("#choiceList").appendChild(b);
+function renderMatch(q,root){
+ const grid=document.createElement("div");grid.className="matchgrid";
+ const left=document.createElement("div");left.className="matchcol";const right=document.createElement("div");right.className="matchcol";
+ q.left.forEach(p=>{
+  const b=document.createElement("button");b.className="matchitem";b.textContent=p.az;b.dataset.id=p.id;
+  b.addEventListener("click",()=>{if(lesson.locked||lesson.matched.includes(p.id))return;lesson.selectedLeft=p.id;left.querySelectorAll(".matchitem").forEach(x=>x.classList.toggle("selected",x===b));});
+  left.appendChild(b);
  });
-}
-function renderMatch(area,item){
- const arr=corpus().filter(x=>x.id!==item.id).sort(()=>Math.random()-.5).slice(0,3);
- const pairs=[item,...arr].sort(()=>Math.random()-.5);
- const left=pairs.map((p,i)=>({id:i,text:p.target,side:"l",pair:p.id}));
- const right=pairs.map((p,i)=>({id:i,text:p.az,side:"r",pair:p.id})).sort(()=>Math.random()-.5);
- area.innerHTML=`<div class="muted">Sözləri uyğunlaşdır</div><div class="question">İngiliscə sözlə Azərbaycan dilində mənanı cütləşdir.</div><div class="matchgrid" id="matchGrid"></div>`;
- const grid=$("#matchGrid");
- [...left,...right].forEach(p=>{
-  const b=document.createElement("button");b.className="choice";b.textContent=p.text;b.dataset.pair=p.pair;b.dataset.side=p.side;
-  b.onclick=()=>{
-   if(b.disabled)return;
-   if(!lesson.selected){lesson.selected=b;b.classList.add("selected");return}
-   const first=lesson.selected;
-   if(first===b)return;
-   if(first.dataset.side===b.dataset.side){first.classList.remove("selected");lesson.selected=b;b.classList.add("selected");return}
-   if(first.dataset.pair===b.dataset.pair){
-    first.disabled=b.disabled=true;first.classList.add("correct");b.classList.add("correct");
-    lesson.matched.push(p.pair);lesson.selected=null;
+ q.right.forEach(p=>{
+  const b=document.createElement("button");b.className="matchitem";b.textContent=p.word;b.dataset.id=p.id;
+  b.addEventListener("click",()=>{
+   if(lesson.locked||lesson.matched.includes(p.id)||lesson.selectedLeft===null)return;
+   const chosen=lesson.selectedLeft;
+   if(chosen===p.id){
+    lesson.matched.push(p.id);
+    left.querySelectorAll('[data-id="'+p.id+'"]').forEach(x=>{x.classList.remove("selected");x.classList.add("matched")});
+    right.querySelectorAll('[data-id="'+p.id+'"]').forEach(x=>x.classList.add("matched"));
+    lesson.selectedLeft=null;
+    if(lesson.matched.length===4){lesson.selected=lesson.matchMistake?"__wrong__":"__match_correct__";$("checkBtn").disabled=false;showToast("🎉 "+lesson.matched.length+"/4")}
    }else{
-    first.classList.remove("selected");lesson.selected=null;b.classList.add("wrong");
-    setTimeout(()=>b.classList.remove("wrong"),350);
+    lesson.matchMistake=true;lesson.selectedLeft=null;
+    left.querySelectorAll(".matchitem").forEach(x=>x.classList.remove("selected"));
+    b.classList.add("missed");setTimeout(()=>b.classList.remove("missed"),450);
+    showToast("Yenidən yoxla");
    }
-  };grid.appendChild(b);
+  });
+  right.appendChild(b);
  });
-}
-function renderListen(area,item){
- area.innerHTML=`<div class="muted">Dinlə və tərcüməni seç</div><div class="question">Səslənən cümləni dinlə. Sonra düzgün mənanı seç.</div><button class="speak" id="hearPrompt">🔊 Dinlə</button><div class="choices" id="choiceList" style="margin-top:20px"></div>`;
- $("#hearPrompt").onclick=()=>speak(item.target);
- const opts=[item.az,...corpus().filter(x=>x.id!==item.id).sort(()=>Math.random()-.5).slice(0,3).map(x=>x.az)].sort(()=>Math.random()-.5);
- opts.forEach(opt=>{
-  const b=document.createElement("button");b.className="choice";b.textContent=opt;
-  b.onclick=()=>{$$("#choiceList .choice").forEach(x=>x.classList.remove("selected"));b.classList.add("selected");lesson.selected=opt};
-  $("#choiceList").appendChild(b);
- });
- setTimeout(()=>speak(item.target),250);
+ grid.append(left,right);root.appendChild(grid);
+ $("checkBtn").disabled=true;
 }
 function checkAnswer(){
- if(lesson.finished)return;
- const item=lesson.current;let correct=false;
- if(lesson.mode==="bank"){
-  const got=lesson.answer.map(x=>x.word).join(" ").replace(/[?.!,]/g,"").toLowerCase();
-  correct=got===item.target.replace(/[?.!,]/g,"").toLowerCase();
- }else if(lesson.mode==="match"){
-  correct=lesson.matched.length===4;
- }else correct=lesson.selected===item.az;
- if(lesson.mode==="bank"&&!lesson.answer.length){toast("Əvvəlcə sözləri seç.");return}
- if(lesson.mode!=="bank"&&lesson.mode!=="match"&&!lesson.selected){toast("Bir cavab seç.");return}
- if(lesson.mode==="match"&&lesson.matched.length<4){toast("Bütün dörd cütü uyğunlaşdır.");return}
- lesson.finished=true;
- if(correct){
-  state.xp+=10;state.gems+=2;
-  $("#feedback").className="sheet good open";$("#feedbackTitle").textContent=uiText[state.uiLang]?.correct||"Mükəmməl!";
-  $("#feedbackText").textContent="Düzgün cavab: "+item.target+" — "+item.az+". +10 XP və +2 💎";
-  $("#continueBtn").textContent=uiText[state.uiLang]?.next||"Davam et";
-  tone(true);
- }else{
-  state.hearts=Math.max(0,state.hearts-1);
-  $("#feedback").className="sheet bad open";$("#feedbackTitle").textContent=uiText[state.uiLang]?.wrong||"Tam düzgün deyil";
-  $("#feedbackText").textContent="Düzgün cavab: "+item.target+" — "+item.az+". 1 can itirildi.";
-  $("#continueBtn").textContent="Davam et";
-  tone(false);
+ if(!lesson||lesson.locked)return;
+ const q=lesson.questions[lesson.index];
+ if(q.type==="match"){
+  if(lesson.matched.length!==4){showToast("Bütün cütləri uyğunlaşdır.");return}
+ }else if(lesson.selected===null){showToast(t("error"));return}
+ lesson.locked=true;
+ const correct=q.type==="match"?lesson.selected==="__match_correct__":lesson.selected===q.answer;
+ lesson.wrong=!correct;lesson.answered++;
+ if(correct){lesson.correct++;lesson.earned+=10;state.xp+=10;state.gems+=1;state.correct++;state.answered++}
+ else{
+  state.answered++;
+  if(!state.testMode)state.hearts=Math.max(0,state.hearts-1);
  }
- updateStats();save();
+ // Highlight correct and incorrect choices after checking.
+ if(q.type==="choice"||q.type==="listen"){
+  $("questionContent").querySelectorAll(".answer").forEach(b=>{
+   if(b.textContent===q.answer)b.classList.add("correct");
+   else if(b.classList.contains("selected"))b.classList.add("wrong");
+   b.disabled=true;
+  });
+ }
+ if(q.type==="bank"){
+  const chips=$("questionContent").querySelectorAll(".chip");
+  chips.forEach(b=>{if(b.textContent===q.answer)b.classList.add("selected");b.disabled=true});
+ }
+ $("checkBtn").disabled=true;$("lessonFooter").style.display="none";
+ $("feedback").classList.add("show");$("feedback").classList.toggle("bad",!correct);
+ $("feedbackTitle").textContent=correct?"🎉 "+t("right"):"💪 "+t("wrong");
+ $("feedbackText").textContent=correct?(" +10 XP · +1 💎"):t("correct")+" "+(q.type==="match"?q.pairs.map(p=>p.az+" — "+p.word).join(" · "):q.answer);
+ $("nextBtn").textContent=lesson.index===lesson.total-1?t("lessonDone"):"Davam et";
+ renderStats();$("lessonHearts").textContent=state.hearts;save();
 }
-function continueLesson(){
- $("#feedback").classList.remove("open","good","bad");
- if(lesson.finished){lesson.finished=false;lesson.index++}
- if(state.hearts<=0&&lesson.index<lesson.items.length){
-  toast("Canların bitdi. Dərs dayandırıldı.");exitLesson();return
- }
- renderQuestion();
+function nextQuestion(){
+ if(!lesson||!lesson.locked)return;
+ if(lesson.index<lesson.total-1){lesson.index++;renderQuestion();return}
+ finishLesson();
 }
-function completeLesson(){
- if(!state.done.includes(lesson.stage)){
-  state.done.push(lesson.stage);state.opened=Math.max(state.opened,lesson.stage+1);
-  state.gems+=5;
- }
- const d=today();
- if(state.lastDay!==d){
-  const yesterday=new Date(Date.now()-86400000).toISOString().slice(0,10);
-  state.streak=state.lastDay===yesterday?state.streak+1:1;state.lastDay=d;
+function finishLesson(){
+ const s=lesson.stage;
+ const already=state.completed.includes(s);
+ if(!already){state.completed.push(s);state.completed.sort((a,b)=>a-b)}
+ const day=today();
+ if(state.lastDay!==day){
+  const yesterday=new Date();yesterday.setDate(yesterday.getDate()-1);
+  const yd=yesterday.getFullYear()+"-"+String(yesterday.getMonth()+1).padStart(2,"0")+"-"+String(yesterday.getDate()).padStart(2,"0");
+  state.streak=state.lastDay===yd?state.streak+1:1;state.lastDay=day;
  }
  state.hearts=Math.min(5,state.hearts+1);
- save();updateStats();renderMap();
- $("#questionArea").innerHTML=`<div class="panel" style="text-align:center;margin-top:30px"><div style="font-size:70px">🏆</div><h1>Dərs tamamlandı!</h1><p class="muted">Mərhələ ${lesson.stage} bitdi. +5 💎 bonus qazandın.</p><button class="btn" id="backMap">Xəritəyə qayıt</button></div>`;
- $("#backMap").onclick=exitLesson;
- $("#lessonProgress").style.width="100%";
+ state.dailyXP=(state.dailyDay===day?state.dailyXP:0)+lesson.earned;state.dailyDay=day;
+ save();renderStats();renderMap();
+ $("lesson").classList.remove("open");$("feedback").classList.remove("show");
+ $("modalEmoji").textContent=lesson.correct>=8?"🏆":"🎉";
+ $("modalTitle").textContent=t("lessonDone");
+ $("modalText").textContent=t("stage")+" "+s+" · "+lesson.correct+"/10 "+t("correctN")+". "+(already?"Bu mərhələni təkrar etdin.":t("complete"));
+ $("modalXP").textContent="+"+lesson.earned;$("modalCorrect").textContent=lesson.correct+"/10";$("modalAccuracy").textContent=Math.round(lesson.correct/lesson.total*100)+"%";
+ $("modalAgain").textContent="Yenidən məşq";$("modalback").classList.add("show");
+ lesson=null;
 }
-function exitLesson(){
- $("#feedback").classList.remove("open","good","bad");
- $("#lessonScreen").classList.remove("active");$("#mapScreen").classList.add("active");
- $("#bottomNav").style.display="flex";$("#lessonFooter").style.display="none";
- $$(".navbtn").forEach(x=>x.classList.toggle("active",x.dataset.screen==="mapScreen"));
- updateStats();renderMap();
-}
-$("#checkAnswer").onclick=checkAnswer;
-$("#continueBtn").onclick=continueLesson;
-$("#clearAnswer").onclick=()=>{
- lesson.answer=[];
- $$("#wordChips .chip").forEach(x=>x.classList.remove("used"));
- $$("#answerArea").forEach(x=>x.innerHTML="");
- lesson.selected=null;
- $$("#choiceList .choice").forEach(x=>x.classList.remove("selected"));
-};
-$("#exitLesson").onclick=()=>{if(confirm("Dərsdən çıxmaq istəyirsən?"))exitLesson()};
-$("#unlockBtn").onclick=()=>{
- state.unlock=!state.unlock;$("#unlockBtn").textContent=state.unlock?"🔒 Test rejimi: ON":"🔓 Test rejimi: OFF";
- $("#unlockBtn").classList.toggle("purple",state.unlock);save();renderMap();
- toast(state.unlock?"Bütün mərhələlər açıldı.":"Kilid rejimi aktivdir.");
-};
-$$(".navbtn").forEach(b=>b.onclick=()=>{
- $$(".screen").forEach(x=>x.classList.remove("active"));
- $("#"+b.dataset.screen).classList.add("active");
- $$(".navbtn").forEach(x=>x.classList.toggle("active",x===b));
- $("#bottomNav").style.display="flex";
+$("checkBtn").addEventListener("click",checkAnswer);
+$("nextBtn").addEventListener("click",nextQuestion);
+$("continueBtn").addEventListener("click",()=>startLesson(nextStage()));
+$("closeLesson").addEventListener("click",()=>{
+ if(!lesson)return;
+ if(confirm(t("exitConfirm"))){$("lesson").classList.remove("open");$("feedback").classList.remove("show");lesson=null}
 });
-$("#buyHeart").onclick=()=>{
- if(state.hearts>=5){toast("Canların artıq tamdır.");return}
- if(state.gems<30){toast("30 💎 lazımdır.");return}
- state.gems-=30;state.hearts++;save();updateStats();toast("1 can alındı ❤️");
-};
-$("#dailyBonus").onclick=()=>{
- if(state.dailyClaim===today()){toast("Gündəlik bonus artıq götürülüb.");return}
- state.dailyClaim=today();state.xp+=10;save();updateStats();toast("+10 XP qazandın!");
-};
-$("#saveSettings").onclick=()=>{
- state.learnLang=$("#learnLang").value;state.uiLang=$("#uiLang").value;save();
- applyLanguage();renderMap();toast("Parametrlər saxlanıldı.");
-};
-function applyLanguage(){
- const t=uiText[state.uiLang]||uiText.az;
- const labels=[t.map,t.league,t.shop,t.profile];
- $$(".navbtn").forEach((b,i)=>{const ico=b.querySelector(".ico").outerHTML;b.innerHTML=ico+labels[i]});
- $("#welcome").textContent=t.welcome;
- $("#checkAnswer").textContent=t.check;
- $("#continueBtn").textContent=t.next;
-}
-$("#resetBtn").onclick=()=>{
- if(!confirm("Bütün XP, canlar və mərhələlər sıfırlansın?"))return;
- state={...defaults,done:[]};save();$("#learnLang").value=state.learnLang;$("#uiLang").value=state.uiLang;
- $("#unlockBtn").textContent="🔓 Test rejimi: OFF";applyLanguage();updateStats();renderMap();toast("Tərəqqi sıfırlandı.");
-};
-$("#learnLang").value=state.learnLang;$("#uiLang").value=state.uiLang;
-$("#unlockBtn").textContent=state.unlock?"🔒 Test rejimi: ON":"🔓 Test rejimi: OFF";
-applyLanguage();updateStats();renderMap();
+$("modalHome").addEventListener("click",()=>{$("modalback").classList.remove("show");showPage("learn")});
+$("modalAgain").addEventListener("click",()=>{const s=lesson?lesson.stage:nextStage();$("modalback").classList.remove("show");startLesson(s)});
+$("wordSearch").addEventListener("input",renderWords);
+function changeLearnLang(v){if(!LANG_NAMES[v])return;state.learnLang=v;save();renderAll()}
+function changeUILang(v){if(!UI[v])return;state.uiLang=v;save();renderAll()}
+$("learnLang").addEventListener("change",e=>{changeLearnLang(e.target.value);$("learnLang2").value=e.target.value});
+$("learnLang2").addEventListener("change",e=>{changeLearnLang(e.target.value);$("learnLang").value=e.target.value});
+$("uiLang").addEventListener("change",e=>{changeUILang(e.target.value);$("uiLang2").value=e.target.value});
+$("uiLang2").addEventListener("change",e=>{changeUILang(e.target.value);$("uiLang").value=e.target.value});
+$("soundToggle").addEventListener("change",e=>{state.sound=e.target.checked;save()});
+$("testMode").addEventListener("change",e=>{state.testMode=e.target.checked;save();renderMap();showToast(state.testMode?"Test rejimi aktivdir.":"Test rejimi söndürüldü.")});
+$("resetBtn").addEventListener("click",()=>{
+ if(confirm(t("resetConfirm"))){state=freshState();save();lesson=null;$("lesson").classList.remove("open");$("modalback").classList.remove("show");renderAll();showPage("learn");showToast("İrəliləyiş sıfırlandı.")}
+});
+$("modalback").addEventListener("click",e=>{if(e.target===$("modalback"))$("modalback").classList.remove("show")});
+
+renderAll();
 </script>
 </body>
 </html>
