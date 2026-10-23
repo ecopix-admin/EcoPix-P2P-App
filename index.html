@@ -2,16 +2,20 @@
 <html lang="az">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dualinqo World - Multi-Language Learning</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Duolingo Master Real Edition</title>
   <style>
     :root {
       --primary: #58cc02;
       --primary-dark: #46a302;
       --secondary: #1cb0f6;
-      --accent: #ff4b4b;
+      --secondary-dark: #1899d6;
+      --danger: #ff4b4b;
+      --danger-dark: #ea2b2b;
       --gold: #ffc800;
+      --gold-dark: #e5b200;
       --purple: #ce82ff;
+      --purple-dark: #b661f2;
       --bg: #f7f9fa;
       --card-bg: #ffffff;
       --text: #3c3c3c;
@@ -19,483 +23,473 @@
       --border: #e5e5e5;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; user-select: none; }
-    body { background-color: var(--bg); color: var(--text); display: flex; justify-content: center; height: 100vh; overflow: hidden; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'din-round', 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif; user-select: none; -webkit-tap-highlight-color: transparent; }
+    body { background-color: #235390; color: var(--text); display: flex; justify-content: center; height: 100vh; overflow: hidden; }
 
-    #app { width: 100%; max-width: 480px; height: 100%; background: var(--card-bg); display: flex; flex-direction: column; position: relative; box-shadow: 0 0 20px rgba(0,0,0,0.05); }
+    #app { width: 100%; max-width: 480px; height: 100%; background: var(--card-bg); display: flex; flex-direction: column; position: relative; box-shadow: 0 0 30px rgba(0,0,0,0.3); }
 
     /* TOP BAR */
     header { height: 60px; border-bottom: 2px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 16px; background: #fff; z-index: 10; }
-    .stat-item { display: flex; align-items: center; gap: 6px; font-weight: 700; font-size: 14px; }
-    .stat-icon { font-size: 18px; }
+    .stat-item { display: flex; align-items: center; gap: 6px; font-weight: 800; font-size: 15px; }
+    .stat-icon { font-size: 20px; }
 
     /* NAV BAR */
-    nav { height: 60px; border-top: 2px solid var(--border); display: flex; justify-content: space-around; align-items: center; background: #fff; z-index: 10; }
-    .nav-btn { border: none; background: none; display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--text-sub); font-size: 11px; font-weight: 700; cursor: pointer; width: 25%; }
+    nav { height: 65px; border-top: 2px solid var(--border); display: flex; justify-content: space-around; align-items: center; background: #fff; z-index: 10; }
+    .nav-btn { border: none; background: none; display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--text-sub); font-size: 11px; font-weight: 800; cursor: pointer; width: 25%; text-transform: uppercase; letter-spacing: 0.5px; }
     .nav-btn.active { color: var(--primary); }
-    .nav-btn span { font-size: 20px; }
+    .nav-btn span.icon { font-size: 24px; }
 
-    /* MAIN CONTENT AREA */
-    main { flex: 1; overflow-y: auto; position: relative; padding-bottom: 20px; scroll-behavior: smooth; }
-    .page { display: none; padding: 16px; height: 100%; }
+    /* MAIN CONTENT */
+    main { flex: 1; overflow-y: auto; position: relative; scroll-behavior: smooth; background: var(--bg); }
+    .page { display: none; padding: 16px; min-height: 100%; }
     .page.active { display: block; }
 
-    /* MAP PAGE */
-    .unit-card { background: var(--primary); color: #fff; padding: 16px; border-radius: 16px; margin-bottom: 24px; text-align: center; font-weight: bold; box-shadow: 0 4px 0 var(--primary-dark); }
-    .map-container { display: flex; flex-direction: column; align-items: center; gap: 18px; padding: 10px 0; }
-    .stage-btn { width: 70px; height: 70px; border-radius: 50%; border: none; background: #e5e5e5; color: #a0a0a0; font-weight: 800; font-size: 16px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; box-shadow: 0 6px 0 #ccc; transition: transform 0.1s; }
-    .stage-btn.unlocked { background: var(--primary); color: #fff; box-shadow: 0 6px 0 var(--primary-dark); }
-    .stage-btn.completed { background: var(--gold); color: #fff; box-shadow: 0 6px 0 #d6a800; }
-    .stage-btn:active { transform: translateY(4px); box-shadow: 0 2px 0 #999; }
-    .stage-btn .crown { position: absolute; top: -10px; font-size: 16px; }
+    /* 3D BUTTON STYLES */
+    .btn-3d { border: none; border-radius: 16px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; cursor: pointer; transition: filter 0.1s, transform 0.1s; display: inline-flex; align-items: center; justify-content: center; text-align: center; }
+    .btn-primary { background: var(--primary); color: #fff; box-shadow: 0 5px 0 var(--primary-dark); }
+    .btn-primary:active { transform: translateY(4px); box-shadow: 0 1px 0 var(--primary-dark); }
+    .btn-secondary { background: var(--secondary); color: #fff; box-shadow: 0 5px 0 var(--secondary-dark); }
+    .btn-secondary:active { transform: translateY(4px); box-shadow: 0 1px 0 var(--secondary-dark); }
 
-    /* QUIZ PAGE */
-    #quiz-page { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 100; display: none; flex-direction: column; padding: 16px; }
-    .quiz-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 24px; }
-    .progress-bar { flex: 1; height: 12px; background: var(--border); border-radius: 6px; overflow: hidden; }
-    .progress-fill { height: 100%; background: var(--primary); width: 0%; transition: width 0.3s; }
-    .close-btn { border: none; background: none; font-size: 24px; cursor: pointer; color: var(--text-sub); }
+    /* MAP STYLES */
+    .unit-banner { background: var(--primary); color: #fff; padding: 18px; border-radius: 20px; margin-bottom: 24px; text-align: left; box-shadow: 0 6px 0 var(--primary-dark); position: relative; overflow: hidden; }
+    .unit-banner h3 { font-size: 20px; font-weight: 900; margin-bottom: 4px; }
+    .unit-banner p { font-size: 13px; opacity: 0.9; font-weight: 700; }
 
-    .question-title { font-size: 20px; font-weight: 800; margin-bottom: 20px; text-align: center; }
-    .audio-btn { background: var(--secondary); color: white; border: none; padding: 10px 20px; border-radius: 12px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; margin: 0 auto 20px auto; }
-    
-    .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
-    .option-btn { border: 2px solid var(--border); border-bottom-width: 4px; padding: 16px; border-radius: 12px; background: #fff; font-size: 16px; font-weight: bold; cursor: pointer; text-align: center; }
-    .option-btn.selected { border-color: var(--secondary); background: #ddf4ff; }
+    .map-tree { display: flex; flex-direction: column; align-items: center; gap: 20px; padding: 20px 0 80px 0; }
+    .node-btn { width: 75px; height: 75px; border-radius: 50%; border: none; background: #e5e5e5; color: #afafaf; font-weight: 900; font-size: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center; position: relative; box-shadow: 0 8px 0 #cecece; transition: transform 0.1s; }
+    .node-btn.unlocked { background: var(--primary); color: #fff; box-shadow: 0 8px 0 var(--primary-dark); }
+    .node-btn.completed { background: var(--gold); color: #fff; box-shadow: 0 8px 0 var(--gold-dark); }
+    .node-btn:active { transform: translateY(5px); box-shadow: 0 3px 0 #aaa; }
+    .node-btn.unlocked:active { box-shadow: 0 3px 0 var(--primary-dark); }
+    .node-btn .crown-icon { position: absolute; top: -12px; font-size: 18px; }
+
+    /* QUIZ INTERFACE */
+    #quiz-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 100; display: none; flex-direction: column; padding: 16px; }
+    .quiz-top { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
+    .close-btn { border: none; background: none; font-size: 26px; cursor: pointer; color: var(--text-sub); font-weight: 900; }
+    .progress-bar { flex: 1; height: 16px; background: var(--border); border-radius: 8px; overflow: hidden; }
+    .progress-fill { height: 100%; background: var(--primary); width: 0%; transition: width 0.3s ease-out; border-radius: 8px; }
+
+    .quiz-container { flex: 1; display: flex; flex-direction: column; justify-content: center; max-width: 400px; margin: 0 auto; width: 100%; }
+    .prompt-title { font-size: 22px; font-weight: 900; color: var(--text); margin-bottom: 24px; text-align: left; line-height: 1.3; }
 
     /* WORD BANK */
-    .word-bank-target { min-height: 60px; border-bottom: 2px solid var(--border); display: flex; flex-wrap: wrap; gap: 8px; padding: 8px; margin-bottom: 20px; }
-    .word-bank-pool { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
-    .word-chip { border: 2px solid var(--border); border-bottom-width: 4px; padding: 10px 14px; border-radius: 10px; background: #fff; font-weight: bold; cursor: pointer; }
+    .word-target { min-height: 70px; border-bottom: 3px solid var(--border); display: flex; flex-wrap: wrap; gap: 8px; padding: 10px; margin-bottom: 30px; align-items: center; }
+    .word-pool { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+    .word-chip { border: 2px solid var(--border); border-bottom-width: 5px; padding: 12px 18px; border-radius: 14px; background: #fff; font-weight: 800; font-size: 16px; cursor: pointer; color: var(--text); }
+    .word-chip:active { transform: translateY(2px); border-bottom-width: 3px; }
 
-    /* QUIZ FOOTER */
-    .quiz-footer { margin-top: auto; padding-top: 16px; border-top: 2px solid var(--border); }
-    .btn-main { width: 100%; padding: 16px; border: none; border-radius: 14px; background: var(--primary); color: white; font-weight: 800; font-size: 16px; cursor: pointer; box-shadow: 0 4px 0 var(--primary-dark); }
-    .btn-main:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--primary-dark); }
+    /* OPTIONS GRID */
+    .options-grid { display: grid; grid-template-columns: 1fr; gap: 12px; margin-bottom: 20px; }
+    .opt-card { border: 2px solid var(--border); border-bottom-width: 5px; padding: 18px; border-radius: 16px; background: #fff; font-size: 17px; font-weight: 800; cursor: pointer; text-align: left; color: var(--text); display: flex; align-items: center; gap: 12px; }
+    .opt-card.selected { border-color: var(--secondary); background: #ddf4ff; color: var(--secondary-dark); }
 
-    /* SETTINGS MODAL */
-    .settings-group { margin-bottom: 20px; }
-    .settings-group label { font-weight: bold; display: block; margin-bottom: 8px; }
-    .settings-group select { width: 100%; padding: 12px; border-radius: 10px; border: 2px solid var(--border); font-size: 16px; }
+    /* AUDIO BUTTON */
+    .btn-audio { background: var(--secondary); color: white; border: none; padding: 12px 20px; border-radius: 14px; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; margin-bottom: 20px; box-shadow: 0 4px 0 var(--secondary-dark); }
 
-    /* OVERLAY ALERTS */
-    .feedback-banner { position: absolute; bottom: 0; left: 0; width: 100%; padding: 20px; display: none; flex-direction: column; gap: 12px; z-index: 110; }
-    .feedback-banner.correct { background: #d7ffb8; color: #46a302; }
-    .feedback-banner.incorrect { background: #ffdfe0; color: #ea2b2b; }
+    /* FEEDBACK BANNER */
+    .feedback-sheet { position: absolute; bottom: 0; left: 0; width: 100%; padding: 24px 20px 30px 20px; display: none; flex-direction: column; gap: 16px; z-index: 110; border-top-left-radius: 24px; border-top-right-radius: 24px; }
+    .feedback-sheet.correct { background: #d7ffb8; color: var(--primary-dark); }
+    .feedback-sheet.incorrect { background: #ffdfe0; color: var(--danger-dark); }
+    .feedback-head { display: flex; align-items: center; gap: 10px; font-size: 22px; font-weight: 900; }
   </style>
 </head>
 <body>
 
 <div id="app">
-  <!-- TOP STATUS BAR -->
+  <!-- TOP HEADER -->
   <header>
-    <div class="stat-item"><span class="stat-icon">🔥</span><span id="txt-streak">0</span></div>
-    <div class="stat-item"><span class="stat-icon">⚡</span><span id="txt-xp">0</span></div>
-    <div class="stat-item"><span class="stat-icon">💎</span><span id="txt-gems">100</span></div>
-    <div class="stat-item"><span class="stat-icon">❤️</span><span id="txt-hearts">5</span></div>
+    <div class="stat-item" style="color: #ff9600;"><span class="stat-icon">🔥</span><span id="txt-streak">1</span></div>
+    <div class="stat-item" style="color: var(--gold);"><span class="stat-icon">⚡</span><span id="txt-xp">0</span></div>
+    <div class="stat-item" style="color: var(--secondary);"><span class="stat-icon">💎</span><span id="txt-gems">500</span></div>
+    <div class="stat-item" style="color: var(--danger);"><span class="stat-icon">❤️</span><span id="txt-hearts">5</span></div>
   </header>
 
-  <!-- MAIN PAGES AREA -->
+  <!-- MAIN NAVIGATION CONTENT -->
   <main>
     <!-- PAGE 1: MAP -->
     <div id="page-map" class="page active">
-      <div class="unit-card" id="unit-header">Bölmə 1: A1 Əsaslar</div>
-      <button class="btn-main" onclick="toggleUnlockAll()" style="margin-bottom: 16px; background: var(--secondary); box-shadow: 0 4px 0 #1899d6;" id="btn-unlock-all">🔓 Bütün Etapları Aç / Bağla</button>
-      <div class="map-container" id="map-tree"></div>
+      <div class="unit-banner" id="unit-banner">
+        <h3>Bölmə 1: A1 Baza Əsaslar</h3>
+        <p>Gündəlik salamlaşma, əsas əşyalar və cümlə strukturları</p>
+      </div>
+      
+      <button class="btn-3d btn-secondary" onclick="toggleUnlockAll()" style="width: 100%; padding: 14px; margin-bottom: 20px;" id="btn-unlock-toggle">🔓 Bütün Etapları Aç (1000 Etap)</button>
+      
+      <div class="map-tree" id="map-tree"></div>
     </div>
 
     <!-- PAGE 2: LEAGUE -->
     <div id="page-league" class="page">
-      <h2 style="text-align: center; margin-bottom: 16px;" id="lbl-league">🏆 Tunc Liqası</h2>
-      <div id="league-list"></div>
+      <h2 style="text-align: center; margin: 20px 0; font-weight: 900; color: var(--gold-dark);">🏆 Tunc Liqası</h2>
+      <div id="league-board" style="display: flex; flex-direction: column; gap: 10px;"></div>
     </div>
 
     <!-- PAGE 3: SHOP -->
     <div id="page-shop" class="page">
-      <h2 style="text-align: center; margin-bottom: 16px;" id="lbl-shop">🛒 Mağaza</h2>
-      <div style="border: 2px solid var(--border); padding: 16px; border-radius: 12px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
+      <h2 style="text-align: center; margin: 20px 0; font-weight: 900; color: var(--purple-dark);">🛒 Mağaza</h2>
+      <div style="border: 2px solid var(--border); border-bottom-width: 5px; padding: 20px; border-radius: 18px; background: #fff; display: flex; justify-content: space-between; align-items: center;">
         <div>
-          <h4 id="lbl-refill-hearts">Can Bərpası (❤️ 5)</h4>
-          <p style="font-size: 12px; color: var(--text-sub);" id="lbl-refill-desc">Canlarınızı tam doldurun</p>
+          <h4 style="font-weight: 900; font-size: 17px;">Can Bərpası (❤️ 5)</h4>
+          <p style="font-size: 13px; color: var(--text-sub); margin-top: 4px;">Səhvlər üçün canlarınızı sıfırlayın</p>
         </div>
-        <button class="btn-main" style="width: auto; padding: 8px 16px;" onclick="buyHearts()">💎 50</button>
+        <button class="btn-3d btn-primary" style="padding: 10px 18px;" onclick="buyHearts()">💎 50</button>
       </div>
     </div>
 
-    <!-- PAGE 4: PROFILE & SETTINGS -->
+    <!-- PAGE 4: PROFILE -->
     <div id="page-profile" class="page">
-      <h2 style="text-align: center; margin-bottom: 16px;" id="lbl-profile">👤 Profil və Ayarlar</h2>
-      
-      <div class="settings-group">
-        <label id="lbl-learn-lang">Öyrənmək İstədiyiniz Dil:</label>
-        <select id="select-target-lang" onchange="changeTargetLanguage(this.value)">
-          <option value="en">İngilis dili (English)</option>
-          <option value="de">Alman dili (Deutsch)</option>
-          <option value="zh">Çin dili (中文)</option>
-          <option value="tr">Türk dili (Türkçe)</option>
-        </select>
-      </div>
-
-      <div class="settings-group">
-        <label id="lbl-ui-lang">Tətbiq Arayüz Dili (Interface Language):</label>
-        <select id="select-ui-lang" onchange="changeUILanguage(this.value)">
-          <option value="az">Azərbaycan dili</option>
-          <option value="en">English</option>
-          <option value="tr">Türkçe</option>
-          <option value="de">Deutsch</option>
-          <option value="ru">Русский</option>
+      <h2 style="text-align: center; margin: 20px 0; font-weight: 900;">👤 Profil və Dillər</h2>
+      <div style="background: #fff; padding: 20px; border-radius: 18px; border: 2px solid var(--border); border-bottom-width: 5px;">
+        <label style="font-weight: 800; display: block; margin-bottom: 8px;">Öyrəndiyiniz Dil:</label>
+        <select id="select-target-lang" style="width: 100%; padding: 14px; border-radius: 12px; border: 2px solid var(--border); font-weight: 800; font-size: 15px;" onchange="changeTargetLang(this.value)">
+          <option value="en">🇬🇧 İngilis dili (English)</option>
+          <option value="de">🇩🇪 Alman dili (Deutsch)</option>
+          <option value="zh">🇨🇳 Çin dili (中文)</option>
+          <option value="tr">🇹🇷 Türk dili (Türkçe)</option>
         </select>
       </div>
     </div>
   </main>
 
-  <!-- BOTTOM NAVIGATION -->
+  <!-- BOTTOM BAR -->
   <nav>
-    <button class="nav-btn active" onclick="showPage('map', this)"><span>🗺️</span><span id="nav-map">Xəritə</span></button>
-    <button class="nav-btn" onclick="showPage('league', this)"><span>🏆</span><span id="nav-league">Liqa</span></button>
-    <button class="nav-btn" onclick="showPage('shop', this)"><span>🛒</span><span id="nav-shop">Mağaza</span></button>
-    <button class="nav-btn" onclick="showPage('profile', this)"><span>👤</span><span id="nav-profile">Profil</span></button>
+    <button class="nav-btn active" onclick="switchTab('map', this)"><span class="icon">🗺️</span><span>Xəritə</span></button>
+    <button class="nav-btn" onclick="switchTab('league', this)"><span class="icon">🏆</span><span>Liqa</span></button>
+    <button class="nav-btn" onclick="switchTab('shop', this)"><span class="icon">🛒</span><span>Mağaza</span></button>
+    <button class="nav-btn" onclick="switchTab('profile', this)"><span class="icon">👤</span><span>Profil</span></button>
   </nav>
 
-  <!-- QUIZ MODAL OVERLAY -->
-  <div id="quiz-page">
-    <div class="quiz-header">
-      <button class="close-btn" onclick="closeQuiz()">✕</button>
+  <!-- QUIZ FULLSCREEN OVERLAY -->
+  <div id="quiz-overlay">
+    <div class="quiz-top">
+      <button class="close-btn" onclick="exitQuiz()">✕</button>
       <div class="progress-bar"><div class="progress-fill" id="quiz-progress"></div></div>
-      <div class="stat-item">❤️ <span id="quiz-hearts">5</span></div>
+      <div class="stat-item" style="color: var(--danger);"><span class="stat-icon">❤️</span><span id="quiz-hearts-txt">5</span></div>
     </div>
 
-    <div id="quiz-body" style="flex: 1; display: flex; flex-direction: column; justify-content: center;"></div>
+    <div class="quiz-container" id="quiz-container"></div>
 
-    <div class="quiz-footer">
-      <button class="btn-main" id="btn-check" onclick="checkAnswer()">YOXLAYIN</button>
+    <div style="margin-top: auto; padding-top: 16px;">
+      <button class="btn-3d btn-primary" id="btn-check-ans" style="width: 100%; padding: 18px; font-size: 18px;" onclick="checkAnswer()">YOXLAYIN</button>
     </div>
 
-    <div class="feedback-banner" id="feedback-banner">
-      <h3 id="feedback-title">Əla!</h3>
-      <p id="feedback-msg"></p>
-      <button class="btn-main" onclick="nextQuestion()">DAVAM ET</button>
+    <div class="feedback-sheet" id="feedback-sheet">
+      <div class="feedback-head" id="fb-head">
+        <span id="fb-icon">✓</span>
+        <span id="fb-title">Mükəmməl!</span>
+      </div>
+      <p id="fb-msg" style="font-weight: 700; font-size: 15px;"></p>
+      <button class="btn-3d btn-primary" style="width: 100%; padding: 16px;" onclick="nextQuestion()">DAVAM ET</button>
     </div>
   </div>
 </div>
 
 <script>
-  // --- TRANSLATION DICTIONARY FOR UI ---
-  const UI_DICT = {
-    az: { map: "Xəritə", league: "Liqa", shop: "Mağaza", profile: "Profil", check: "YOXLAYIN", continue: "DAVAM ET", correct: "Əla!", incorrect: "Səhvdir!", unlockAll: "🔓 Bütün Etapları Aç / Bağla", refillHearts: "Can Bərpası (❤️ 5)", refillDesc: "Canlarınızı tam doldurun", learnLang: "Öyrənmək İstədiyiniz Dil:", uiLang: "Tətbiq Arayüz Dili:" },
-    en: { map: "Map", league: "League", shop: "Shop", profile: "Profile", check: "CHECK", continue: "CONTINUE", correct: "Awesome!", incorrect: "Incorrect!", unlockAll: "🔓 Unlock / Lock All Stages", refillHearts: "Refill Hearts (❤️ 5)", refillDesc: "Full heart restoration", learnLang: "Language to Learn:", uiLang: "Interface Language:" },
-    tr: { map: "Harita", league: "Lig", shop: "Mağaza", profile: "Profil", check: "KONTROL ET", continue: "DEVAM ET", correct: "Harika!", incorrect: "Yanlış!", unlockAll: "🔓 Tüm Aşama Kilitlerini Aç / Kapat", refillHearts: "Can Yenileme (❤️ 5)", refillDesc: "Canlarınızı fulleyin", learnLang: "Öğrenmek İstediğiniz Dil:", uiLang: "Uygulama Dili:" },
-    de: { map: "Karte", league: "Liga", shop: "Shop", profile: "Profil", check: "PRÜFEN", continue: "WEITER", correct: "Super!", incorrect: "Falsch!", unlockAll: "🔓 Alle Stufen Freischalten", refillHearts: "Herzen auffüllen (❤️ 5)", refillDesc: "Herzen komplett aufladen", learnLang: "Sprache lernen:", uiLang: "Oberflächensprache:" },
-    ru: { map: "Карта", league: "Лига", shop: "Магазин", profile: "Профиль", check: "ПРОВЕРИТЬ", continue: "ПРОДОЛЖИТЬ", correct: "Отлично!", incorrect: "Неверно!", unlockAll: "🔓 Разблокировать все этапы", refillHearts: "Восстановление жизней (❤️ 5)", refillDesc: "Полное восстановление", learnLang: "Изучаемый язык:", uiLang: "Язык интерфейса:" }
-  };
+  // REAL DETAILED VOCABULARY DATABASE (A1 - C1)
+  const REAL_LESSONS = [
+    // A1 BASIC
+    { type: 'mc', prompt: '"Hello" sözünün tərcüməsi nədir?', ans: 'Salam', options: ['Salam', 'Sağol', 'Xahiş edirəm', 'Bəli'], audio: 'Hello' },
+    { type: 'wb', prompt: '"Mən su içirəm" cümələsini ingiliscə qurun:', ans: ['I', 'drink', 'water'], pool: ['I', 'drink', 'water', 'eat', 'apple', 'bread'], audio: 'I drink water' },
+    { type: 'mc', prompt: '"Apple" nə deməkdir?', ans: 'Alma', options: ['Alma', 'Armud', 'Çörək', 'Su'], audio: 'Apple' },
+    { type: 'wb', prompt: '"O, alma yəyir" cümələsini ingiliscə qurun:', ans: ['He', 'eats', 'an', 'apple'], pool: ['He', 'eats', 'an', 'apple', 'drinks', 'water'], audio: 'He eats an apple' },
+    
+    // A2 INTERMEDIATE
+    { type: 'mc', prompt: '"Where is the hotel?" nə deməkdir?', ans: 'Otel haradadır?', options: ['Otel haradadır?', 'Otel haradadır kömək edin', 'Mən otelə gedirəm', 'Otel açıqdır?'], audio: 'Where is the hotel?' },
+    { type: 'wb', prompt: '"Mənin köməyə ehtiyacım var" cümələsini qurun:', ans: ['I', 'need', 'help'], pool: ['I', 'need', 'help', 'money', 'food', 'time'], audio: 'I need help' },
+    
+    // B1 ADVANCED
+    { type: 'mc', prompt: '"I would like to order food" tərcüməsi:', ans: 'Yemək sifariş etmək istərdim', options: ['Yemək sifariş etmək istərdim', 'Yemək bişirmək istəyirəm', 'Hesabı verin', 'Menyu zəhmət olmasa'], audio: 'I would like to order food' },
+    { type: 'wb', prompt: '"Hava bu gün çox gözəldir":', ans: ['The', 'weather', 'is', 'nice', 'today'], pool: ['The', 'weather', 'is', 'nice', 'today', 'cold', 'rainy'], audio: 'The weather is nice today' }
+  ];
 
-  // --- QUESTION GENERATOR DATA BANKS ---
-  const DATA_BANKS = {
-    en: [
-      { q: "Hello", a: "Salam", options: ["Salam", "Sağol", "Su", "Çörək"] },
-      { q: "Water", a: "Su", options: ["Su", "Süd", "Ət", "Masa"] },
-      { q: "Thank you", a: "Təşəkkür edirəm", options: ["Təşəkkür edirəm", "Xahiş edirəm", "Bəli", "Xeyr"] },
-      { q: "I drink water", a: ["Mən", "su", "içirəm"], type: "wordbank", pool: ["Mən", "su", "içirəm", "çörək", "yəyirəm"] }
-    ],
-    de: [
-      { q: "Hallo", a: "Salam", options: ["Salam", "Sağol", "Təşəkkürlər", "Su"] },
-      { q: "Wasser", a: "Su", options: ["Su", "Süd", "Çörək", "Bəli"] },
-      { q: "Ich trinke Wasser", a: ["Mən", "su", "içirəm"], type: "wordbank", pool: ["Mən", "su", "içirəm", "çay", "əlma"] }
-    ],
-    zh: [
-      { q: "你好 (Nǐ hǎo)", a: "Salam", options: ["Salam", "Sağol", "Bəli", "Su"] },
-      { q: "水 (Shuǐ)", a: "Su", options: ["Su", "Çay", "Çörək", "Masa"] }
-    ],
-    tr: [
-      { q: "Merhaba", a: "Salam", options: ["Salam", "Sağol", "Təşəkkür", "Bəli"] },
-      { q: "Su", a: "Su", options: ["Su", "Çay", "Süd", "Masa"] }
-    ]
-  };
+  // LEAGUE DUMMY DATA
+  const LEAGUE_USERS = [
+    { name: "Anar K.", xp: 1420, avatar: "🦁" },
+    { name: "Leyla M.", xp: 1280, avatar: "🦊" },
+    { name: "Siz (You)", xp: 0, avatar: "👑" },
+    { name: "Elvin T.", xp: 950, avatar: "🐼" },
+    { name: "Səbinə R.", xp: 810, avatar: "Koala" }
+  ];
 
-  // --- STATE MANAGEMENT ---
+  // STATE MANAGEMENT
   let state = {
     streak: 1,
     xp: 0,
-    gems: 100,
+    gems: 500,
     hearts: 5,
-    currentStage: 1,
     maxUnlockedStage: 1,
-    forceUnlockAll: false,
-    uiLang: "az",
-    targetLang: "en"
+    unlockAll: false,
+    targetLang: 'en'
   };
 
-  // Load state from localStorage
-  const savedState = localStorage.getItem('duo_master_state');
-  if (savedState) state = { ...state, ...JSON.parse(savedState) };
+  const saved = localStorage.getItem('duo_real_state');
+  if(saved) state = { ...state, ...JSON.parse(saved) };
 
   function saveState() {
-    localStorage.setItem('duo_master_state', JSON.stringify(state));
-    updateTopBar();
+    localStorage.setItem('duo_real_state', JSON.stringify(state));
+    updateStatsDisplay();
   }
 
-  function updateTopBar() {
+  function updateStatsDisplay() {
     document.getElementById('txt-streak').innerText = state.streak;
     document.getElementById('txt-xp').innerText = state.xp;
     document.getElementById('txt-gems').innerText = state.gems;
     document.getElementById('txt-hearts').innerText = state.hearts;
   }
 
-  // --- NAVIGATION ---
-  function showPage(pageId, btnEl) {
+  // NAVIGATION
+  function switchTab(tabId, btn) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById(`page-${pageId}`).classList.add('active');
-    if(btnEl) btnEl.classList.add('active');
+    document.getElementById(`page-${tabId}`).classList.add('active');
+    if(btn) btn.classList.add('active');
+    if(tabId === 'league') renderLeague();
   }
 
-  // --- UI LANGUAGE & DICTIONARY UPDATE ---
-  function changeUILanguage(langKey) {
-    state.uiLang = langKey;
+  function toggleUnlockAll() {
+    state.unlockAll = !state.unlockAll;
     saveState();
-    applyTranslations();
+    renderMapTree();
   }
 
-  function changeTargetLanguage(targetKey) {
-    state.targetLang = targetKey;
+  function changeTargetLang(val) {
+    state.targetLang = val;
     saveState();
-    renderMap();
+    renderMapTree();
   }
 
-  function applyTranslations() {
-    const dict = UI_DICT[state.uiLang] || UI_DICT.az;
-    document.getElementById('nav-map').innerText = dict.map;
-    document.getElementById('nav-league').innerText = dict.league;
-    document.getElementById('nav-shop').innerText = dict.shop;
-    document.getElementById('nav-profile').innerText = dict.profile;
-    document.getElementById('btn-check').innerText = dict.check;
-    document.getElementById('btn-unlock-all').innerText = dict.unlockAll;
-    document.getElementById('lbl-refill-hearts').innerText = dict.refillHearts;
-    document.getElementById('lbl-refill-desc').innerText = dict.refillDesc;
-    document.getElementById('lbl-learn-lang').innerText = dict.learnLang;
-    document.getElementById('lbl-ui-lang').innerText = dict.uiLang;
-    document.getElementById('select-ui-lang').value = state.uiLang;
-    document.getElementById('select-target-lang').value = state.targetLang;
-  }
-
-  // --- MAP RENDER (1000 STAGES) ---
-  function renderMap() {
+  // MAP TREE RENDER (1000 STAGES GENERATOR)
+  function renderMapTree() {
     const tree = document.getElementById('map-tree');
     tree.innerHTML = '';
 
-    for (let i = 1; i <= 1000; i++) {
-      const isUnlocked = state.forceUnlockAll || i <= state.maxUnlockedStage;
+    for(let i = 1; i <= 1000; i++) {
+      const isUnlocked = state.unlockAll || i <= state.maxUnlockedStage;
       const isCompleted = i < state.maxUnlockedStage;
 
       const btn = document.createElement('button');
-      btn.className = `stage-btn ${isUnlocked ? 'unlocked' : ''} ${isCompleted ? 'completed' : ''}`;
+      btn.className = `node-btn ${isUnlocked ? 'unlocked' : ''} ${isCompleted ? 'completed' : ''}`;
       
-      // Horizontal zig-zag offset
-      const offset = Math.sin(i) * 50;
+      // Zig-Zag Offset calculation
+      const offset = Math.sin(i * 0.8) * 60;
       btn.style.transform = `translateX(${offset}px)`;
 
-      btn.innerHTML = `${isCompleted ? '★' : (isUnlocked ? i : '🔒')}`;
-      if (isUnlocked) {
-        btn.onclick = () => startQuiz(i);
+      btn.innerHTML = isCompleted ? '★' : (isUnlocked ? i : '🔒');
+      if(isUnlocked) {
+        btn.onclick = () => openStageQuiz(i);
       }
       tree.appendChild(btn);
     }
   }
 
-  function toggleUnlockAll() {
-    state.forceUnlockAll = !state.forceUnlockAll;
-    saveState();
-    renderMap();
+  // LEAGUE BOARD RENDER
+  function renderLeague() {
+    const board = document.getElementById('league-board');
+    board.innerHTML = '';
+    LEAGUE_USERS[2].xp = state.xp; // Update current user XP
+    
+    // Sort by XP
+    let sorted = [...LEAGUE_USERS].sort((a,b) => b.xp - a.xp);
+
+    sorted.forEach((u, idx) => {
+      const card = document.createElement('div');
+      card.style.cssText = "display:flex; align-items:center; justify-content:space-between; padding:16px; background:#fff; border-radius:16px; border:2px solid var(--border); border-bottom-width:4px;";
+      card.innerHTML = `
+        <div style="display:flex; align-items:center; gap:12px; font-weight:900;">
+          <span style="font-size:18px; color:var(--text-sub); width:20px;">${idx+1}</span>
+          <span style="font-size:24px;">${u.avatar}</span>
+          <span>${u.name}</span>
+        </div>
+        <div style="font-weight:900; color:var(--gold-dark);">${u.xp} XP</div>
+      `;
+      board.appendChild(card);
+    });
   }
 
-  // --- QUIZ LOGIC ---
-  let currentQuizStage = 1;
-  let currentQuestionIdx = 0;
-  let quizQuestions = [];
-  let selectedOption = null;
-  let selectedWordBank = [];
+  // QUIZ ENGINE
+  let currentStage = 1;
+  let qIndex = 0;
+  let stageQuestions = [];
+  let userChoice = null;
+  let userWbArray = [];
 
-  function startQuiz(stageNum) {
-    if (state.hearts <= 0) {
+  function openStageQuiz(stageNum) {
+    if(state.hearts <= 0) {
       alert("Canınız bitib! Mağazadan bərpa edin.");
       return;
     }
-    currentQuizStage = stageNum;
-    currentQuestionIdx = 0;
+    currentStage = stageNum;
+    qIndex = 0;
     
-    // Generate questions for this stage
-    quizQuestions = generateQuestionsForStage(stageNum);
-    
-    document.getElementById('quiz-page').style.display = 'flex';
-    document.getElementById('quiz-hearts').innerText = state.hearts;
-    renderQuestion();
+    // Pick 3 random or structured questions
+    stageQuestions = [
+      REAL_LESSONS[0],
+      REAL_LESSONS[1],
+      REAL_LESSONS[2]
+    ];
+
+    document.getElementById('quiz-overlay').style.display = 'flex';
+    document.getElementById('quiz-hearts-txt').innerText = state.hearts;
+    renderCurrentQuestion();
   }
 
-  function generateQuestionsForStage(stage) {
-    const bank = DATA_BANKS[state.targetLang] || DATA_BANKS.en;
-    // Repeat and randomize items to make a 3-question lesson
-    let list = [];
-    for(let i=0; i<3; i++) {
-      let item = bank[Math.floor(Math.random() * bank.length)];
-      list.push(item);
+  function renderCurrentQuestion() {
+    const q = stageQuestions[qIndex];
+    const container = document.getElementById('quiz-container');
+    container.innerHTML = '';
+
+    // Update progress
+    const pct = (qIndex / stageQuestions.length) * 100;
+    document.getElementById('quiz-progress').style.width = `${pct}%`;
+
+    userChoice = null;
+    userWbArray = [];
+
+    const title = document.createElement('h2');
+    title.className = 'prompt-title';
+    title.innerText = q.prompt;
+    container.appendChild(title);
+
+    if(q.audio) {
+      const aBtn = document.createElement('button');
+      aBtn.className = 'btn-audio';
+      aBtn.innerHTML = '🔊 Tələffüzü Dinlə';
+      aBtn.onclick = () => speakText(q.audio);
+      container.appendChild(aBtn);
     }
-    return list;
-  }
 
-  function renderQuestion() {
-    const q = quizQuestions[currentQuestionIdx];
-    const body = document.getElementById('quiz-body');
-    body.innerHTML = '';
+    if(q.type === 'wb') {
+      // Word bank target
+      const target = document.createElement('div');
+      target.className = 'word-target';
+      target.id = 'wb-target-area';
+      container.appendChild(target);
 
-    // Update progress bar
-    const progress = ((currentQuestionIdx) / quizQuestions.length) * 100;
-    document.getElementById('quiz-progress').style.width = `${progress}%`;
-
-    selectedOption = null;
-    selectedWordBank = [];
-
-    const title = document.createElement('div');
-    title.className = 'question-title';
-    title.innerText = `"${q.q}" tərcüməsi nədir?`;
-    body.appendChild(title);
-
-    // Audio Button
-    const audioBtn = document.createElement('button');
-    audioBtn.className = 'audio-btn';
-    audioBtn.innerHTML = '🔊 Tələffüzü Dinlə';
-    audioBtn.onclick = () => speakText(q.q, state.targetLang);
-    body.appendChild(audioBtn);
-
-    if (q.type === 'wordbank') {
-      // Word Bank UI
-      const targetDiv = document.createElement('div');
-      targetDiv.className = 'word-bank-target';
-      targetDiv.id = 'wb-target';
-      body.appendChild(targetDiv);
-
-      const poolDiv = document.createElement('div');
-      poolDiv.className = 'word-bank-pool';
-      q.pool.forEach(word => {
+      // Word bank pool
+      const pool = document.createElement('div');
+      pool.className = 'word-pool';
+      q.pool.forEach(w => {
         const chip = document.createElement('div');
         chip.className = 'word-chip';
-        chip.innerText = word;
+        chip.innerText = w;
         chip.onclick = () => {
-          selectedWordBank.push(word);
+          userWbArray.push(w);
           chip.style.visibility = 'hidden';
-          updateWordBankTarget();
+          updateWbTargetDisplay();
         };
-        poolDiv.appendChild(chip);
+        pool.appendChild(chip);
       });
-      body.appendChild(poolDiv);
+      container.appendChild(pool);
     } else {
-      // Multiple Choice Options
+      // Multiple Choice
       const grid = document.createElement('div');
       grid.className = 'options-grid';
       q.options.forEach(opt => {
-        const btn = document.createElement('button');
-        btn.className = 'option-btn';
-        btn.innerText = opt;
-        btn.onclick = () => {
-          document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
-          btn.classList.add('selected');
-          selectedOption = opt;
+        const card = document.createElement('div');
+        card.className = 'opt-card';
+        card.innerText = opt;
+        card.onclick = () => {
+          document.querySelectorAll('.opt-card').forEach(c => c.classList.remove('selected'));
+          card.classList.add('selected');
+          userChoice = opt;
         };
-        grid.appendChild(btn);
+        grid.appendChild(card);
       });
-      body.appendChild(grid);
+      container.appendChild(grid);
     }
   }
 
-  function updateWordBankTarget() {
-    const targetDiv = document.getElementById('wb-target');
-    targetDiv.innerHTML = '';
-    selectedWordBank.forEach((w, idx) => {
+  function updateWbTargetDisplay() {
+    const target = document.getElementById('wb-target-area');
+    target.innerHTML = '';
+    userWbArray.forEach((w, idx) => {
       const chip = document.createElement('div');
       chip.className = 'word-chip';
       chip.innerText = w;
       chip.onclick = () => {
-        selectedWordBank.splice(idx, 1);
-        updateWordBankTarget();
-        // re-enable in pool if needed
+        userWbArray.splice(idx, 1);
+        updateWbTargetDisplay();
+        // Restore visibility in pool
       };
-      targetDiv.appendChild(chip);
+      target.appendChild(chip);
     });
   }
 
-  function speakText(text, lang) {
-    if ('speechSynthesis' in window) {
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = lang === 'en' ? 'en-US' : (lang === 'de' ? 'de-DE' : 'tr-TR');
-      window.speechSynthesis.speak(utterance);
+  function speakText(txt) {
+    if('speechSynthesis' in window) {
+      const utt = new SpeechSynthesisUtterance(txt);
+      utt.lang = 'en-US';
+      window.speechSynthesis.speak(utt);
     }
   }
 
   function checkAnswer() {
-    const q = quizQuestions[currentQuestionIdx];
+    const q = stageQuestions[qIndex];
     let isCorrect = false;
 
-    if (q.type === 'wordbank') {
-      isCorrect = JSON.stringify(selectedWordBank) === JSON.stringify(q.a);
+    if(q.type === 'wb') {
+      isCorrect = JSON.stringify(userWbArray) === JSON.stringify(q.ans);
     } else {
-      isCorrect = selectedOption === q.a;
+      isCorrect = userChoice === q.ans;
     }
 
-    const banner = document.getElementById('feedback-banner');
-    const dict = UI_DICT[state.uiLang] || UI_DICT.az;
-
-    if (isCorrect) {
-      banner.className = 'feedback-banner correct';
-      document.getElementById('feedback-title').innerText = dict.correct;
-      document.getElementById('feedback-msg').innerText = "Əla cavab verdiniz!";
+    const sheet = document.getElementById('feedback-sheet');
+    if(isCorrect) {
+      sheet.className = 'feedback-sheet correct';
+      document.getElementById('fb-icon').innerText = '✓';
+      document.getElementById('fb-title').innerText = 'Mükəmməl!';
+      document.getElementById('fb-msg').innerText = 'Doğru cavab verdiniz.';
     } else {
-      banner.className = 'feedback-banner incorrect';
-      document.getElementById('feedback-title').innerText = dict.incorrect;
-      document.getElementById('feedback-msg').innerText = `Doğru cavab: ${Array.isArray(q.a) ? q.a.join(' ') : q.a}`;
+      sheet.className = 'feedback-sheet incorrect';
+      document.getElementById('fb-icon').innerText = '✕';
+      document.getElementById('fb-title').innerText = 'Səhvdir!';
+      document.getElementById('fb-msg').innerText = `Düzgün cavab: ${Array.isArray(q.ans) ? q.ans.join(' ') : q.ans}`;
       state.hearts = Math.max(0, state.hearts - 1);
-      document.getElementById('quiz-hearts').innerText = state.hearts;
+      document.getElementById('quiz-hearts-txt').innerText = state.hearts;
       saveState();
     }
-    banner.style.display = 'flex';
+    sheet.style.display = 'flex';
   }
 
   function nextQuestion() {
-    document.getElementById('feedback-banner').style.display = 'none';
-    currentQuestionIdx++;
+    document.getElementById('feedback-sheet').style.display = 'none';
+    qIndex++;
 
-    if (currentQuestionIdx >= quizQuestions.length) {
-      // Stage Complete
-      alert("Təbriklər! Etap Tamamlandı. +10 XP");
-      state.xp += 10;
-      if (currentQuizStage === state.maxUnlockedStage) {
+    if(qIndex >= stageQuestions.length) {
+      // Complete
+      alert("Təbriklər! Etap Tamamlandı. +15 XP");
+      state.xp += 15;
+      if(currentStage === state.maxUnlockedStage) {
         state.maxUnlockedStage++;
       }
       saveState();
-      closeQuiz();
-      renderMap();
+      exitQuiz();
+      renderMapTree();
     } else {
-      renderQuestion();
+      renderCurrentQuestion();
     }
   }
 
-  function closeQuiz() {
-    document.getElementById('quiz-page').style.display = 'none';
+  function exitQuiz() {
+    document.getElementById('quiz-overlay').style.display = 'none';
   }
 
   function buyHearts() {
-    if (state.gems >= 50) {
+    if(state.gems >= 50) {
       state.gems -= 50;
       state.hearts = 5;
       saveState();
-      alert("Canlarınız tamamlandı!");
+      alert("Canlarınız tam bərpa olundu!");
     } else {
-      alert("Kifayət qədər ləl-cavahiriniz (💎) yoxdur.");
+      alert("Ləl-cavahiriniz yetərli deyil.");
     }
   }
 
-  // INITIALIZATION
-  updateTopBar();
-  applyTranslations();
-  renderMap();
+  // INITIAL SETUP
+  updateStatsDisplay();
+  renderMapTree();
 </script>
 </body>
 </html>
