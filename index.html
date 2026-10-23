@@ -1,495 +1,567 @@
+
 <!DOCTYPE html>
 <html lang="az">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Duolingo Master Real Edition</title>
-  <style>
-    :root {
-      --primary: #58cc02;
-      --primary-dark: #46a302;
-      --secondary: #1cb0f6;
-      --secondary-dark: #1899d6;
-      --danger: #ff4b4b;
-      --danger-dark: #ea2b2b;
-      --gold: #ffc800;
-      --gold-dark: #e5b200;
-      --purple: #ce82ff;
-      --purple-dark: #b661f2;
-      --bg: #f7f9fa;
-      --card-bg: #ffffff;
-      --text: #3c3c3c;
-      --text-sub: #777777;
-      --border: #e5e5e5;
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'din-round', 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif; user-select: none; -webkit-tap-highlight-color: transparent; }
-    body { background-color: #235390; color: var(--text); display: flex; justify-content: center; height: 100vh; overflow: hidden; }
-
-    #app { width: 100%; max-width: 480px; height: 100%; background: var(--card-bg); display: flex; flex-direction: column; position: relative; box-shadow: 0 0 30px rgba(0,0,0,0.3); }
-
-    /* TOP BAR */
-    header { height: 60px; border-bottom: 2px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 16px; background: #fff; z-index: 10; }
-    .stat-item { display: flex; align-items: center; gap: 6px; font-weight: 800; font-size: 15px; }
-    .stat-icon { font-size: 20px; }
-
-    /* NAV BAR */
-    nav { height: 65px; border-top: 2px solid var(--border); display: flex; justify-content: space-around; align-items: center; background: #fff; z-index: 10; }
-    .nav-btn { border: none; background: none; display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--text-sub); font-size: 11px; font-weight: 800; cursor: pointer; width: 25%; text-transform: uppercase; letter-spacing: 0.5px; }
-    .nav-btn.active { color: var(--primary); }
-    .nav-btn span.icon { font-size: 24px; }
-
-    /* MAIN CONTENT */
-    main { flex: 1; overflow-y: auto; position: relative; scroll-behavior: smooth; background: var(--bg); }
-    .page { display: none; padding: 16px; min-height: 100%; }
-    .page.active { display: block; }
-
-    /* 3D BUTTON STYLES */
-    .btn-3d { border: none; border-radius: 16px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; cursor: pointer; transition: filter 0.1s, transform 0.1s; display: inline-flex; align-items: center; justify-content: center; text-align: center; }
-    .btn-primary { background: var(--primary); color: #fff; box-shadow: 0 5px 0 var(--primary-dark); }
-    .btn-primary:active { transform: translateY(4px); box-shadow: 0 1px 0 var(--primary-dark); }
-    .btn-secondary { background: var(--secondary); color: #fff; box-shadow: 0 5px 0 var(--secondary-dark); }
-    .btn-secondary:active { transform: translateY(4px); box-shadow: 0 1px 0 var(--secondary-dark); }
-
-    /* MAP STYLES */
-    .unit-banner { background: var(--primary); color: #fff; padding: 18px; border-radius: 20px; margin-bottom: 24px; text-align: left; box-shadow: 0 6px 0 var(--primary-dark); position: relative; overflow: hidden; }
-    .unit-banner h3 { font-size: 20px; font-weight: 900; margin-bottom: 4px; }
-    .unit-banner p { font-size: 13px; opacity: 0.9; font-weight: 700; }
-
-    .map-tree { display: flex; flex-direction: column; align-items: center; gap: 20px; padding: 20px 0 80px 0; }
-    .node-btn { width: 75px; height: 75px; border-radius: 50%; border: none; background: #e5e5e5; color: #afafaf; font-weight: 900; font-size: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center; position: relative; box-shadow: 0 8px 0 #cecece; transition: transform 0.1s; }
-    .node-btn.unlocked { background: var(--primary); color: #fff; box-shadow: 0 8px 0 var(--primary-dark); }
-    .node-btn.completed { background: var(--gold); color: #fff; box-shadow: 0 8px 0 var(--gold-dark); }
-    .node-btn:active { transform: translateY(5px); box-shadow: 0 3px 0 #aaa; }
-    .node-btn.unlocked:active { box-shadow: 0 3px 0 var(--primary-dark); }
-    .node-btn .crown-icon { position: absolute; top: -12px; font-size: 18px; }
-
-    /* QUIZ INTERFACE */
-    #quiz-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 100; display: none; flex-direction: column; padding: 16px; }
-    .quiz-top { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
-    .close-btn { border: none; background: none; font-size: 26px; cursor: pointer; color: var(--text-sub); font-weight: 900; }
-    .progress-bar { flex: 1; height: 16px; background: var(--border); border-radius: 8px; overflow: hidden; }
-    .progress-fill { height: 100%; background: var(--primary); width: 0%; transition: width 0.3s ease-out; border-radius: 8px; }
-
-    .quiz-container { flex: 1; display: flex; flex-direction: column; justify-content: center; max-width: 400px; margin: 0 auto; width: 100%; }
-    .prompt-title { font-size: 22px; font-weight: 900; color: var(--text); margin-bottom: 24px; text-align: left; line-height: 1.3; }
-
-    /* WORD BANK */
-    .word-target { min-height: 70px; border-bottom: 3px solid var(--border); display: flex; flex-wrap: wrap; gap: 8px; padding: 10px; margin-bottom: 30px; align-items: center; }
-    .word-pool { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
-    .word-chip { border: 2px solid var(--border); border-bottom-width: 5px; padding: 12px 18px; border-radius: 14px; background: #fff; font-weight: 800; font-size: 16px; cursor: pointer; color: var(--text); }
-    .word-chip:active { transform: translateY(2px); border-bottom-width: 3px; }
-
-    /* OPTIONS GRID */
-    .options-grid { display: grid; grid-template-columns: 1fr; gap: 12px; margin-bottom: 20px; }
-    .opt-card { border: 2px solid var(--border); border-bottom-width: 5px; padding: 18px; border-radius: 16px; background: #fff; font-size: 17px; font-weight: 800; cursor: pointer; text-align: left; color: var(--text); display: flex; align-items: center; gap: 12px; }
-    .opt-card.selected { border-color: var(--secondary); background: #ddf4ff; color: var(--secondary-dark); }
-
-    /* AUDIO BUTTON */
-    .btn-audio { background: var(--secondary); color: white; border: none; padding: 12px 20px; border-radius: 14px; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; margin-bottom: 20px; box-shadow: 0 4px 0 var(--secondary-dark); }
-
-    /* FEEDBACK BANNER */
-    .feedback-sheet { position: absolute; bottom: 0; left: 0; width: 100%; padding: 24px 20px 30px 20px; display: none; flex-direction: column; gap: 16px; z-index: 110; border-top-left-radius: 24px; border-top-right-radius: 24px; }
-    .feedback-sheet.correct { background: #d7ffb8; color: var(--primary-dark); }
-    .feedback-sheet.incorrect { background: #ffdfe0; color: var(--danger-dark); }
-    .feedback-head { display: flex; align-items: center; gap: 10px; font-size: 22px; font-weight: 900; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#ffffff">
+<title>LinguaQuest — Dil öyrən</title>
+<style>
+:root{
+ --green:#58cc02;--green3d:#46a302;
+ --blue:#1cb0f6;--blue3d:#1899d6;
+ --red:#ff4b4b;--red3d:#ea2b2b;
+ --gold:#ffc800;--gold3d:#e5b200;
+ --purple:#ce82ff;--bg:#f7f9fa;
+ --white:#fff;--border:#e5e5e5;
+ --text:#3c3c3c;--muted:#afafaf;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);
+ font-family:Nunito,"Trebuchet MS",system-ui,-apple-system,sans-serif}
+button,input,select{font:inherit}
+button{cursor:pointer;touch-action:manipulation}
+button:focus-visible{outline:3px solid var(--blue);outline-offset:3px}
+.topbar{height:72px;background:white;border-bottom:2px solid var(--border);
+ position:sticky;top:0;z-index:20;display:flex;align-items:center;
+ justify-content:space-between;padding:0 max(16px,calc((100vw - 920px)/2));gap:8px}
+.brand{font-size:20px;font-weight:1000;color:var(--green3d);white-space:nowrap}
+.brand span{font-size:25px}
+.stats{display:flex;align-items:center;gap:clamp(7px,2vw,22px)}
+.stat{display:flex;align-items:center;gap:4px;font-size:14px;font-weight:900;white-space:nowrap}
+.stat .emoji{font-size:20px}
+.page{max-width:900px;margin:auto;padding:18px 16px 110px}
+.panel{background:white;border:2px solid var(--border);border-radius:18px;padding:16px;margin-bottom:18px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+h1,h2,h3,p{margin-top:0}
+h1{font-size:25px;margin-bottom:6px}
+h2{font-size:20px}
+.muted{color:#888;font-size:14px;line-height:1.5}
+.btn{border:0;border-radius:13px;padding:12px 16px;font-weight:900;
+ box-shadow:0 4px 0 rgba(0,0,0,.14);transition:transform .08s,filter .15s;
+ color:white;background:var(--green);border-bottom:2px solid var(--green3d)}
+.btn:active,.node:active,.choice:active{transform:translateY(4px);box-shadow:none}
+.btn.blue{background:var(--blue);border-bottom-color:var(--blue3d)}
+.btn.red{background:var(--red);border-bottom-color:var(--red3d)}
+.btn.gold{background:var(--gold);border-bottom-color:var(--gold3d);color:#604800}
+.btn.purple{background:var(--purple);border-bottom-color:#a35ad8}
+.btn.gray{background:#f0f0f0;color:#555;border-bottom-color:#d0d0d0}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.test-toggle{font-size:12px;padding:9px 11px}
+.unit{margin:24px 0 12px;background:var(--green);color:white;border-radius:16px;
+ padding:17px;border-bottom:5px solid var(--green3d)}
+.unit h2{margin:0 0 4px}
+.unit p{margin:0;font-size:13px;opacity:.95}
+.map{position:relative;padding:8px 0 20px;overflow:hidden}
+.lesson-row{display:flex;justify-content:center;align-items:center;height:96px;position:relative}
+.node{width:66px;height:66px;border-radius:50%;border:0;background:var(--green);
+ color:white;font-size:25px;font-weight:1000;position:relative;z-index:2;
+ border-bottom:6px solid var(--green3d);box-shadow:0 1px 0 rgba(0,0,0,.05)}
+.node.locked{background:#e5e5e5;border-bottom-color:#c8c8c8;color:#999}
+.node.completed{background:var(--gold);border-bottom-color:var(--gold3d);color:#8b6500}
+.node.current{outline:5px solid #b8ef91;outline-offset:4px;animation:pulse 2s infinite}
+.node small{display:block;font-size:10px;margin-top:0}
+@keyframes pulse{50%{outline-color:#e2f8d4}}
+.path{position:absolute;width:6px;height:100%;left:50%;top:0;transform:translateX(-50%);
+ background:repeating-linear-gradient(to bottom,#d7d7d7 0 10px,transparent 10px 20px)}
+.lesson-row .node{flex-shrink:0}
+.lesson-row:nth-child(odd) .node{transform:translateX(-65px)}
+.lesson-row:nth-child(even) .node{transform:translateX(65px)}
+.lesson-row .node:active{translate:0 4px}
+.lesson-row:nth-child(odd) .node:active{transform:translate(-65px,4px)}
+.lesson-row:nth-child(even) .node:active{transform:translate(65px,4px)}
+.section-title{font-size:14px;font-weight:900;color:#888;margin:14px 0 0}
+.bottomnav{position:fixed;bottom:0;left:0;right:0;z-index:30;background:white;
+ border-top:2px solid var(--border);display:flex;justify-content:center;gap:0;
+ padding:6px max(6px,calc((100vw - 600px)/2)) env(safe-area-inset-bottom)}
+.navbtn{flex:1;max-width:150px;border:0;background:white;color:#999;padding:7px 4px;
+ font-weight:900;font-size:11px;border-radius:12px}
+.navbtn .ico{display:block;font-size:24px;margin-bottom:2px}
+.navbtn.active{color:var(--green3d);background:#f1fce9}
+.screen{display:none}.screen.active{display:block}
+.lesson-head{display:flex;align-items:center;gap:14px;margin:8px 0 24px}
+.close{border:0;background:transparent;font-size:27px;color:#aaa}
+.progress{height:14px;border-radius:20px;background:#e5e5e5;flex:1;overflow:hidden}
+.progress span{height:100%;width:0;background:var(--green);display:block;transition:width .25s}
+.hearts{font-weight:900;color:var(--red)}
+.question{font-size:24px;line-height:1.35;font-weight:1000;margin:22px 0}
+.question small{display:block;font-size:13px;color:#999;font-weight:700;margin-bottom:8px}
+.speak{border:0;border-radius:15px;background:#ddf5ff;color:#168ac0;
+ font-size:27px;padding:14px 19px;border-bottom:4px solid #a8e3fa}
+.answer-area{min-height:64px;border-bottom:2px solid #ddd;display:flex;gap:8px;
+ flex-wrap:wrap;padding:8px 0;margin:16px 0 20px}
+.chips,.choices,.matchgrid{display:flex;gap:9px;flex-wrap:wrap}
+.choice,.chip{background:white;border:2px solid #e5e5e5;border-bottom-width:4px;
+ border-radius:13px;padding:12px 14px;font-weight:800;color:#444}
+.choice{flex:1 1 42%;min-height:62px}
+.choice.selected,.chip.selected{border-color:var(--blue);background:#e5f7ff}
+.choice.correct{border-color:var(--green);background:#e6ffd5}
+.choice.wrong{border-color:var(--red);background:#ffe4e4}
+.chip.used{opacity:.25;pointer-events:none}
+.chip.answerchip{background:#e5f7ff;border-color:var(--blue)}
+.matchgrid{display:grid;grid-template-columns:1fr 1fr}
+.matchgrid button{min-height:58px}
+.lesson-footer{position:fixed;bottom:0;left:0;right:0;background:white;border-top:2px solid #eee;
+ padding:12px max(16px,calc((100vw - 900px)/2));z-index:22;display:flex;justify-content:space-between;gap:12px}
+.lesson-footer .btn{min-width:120px}
+.sheet{position:fixed;z-index:50;bottom:0;left:0;right:0;padding:25px max(18px,calc((100vw - 850px)/2)) 28px;
+ transform:translateY(110%);transition:transform .25s;border-top:3px solid transparent}
+.sheet.open{transform:translateY(0)}
+.sheet.good{background:#d7ffb8;border-color:var(--green)}
+.sheet.bad{background:#ffdfe0;border-color:var(--red)}
+.sheet h2{font-size:25px;margin-bottom:8px}
+.sheet p{line-height:1.5}
+.sheet .btn{width:100%;margin-top:8px}
+.listitem{padding:14px 0;border-bottom:1px solid #eee}
+.listitem:last-child{border:0}
+.big-number{font-size:27px;font-weight:1000}
+.profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.profile-card{border:2px solid var(--border);border-radius:15px;padding:14px}
+select{width:100%;padding:12px;border:2px solid var(--border);border-radius:12px;background:white;margin:6px 0 15px}
+.toast{position:fixed;top:82px;left:50%;transform:translateX(-50%);z-index:80;
+ background:#333;color:white;border-radius:12px;padding:12px 18px;display:none;max-width:90%;text-align:center}
+.empty{padding:35px 10px;text-align:center;color:#888}
+@media(max-width:450px){
+ .topbar{height:62px;padding:0 10px}.brand{font-size:16px}.brand span{font-size:21px}
+ .stats{gap:8px}.stat{font-size:12px}.stat .emoji{font-size:17px}
+ .page{padding:13px 12px 100px}.panel{padding:13px}
+ h1{font-size:22px}.node{width:59px;height:59px}
+ .lesson-row{height:88px}.question{font-size:22px}
+ .btn{padding:11px 12px}.test-toggle{max-width:145px}
+}
+</style>
 </head>
 <body>
+<header class="topbar">
+ <div class="brand"><span>🦉</span> LinguaQuest</div>
+ <div class="stats">
+  <div class="stat"><span class="emoji">🔥</span><span id="streak">0</span></div>
+  <div class="stat"><span class="emoji">⚡</span><span id="xp">0</span></div>
+  <div class="stat"><span class="emoji">💎</span><span id="gems">100</span></div>
+  <div class="stat"><span class="emoji">❤️</span><span id="hearts">5</span></div>
+ </div>
+</header>
 
-<div id="app">
-  <!-- TOP HEADER -->
-  <header>
-    <div class="stat-item" style="color: #ff9600;"><span class="stat-icon">🔥</span><span id="txt-streak">1</span></div>
-    <div class="stat-item" style="color: var(--gold);"><span class="stat-icon">⚡</span><span id="txt-xp">0</span></div>
-    <div class="stat-item" style="color: var(--secondary);"><span class="stat-icon">💎</span><span id="txt-gems">500</span></div>
-    <div class="stat-item" style="color: var(--danger);"><span class="stat-icon">❤️</span><span id="txt-hearts">5</span></div>
-  </header>
-
-  <!-- MAIN NAVIGATION CONTENT -->
-  <main>
-    <!-- PAGE 1: MAP -->
-    <div id="page-map" class="page active">
-      <div class="unit-banner" id="unit-banner">
-        <h3>Bölmə 1: A1 Baza Əsaslar</h3>
-        <p>Gündəlik salamlaşma, əsas əşyalar və cümlə strukturları</p>
-      </div>
-      
-      <button class="btn-3d btn-secondary" onclick="toggleUnlockAll()" style="width: 100%; padding: 14px; margin-bottom: 20px;" id="btn-unlock-toggle">🔓 Bütün Etapları Aç (1000 Etap)</button>
-      
-      <div class="map-tree" id="map-tree"></div>
-    </div>
-
-    <!-- PAGE 2: LEAGUE -->
-    <div id="page-league" class="page">
-      <h2 style="text-align: center; margin: 20px 0; font-weight: 900; color: var(--gold-dark);">🏆 Tunc Liqası</h2>
-      <div id="league-board" style="display: flex; flex-direction: column; gap: 10px;"></div>
-    </div>
-
-    <!-- PAGE 3: SHOP -->
-    <div id="page-shop" class="page">
-      <h2 style="text-align: center; margin: 20px 0; font-weight: 900; color: var(--purple-dark);">🛒 Mağaza</h2>
-      <div style="border: 2px solid var(--border); border-bottom-width: 5px; padding: 20px; border-radius: 18px; background: #fff; display: flex; justify-content: space-between; align-items: center;">
-        <div>
-          <h4 style="font-weight: 900; font-size: 17px;">Can Bərpası (❤️ 5)</h4>
-          <p style="font-size: 13px; color: var(--text-sub); margin-top: 4px;">Səhvlər üçün canlarınızı sıfırlayın</p>
-        </div>
-        <button class="btn-3d btn-primary" style="padding: 10px 18px;" onclick="buyHearts()">💎 50</button>
-      </div>
-    </div>
-
-    <!-- PAGE 4: PROFILE -->
-    <div id="page-profile" class="page">
-      <h2 style="text-align: center; margin: 20px 0; font-weight: 900;">👤 Profil və Dillər</h2>
-      <div style="background: #fff; padding: 20px; border-radius: 18px; border: 2px solid var(--border); border-bottom-width: 5px;">
-        <label style="font-weight: 800; display: block; margin-bottom: 8px;">Öyrəndiyiniz Dil:</label>
-        <select id="select-target-lang" style="width: 100%; padding: 14px; border-radius: 12px; border: 2px solid var(--border); font-weight: 800; font-size: 15px;" onchange="changeTargetLang(this.value)">
-          <option value="en">🇬🇧 İngilis dili (English)</option>
-          <option value="de">🇩🇪 Alman dili (Deutsch)</option>
-          <option value="zh">🇨🇳 Çin dili (中文)</option>
-          <option value="tr">🇹🇷 Türk dili (Türkçe)</option>
-        </select>
-      </div>
-    </div>
-  </main>
-
-  <!-- BOTTOM BAR -->
-  <nav>
-    <button class="nav-btn active" onclick="switchTab('map', this)"><span class="icon">🗺️</span><span>Xəritə</span></button>
-    <button class="nav-btn" onclick="switchTab('league', this)"><span class="icon">🏆</span><span>Liqa</span></button>
-    <button class="nav-btn" onclick="switchTab('shop', this)"><span class="icon">🛒</span><span>Mağaza</span></button>
-    <button class="nav-btn" onclick="switchTab('profile', this)"><span class="icon">👤</span><span>Profil</span></button>
-  </nav>
-
-  <!-- QUIZ FULLSCREEN OVERLAY -->
-  <div id="quiz-overlay">
-    <div class="quiz-top">
-      <button class="close-btn" onclick="exitQuiz()">✕</button>
-      <div class="progress-bar"><div class="progress-fill" id="quiz-progress"></div></div>
-      <div class="stat-item" style="color: var(--danger);"><span class="stat-icon">❤️</span><span id="quiz-hearts-txt">5</span></div>
-    </div>
-
-    <div class="quiz-container" id="quiz-container"></div>
-
-    <div style="margin-top: auto; padding-top: 16px;">
-      <button class="btn-3d btn-primary" id="btn-check-ans" style="width: 100%; padding: 18px; font-size: 18px;" onclick="checkAnswer()">YOXLAYIN</button>
-    </div>
-
-    <div class="feedback-sheet" id="feedback-sheet">
-      <div class="feedback-head" id="fb-head">
-        <span id="fb-icon">✓</span>
-        <span id="fb-title">Mükəmməl!</span>
-      </div>
-      <p id="fb-msg" style="font-weight: 700; font-size: 15px;"></p>
-      <button class="btn-3d btn-primary" style="width: 100%; padding: 16px;" onclick="nextQuestion()">DAVAM ET</button>
-    </div>
+<main class="page">
+<section id="mapScreen" class="screen active">
+ <div class="panel">
+  <div class="row">
+   <div><h1 id="welcome">Dil yolçuluğuna başla!</h1>
+   <div class="muted" id="courseInfo">İngilis dili · A1–C1</div></div>
+   <button class="btn gray test-toggle" id="unlockBtn">🔓 Test rejimi: OFF</button>
   </div>
+  <div class="row" style="margin-top:16px">
+   <div><div class="muted">Ümumi irəliləyiş</div><strong id="progressText">0 / 1000 mərhələ</strong></div>
+   <div style="width:42%;min-width:100px" class="progress"><span id="mapProgress"></span></div>
+  </div>
+ </div>
+ <div id="mapContainer"></div>
+ <div class="panel">
+  <h2>📚 Öyrənmə qaydası</h2>
+  <p class="muted">Tapşırıqları həll et, XP qazan və mərhələləri aç. Gündəlik seriyanı davam etdirmək üçün hər gün ən azı bir dərsi bitir.</p>
+ </div>
+</section>
+
+<section id="leagueScreen" class="screen">
+ <div class="panel">
+  <h1>🏆 Həftəlik liqa</h1><p class="muted">XP qazanaraq liqada irəlilə.</p>
+  <div class="row"><div><span class="big-number" id="leagueXP">0</span><div class="muted">Sənin XP-n</div></div><div style="font-size:42px">🏆</div></div>
+  <div id="leagueList"></div>
+ </div>
+</section>
+
+<section id="shopScreen" class="screen">
+ <div class="panel">
+  <h1>🛒 Mağaza</h1><p class="muted">Gems-dən istifadə edərək əlavə can al.</p>
+  <div class="listitem row"><div><b>❤️ 1 əlavə can</b><div class="muted">Canların 5-dən az olmalıdır.</div></div><button class="btn red" id="buyHeart">💎 30</button></div>
+  <div class="listitem row"><div><b>💎 Sınaq mükafatı</b><div class="muted">Gündəlik məşq bonusu.</div></div><button class="btn gold" id="dailyBonus">+10 XP</button></div>
+ </div>
+</section>
+
+<section id="profileScreen" class="screen">
+ <div class="panel">
+  <h1>👤 Profil</h1><p class="muted">Dilini və tətbiqin görünən dilini seç.</p>
+  <div class="profile-grid">
+   <div class="profile-card"><div class="muted">Ümumi XP</div><div class="big-number" id="profileXP">0</div></div>
+   <div class="profile-card"><div class="muted">Tamamlanan mərhələ</div><div class="big-number" id="profileDone">0</div></div>
+   <div class="profile-card"><div class="muted">Seriya</div><div class="big-number" id="profileStreak">0 🔥</div></div>
+   <div class="profile-card"><div class="muted">Mükafat daşları</div><div class="big-number" id="profileGems">100 💎</div></div>
+  </div>
+  <label for="learnLang">Öyrənilən dil</label>
+  <select id="learnLang"><option value="en">İngilis dili</option><option value="de">Alman dili</option><option value="zh">Çin dili</option><option value="tr">Türk dili</option></select>
+  <label for="uiLang">Tətbiqin dili</label>
+  <select id="uiLang"><option value="az">Azərbaycan</option><option value="en">English</option><option value="tr">Türkçe</option><option value="ru">Русский</option><option value="de">Deutsch</option></select>
+  <button class="btn" id="saveSettings" style="width:100%">Parametrləri saxla</button>
+  <button class="btn gray" id="resetBtn" style="width:100%;margin-top:15px">Tərəqqini sıfırla</button>
+ </div>
+</section>
+
+<section id="lessonScreen" class="screen">
+ <div class="lesson-head">
+  <button class="close" id="exitLesson" aria-label="Dərsdən çıx">×</button>
+  <div class="progress"><span id="lessonProgress"></span></div>
+  <div class="hearts">❤️ <span id="lessonHearts">5</span></div>
+ </div>
+ <div id="questionArea"></div>
+</section>
+</main>
+
+<nav class="bottomnav" id="bottomNav">
+ <button class="navbtn active" data-screen="mapScreen"><span class="ico">🗺️</span>Xəritə</button>
+ <button class="navbtn" data-screen="leagueScreen"><span class="ico">🏆</span>Liqa</button>
+ <button class="navbtn" data-screen="shopScreen"><span class="ico">🛒</span>Mağaza</button>
+ <button class="navbtn" data-screen="profileScreen"><span class="ico">👤</span>Profil</button>
+</nav>
+
+<div class="lesson-footer" id="lessonFooter" style="display:none">
+ <button class="btn gray" id="clearAnswer">Təmizlə</button>
+ <button class="btn" id="checkAnswer">Cavabı yoxla</button>
 </div>
+<div class="sheet" id="feedback">
+ <h2 id="feedbackTitle">Mükəmməl!</h2><p id="feedbackText"></p>
+ <button class="btn" id="continueBtn">Davam et</button>
+</div>
+<div class="toast" id="toast"></div>
 
 <script>
-  // REAL DETAILED VOCABULARY DATABASE (A1 - C1)
-  const REAL_LESSONS = [
-    // A1 BASIC
-    { type: 'mc', prompt: '"Hello" sözünün tərcüməsi nədir?', ans: 'Salam', options: ['Salam', 'Sağol', 'Xahiş edirəm', 'Bəli'], audio: 'Hello' },
-    { type: 'wb', prompt: '"Mən su içirəm" cümələsini ingiliscə qurun:', ans: ['I', 'drink', 'water'], pool: ['I', 'drink', 'water', 'eat', 'apple', 'bread'], audio: 'I drink water' },
-    { type: 'mc', prompt: '"Apple" nə deməkdir?', ans: 'Alma', options: ['Alma', 'Armud', 'Çörək', 'Su'], audio: 'Apple' },
-    { type: 'wb', prompt: '"O, alma yəyir" cümələsini ingiliscə qurun:', ans: ['He', 'eats', 'an', 'apple'], pool: ['He', 'eats', 'an', 'apple', 'drinks', 'water'], audio: 'He eats an apple' },
-    
-    // A2 INTERMEDIATE
-    { type: 'mc', prompt: '"Where is the hotel?" nə deməkdir?', ans: 'Otel haradadır?', options: ['Otel haradadır?', 'Otel haradadır kömək edin', 'Mən otelə gedirəm', 'Otel açıqdır?'], audio: 'Where is the hotel?' },
-    { type: 'wb', prompt: '"Mənin köməyə ehtiyacım var" cümələsini qurun:', ans: ['I', 'need', 'help'], pool: ['I', 'need', 'help', 'money', 'food', 'time'], audio: 'I need help' },
-    
-    // B1 ADVANCED
-    { type: 'mc', prompt: '"I would like to order food" tərcüməsi:', ans: 'Yemək sifariş etmək istərdim', options: ['Yemək sifariş etmək istərdim', 'Yemək bişirmək istəyirəm', 'Hesabı verin', 'Menyu zəhmət olmasa'], audio: 'I would like to order food' },
-    { type: 'wb', prompt: '"Hava bu gün çox gözəldir":', ans: ['The', 'weather', 'is', 'nice', 'today'], pool: ['The', 'weather', 'is', 'nice', 'today', 'cold', 'rainy'], audio: 'The weather is nice today' }
-  ];
+"use strict";
+const $=s=>document.querySelector(s);
+const $$=s=>[...document.querySelectorAll(s)];
+const TOTAL=1000;
+const STORE="linguaquest_v1";
+const today=()=>new Date().toISOString().slice(0,10);
+const defaults={xp:0,gems:100,hearts:5,streak:0,lastDay:"",done:[],unlock:false,learnLang:"en",uiLang:"az",dailyClaim:"",opened:1};
+let state;
+try{state={...defaults,...JSON.parse(localStorage.getItem(STORE)||"{}")}}catch(e){state={...defaults}}
+state.done=Array.isArray(state.done)?state.done:[];
+state.hearts=Math.max(0,Math.min(5,Number(state.hearts)||0));
+state.xp=Math.max(0,Number(state.xp)||0);
+state.gems=Math.max(0,Number(state.gems)||0);
 
-  // LEAGUE DUMMY DATA
-  const LEAGUE_USERS = [
-    { name: "Anar K.", xp: 1420, avatar: "🦁" },
-    { name: "Leyla M.", xp: 1280, avatar: "🦊" },
-    { name: "Siz (You)", xp: 0, avatar: "👑" },
-    { name: "Elvin T.", xp: 950, avatar: "🐼" },
-    { name: "Səbinə R.", xp: 810, avatar: "Koala" }
-  ];
+const units=[
+ {name:"A1 Əsaslar",sub:"Salamlaşma, insanlar və gündəlik sözlər",start:1,end:200},
+ {name:"A2 Gündəlik həyat",sub:"Ev, yemək, vaxt və gündəlik vərdişlər",start:201,end:400},
+ {name:"B1 Səyahət",sub:"Səyahət, ünsiyyət və təcrübələr",start:401,end:600},
+ {name:"B2 İş və karyera",sub:"Peşəkar ünsiyyət və müzakirələr",start:601,end:800},
+ {name:"C1 Dərin bilik",sub:"Mürəkkəb fikirlər və akademik ifadələr",start:801,end:1000}
+];
 
-  // STATE MANAGEMENT
-  let state = {
-    streak: 1,
-    xp: 0,
-    gems: 500,
-    hearts: 5,
-    maxUnlockedStage: 1,
-    unlockAll: false,
-    targetLang: 'en'
-  };
-
-  const saved = localStorage.getItem('duo_real_state');
-  if(saved) state = { ...state, ...JSON.parse(saved) };
-
-  function saveState() {
-    localStorage.setItem('duo_real_state', JSON.stringify(state));
-    updateStatsDisplay();
+/* Hər nümunədə unikal məna və tərcümə var. Baza sonradan əlavə edilə bilər. */
+const bank={
+ en:[
+ ["Hello","Salam"],["Good morning","Sabahınız xeyir"],["Good evening","Axşamınız xeyir"],["Good night","Gecəniz xeyrə"],["Thank you","Təşəkkür edirəm"],["You are welcome","Buyur"],["Please sit down","Zəhmət olmasa oturun"],["Excuse me","Bağışlayın"],["I am ready","Mən hazıram"],["What is your name?","Sənin adın nədir?"],["My name is Sam","Mənim adım Samdır"],["Where are you from?","Sən haralısan?"],["I live in Baku","Mən Bakıda yaşayıram"],["I speak Azerbaijani","Mən azərbaycanca danışıram"],["She is my sister","O mənim bacımdır"],["He is my neighbour","O mənim qonşumdur"],["We are good friends","Biz yaxşı dostlarıq"],["They are at home","Onlar evdədirlər"],["This is my book","Bu mənim kitabımdır"],["That is your chair","O sənin stulundur"],
+ ["I need some water","Mənə bir az su lazımdır"],["The shop opens at nine","Mağaza saat doqquzda açılır"],["I usually walk to work","Mən adətən işə piyada gedirəm"],["We are cooking dinner","Biz axşam yeməyi hazırlayırıq"],["She bought fresh vegetables","O təzə tərəvəzlər aldı"],["There is a pharmacy nearby","Yaxınlıqda aptek var"],["The bus is late today","Avtobus bu gün gecikir"],["I forgot my umbrella","Çətirimi unutmuşam"],["Please turn off the light","Zəhmət olmasa işığı söndür"],["He cleans the kitchen every morning","O hər səhər mətbəxi təmizləyir"],
+ ["I have already booked a hotel","Mən artıq otel sifariş etmişəm"],["How long does the journey take?","Səyahət nə qədər vaxt aparır?"],["We missed the last train","Son qatarı qaçırdıq"],["Could you recommend a local restaurant?","Yerli restoran tövsiyə edə bilərsiniz?"],["The flight was delayed because of fog","Uçuş duman səbəbindən gecikdi"],["I would like a window seat","Pəncərə kənarında yer istəyirəm"],["Keep your passport in a safe place","Pasportunu təhlükəsiz yerdə saxla"],["The village lies beyond the river","Kənd çayın o biri tərəfində yerləşir"],["We explored the old town on foot","Köhnə şəhəri piyada gəzdik"],["The weather changed unexpectedly","Hava gözlənilmədən dəyişdi"],
+ ["I submitted my application yesterday","Ərizəmi dünən təqdim etdim"],["The manager postponed the meeting","Menecer görüşü təxirə saldı"],["We need a more reliable solution","Bizə daha etibarlı həll lazımdır"],["She negotiated a better contract","O daha yaxşı müqavilə üzrə danışıqlar apardı"],["The project requires careful planning","Layihə diqqətli planlaşdırma tələb edir"],["Please clarify your main concern","Zəhmət olmasa əsas narahatlığınızı dəqiqləşdirin"],["Our team exceeded its quarterly target","Komandamız rüblük hədəfini aşdı"],["The company is expanding overseas","Şirkət xarici bazarlara genişlənir"],["I appreciate your constructive feedback","Faydalı rəyinizi yüksək qiymətləndirirəm"],["The deadline remains unchanged","Son tarix dəyişməz qalır"],
+ ["The evidence contradicts the initial assumption","Sübut ilkin fərziyyəyə ziddir"],["We must assess the long-term implications","Uzunmüddətli nəticələri qiymətləndirməliyik"],["Her argument was remarkably coherent","Onun arqumenti diqqətəlayiq dərəcədə məntiqli idi"],["The policy aims to reduce inequality","Siyasət bərabərsizliyi azaltmağı hədəfləyir"],["The findings warrant further investigation","Nəticələr əlavə araşdırma tələb edir"],["Economic resilience depends on several factors","İqtisadi dayanıqlılıq bir neçə amildən asılıdır"],["He challenged the prevailing interpretation","O, üstünlük təşkil edən şərhi sorğuladı"],["The proposal is feasible in principle","Təklif prinsipcə həyata keçirilə bilər"],["Their conclusions remain open to debate","Onların nəticələri müzakirəyə açıq qalır"],["We should distinguish correlation from causation","Korrelyasiyanı səbəb-nəticə əlaqəsindən ayırmalıyıq"],
+ ["The library closes at six","Kitabxana saat altıda bağlanır"],["I left my keys on the table","Açarlarımı masanın üstündə qoydum"],["Can you help me carry this box?","Bu qutunu daşımağa kömək edə bilərsən?"],["My brother works in construction","Qardaşım tikintidə işləyir"],["The walls need another coat of paint","Divarlara daha bir qat boya lazımdır"],["We repaired the broken window","Sınıq pəncərəni təmir etdik"],["The floor is completely dry","Döşəmə tam qurudur"],["She learned to drive last summer","O, keçən yay maşın sürməyi öyrəndi"],["I prefer tea without sugar","Mən şəkərsiz çaya üstünlük verirəm"],["The children are playing outside","Uşaqlar çöldə oynayırlar"],
+ ["If it rains, we will stay indoors","Yağış yağsa, evdə qalacağıq"],["I have been working here for years","Mən illərdir burada işləyirəm"],["Although he was tired, he continued","Yorğun olsa da, o davam etdi"],["The train had left before we arrived","Biz çatmamış qatar getmişdi"],["She speaks more confidently now","O, indi daha inamlı danışır"],["I wish I had more free time","Kaş daha çox boş vaxtım olaydı"],["They are considering a different approach","Onlar başqa yanaşmanı nəzərdən keçirirlər"],["The instructions were easy to follow","Təlimatları izləmək asan idi"],["We should avoid unnecessary expenses","Lazımsız xərclərdən qaçmalıyıq"],["He gradually became more independent","O, tədricən daha müstəqil oldu"]
+ ],
+ de:[
+ ["Guten Morgen","Sabahınız xeyir"],["Wie geht es dir?","Necəsən?"],["Ich heiße Anna","Mənim adım Annadır"],["Ich wohne in Berlin","Mən Berlində yaşayıram"],["Vielen Dank","Çox sağ olun"],["Wo ist der Bahnhof?","Dəmiryol vağzalı haradadır?"],["Ich brauche etwas Wasser","Mənə bir az su lazımdır"],["Die Rechnung, bitte","Hesabı, zəhmət olmasa"],["Ich arbeite auf einer Baustelle","Mən tikinti meydançasında işləyirəm"],["Können Sie mir helfen?","Mənə kömək edə bilərsiniz?"],["Der Zug hat Verspätung","Qatar gecikir"],["Wir müssen die Arbeit planen","İşi planlaşdırmalıyıq"],["Ich habe einen Termin vereinbart","Görüş vaxtı təyin etmişəm"],["Die Entscheidung war schwierig","Qərar çətin idi"],["Wir sollten die Ergebnisse überprüfen","Nəticələri yoxlamalıyıq"]
+ ],
+ tr:[
+ ["Merhaba","Salam"],["Günaydın","Sabahınız xeyir"],["Nasılsın?","Necəsən?"],["Ben Bakü'de yaşıyorum","Mən Bakıda yaşayıram"],["Teşekkür ederim","Təşəkkür edirəm"],["Bir bardak su istiyorum","Bir stəkan su istəyirəm"],["Otobüs ne zaman geliyor?","Avtobus nə vaxt gəlir?"],["Bugün işe erken gittim","Bu gün işə tez getdim"],["Yardımınıza ihtiyacım var","Köməyinizə ehtiyacım var"],["Toplantıyı yarına erteledik","Görüşü sabaha təxirə saldıq"]
+ ],
+ zh:[
+ ["你好","Salam"],["谢谢","Təşəkkür edirəm"],["再见","Sağ ol"],["早上好","Sabahınız xeyir"],["我叫安娜","Mənim adım Annadır"],["你住在哪里？","Harada yaşayırsan?"],["我想喝水","Su içmək istəyirəm"],["火车站在哪里？","Dəmiryol vağzalı haradadır?"],["今天很热","Bu gün hava istidir"],["请慢一点说","Zəhmət olmasa yavaş danışın"]
+ ]
+};
+const langNames={en:"İngilis dili",de:"Alman dili",zh:"Çin dili",tr:"Türk dili"};
+const uiText={
+ az:{map:"Xəritə",league:"Liqa",shop:"Mağaza",profile:"Profil",check:"Cavabı yoxla",next:"Davam et",correct:"Mükəmməl!",wrong:"Tam düzgün deyil",welcome:"Dil yolçuluğuna başla!"},
+ en:{map:"Map",league:"League",shop:"Shop",profile:"Profile",check:"Check answer",next:"Continue",correct:"Excellent!",wrong:"Not quite",welcome:"Start your language journey!"},
+ tr:{map:"Harita",league:"Lig",shop:"Mağaza",profile:"Profil",check:"Cevabı kontrol et",next:"Devam et",correct:"Mükemmel!",wrong:"Tam doğru değil",welcome:"Dil yolculuğuna başla!"},
+ ru:{map:"Карта",league:"Лига",shop:"Магазин",profile:"Профиль",check:"Проверить",next:"Продолжить",correct:"Отлично!",wrong:"Не совсем",welcome:"Начни изучение языка!"},
+ de:{map:"Karte",league:"Liga",shop:"Shop",profile:"Profil",check:"Antwort prüfen",next:"Weiter",correct:"Ausgezeichnet!",wrong:"Nicht ganz",welcome:"Starte deine Sprachreise!"}
+};
+function save(){try{localStorage.setItem(STORE,JSON.stringify(state))}catch(e){toast("Yaddaş doludur. Brauzer məlumatlarını yoxla.")}}
+function toast(msg){const t=$("#toast");t.textContent=msg;t.style.display="block";clearTimeout(toast.timer);toast.timer=setTimeout(()=>t.style.display="none",2300)}
+function speak(text){
+ if(!("speechSynthesis" in window)){toast("Bu brauzer səsli oxunu dəstəkləmir.");return}
+ speechSynthesis.cancel();
+ const u=new SpeechSynthesisUtterance(text);
+ u.lang=state.learnLang==="de"?"de-DE":state.learnLang==="zh"?"zh-CN":state.learnLang==="tr"?"tr-TR":"en-US";
+ u.rate=.86;
+ const voices=speechSynthesis.getVoices();
+ const v=voices.find(x=>x.lang.toLowerCase().startsWith(u.lang.slice(0,2)));
+ if(v)u.voice=v;
+ speechSynthesis.speak(u);
+}
+function tone(ok){
+ try{
+  const C=window.AudioContext||window.webkitAudioContext;if(!C)return;
+  const c=new C(),o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);
+  o.type="sine";o.frequency.value=ok?660:180;g.gain.value=.12;
+  o.start();o.frequency.setValueAtTime(ok?880:130,c.currentTime+.12);
+  g.gain.exponentialRampToValueAtTime(.001,c.currentTime+.28);
+  o.stop(c.currentTime+.3);o.onended=()=>c.close();
+ }catch(e){}
+}
+function updateStats(){
+ $("#xp").textContent=state.xp;$("#gems").textContent=state.gems;
+ $("#hearts").textContent=state.hearts;$("#streak").textContent=state.streak;
+ $("#lessonHearts").textContent=state.hearts;
+ $("#progressText").textContent=state.done.length+" / 1000 mərhələ";
+ $("#mapProgress").style.width=(state.done.length/10)+"%";
+ $("#profileXP").textContent=state.xp;$("#profileDone").textContent=state.done.length;
+ $("#profileStreak").textContent=state.streak+" 🔥";$("#profileGems").textContent=state.gems+" 💎";
+ $("#leagueXP").textContent=state.xp;
+ $("#courseInfo").textContent=(langNames[state.learnLang]||"Dil") +" · A1–C1";
+}
+function renderMap(){
+ const root=$("#mapContainer");root.innerHTML="";
+ units.forEach((u,ui)=>{
+  const section=document.createElement("section");
+  section.innerHTML=`<div class="unit"><h2>UNIT ${ui+1} · ${u.name}</h2><p>${u.sub}</p></div><div class="map"><div class="path"></div></div>`;
+  const map=section.querySelector(".map");
+  for(let n=u.start;n<=u.end;n++){
+   const row=document.createElement("div");row.className="lesson-row";
+   const done=state.done.includes(n);
+   const unlocked=state.unlock||done||n===1||state.done.includes(n-1)||n<=state.opened;
+   const b=document.createElement("button");b.className="node "+(done?"completed":unlocked?"current":"locked");
+   b.innerHTML=done?"★":unlocked?"✦":"🔒";
+   const small=document.createElement("small");small.textContent=n;b.appendChild(small);
+   b.setAttribute("aria-label",`Mərhələ ${n}${unlocked?"":" kilidli"}`);
+   b.addEventListener("click",()=>{
+    if(!unlocked){toast("Əvvəlki mərhələni tamamla və ya test rejimini aç.");return}
+    startLesson(n);
+   });
+   row.appendChild(b);map.appendChild(row);
   }
-
-  function updateStatsDisplay() {
-    document.getElementById('txt-streak').innerText = state.streak;
-    document.getElementById('txt-xp').innerText = state.xp;
-    document.getElementById('txt-gems').innerText = state.gems;
-    document.getElementById('txt-hearts').innerText = state.hearts;
-  }
-
-  // NAVIGATION
-  function switchTab(tabId, btn) {
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById(`page-${tabId}`).classList.add('active');
-    if(btn) btn.classList.add('active');
-    if(tabId === 'league') renderLeague();
-  }
-
-  function toggleUnlockAll() {
-    state.unlockAll = !state.unlockAll;
-    saveState();
-    renderMapTree();
-  }
-
-  function changeTargetLang(val) {
-    state.targetLang = val;
-    saveState();
-    renderMapTree();
-  }
-
-  // MAP TREE RENDER (1000 STAGES GENERATOR)
-  function renderMapTree() {
-    const tree = document.getElementById('map-tree');
-    tree.innerHTML = '';
-
-    for(let i = 1; i <= 1000; i++) {
-      const isUnlocked = state.unlockAll || i <= state.maxUnlockedStage;
-      const isCompleted = i < state.maxUnlockedStage;
-
-      const btn = document.createElement('button');
-      btn.className = `node-btn ${isUnlocked ? 'unlocked' : ''} ${isCompleted ? 'completed' : ''}`;
-      
-      // Zig-Zag Offset calculation
-      const offset = Math.sin(i * 0.8) * 60;
-      btn.style.transform = `translateX(${offset}px)`;
-
-      btn.innerHTML = isCompleted ? '★' : (isUnlocked ? i : '🔒');
-      if(isUnlocked) {
-        btn.onclick = () => openStageQuiz(i);
-      }
-      tree.appendChild(btn);
-    }
-  }
-
-  // LEAGUE BOARD RENDER
-  function renderLeague() {
-    const board = document.getElementById('league-board');
-    board.innerHTML = '';
-    LEAGUE_USERS[2].xp = state.xp; // Update current user XP
-    
-    // Sort by XP
-    let sorted = [...LEAGUE_USERS].sort((a,b) => b.xp - a.xp);
-
-    sorted.forEach((u, idx) => {
-      const card = document.createElement('div');
-      card.style.cssText = "display:flex; align-items:center; justify-content:space-between; padding:16px; background:#fff; border-radius:16px; border:2px solid var(--border); border-bottom-width:4px;";
-      card.innerHTML = `
-        <div style="display:flex; align-items:center; gap:12px; font-weight:900;">
-          <span style="font-size:18px; color:var(--text-sub); width:20px;">${idx+1}</span>
-          <span style="font-size:24px;">${u.avatar}</span>
-          <span>${u.name}</span>
-        </div>
-        <div style="font-weight:900; color:var(--gold-dark);">${u.xp} XP</div>
-      `;
-      board.appendChild(card);
-    });
-  }
-
-  // QUIZ ENGINE
-  let currentStage = 1;
-  let qIndex = 0;
-  let stageQuestions = [];
-  let userChoice = null;
-  let userWbArray = [];
-
-  function openStageQuiz(stageNum) {
-    if(state.hearts <= 0) {
-      alert("Canınız bitib! Mağazadan bərpa edin.");
-      return;
-    }
-    currentStage = stageNum;
-    qIndex = 0;
-    
-    // Pick 3 random or structured questions
-    stageQuestions = [
-      REAL_LESSONS[0],
-      REAL_LESSONS[1],
-      REAL_LESSONS[2]
-    ];
-
-    document.getElementById('quiz-overlay').style.display = 'flex';
-    document.getElementById('quiz-hearts-txt').innerText = state.hearts;
-    renderCurrentQuestion();
-  }
-
-  function renderCurrentQuestion() {
-    const q = stageQuestions[qIndex];
-    const container = document.getElementById('quiz-container');
-    container.innerHTML = '';
-
-    // Update progress
-    const pct = (qIndex / stageQuestions.length) * 100;
-    document.getElementById('quiz-progress').style.width = `${pct}%`;
-
-    userChoice = null;
-    userWbArray = [];
-
-    const title = document.createElement('h2');
-    title.className = 'prompt-title';
-    title.innerText = q.prompt;
-    container.appendChild(title);
-
-    if(q.audio) {
-      const aBtn = document.createElement('button');
-      aBtn.className = 'btn-audio';
-      aBtn.innerHTML = '🔊 Tələffüzü Dinlə';
-      aBtn.onclick = () => speakText(q.audio);
-      container.appendChild(aBtn);
-    }
-
-    if(q.type === 'wb') {
-      // Word bank target
-      const target = document.createElement('div');
-      target.className = 'word-target';
-      target.id = 'wb-target-area';
-      container.appendChild(target);
-
-      // Word bank pool
-      const pool = document.createElement('div');
-      pool.className = 'word-pool';
-      q.pool.forEach(w => {
-        const chip = document.createElement('div');
-        chip.className = 'word-chip';
-        chip.innerText = w;
-        chip.onclick = () => {
-          userWbArray.push(w);
-          chip.style.visibility = 'hidden';
-          updateWbTargetDisplay();
-        };
-        pool.appendChild(chip);
-      });
-      container.appendChild(pool);
-    } else {
-      // Multiple Choice
-      const grid = document.createElement('div');
-      grid.className = 'options-grid';
-      q.options.forEach(opt => {
-        const card = document.createElement('div');
-        card.className = 'opt-card';
-        card.innerText = opt;
-        card.onclick = () => {
-          document.querySelectorAll('.opt-card').forEach(c => c.classList.remove('selected'));
-          card.classList.add('selected');
-          userChoice = opt;
-        };
-        grid.appendChild(card);
-      });
-      container.appendChild(grid);
-    }
-  }
-
-  function updateWbTargetDisplay() {
-    const target = document.getElementById('wb-target-area');
-    target.innerHTML = '';
-    userWbArray.forEach((w, idx) => {
-      const chip = document.createElement('div');
-      chip.className = 'word-chip';
-      chip.innerText = w;
-      chip.onclick = () => {
-        userWbArray.splice(idx, 1);
-        updateWbTargetDisplay();
-        // Restore visibility in pool
-      };
-      target.appendChild(chip);
-    });
-  }
-
-  function speakText(txt) {
-    if('speechSynthesis' in window) {
-      const utt = new SpeechSynthesisUtterance(txt);
-      utt.lang = 'en-US';
-      window.speechSynthesis.speak(utt);
-    }
-  }
-
-  function checkAnswer() {
-    const q = stageQuestions[qIndex];
-    let isCorrect = false;
-
-    if(q.type === 'wb') {
-      isCorrect = JSON.stringify(userWbArray) === JSON.stringify(q.ans);
-    } else {
-      isCorrect = userChoice === q.ans;
-    }
-
-    const sheet = document.getElementById('feedback-sheet');
-    if(isCorrect) {
-      sheet.className = 'feedback-sheet correct';
-      document.getElementById('fb-icon').innerText = '✓';
-      document.getElementById('fb-title').innerText = 'Mükəmməl!';
-      document.getElementById('fb-msg').innerText = 'Doğru cavab verdiniz.';
-    } else {
-      sheet.className = 'feedback-sheet incorrect';
-      document.getElementById('fb-icon').innerText = '✕';
-      document.getElementById('fb-title').innerText = 'Səhvdir!';
-      document.getElementById('fb-msg').innerText = `Düzgün cavab: ${Array.isArray(q.ans) ? q.ans.join(' ') : q.ans}`;
-      state.hearts = Math.max(0, state.hearts - 1);
-      document.getElementById('quiz-hearts-txt').innerText = state.hearts;
-      saveState();
-    }
-    sheet.style.display = 'flex';
-  }
-
-  function nextQuestion() {
-    document.getElementById('feedback-sheet').style.display = 'none';
-    qIndex++;
-
-    if(qIndex >= stageQuestions.length) {
-      // Complete
-      alert("Təbriklər! Etap Tamamlandı. +15 XP");
-      state.xp += 15;
-      if(currentStage === state.maxUnlockedStage) {
-        state.maxUnlockedStage++;
-      }
-      saveState();
-      exitQuiz();
-      renderMapTree();
-    } else {
-      renderCurrentQuestion();
-    }
-  }
-
-  function exitQuiz() {
-    document.getElementById('quiz-overlay').style.display = 'none';
-  }
-
-  function buyHearts() {
-    if(state.gems >= 50) {
-      state.gems -= 50;
-      state.hearts = 5;
-      saveState();
-      alert("Canlarınız tam bərpa olundu!");
-    } else {
-      alert("Ləl-cavahiriniz yetərli deyil.");
-    }
-  }
-
-  // INITIAL SETUP
-  updateStatsDisplay();
-  renderMapTree();
+  root.appendChild(section);
+ });
+ renderLeague();updateStats();
+}
+function renderLeague(){
+ const names=["Aysel","Murad","Leyla","Sən","Nigar","Elvin"];
+ const scores=[260,210,170,state.xp,95,60].sort((a,b)=>b-a);
+ $("#leagueList").innerHTML=names.map((name,i)=>{
+  const score=i===3?state.xp:scores[i];
+  return `<div class="listitem row"><b>${i+1}. ${name}</b><span>⚡ ${score}</span></div>`;
+ }).join("");
+}
+let lesson={stage:1,index:0,items:[],current:null,answer:[],selected:null,matched:[],mode:"",finished:false};
+function corpus(){
+ let arr=bank[state.learnLang]||bank.en;
+ return arr.map((p,i)=>({target:p[0],az:p[1],id:i}));
+}
+function getItems(stage){
+ const arr=corpus();const out=[];
+ for(let i=0;i<5;i++){
+  let idx=(stage*3+i*7+i*i)%arr.length;
+  out.push(arr[idx]);
+ }
+ // Tapşırıqlar bir dərsdə fərqli nümunələrdən seçilir.
+ return out;
+}
+function startLesson(stage){
+ if(state.hearts<=0){toast("Canların bitib. Mağazadan can al və ya sonra qayıt.");return}
+ lesson={stage,index:0,items:getItems(stage),current:null,answer:[],selected:null,matched:[],mode:"",finished:false};
+ $$(".screen").forEach(x=>x.classList.remove("active"));
+ $("#lessonScreen").classList.add("active");
+ $("#bottomNav").style.display="none";$("#lessonFooter").style.display="flex";
+ $("#feedback").classList.remove("open","good","bad");
+ renderQuestion();
+}
+function chooseMode(item,index){
+ // Tapşırıq növləri dövr edir.
+ return ["bank","choice","match","listen"][(lesson.stage+lesson.index+index)%4];
+}
+function renderQuestion(){
+ const area=$("#questionArea");
+ if(lesson.index>=lesson.items.length){completeLesson();return}
+ const item=lesson.items[lesson.index];lesson.current=item;
+ lesson.mode=chooseMode(item,lesson.index);lesson.answer=[];lesson.selected=null;lesson.matched=[];
+ $("#lessonProgress").style.width=(lesson.index/lesson.items.length*100)+"%";
+ $("#checkAnswer").disabled=false;
+ const type=lesson.mode;
+ if(type==="bank")renderBank(area,item);
+ else if(type==="choice")renderChoice(area,item);
+ else if(type==="match")renderMatch(area,item);
+ else renderListen(area,item);
+}
+function renderBank(area,item){
+ const words=item.target.replace(/[?.!,]/g,"").split(/\s+/);
+ const shuffled=[...words].sort(()=>Math.random()-.5);
+ area.innerHTML=`<div class="muted">Cümləni düzgün qur</div><div class="question"><small>AZƏRBAYCANCA</small>${item.az}</div>
+ <button class="speak" id="hearPrompt" aria-label="Dinlə">🔊</button>
+ <div class="answer-area" id="answerArea"></div><div class="chips" id="wordChips"></div>`;
+ $("#hearPrompt").onclick=()=>speak(item.target);
+ shuffled.forEach((word,i)=>{
+  const b=document.createElement("button");b.className="chip";b.textContent=word;b.dataset.word=word;b.dataset.index=i;
+  b.onclick=()=>{
+   if(b.classList.contains("used"))return;
+   b.classList.add("used");lesson.answer.push({word,index:i});
+   drawAnswer();
+  };$("#wordChips").appendChild(b);
+ });
+ function drawAnswer(){
+  const a=$("#answerArea");a.innerHTML="";
+  lesson.answer.forEach((x,pos)=>{
+   const b=document.createElement("button");b.className="chip answerchip";b.textContent=x.word;
+   b.onclick=()=>{lesson.answer.splice(pos,1);const origin=$("#wordChips").querySelector(`[data-index="${x.index}"]`);if(origin)origin.classList.remove("used");drawAnswer()};
+   a.appendChild(b);
+  });
+ }
+}
+function renderChoice(area,item){
+ const arr=corpus();
+ const distract=arr.filter(x=>x.id!==item.id).sort(()=>Math.random()-.5).slice(0,3).map(x=>x.az);
+ const opts=[item.az,...distract].sort(()=>Math.random()-.5);
+ area.innerHTML=`<div class="muted">Düzgün tərcüməni seç</div><div class="question"><small>${langNames[state.learnLang].toUpperCase()}</small>${item.target}</div><button class="speak" id="hearPrompt">🔊</button><div class="choices" id="choiceList" style="margin-top:20px"></div>`;
+ $("#hearPrompt").onclick=()=>speak(item.target);
+ opts.forEach(opt=>{
+  const b=document.createElement("button");b.className="choice";b.textContent=opt;
+  b.onclick=()=>{$$("#choiceList .choice").forEach(x=>x.classList.remove("selected"));b.classList.add("selected");lesson.selected=opt};
+  $("#choiceList").appendChild(b);
+ });
+}
+function renderMatch(area,item){
+ const arr=corpus().filter(x=>x.id!==item.id).sort(()=>Math.random()-.5).slice(0,3);
+ const pairs=[item,...arr].sort(()=>Math.random()-.5);
+ const left=pairs.map((p,i)=>({id:i,text:p.target,side:"l",pair:p.id}));
+ const right=pairs.map((p,i)=>({id:i,text:p.az,side:"r",pair:p.id})).sort(()=>Math.random()-.5);
+ area.innerHTML=`<div class="muted">Sözləri uyğunlaşdır</div><div class="question">İngiliscə sözlə Azərbaycan dilində mənanı cütləşdir.</div><div class="matchgrid" id="matchGrid"></div>`;
+ const grid=$("#matchGrid");
+ [...left,...right].forEach(p=>{
+  const b=document.createElement("button");b.className="choice";b.textContent=p.text;b.dataset.pair=p.pair;b.dataset.side=p.side;
+  b.onclick=()=>{
+   if(b.disabled)return;
+   if(!lesson.selected){lesson.selected=b;b.classList.add("selected");return}
+   const first=lesson.selected;
+   if(first===b)return;
+   if(first.dataset.side===b.dataset.side){first.classList.remove("selected");lesson.selected=b;b.classList.add("selected");return}
+   if(first.dataset.pair===b.dataset.pair){
+    first.disabled=b.disabled=true;first.classList.add("correct");b.classList.add("correct");
+    lesson.matched.push(p.pair);lesson.selected=null;
+   }else{
+    first.classList.remove("selected");lesson.selected=null;b.classList.add("wrong");
+    setTimeout(()=>b.classList.remove("wrong"),350);
+   }
+  };grid.appendChild(b);
+ });
+}
+function renderListen(area,item){
+ area.innerHTML=`<div class="muted">Dinlə və tərcüməni seç</div><div class="question">Səslənən cümləni dinlə. Sonra düzgün mənanı seç.</div><button class="speak" id="hearPrompt">🔊 Dinlə</button><div class="choices" id="choiceList" style="margin-top:20px"></div>`;
+ $("#hearPrompt").onclick=()=>speak(item.target);
+ const opts=[item.az,...corpus().filter(x=>x.id!==item.id).sort(()=>Math.random()-.5).slice(0,3).map(x=>x.az)].sort(()=>Math.random()-.5);
+ opts.forEach(opt=>{
+  const b=document.createElement("button");b.className="choice";b.textContent=opt;
+  b.onclick=()=>{$$("#choiceList .choice").forEach(x=>x.classList.remove("selected"));b.classList.add("selected");lesson.selected=opt};
+  $("#choiceList").appendChild(b);
+ });
+ setTimeout(()=>speak(item.target),250);
+}
+function checkAnswer(){
+ if(lesson.finished)return;
+ const item=lesson.current;let correct=false;
+ if(lesson.mode==="bank"){
+  const got=lesson.answer.map(x=>x.word).join(" ").replace(/[?.!,]/g,"").toLowerCase();
+  correct=got===item.target.replace(/[?.!,]/g,"").toLowerCase();
+ }else if(lesson.mode==="match"){
+  correct=lesson.matched.length===4;
+ }else correct=lesson.selected===item.az;
+ if(lesson.mode==="bank"&&!lesson.answer.length){toast("Əvvəlcə sözləri seç.");return}
+ if(lesson.mode!=="bank"&&lesson.mode!=="match"&&!lesson.selected){toast("Bir cavab seç.");return}
+ if(lesson.mode==="match"&&lesson.matched.length<4){toast("Bütün dörd cütü uyğunlaşdır.");return}
+ lesson.finished=true;
+ if(correct){
+  state.xp+=10;state.gems+=2;
+  $("#feedback").className="sheet good open";$("#feedbackTitle").textContent=uiText[state.uiLang]?.correct||"Mükəmməl!";
+  $("#feedbackText").textContent="Düzgün cavab: "+item.target+" — "+item.az+". +10 XP və +2 💎";
+  $("#continueBtn").textContent=uiText[state.uiLang]?.next||"Davam et";
+  tone(true);
+ }else{
+  state.hearts=Math.max(0,state.hearts-1);
+  $("#feedback").className="sheet bad open";$("#feedbackTitle").textContent=uiText[state.uiLang]?.wrong||"Tam düzgün deyil";
+  $("#feedbackText").textContent="Düzgün cavab: "+item.target+" — "+item.az+". 1 can itirildi.";
+  $("#continueBtn").textContent="Davam et";
+  tone(false);
+ }
+ updateStats();save();
+}
+function continueLesson(){
+ $("#feedback").classList.remove("open","good","bad");
+ if(lesson.finished){lesson.finished=false;lesson.index++}
+ if(state.hearts<=0&&lesson.index<lesson.items.length){
+  toast("Canların bitdi. Dərs dayandırıldı.");exitLesson();return
+ }
+ renderQuestion();
+}
+function completeLesson(){
+ if(!state.done.includes(lesson.stage)){
+  state.done.push(lesson.stage);state.opened=Math.max(state.opened,lesson.stage+1);
+  state.gems+=5;
+ }
+ const d=today();
+ if(state.lastDay!==d){
+  const yesterday=new Date(Date.now()-86400000).toISOString().slice(0,10);
+  state.streak=state.lastDay===yesterday?state.streak+1:1;state.lastDay=d;
+ }
+ state.hearts=Math.min(5,state.hearts+1);
+ save();updateStats();renderMap();
+ $("#questionArea").innerHTML=`<div class="panel" style="text-align:center;margin-top:30px"><div style="font-size:70px">🏆</div><h1>Dərs tamamlandı!</h1><p class="muted">Mərhələ ${lesson.stage} bitdi. +5 💎 bonus qazandın.</p><button class="btn" id="backMap">Xəritəyə qayıt</button></div>`;
+ $("#backMap").onclick=exitLesson;
+ $("#lessonProgress").style.width="100%";
+}
+function exitLesson(){
+ $("#feedback").classList.remove("open","good","bad");
+ $("#lessonScreen").classList.remove("active");$("#mapScreen").classList.add("active");
+ $("#bottomNav").style.display="flex";$("#lessonFooter").style.display="none";
+ $$(".navbtn").forEach(x=>x.classList.toggle("active",x.dataset.screen==="mapScreen"));
+ updateStats();renderMap();
+}
+$("#checkAnswer").onclick=checkAnswer;
+$("#continueBtn").onclick=continueLesson;
+$("#clearAnswer").onclick=()=>{
+ lesson.answer=[];
+ $$("#wordChips .chip").forEach(x=>x.classList.remove("used"));
+ $$("#answerArea").forEach(x=>x.innerHTML="");
+ lesson.selected=null;
+ $$("#choiceList .choice").forEach(x=>x.classList.remove("selected"));
+};
+$("#exitLesson").onclick=()=>{if(confirm("Dərsdən çıxmaq istəyirsən?"))exitLesson()};
+$("#unlockBtn").onclick=()=>{
+ state.unlock=!state.unlock;$("#unlockBtn").textContent=state.unlock?"🔒 Test rejimi: ON":"🔓 Test rejimi: OFF";
+ $("#unlockBtn").classList.toggle("purple",state.unlock);save();renderMap();
+ toast(state.unlock?"Bütün mərhələlər açıldı.":"Kilid rejimi aktivdir.");
+};
+$$(".navbtn").forEach(b=>b.onclick=()=>{
+ $$(".screen").forEach(x=>x.classList.remove("active"));
+ $("#"+b.dataset.screen).classList.add("active");
+ $$(".navbtn").forEach(x=>x.classList.toggle("active",x===b));
+ $("#bottomNav").style.display="flex";
+});
+$("#buyHeart").onclick=()=>{
+ if(state.hearts>=5){toast("Canların artıq tamdır.");return}
+ if(state.gems<30){toast("30 💎 lazımdır.");return}
+ state.gems-=30;state.hearts++;save();updateStats();toast("1 can alındı ❤️");
+};
+$("#dailyBonus").onclick=()=>{
+ if(state.dailyClaim===today()){toast("Gündəlik bonus artıq götürülüb.");return}
+ state.dailyClaim=today();state.xp+=10;save();updateStats();toast("+10 XP qazandın!");
+};
+$("#saveSettings").onclick=()=>{
+ state.learnLang=$("#learnLang").value;state.uiLang=$("#uiLang").value;save();
+ applyLanguage();renderMap();toast("Parametrlər saxlanıldı.");
+};
+function applyLanguage(){
+ const t=uiText[state.uiLang]||uiText.az;
+ const labels=[t.map,t.league,t.shop,t.profile];
+ $$(".navbtn").forEach((b,i)=>{const ico=b.querySelector(".ico").outerHTML;b.innerHTML=ico+labels[i]});
+ $("#welcome").textContent=t.welcome;
+ $("#checkAnswer").textContent=t.check;
+ $("#continueBtn").textContent=t.next;
+}
+$("#resetBtn").onclick=()=>{
+ if(!confirm("Bütün XP, canlar və mərhələlər sıfırlansın?"))return;
+ state={...defaults,done:[]};save();$("#learnLang").value=state.learnLang;$("#uiLang").value=state.uiLang;
+ $("#unlockBtn").textContent="🔓 Test rejimi: OFF";applyLanguage();updateStats();renderMap();toast("Tərəqqi sıfırlandı.");
+};
+$("#learnLang").value=state.learnLang;$("#uiLang").value=state.uiLang;
+$("#unlockBtn").textContent=state.unlock?"🔒 Test rejimi: ON":"🔓 Test rejimi: OFF";
+applyLanguage();updateStats();renderMap();
 </script>
 </body>
 </html>
