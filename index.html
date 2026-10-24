@@ -4,567 +4,397 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#06111f">
-<meta name="description" content="ARWORLD — məkan əsaslı foto, video və elan platforması">
+<meta name="theme-color" content="#06101e">
 <title>ARWORLD — Spatial World</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <style>
-:root{color-scheme:dark;--bg:#040a14;--panel:#091a2c;--line:#205174;--cyan:#00d8ff;--blue:#087cff;--muted:#9db7cf;--white:#f1f8ff}
+:root{--cyan:#00dcff;--blue:#087cff;--bg:#04101d;--panel:#081b2c;--line:#1b7099;--muted:#a8c7de}
 *{box-sizing:border-box}
-html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--white);font-family:system-ui,-apple-system,Arial,sans-serif}
+html,body,#app{margin:0;width:100%;height:100%;height:100dvh;overflow:hidden;background:#020711;color:#f2f9ff;font-family:system-ui,Arial,sans-serif}
 button,input,textarea,select{font:inherit}
 button{cursor:pointer;color:inherit;-webkit-tap-highlight-color:transparent}
-button:disabled{opacity:.45;cursor:not-allowed}
-#app{position:relative;height:100dvh;overflow:hidden;background:radial-gradient(ellipse at 50% 30%,#153a58,#071425 60%,#020610)}
-#map{position:absolute;inset:0;display:none;background:#102334}
-#map iframe{width:100%;height:100%;border:0}
-#scene{position:absolute;inset:0;overflow:auto;scrollbar-width:none;padding:130px 13px 180px;background:radial-gradient(ellipse at 50% 15%,#163c5b,#071425 55%,#020610)}
-#scene::-webkit-scrollbar{display:none}
-#scene.empty:before{content:"";position:fixed;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 48%,#07304b40,transparent 65%)}
-.top{position:absolute;z-index:20;top:calc(env(safe-area-inset-top) + 10px);left:12px;right:12px;display:flex;align-items:center;gap:9px}
-.icon{width:43px;height:43px;flex-shrink:0;border:1px solid #245675;border-radius:14px;background:#07192bed;font-size:19px;display:grid;place-items:center}
+button:disabled{opacity:.45}
+#camera,#map{position:absolute;inset:0;width:100%;height:100%;display:none}
+#camera{object-fit:cover;background:#091521}
+#map{z-index:2}
+#map .leaflet-container{height:100%;width:100%;background:#132637}
+#scene{position:absolute;inset:0;overflow:hidden}
+#cameraShade{position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,#0208159c,transparent 25%,transparent 65%,#020815dd)}
+.top{position:absolute;z-index:20;top:calc(env(safe-area-inset-top) + 9px);left:11px;right:11px;display:flex;align-items:center;gap:9px}
+.btnIcon{height:43px;min-width:43px;border:1px solid #285b79;border-radius:14px;background:#06192be8;backdrop-filter:blur(12px);font-size:19px}
 .brand{flex:1;min-width:0}
-.brand strong{display:block;letter-spacing:2px;font-size:15px}
-.brand small{display:block;color:#7fa9ca;font-size:9px;letter-spacing:.7px;margin-top:3px}
-.logo{display:inline-grid;place-items:center;width:30px;height:30px;margin-right:7px;border-radius:10px;background:linear-gradient(135deg,#00d9ff,#1260ff);vertical-align:middle;box-shadow:0 0 15px #00aaff55}
-.switch{position:absolute;z-index:20;top:calc(env(safe-area-inset-top) + 65px);left:50%;transform:translateX(-50%);display:flex;border:1px solid #17638c;border-radius:28px;background:#061426ed;padding:4px}
-.switch button{padding:10px 23px;border:0;border-radius:24px;background:transparent;color:#b8cee0;font-weight:700;font-size:12px}
-.switch button.active{background:linear-gradient(110deg,#087cff,#00cfff);color:white;box-shadow:0 0 15px #00bfff55}
-.status{position:absolute;z-index:15;top:calc(env(safe-area-inset-top) + 120px);left:14px;right:14px;display:flex;justify-content:space-between;gap:7px;pointer-events:none}
-.pill{border:1px solid #22516f;border-radius:25px;background:#07182bdc;padding:8px 11px;color:#b9d9f0;font-size:10px;backdrop-filter:blur(12px);max-width:75%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.dot{color:#00e5ff}
-.empty-state{position:relative;margin:14vh auto 0;max-width:330px;text-align:center;color:#c0d6e9}
-.empty-symbol{margin:auto auto 20px;width:85px;height:85px;border:1px solid #1688b8;border-radius:27px;display:grid;place-items:center;font-size:38px;color:var(--cyan);box-shadow:0 0 32px #00bfff25,inset 0 0 30px #00bfff0e}
-.empty-state h2{font-size:20px;margin:0 0 10px}
-.empty-state p{font-size:12px;line-height:1.8;color:var(--muted)}
-.primary{border:1px solid #17a9e0;border-radius:13px;background:linear-gradient(110deg,#075ac5,#008aa9);padding:13px 16px;font-weight:750;color:white}
-.secondary{border:1px solid #2a506b;border-radius:12px;background:#0b1c2d;padding:11px 14px;font-size:12px;font-weight:650}
-#feed{display:grid;gap:22px;position:relative}
-.card{position:relative;width:100%;max-width:520px;margin:0 auto 4px;border:1px solid #197eaa;border-radius:19px;background:linear-gradient(145deg,#08213aef,#061323f5);box-shadow:0 0 20px #00aaff16,0 10px 30px #0005;overflow:hidden;animation:enter .25s ease}
-@keyframes enter{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-.cardhead{padding:13px 13px 10px;display:flex;align-items:center;gap:10px}
-.avatar{width:39px;height:39px;border-radius:50%;display:grid;place-items:center;flex-shrink:0;border:1px solid #27d9ff;background:linear-gradient(135deg,#0869cb,#00bfc9);font-weight:800}
-.identity{flex:1;min-width:0}
-.identity strong{display:block;font-size:13px;overflow-wrap:anywhere}
-.identity small{display:block;font-size:10px;color:#92b8d5;margin-top:4px}
-.cardbuttons{display:flex;gap:5px}
-.cardbuttons button{border:1px solid #25516f;border-radius:9px;background:#0b2136;width:33px;height:33px;font-size:14px}
-.location{padding:0 13px 10px;font-size:10px;color:#a8cde6;overflow-wrap:anywhere;line-height:1.6}
-.mediawrap{width:100%;background:#02060c;position:relative;display:grid;place-items:center;min-height:70px;overflow:hidden}
-.media{display:block;width:100%;height:auto;max-height:52dvh;object-fit:contain;background:#02060c}
-video.media{height:auto;max-height:52dvh;aspect-ratio:auto;object-fit:contain}
-.playhint{position:absolute;right:9px;bottom:9px;background:#00111bc9;border:1px solid #28617e;border-radius:15px;padding:5px 8px;font-size:10px;pointer-events:none}
-.description{padding:12px 13px 6px;font-size:12px;line-height:1.65;overflow-wrap:anywhere;white-space:pre-wrap}
-.description strong{font-size:13px}
-.meta{padding:4px 13px 10px;font-size:10px;color:#8caec9;line-height:1.7;overflow-wrap:anywhere}
-.reactions{display:flex;align-items:center;justify-content:space-around;gap:3px;border-top:1px solid #163b56;padding:9px 5px}
-.reactions button{border:0;background:transparent;color:#c2d9ec;font-size:11px;padding:5px}
-.reactions button.liked{color:#ff7eb1}
-.bottom{position:absolute;z-index:25;bottom:0;left:0;right:0;padding:12px 12px calc(env(safe-area-inset-bottom) + 13px);background:linear-gradient(0deg,#020711 12%,#061426f5 76%,#06142600);border-radius:24px 24px 0 0}
-.tools{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;align-items:center}
-.tool{border:0;background:transparent;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;color:#9bc8e7;font-size:10px;min-width:0}
-.tool .circle{width:43px;height:43px;border-radius:50%;border:1px solid #27577b;background:linear-gradient(145deg,#0c2c49,#071426);display:grid;place-items:center;font-size:20px}
-.tool.main .circle{width:59px;height:59px;border:3px solid #00d9ff;outline:3px solid #00cfff22;color:#00e3ff;font-size:30px;box-shadow:0 0 22px #00cfff55}
-.tool:active .circle{transform:scale(.94)}
-.footer-note{text-align:center;font-size:9px;color:#547d9d;margin-top:12px;letter-spacing:.4px}
-.overlay{display:none;position:absolute;z-index:50;inset:0;background:#000b;backdrop-filter:blur(6px);align-items:flex-end}
-.overlay.show{display:flex}
-.sheet{width:100%;max-height:89%;overflow:auto;background:linear-gradient(155deg,#0a2036,#030b15 80%);border:1px solid #246083;border-bottom:0;border-radius:23px 23px 0 0;padding:19px 16px calc(env(safe-area-inset-bottom) + 23px)}
-.sheethead{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
-.sheethead h2{font-size:17px;margin:0}
-.close{width:35px;height:35px;border:1px solid #285675;border-radius:50%;background:#0b1d30;font-size:22px}
-label{display:block;font-size:11px;color:#a8c8e0;margin:13px 0 6px}
-.field{display:block;width:100%;min-width:0;padding:13px;border:1px solid #245473;border-radius:12px;background:#041220;color:white;outline:none}
-.field:focus{border-color:#00cfff;box-shadow:0 0 0 2px #00cfff16}
-textarea.field{min-height:100px;resize:vertical}
-input[type=file].field{font-size:12px;padding:10px}
-.help{font-size:10px;color:#91b1ca;line-height:1.65;margin:12px 0}
-.actions{display:flex;gap:8px;margin-top:14px}
-.actions>*{flex:1;min-width:0}
-#notice{position:absolute;z-index:90;left:50%;top:calc(env(safe-area-inset-top) + 115px);transform:translate(-50%,-7px);max-width:92%;padding:11px 15px;background:#092b40;border:1px solid #00bfe7;border-radius:20px;font-size:12px;text-align:center;opacity:0;pointer-events:none;transition:.2s}
+.brand b{display:block;font-size:15px;letter-spacing:2px}
+.brand small{display:block;color:#8ab4d5;font-size:9px;letter-spacing:1px}
+.logo{display:inline-grid;place-items:center;background:linear-gradient(135deg,#00dfff,#1267ff);width:29px;height:29px;border-radius:9px;margin-right:7px}
+.switch{position:absolute;z-index:20;top:calc(env(safe-area-inset-top) + 62px);left:50%;transform:translateX(-50%);display:flex;padding:4px;border:1px solid #236487;border-radius:30px;background:#061426ec;backdrop-filter:blur(12px)}
+.switch button{border:0;background:transparent;padding:10px 22px;border-radius:24px;color:#b8d1e5;font-size:12px;font-weight:700}
+.switch .active{background:linear-gradient(110deg,#086cff,#00cfff);color:white;box-shadow:0 0 18px #00cfff50}
+.status{position:absolute;z-index:18;top:calc(env(safe-area-inset-top) + 119px);left:12px;right:12px;display:flex;justify-content:space-between;gap:6px;pointer-events:none}
+.pill{max-width:65%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border:1px solid #275a77;border-radius:24px;background:#07192cdd;padding:8px 11px;font-size:10px;color:#c6e4f7;backdrop-filter:blur(12px)}
+#arLayer{position:absolute;z-index:10;inset:0;overflow:hidden;pointer-events:none}
+#arLayer .spatialCard{pointer-events:auto}
+.spatialCard{position:absolute;width:min(72vw,300px);border:1px solid #20d9ff;border-radius:17px;overflow:hidden;background:linear-gradient(150deg,#092844f2,#04101ff5);box-shadow:0 0 22px #00cfff42,0 12px 32px #0008;backdrop-filter:blur(15px);transform:translate(-50%,-50%);transition:left .12s linear,top .12s linear}
+.spatialCard .head{display:flex;align-items:center;gap:9px;padding:10px}
+.avatar{flex-shrink:0;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,#0785ff,#00d6d8);border:1px solid #65eaff;font-weight:800}
+.identity{min-width:0;flex:1}
+.identity b{display:block;font-size:12px;overflow-wrap:anywhere}
+.identity small{display:block;margin-top:3px;color:#a6cbe3;font-size:9px}
+.dist{color:#55e9ff;font-size:9px}
+.thumb{display:block;width:100%;max-height:24dvh;object-fit:contain;background:#02060c}
+.spatialCard video.thumb{height:auto}
+.cardText{font-size:11px;line-height:1.5;padding:9px 11px;white-space:pre-wrap;overflow-wrap:anywhere;max-height:90px;overflow:auto}
+.cardActions{display:flex;border-top:1px solid #1b4966}
+.cardActions button{flex:1;border:0;background:transparent;border-right:1px solid #1b4966;padding:9px 3px;font-size:10px}
+.cardActions button:last-child{border-right:0}
+.pinLine{position:absolute;width:2px;height:30px;bottom:-30px;left:50%;background:linear-gradient(#00e5ff,#00e5ff22);box-shadow:0 0 8px #00e5ff}
+.pinDot{position:absolute;bottom:-40px;left:calc(50% - 5px);width:12px;height:12px;border-radius:50%;background:#00dfff;border:2px solid white;box-shadow:0 0 15px #00cfff}
+#empty{position:absolute;top:43%;left:50%;transform:translate(-50%,-50%);width:85%;max-width:310px;text-align:center;pointer-events:none}
+#empty b{display:block;font-size:20px;margin-bottom:9px}
+#empty p{font-size:12px;line-height:1.7;color:#b4cbe0}
+#empty button{pointer-events:auto}
+.primary{border:1px solid #13bce9;border-radius:12px;padding:13px 15px;background:linear-gradient(110deg,#0868db,#008eaf);font-weight:750}
+.secondary{border:1px solid #28516c;border-radius:12px;background:#0a2034;padding:11px;font-size:12px;font-weight:650}
+.bottom{position:absolute;z-index:20;bottom:0;left:0;right:0;padding:13px 10px calc(env(safe-area-inset-bottom) + 12px);background:linear-gradient(0deg,#020711 22%,#061426e8 75%,transparent);border-radius:24px 24px 0 0}
+.toolbar{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:3px}
+.tool{border:0;background:transparent;display:flex;align-items:center;flex-direction:column;gap:5px;color:#b3d6ed;font-size:10px;min-width:0}
+.circle{display:grid;place-items:center;width:43px;height:43px;border:1px solid #275777;border-radius:50%;background:#0a2036;font-size:19px}
+.tool.main .circle{width:58px;height:58px;border:3px solid var(--cyan);color:var(--cyan);font-size:29px;box-shadow:0 0 22px #00cfff55}
+#compass{position:absolute;z-index:16;left:15px;bottom:155px;width:66px;height:66px;border-radius:50%;border:1px solid #267eaa;background:#06172cdb;display:grid;place-items:center;font-size:28px;color:#00dfff}
+#gpsAccuracy{position:absolute;z-index:16;right:12px;bottom:166px;border:1px solid #126f65;border-radius:22px;background:#05221ee8;padding:9px 11px;color:#7cf6d6;font-size:10px}
+#notice{position:absolute;z-index:100;top:calc(env(safe-area-inset-top) + 116px);left:50%;transform:translate(-50%,-6px);width:max-content;max-width:92%;padding:10px 14px;border:1px solid #00cfff;border-radius:24px;background:#08253a;color:white;font-size:12px;text-align:center;opacity:0;pointer-events:none;transition:.2s}
 #notice.show{opacity:1;transform:translate(-50%,0)}
-#results{display:grid;gap:10px;margin-top:12px}
-.result{padding:12px;border:1px solid #1b4c69;border-radius:12px;background:#08182a;display:flex;gap:10px;align-items:center}
+.overlay{display:none;position:absolute;z-index:50;inset:0;background:#000b;backdrop-filter:blur(7px);align-items:flex-end}
+.overlay.show{display:flex}
+.sheet{width:100%;max-height:88%;overflow:auto;padding:18px 16px calc(env(safe-area-inset-bottom) + 22px);border:1px solid #245b7a;border-bottom:0;border-radius:23px 23px 0 0;background:linear-gradient(150deg,#0b2036,#030b15)}
+.sheetHead{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}
+.sheetHead h2{font-size:17px;margin:0}
+.close{width:35px;height:35px;border:1px solid #285775;border-radius:50%;background:#0a2033;font-size:23px}
+label{display:block;margin:12px 0 6px;color:#a9cbe2;font-size:11px}
+.field{width:100%;min-width:0;border:1px solid #285675;border-radius:12px;background:#041320;color:white;padding:12px;outline:none}
+.field:focus{border-color:var(--cyan)}
+textarea.field{min-height:90px;resize:vertical}
+.row{display:flex;gap:8px;margin-top:12px}
+.row>*{flex:1;min-width:0}
+.help{font-size:10px;line-height:1.7;color:#9bbbd2;margin:12px 0}
+#preview{margin-top:10px;border-radius:12px;overflow:hidden;background:#02060b}
+#preview img,#preview video{display:block;width:100%;max-height:32dvh;object-fit:contain}
+#results{display:grid;gap:9px;margin-top:12px}
+.result{display:flex;align-items:center;gap:10px;padding:11px;border:1px solid #23516f;border-radius:12px;background:#081a2b}
+.result img{width:52px;height:52px;object-fit:contain;background:#02060b;border-radius:8px}
 .result .identity{flex:1}
-.result button{flex-shrink:0}
-@media(min-width:700px){#app{max-width:520px;margin:auto;border-left:1px solid #193d56;border-right:1px solid #193d56}#scene{padding-left:20px;padding-right:20px}}
+@media(min-width:700px){#app{max-width:520px;margin:auto;border-left:1px solid #173b54;border-right:1px solid #173b54}}
 </style>
 </head>
 <body>
 <div id="app">
-  <div id="map"><iframe id="mapFrame" title="OpenStreetMap" loading="lazy"></iframe></div>
-  <main id="scene">
-    <div class="empty-state" id="empty">
-      <div class="empty-symbol">✧</div>
-      <h2>Öz dünyanı yarat</h2>
-      <p>Real şəkil, video, elan və ya profilini məkanla əlaqələndir. Yerləşdirdiyin məzmun bu cihazda saxlanılacaq.</p>
-      <button class="primary" id="firstAdd">＋ İlk elanı yerləşdir</button>
-    </div>
-    <div id="feed"></div>
-  </main>
+ <div id="scene">
+  <video id="camera" autoplay muted playsinline></video>
+  <div id="cameraShade"></div>
+  <div id="arLayer"></div>
+  <div id="empty"><b>Real dünyanı kəşf et</b><p>GPS-i aktiv et və kamera üzərində məkan kartlarını gör. İstənilən koordinata foto, video və məlumat yerləşdir.</p><button class="primary" id="emptyAdd">＋ Məkan yarat</button></div>
+  <div id="compass">➤</div><div id="gpsAccuracy">GPS gözlənilir</div>
+ </div>
+ <div id="map"></div>
+ <header class="top">
+  <button class="btnIcon" id="menu">☰</button>
+  <div class="brand"><b><span class="logo">A</span>ARWORLD</b><small>SPATIAL SOCIAL WORLD</small></div>
+  <button class="btnIcon" id="search">⌕</button>
+  <button class="btnIcon" id="settings">⚙</button>
+ </header>
+ <nav class="switch"><button id="arTab" class="active">✧ AR</button><button id="mapTab">⌖ Xəritə</button></nav>
+ <div class="status"><div class="pill">● <span id="modeText">CANLI KAMERA</span></div><div class="pill" id="coordText">GPS yoxlanılır</div></div>
+ <footer class="bottom"><div class="toolbar">
+  <button class="tool" id="photo"><span class="circle">▣</span>Foto</button>
+  <button class="tool" id="video"><span class="circle">▶</span>Video</button>
+  <button class="tool main" id="add"><span class="circle">＋</span>Yerləşdir</button>
+  <button class="tool" id="gallery"><span class="circle">▧</span>Qalereya</button>
+  <button class="tool" id="profile"><span class="circle">♙</span>Profil</button>
+ </div></footer>
+ <div id="notice" role="status"></div>
 
-  <header class="top">
-    <button class="icon" id="menu" aria-label="Menyu">☰</button>
-    <div class="brand"><strong><span class="logo">A</span>ARWORLD</strong><small>SPATIAL SOCIAL WORLD</small></div>
-    <button class="icon" id="search" aria-label="Axtarış">⌕</button>
-    <button class="icon" id="settings" aria-label="Parametrlər">⚙</button>
-  </header>
+ <div class="overlay" id="editor">
+  <section class="sheet">
+   <div class="sheetHead"><h2 id="formTitle">✧ Məkan yerləşdir</h2><button class="close" data-close="editor">×</button></div>
+   <label for="title">Başlıq *</label><input class="field" id="title" maxlength="100" placeholder="Məkanın və ya elanın adı">
+   <label for="category">Kateqoriya</label>
+   <select class="field" id="category"><option>Şəxsi profil</option><option>Fotoşəkil</option><option>Video</option><option>Elan / xidmət</option><option>Biznes</option><option>Turizm</option><option>Tədbir</option><option>Məlumat</option></select>
+   <label for="desc">Açıqlama</label><textarea class="field" id="desc" maxlength="5000" placeholder="Məlumat, ünvan, qiymət və digər təfərrüatlar"></textarea>
+   <label for="file">Foto və ya video</label><input class="field" id="file" type="file" accept="image/*,video/*">
+   <div id="preview" style="display:none"></div>
+   <label for="lat">Enlik (latitude)</label><input class="field" id="lat" inputmode="decimal" placeholder="GPS və ya xəritə">
+   <label for="lng">Uzunluq (longitude)</label><input class="field" id="lng" inputmode="decimal" placeholder="GPS və ya xəritə">
+   <div class="row"><button class="secondary" id="gps">◎ GPS-dən götür</button><button class="secondary" id="pickMap">⌖ Xəritədə nöqtə seç</button></div>
+   <p class="help">Xəritədə nöqtəyə toxunmaq koordinatları seçir. Kartın kameradakı yeri GPS məsafəsi və kompas istiqaməti ilə hesablanır.</p>
+   <button class="primary" style="width:100%" id="save">✦ Yerləşdir</button>
+  </section>
+ </div>
 
-  <nav class="switch">
-    <button id="arTab" class="active">✧ AR</button>
-    <button id="mapTab">⌖ Xəritə</button>
-  </nav>
+ <div class="overlay" id="searchPanel"><section class="sheet">
+  <div class="sheetHead"><h2>Məkan axtarışı</h2><button class="close" data-close="searchPanel">×</button></div>
+  <input class="field" id="query" placeholder="Elan, profil və ya məlumat">
+  <div class="row"><button class="primary" id="searchGo">Axtar</button><button class="secondary" id="searchClear">Hamısı</button></div>
+  <div id="results"></div>
+ </section></div>
 
-  <div class="status">
-    <div class="pill"><span class="dot">●</span> MƏKANLI PAYLAŞIM</div>
-    <div class="pill" id="gpsText">GPS yoxlanılır…</div>
-  </div>
+ <div class="overlay" id="profilePanel"><section class="sheet">
+  <div class="sheetHead"><h2>Profil</h2><button class="close" data-close="profilePanel">×</button></div>
+  <label for="name">Ad</label><input class="field" id="name" maxlength="70" placeholder="İstifadəçi adı">
+  <label for="bio">Haqqında</label><textarea class="field" id="bio" maxlength="500" placeholder="Özün haqqında"></textarea>
+  <button class="primary" id="profileSave" style="width:100%;margin-top:12px">Yadda saxla</button>
+ </section></div>
 
-  <footer class="bottom">
-    <div class="tools">
-      <button class="tool" id="photo"><span class="circle">▣</span><span>Foto</span></button>
-      <button class="tool" id="video"><span class="circle">▶</span><span>Video</span></button>
-      <button class="tool main" id="add"><span class="circle">＋</span><span>Elan</span></button>
-      <button class="tool" id="gallery"><span class="circle">▧</span><span>Fayllar</span></button>
-      <button class="tool" id="myProfile"><span class="circle">♙</span><span>Profil</span></button>
-    </div>
-    <div class="footer-note">ARWORLD · REAL MƏKAN · FOTO · VİDEO · ELAN</div>
-  </footer>
+ <div class="overlay" id="settingsPanel"><section class="sheet">
+  <div class="sheetHead"><h2>Parametrlər</h2><button class="close" data-close="settingsPanel">×</button></div>
+  <button class="secondary" id="startCamera" style="width:100%;margin:5px 0">Kameranı aktiv et</button>
+  <button class="secondary" id="startGPS" style="width:100%;margin:5px 0">GPS və kompası aktiv et</button>
+  <button class="secondary" id="resetView" style="width:100%;margin:5px 0">Görünüşü mərkəzləşdir</button>
+  <button class="secondary" id="export" style="width:100%;margin:5px 0">Elan məlumatlarını ixrac et</button>
+  <button class="secondary" id="removeAll" style="width:100%;margin:5px 0">Bütün elanları sil</button>
+ </section></div>
 
-  <div id="notice" role="status"></div>
-
-  <div class="overlay" id="editor">
-    <section class="sheet">
-      <div class="sheethead"><h2 id="editorTitle">✧ Yeni elan yerləşdir</h2><button class="close" data-close="editor">×</button></div>
-      <label for="title">Elanın başlığı *</label>
-      <input id="title" class="field" maxlength="100" placeholder="Məsələn, ev təmiri xidmətləri">
-      <label for="category">Kateqoriya</label>
-      <select id="category" class="field">
-        <option>Şəxsi profil</option><option>Fotoşəkil</option><option>Video</option>
-        <option>Elan / xidmət</option><option>Biznes</option><option>Turizm</option>
-        <option>Hadisə / tədbir</option><option>Məqalə / məlumat</option><option>Digər</option>
-      </select>
-      <label for="description">Açıqlama və məlumat</label>
-      <textarea id="description" class="field" maxlength="5000" placeholder="Elanın bütün məlumatlarını burada yaz…"></textarea>
-      <label for="mediaFile">Həqiqi foto və ya video faylı *</label>
-      <input id="mediaFile" class="field" type="file" accept="image/*,video/*">
-      <div class="help" id="fileInfo">Şəkil və ya video seç. Video avtomatik səssiz oynayacaq; səsi istəyə görə aça bilərsən.</div>
-      <div id="preview" style="display:none;margin-top:10px;background:#02060b;border-radius:12px;overflow:hidden"></div>
-      <label for="latitude">Enlik (latitude)</label>
-      <input id="latitude" class="field" inputmode="decimal" placeholder="GPS-dən və ya xəritədən seç">
-      <label for="longitude">Uzunluq (longitude)</label>
-      <input id="longitude" class="field" inputmode="decimal" placeholder="GPS-dən və ya xəritədən seç">
-      <div class="actions">
-        <button class="secondary" id="getGPS">◎ Mənim yerim</button>
-        <button class="secondary" id="selectMap">⌖ Xəritədən seç</button>
-      </div>
-      <div class="help">Fayl brauzerin IndexedDB yaddaşında saxlanılır. Yaddaş limiti cihaz və brauzerdən asılıdır. Fayllar digər istifadəçilərə avtomatik ötürülmür.</div>
-      <button class="primary" style="width:100%" id="publish">✦ Elanı yadda saxla</button>
-    </section>
-  </div>
-
-  <div class="overlay" id="searchPanel">
-    <section class="sheet">
-      <div class="sheethead"><h2>⌕ Elanlarda axtar</h2><button class="close" data-close="searchPanel">×</button></div>
-      <input class="field" id="query" placeholder="Başlıq, kateqoriya və ya açıqlama">
-      <button class="primary" style="width:100%;margin-top:10px" id="runSearch">Axtar</button>
-      <div id="results"></div>
-    </section>
-  </div>
-
-  <div class="overlay" id="profilePanel">
-    <section class="sheet">
-      <div class="sheethead"><h2>♙ Mənim profilim</h2><button class="close" data-close="profilePanel">×</button></div>
-      <label for="ownerName">Ad və ya istifadəçi adı</label>
-      <input class="field" id="ownerName" maxlength="70" placeholder="Adın">
-      <label for="ownerBio">Haqqında</label>
-      <textarea class="field" id="ownerBio" maxlength="500" placeholder="Özün haqqında məlumat"></textarea>
-      <button class="primary" style="width:100%;margin-top:14px" id="saveProfile">Profili yadda saxla</button>
-      <div class="help">Bu profil yalnız cari brauzerdə saxlanılır.</div>
-    </section>
-  </div>
-
-  <div class="overlay" id="settingsPanel">
-    <section class="sheet">
-      <div class="sheethead"><h2>⚙ Parametrlər</h2><button class="close" data-close="settingsPanel">×</button></div>
-      <button class="secondary" style="width:100%;margin-bottom:9px" id="centerGPS">◎ GPS məkanımı müəyyən et</button>
-      <button class="secondary" style="width:100%;margin-bottom:9px" id="export">⇩ Elanlarımı JSON kimi ixrac et</button>
-      <button class="secondary" style="width:100%;margin-bottom:9px" id="requestStorage">▣ Yaddaş icazəsini yoxla</button>
-      <button class="secondary" style="width:100%;margin-bottom:9px" id="clearAll">⌫ Bütün elanları sil</button>
-      <div class="help">AR kamera görüntüsü ilə həqiqi dünyada sabit lövbərli AR fərqlidir. Bu versiyada elanların koordinatları saxlanır, lakin ARCore tipli fiziki məkan lövbərləri yaradılmır.</div>
-    </section>
-  </div>
-
-  <div class="overlay" id="menuPanel">
-    <section class="sheet">
-      <div class="sheethead"><h2>ARWORLD</h2><button class="close" data-close="menuPanel">×</button></div>
-      <div class="actions">
-        <button class="secondary" id="menuAdd">＋ Yeni elan</button>
-        <button class="secondary" id="menuProfile">♙ Profilim</button>
-      </div>
-      <div class="actions">
-        <button class="secondary" id="menuSearch">⌕ Axtarış</button>
-        <button class="secondary" id="menuMap">⌖ Xəritə</button>
-      </div>
-    </section>
-  </div>
-
-  <input hidden id="quickPhoto" type="file" accept="image/*">
-  <input hidden id="quickVideo" type="file" accept="video/*">
-  <input hidden id="quickFiles" type="file" accept="image/*,video/*" multiple>
+ <div class="overlay" id="menuPanel"><section class="sheet">
+  <div class="sheetHead"><h2>ARWORLD</h2><button class="close" data-close="menuPanel">×</button></div>
+  <div class="row"><button class="secondary" id="menuNew">＋ Yeni məkan</button><button class="secondary" id="menuProfile">♙ Profilim</button></div>
+  <div class="row"><button class="secondary" id="menuSearch">⌕ Axtarış</button><button class="secondary" id="menuMap">⌖ Xəritə</button></div>
+ </section></div>
+ <input id="quickPhoto" type="file" accept="image/*" hidden>
+ <input id="quickVideo" type="file" accept="video/*" hidden>
+ <input id="quickGallery" type="file" accept="image/*,video/*" hidden>
 </div>
-
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-(function(){
+(()=>{
 "use strict";
 const $=id=>document.getElementById(id);
-const DB="ARWORLD_DB_V3";
-const STORE="posts";
-const PROFILE_KEY="ARWORLD_PROFILE_V3";
-let db=null,posts=[],objectURLs=new Map(),selectedFile=null,editingId=null;
-let currentGPS=null,pendingQuickType="",mapPicking=false;
-let activeMode="ar",searchTerm="";
-let profile=loadProfile();
-
-function notify(msg){
- const el=$("notice");el.textContent=msg;el.classList.add("show");
- clearTimeout(notify.timer);notify.timer=setTimeout(()=>el.classList.remove("show"),3000);
-}
-function esc(s){
- return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-}
-function loadProfile(){
- try{return JSON.parse(localStorage.getItem(PROFILE_KEY))||{name:"",bio:""}}
- catch{return {name:"",bio:""}}
-}
-function saveProfileData(){
- try{localStorage.setItem(PROFILE_KEY,JSON.stringify(profile));return true}
- catch{notify("Profil yadda saxlanmadı.");return false}
-}
-function openPanel(id){$(id).classList.add("show")}
-function closePanel(id){$(id).classList.remove("show")}
-document.querySelectorAll("[data-close]").forEach(b=>b.onclick=()=>closePanel(b.dataset.close));
-document.querySelectorAll(".overlay").forEach(el=>el.addEventListener("click",e=>{if(e.target===el)el.classList.remove("show")}));
-
-function openDB(){
- return new Promise((resolve,reject)=>{
-  if(!window.indexedDB){reject(Error("IndexedDB dəstəklənmir"));return}
-  const request=indexedDB.open(DB,1);
-  request.onupgradeneeded=()=>{
-   const d=request.result;
-   if(!d.objectStoreNames.contains(STORE)){
-    const s=d.createObjectStore(STORE,{keyPath:"id"});
-    s.createIndex("created","created");
-   }
-  };
-  request.onsuccess=()=>resolve(request.result);
-  request.onerror=()=>reject(request.error||Error("Verilənlər bazası açılmadı"));
- });
-}
-function tx(mode,action){
- return new Promise((resolve,reject)=>{
-  const transaction=db.transaction(STORE,mode);
-  const store=transaction.objectStore(STORE);
-  let request;
-  try{request=action(store)}catch(e){reject(e);return}
-  if(request){
-   request.onsuccess=()=>resolve(request.result);
-   request.onerror=()=>reject(request.error);
-  }else{
-   transaction.oncomplete=()=>resolve(true);
-   transaction.onerror=()=>reject(transaction.error);
-  }
- });
-}
-async function reloadPosts(){
- posts=await tx("readonly",s=>s.getAll());
- posts.sort((a,b)=>b.created-a.created);
- render();
-}
-function revokeURLs(){
- for(const url of objectURLs.values())URL.revokeObjectURL(url);
- objectURLs.clear();
-}
-function mediaURL(post){
- if(!post.file)return "";
- if(!objectURLs.has(post.id))objectURLs.set(post.id,URL.createObjectURL(post.file));
- return objectURLs.get(post.id);
-}
-function locationLabel(post){
- if(Number.isFinite(post.lat)&&Number.isFinite(post.lng)){
-  return "⌖ "+post.lat.toFixed(6)+", "+post.lng.toFixed(6);
- }
- return "⌖ Məkan əlavə edilməyib";
-}
-function mediaMarkup(post){
- const url=mediaURL(post);
- if(!url)return "";
- if(post.mime&&post.mime.startsWith("video/")){
-  return '<div class="mediawrap"><video class="media" src="'+url+'" controls autoplay muted loop playsinline preload="metadata"></video><span class="playhint">▶ Avtomatik video</span></div>';
- }
- return '<div class="mediawrap"><img class="media" src="'+url+'" alt="'+esc(post.title)+'" loading="lazy"></div>';
+const DB="ARWORLD_PRO_DB",STORE="places",PROFILE="ARWORLD_PRO_PROFILE";
+let db,places=[],urls=new Map(),selectedFile=null,editing=null;
+let gps=null,heading=0,headingReady=false,watchId=null,cameraStream=null;
+let map=null,mapMarker=null,mode="ar",pickMode=false,query="";
+let user={name:"",bio:""};
+try{user=JSON.parse(localStorage.getItem(PROFILE))||user}catch{}
+const rad=Math.PI/180;
+function toast(t){const e=$("notice");e.textContent=t;e.classList.add("show");clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove("show"),3000)}
+function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function panel(id){$(id).classList.add("show")}
+function close(id){$(id).classList.remove("show")}
+function closePanels(){document.querySelectorAll(".overlay").forEach(x=>x.classList.remove("show"))}
+document.querySelectorAll("[data-close]").forEach(b=>b.onclick=()=>close(b.dataset.close));
+document.querySelectorAll(".overlay").forEach(e=>e.addEventListener("click",ev=>{if(ev.target===e)e.classList.remove("show")}));
+function openDB(){return new Promise((resolve,reject)=>{
+ const r=indexedDB.open(DB,1);
+ r.onupgradeneeded=()=>{const d=r.result;if(!d.objectStoreNames.contains(STORE))d.createObjectStore(STORE,{keyPath:"id"})};
+ r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);
+})}
+function request(mode,fn){return new Promise((resolve,reject)=>{
+ const tx=db.transaction(STORE,mode),s=tx.objectStore(STORE);let r;
+ try{r=fn(s)}catch(e){reject(e);return}
+ if(r){r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)}
+ else{tx.oncomplete=()=>resolve(true);tx.onerror=()=>reject(tx.error)}
+})}
+async function refresh(){places=(await request("readonly",s=>s.getAll())).sort((a,b)=>b.created-a.created);render()}
+function url(p){if(!p.file)return"";if(!urls.has(p.id))urls.set(p.id,URL.createObjectURL(p.file));return urls.get(p.id)}
+function distance(a,b){const dLat=(b.lat-a.lat)*rad,dLon=(b.lng-a.lng)*rad;const x=Math.sin(dLat/2)**2+Math.cos(a.lat*rad)*Math.cos(b.lat*rad)*Math.sin(dLon/2)**2;return 6371000*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x))}
+function bearing(a,b){const p1=a.lat*rad,p2=b.lat*rad,dl=(b.lng-a.lng)*rad;return (Math.atan2(Math.sin(dl)*Math.cos(p2),Math.cos(p1)*Math.sin(p2)-Math.sin(p1)*Math.cos(p2)*Math.cos(dl))/rad+360)%360}
+function relativeAngle(a){return ((a-heading+540)%360)-180}
+function getMedia(p,cls="thumb"){
+ const u=url(p);if(!u)return"";
+ if((p.mime||"").startsWith("video/"))return'<video class="'+cls+'" src="'+u+'" autoplay muted loop playsinline controls preload="metadata"></video>';
+ return'<img class="'+cls+'" src="'+u+'" alt="'+esc(p.title)+'">';
 }
 function render(){
- const feed=$("feed");feed.innerHTML="";
- const filtered=posts.filter(p=>!searchTerm||(p.title+" "+p.category+" "+p.description).toLowerCase().includes(searchTerm));
- $("empty").style.display=posts.length?"none":"block";
- $("scene").classList.toggle("empty",!posts.length);
- filtered.forEach(p=>{
-  const card=document.createElement("article");card.className="card";card.id="post-"+p.id;
-  const name=p.owner||profile.name||"İstifadəçi";
-  card.innerHTML=
-   '<div class="cardhead"><div class="avatar">'+esc((name[0]||"A").toUpperCase())+'</div>'+
-   '<div class="identity"><strong>'+esc(p.title)+'</strong><small>'+esc(name)+' · '+esc(p.category)+'</small></div>'+
-   '<div class="cardbuttons"><button data-action="edit" aria-label="Redaktə et">✎</button><button data-action="delete" aria-label="Sil">×</button></div></div>'+
-   '<div class="location">'+locationLabel(p)+'</div>'+
-   mediaMarkup(p)+
-   '<div class="description"><strong>'+esc(p.title)+'</strong><br>'+esc(p.description||"")+'</div>'+
-   '<div class="meta">◷ '+new Date(p.created).toLocaleString("az-AZ")+
-   '<br>'+esc(p.category)+(p.lat!=null&&p.lng!=null?" · Məkan koordinatlıdır":"")+'</div>'+
-   '<div class="reactions"><button data-action="like">♡ Bəyən ('+(p.likes||0)+')</button><button data-action="comment">▤ Şərh</button><button data-action="share">↗ Paylaş</button><button data-action="locate">⌖ Xəritə</button></div>';
-  card.querySelector('[data-action="edit"]').onclick=()=>editPost(p.id);
-  card.querySelector('[data-action="delete"]').onclick=()=>deletePost(p.id);
-  card.querySelector('[data-action="like"]').onclick=()=>likePost(p.id);
-  card.querySelector('[data-action="comment"]').onclick=()=>commentPost(p.id);
-  card.querySelector('[data-action="share"]').onclick=()=>sharePost(p);
-  card.querySelector('[data-action="locate"]').onclick=()=>locatePost(p);
-  feed.appendChild(card);
+ const layer=$("arLayer");layer.innerHTML="";
+ $("empty").style.display=places.length?"none":"block";
+ $("coordText").textContent=gps?gps.lat.toFixed(5)+", "+gps.lng.toFixed(5):"GPS tələb olunur";
+ $("gpsAccuracy").textContent=gps?"GPS ±"+Math.round(gps.accuracy||0)+" m":"GPS gözlənilir";
+ const visible=places.filter(p=>!query||(p.title+" "+p.desc+" "+p.category).toLowerCase().includes(query));
+ if(mode!=="ar")return;
+ const vw=innerWidth,vh=innerHeight;
+ const fov=65;
+ visible.forEach((p,i)=>{
+  if(!gps||p.lat==null||p.lng==null)return;
+  const d=distance(gps,p),angle=relativeAngle(bearing(gps,p));
+  if(Math.abs(angle)>fov/2+12||d>10000)return;
+  const x=50+(angle/fov)*100;
+  const y=Math.max(27,Math.min(67,42+Math.min(15,d/25)));
+  const card=document.createElement("article");card.className="spatialCard";
+  card.style.left=Math.max(37,Math.min(63,x))+"%";
+  card.style.top=(y+i%2*5)+"%";
+  const name=p.owner||user.name||"İstifadəçi";
+  card.innerHTML='<div class="head"><div class="avatar">'+esc((name[0]||"A").toUpperCase())+'</div><div class="identity"><b>'+esc(p.title)+'</b><small>'+esc(name)+' · '+esc(p.category)+'</small></div><span class="dist">'+(d<1000?Math.round(d)+" m":(d/1000).toFixed(1)+" km")+'</span></div>'+
+   getMedia(p)+
+   '<div class="cardText">'+esc(p.desc||"")+'</div>'+
+   '<div class="cardActions"><button data-a="details">Ətraflı</button><button data-a="like">♡ '+(p.likes||0)+'</button><button data-a="route">Xəritə</button></div><i class="pinLine"></i><i class="pinDot"></i>';
+  card.querySelector('[data-a="details"]').onclick=()=>details(p);
+  card.querySelector('[data-a="like"]').onclick=()=>like(p);
+  card.querySelector('[data-a="route"]').onclick=()=>locate(p);
+  layer.appendChild(card);
  });
- if(searchTerm&&!filtered.length){
-  const msg=document.createElement("p");msg.className="help";msg.textContent="Uyğun elan tapılmadı.";
-  feed.appendChild(msg);
+}
+function details(p){
+ const d=document.createElement("div");d.className="overlay show";
+ d.innerHTML='<section class="sheet"><div class="sheetHead"><h2>'+esc(p.title)+'</h2><button class="close">×</button></div><p class="help">'+esc(p.category)+' · '+esc(p.lat)+', '+esc(p.lng)+'</p>'+getMedia(p,'thumb')+'<p style="white-space:pre-wrap;line-height:1.7">'+esc(p.desc)+'</p><button class="primary" style="width:100%">Xəritədə göstər</button></section>';
+ document.body.appendChild(d);d.querySelector(".close").onclick=()=>d.remove();d.querySelector(".primary").onclick=()=>{d.remove();locate(p)};
+}
+async function like(p){p.likes=(p.likes||0)+1;try{await request("readwrite",s=>s.put(p));await refresh()}catch{toast("Bəyənmə saxlanmadı")}}
+async function remove(p){if(!confirm("Bu məkanı silmək istəyirsən?"))return;try{await request("readwrite",s=>s.delete(p.id));if(urls.has(p.id)){URL.revokeObjectURL(urls.get(p.id));urls.delete(p.id)}await refresh();toast("Məkan silindi")}catch{toast("Silmək mümkün olmadı")}}
+function initMap(){
+ if(map||!window.L)return;
+ map=L.map("map").setView(gps?[gps.lat,gps.lng]:[40.4093,49.8671],15);
+ L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© OpenStreetMap"}).addTo(map);
+ map.on("click",e=>{
+  if(!pickMode)return;
+  $("lat").value=e.latlng.lat.toFixed(7);$("lng").value=e.latlng.lng.toFixed(7);
+  if(mapMarker)map.removeLayer(mapMarker);
+  mapMarker=L.marker(e.latlng).addTo(map).bindPopup("Seçilmiş məkan").openPopup();
+  pickMode=false;setMode("ar");panel("editor");toast("Koordinat seçildi");
+ });
+}
+function setMode(m){
+ mode=m;
+ $("scene").style.display=m==="ar"?"block":"none";
+ $("map").style.display=m==="map"?"block":"none";
+ $("arTab").classList.toggle("active",m==="ar");$("mapTab").classList.toggle("active",m==="map");
+ $("modeText").textContent=m==="ar"?"CANLI AR GÖRÜNÜŞ":"İNTERAKTİV XƏRİTƏ";
+ if(m==="map"){
+  initMap();
+  setTimeout(()=>{if(map){map.invalidateSize();if(gps)map.setView([gps.lat,gps.lng],16)}},100);
+  if(map&&mapMarker)mapMarker.openPopup();
  }
- $("gpsText").textContent=currentGPS?currentGPS.lat.toFixed(4)+", "+currentGPS.lng.toFixed(4):"GPS gözlənilir";
 }
-async function deletePost(id){
- if(!confirm("Bu elanı və onun media faylını silmək istəyirsən?"))return;
+function getGPS(){
+ return new Promise((resolve,reject)=>{
+  if(!navigator.geolocation){reject(Error("GPS bu brauzerdə dəstəklənmir"));return}
+  navigator.geolocation.getCurrentPosition(pos=>{
+   gps={lat:pos.coords.latitude,lng:pos.coords.longitude,accuracy:pos.coords.accuracy};
+   if(map)map.setView([gps.lat,gps.lng],16);
+   render();resolve(gps);
+  },e=>reject(Error(e.code===1?"Məkan icazəsi verilməyib":"GPS alınmadı. Məkan xidmətlərini aktiv et.")),{enableHighAccuracy:true,timeout:20000,maximumAge:1000});
+ });
+}
+async function startSensors(){
+ try{await getGPS()}catch(e){toast(e.message)}
+ if(watchId!==null)navigator.geolocation.clearWatch(watchId);
+ if(navigator.geolocation)watchId=navigator.geolocation.watchPosition(pos=>{
+  gps={lat:pos.coords.latitude,lng:pos.coords.longitude,accuracy:pos.coords.accuracy};render();
+ },()=>{}, {enableHighAccuracy:true,maximumAge:1000,timeout:15000});
  try{
-  await tx("readwrite",s=>s.delete(id));
-  if(objectURLs.has(id)){URL.revokeObjectURL(objectURLs.get(id));objectURLs.delete(id)}
-  await reloadPosts();notify("Elan silindi.");
- }catch(e){notify("Silmək mümkün olmadı: "+e.message)}
+  if(typeof DeviceOrientationEvent!=="undefined"&&typeof DeviceOrientationEvent.requestPermission==="function"){
+   const result=await DeviceOrientationEvent.requestPermission();
+   if(result!=="granted")throw Error("Kompas icazəsi verilmədi");
+  }
+  window.addEventListener("deviceorientationabsolute",orientation);
+  window.addEventListener("deviceorientation",orientation);
+  toast("Məkan sensorları aktivdir");
+ }catch(e){toast("GPS aktivdir. Kompas icazəsini və cihaz dəstəyini yoxla.")}
 }
-async function likePost(id){
- const p=posts.find(x=>x.id===id);if(!p)return;
- p.likes=(p.likes||0)+1;
- try{await tx("readwrite",s=>s.put(p));await reloadPosts()}
- catch(e){notify("Bəyənmə yadda saxlanmadı.")}
-}
-function commentPost(p){
- const text=prompt("Elana şərh yaz:");
- if(text===null||!text.trim())return;
- const comments=p.comments||[];comments.push({name:profile.name||"İstifadəçi",text:text.trim(),created:Date.now()});
- p.comments=comments;
- tx("readwrite",s=>s.put(p)).then(reloadPosts).then(()=>notify("Şərh əlavə edildi.")).catch(()=>notify("Şərh yadda saxlanmadı."));
-}
-async function sharePost(p){
- const text=p.title+"\n"+(p.description||"")+"\n"+locationLabel(p);
- try{
-  if(navigator.share)await navigator.share({title:p.title,text});
-  else if(navigator.clipboard){await navigator.clipboard.writeText(text);notify("Elan məlumatı köçürüldü.")}
-  else notify("Bu brauzerdə paylaşma funksiyası dəstəklənmir.");
- }catch(e){if(e.name!=="AbortError")notify("Paylaşmaq mümkün olmadı.")}
-}
-function locatePost(p){
- if(p.lat==null||p.lng==null){notify("Bu elanda koordinat yoxdur.");return}
- closeAllPanels();setMode("map");
- $("mapFrame").src="https://www.openstreetmap.org/export/embed.html?bbox="+(p.lng-.008)+"%2C"+(p.lat-.005)+"%2C"+(p.lng+.008)+"%2C"+(p.lat+.005)+"&layer=mapnik&marker="+p.lat+"%2C"+p.lng;
-}
-function closeAllPanels(){document.querySelectorAll(".overlay").forEach(el=>el.classList.remove("show"))}
-function setMode(mode){
- activeMode=mode;
- $("scene").style.display=mode==="map"?"none":"block";
- $("map").style.display=mode==="map"?"block":"none";
- $("arTab").classList.toggle("active",mode==="ar");
- $("mapTab").classList.toggle("active",mode==="map");
- if(mode==="map"&&!$("mapFrame").src){
-  const p=currentGPS||{lat:40.4093,lng:49.8671};
-  $("mapFrame").src="https://www.openstreetmap.org/export/embed.html?bbox="+(p.lng-.035)+"%2C"+(p.lat-.022)+"%2C"+(p.lng+.035)+"%2C"+(p.lat+.022)+"&layer=mapnik";
+function orientation(e){
+ let h=null;
+ if(typeof e.webkitCompassHeading==="number")h=e.webkitCompassHeading;
+ else if(e.absolute&&typeof e.alpha==="number")h=360-e.alpha;
+ else if(typeof e.alpha==="number")h=360-e.alpha;
+ if(h!==null&&Number.isFinite(h)){
+  heading=(h+360)%360;headingReady=true;
+  $("compass").style.transform="rotate("+(-heading)+"deg)";
+  render();
  }
+}
+async function startCamera(){
+ if(!navigator.mediaDevices?.getUserMedia){toast("Kamera üçün HTTPS tələb olunur");return}
+ try{
+  if(cameraStream)cameraStream.getTracks().forEach(t=>t.stop());
+  cameraStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"}},audio:false});
+  $("camera").srcObject=cameraStream;
+  await $("camera").play();
+  $("camera").style.display="block";
+  toast("Kamera aktivdir");
+ }catch(e){toast("Kamera açılmadı. Sayt icazələrini yoxla.")}
+}
+function resetForm(){
+ editing=null;selectedFile=null;
+ $("formTitle").textContent="✧ Məkan yerləşdir";$("save").textContent="✦ Yerləşdir";
+ $("title").value="";$("desc").value="";$("category").value="Elan / xidmət";
+ $("file").value="";$("lat").value=gps?gps.lat.toFixed(7):"";$("lng").value=gps?gps.lng.toFixed(7):"";
+ $("preview").innerHTML="";$("preview").style.display="none";
+}
+function openEditor(file=null){
+ resetForm();selectedFile=file;
+ if(file){$("title").value=file.name.replace(/\.[^.]+$/,"");$("category").value=file.type.startsWith("video/")?"Video":"Fotoşəkil";preview(file)}
+ panel("editor");
+}
+function preview(file){
+ const p=$("preview");p.innerHTML="";p.style.display="block";
+ const u=URL.createObjectURL(file),el=document.createElement(file.type.startsWith("video/")?"video":"img");
+ el.src=u;if(el.tagName==="VIDEO"){el.controls=true;el.muted=true;el.playsInline=true}
+ p.appendChild(el);
+}
+$("file").onchange=e=>{selectedFile=e.target.files[0]||null;if(selectedFile)preview(selectedFile)};
+function edit(p){
+ resetForm();editing=p.id;selectedFile=null;
+ $("formTitle").textContent="Məkanı redaktə et";$("save").textContent="Dəyişiklikləri saxla";
+ $("title").value=p.title;$("desc").value=p.desc||"";$("category").value=p.category;
+ $("lat").value=p.lat??"";$("lng").value=p.lng??"";
+ if(p.file){const u=url(p),el=document.createElement(p.mime?.startsWith("video/")?"video":"img");el.src=u;el.style.cssText="width:100%;max-height:32dvh;object-fit:contain";if(el.tagName==="VIDEO"){el.controls=true;el.muted=true} $("preview").style.display="block";$("preview").replaceChildren(el)}
+ panel("editor");
+}
+$("save").onclick=async()=>{
+ const title=$("title").value.trim();if(!title){toast("Başlıq daxil et");return}
+ const old=editing?places.find(p=>p.id===editing):null;
+ const file=selectedFile||old?.file;if(!file){toast("Foto və ya video seç");return}
+ let lat=null,lng=null;
+ if($("lat").value.trim()!==""||$("lng").value.trim()!==""){
+  lat=Number($("lat").value);lng=Number($("lng").value);
+  if(!Number.isFinite(lat)||lat < -90||lat>90||!Number.isFinite(lng)||lng < -180||lng>180){toast("Koordinatları yoxla");return}
+ }
+ const p={id:editing||crypto.randomUUID?.()||("p"+Date.now()),title,desc:$("desc").value.trim(),category:$("category").value,lat,lng,file,mime:file.type,owner:user.name||"İstifadəçi",created:old?.created||Date.now(),likes:old?.likes||0};
+ $("save").disabled=true;
+ try{
+  await request("readwrite",s=>s.put(p));
+  if(urls.has(p.id)){URL.revokeObjectURL(urls.get(p.id));urls.delete(p.id)}
+  await refresh();close("editor");toast("Məkan yadda saxlanıldı");
+ }catch(e){toast("Yaddaş xətası: "+e.message)}
+ finally{$("save").disabled=false}
+};
+function locate(p){
+ if(p.lat==null||p.lng==null){toast("Bu məkanın koordinatı yoxdur");return}
+ setMode("map");if(map){map.setView([p.lat,p.lng],18);if(mapMarker)map.removeLayer(mapMarker);mapMarker=L.marker([p.lat,p.lng]).addTo(map).bindPopup(esc(p.title)).openPopup()}
 }
 $("arTab").onclick=()=>setMode("ar");
 $("mapTab").onclick=()=>setMode("map");
-function getGPS(){
- return new Promise((resolve,reject)=>{
-  if(!navigator.geolocation){reject(Error("Brauzer GPS dəstəkləmir"));return}
-  navigator.geolocation.getCurrentPosition(pos=>{
-   currentGPS={lat:pos.coords.latitude,lng:pos.coords.longitude,accuracy:pos.coords.accuracy};
-   $("latitude").value=currentGPS.lat.toFixed(7);
-   $("longitude").value=currentGPS.lng.toFixed(7);
-   $("gpsText").textContent=currentGPS.lat.toFixed(4)+", "+currentGPS.lng.toFixed(4);
-   resolve(currentGPS);
-  },e=>reject(Error(e.code===1?"Məkan icazəsi verilmədi":"GPS müəyyən edilmədi. Açıq havada yenidən yoxla.")),{enableHighAccuracy:true,timeout:15000,maximumAge:10000});
- });
-}
-function resetEditor(){
- editingId=null;selectedFile=null;
- $("editorTitle").textContent="✧ Yeni elan yerləşdir";
- $("publish").textContent="✦ Elanı yadda saxla";
- $("title").value="";$("description").value="";
- $("category").value="Elan / xidmət";
- $("mediaFile").value="";$("latitude").value="";$("longitude").value="";
- $("preview").style.display="none";$("preview").innerHTML="";
- $("fileInfo").textContent="Şəkil və ya video seç. Video avtomatik səssiz oynayacaq.";
-}
-function newPost(file=null){
- resetEditor();selectedFile=file;
- if(file){
-  $("mediaFile").value="";
-  $("title").value=file.name.replace(/\.[^.]+$/,"");
-  $("category").value=file.type.startsWith("video/")?"Video":"Fotoşəkil";
-  previewFile(file);
- }
- if(currentGPS){$("latitude").value=currentGPS.lat.toFixed(7);$("longitude").value=currentGPS.lng.toFixed(7)}
- openPanel("editor");
-}
-function previewFile(file){
- if(!file)return;
- const preview=$("preview");preview.innerHTML="";preview.style.display="block";
- const url=URL.createObjectURL(file);
- const el=document.createElement(file.type.startsWith("video/")?"video":"img");
- el.src=url;el.style.width="100%";el.style.maxHeight="38dvh";el.style.objectFit="contain";
- if(el.tagName==="VIDEO"){el.controls=true;el.muted=true;el.playsInline=true}
- preview.appendChild(el);
- $("fileInfo").textContent=file.name+" · "+(file.size/1024/1024).toFixed(2)+" MB";
-}
-$("mediaFile").onchange=e=>{
- selectedFile=e.target.files[0]||null;
- if(selectedFile)previewFile(selectedFile);
-};
-async function editPost(id){
- const p=posts.find(x=>x.id===id);if(!p)return;
- resetEditor();editingId=id;
- $("editorTitle").textContent="Elanı redaktə et";
- $("publish").textContent="Dəyişiklikləri yadda saxla";
- $("title").value=p.title;$("description").value=p.description||"";
- $("category").value=p.category;$("latitude").value=p.lat??"";
- $("longitude").value=p.lng??"";
- selectedFile=null;
- if(p.file){
-  const preview=$("preview");preview.innerHTML="";preview.style.display="block";
-  const url=mediaURL(p),el=document.createElement(p.mime?.startsWith("video/")?"video":"img");
-  el.src=url;el.style.width="100%";el.style.maxHeight="38dvh";el.style.objectFit="contain";
-  if(el.tagName==="VIDEO"){el.controls=true;el.muted=true;el.playsInline=true}
-  preview.appendChild(el);$("fileInfo").textContent="Mövcud media saxlanılır. Yeni fayl seçsən, əvəz olunacaq.";
- }
- openPanel("editor");
-}
-$("publish").onclick=async()=>{
- const title=$("title").value.trim();
- if(!title){notify("Elanın başlığını daxil et.");$("title").focus();return}
- const old=editingId?posts.find(p=>p.id===editingId):null;
- const file=selectedFile||(old?.file)||null;
- if(!file){notify("Həqiqi foto və ya video faylı seç.");return}
- if(!file.type?.startsWith("image/")&&!file.type?.startsWith("video/")){notify("Dəstəklənməyən media faylı.");return}
- const latRaw=$("latitude").value.trim(),lngRaw=$("longitude").value.trim();
- let lat=null,lng=null;
- if(latRaw!==""||lngRaw!==""){
-  lat=Number(latRaw);lng=Number(lngRaw);
-  if(!Number.isFinite(lat)||lat < -90||lat>90||!Number.isFinite(lng)||lng < -180||lng>180){
-   notify("Koordinatları düzgün daxil et.");return;
-  }
- }
- const post={
-  id:editingId||("p"+Date.now().toString(36)+Math.random().toString(36).slice(2,8)),
-  title,description:$("description").value.trim(),category:$("category").value,
-  lat,lng,file,mime:file.type,owner:profile.name||"İstifadəçi",
-  created:old?.created||Date.now(),likes:old?.likes||0,comments:old?.comments||[]
- };
- const btn=$("publish");btn.disabled=true;btn.textContent="Yadda saxlanılır…";
- try{
-  await tx("readwrite",s=>s.put(post));
-  if(objectURLs.has(post.id)){URL.revokeObjectURL(objectURLs.get(post.id));objectURLs.delete(post.id)}
-  await reloadPosts();closePanel("editor");resetEditor();notify("Elan və media uğurla yadda saxlanıldı.");
- }catch(e){
-  notify("Yadda saxlamaq alınmadı. Cihaz yaddaşını yoxla: "+(e.message||"xəta"));
- }finally{btn.disabled=false;btn.textContent=editingId?"Dəyişiklikləri yadda saxla":"✦ Elanı yadda saxla"}
-};
-$("getGPS").onclick=async()=>{try{await getGPS();notify("Koordinatlar əlavə edildi.")}catch(e){notify(e.message)}};
-$("selectMap").onclick=()=>{
- closePanel("editor");setMode("map");
- notify("Xəritədə istədiyin nöqtəyə toxun, sonra koordinatları elana daxil et.");
- $("mapFrame").src="https://www.openstreetmap.org/export/embed.html?bbox=49.78%2C40.35%2C49.94%2C40.47&layer=mapnik";
-};
-function quickPick(file,kind){
- if(!file)return;
- if(kind==="photo"&&!file.type.startsWith("image/")){notify("Şəkil seç.");return}
- if(kind==="video"&&!file.type.startsWith("video/")){notify("Video seç.");return}
- if(file.size>150*1024*1024){notify("Fayl 150 MB limitini keçir.");return}
- newPost(file);
-}
+$("menu").onclick=()=>panel("menuPanel");
+$("search").onclick=()=>panel("searchPanel");
+$("settings").onclick=()=>panel("settingsPanel");
+$("add").onclick=()=>openEditor();
+$("emptyAdd").onclick=()=>openEditor();
 $("photo").onclick=()=>$("quickPhoto").click();
 $("video").onclick=()=>$("quickVideo").click();
-$("gallery").onclick=()=>$("quickFiles").click();
-$("quickPhoto").onchange=e=>{quickPick(e.target.files[0],"photo");e.target.value=""};
-$("quickVideo").onchange=e=>{quickPick(e.target.files[0],"video");e.target.value=""};
-$("quickFiles").onchange=e=>{
- const f=e.target.files[0];if(f)quickPick(f,"any");e.target.value="";
+$("gallery").onclick=()=>$("quickGallery").click();
+$("quickPhoto").onchange=e=>{if(e.target.files[0])openEditor(e.target.files[0]);e.target.value=""};
+$("quickVideo").onchange=e=>{if(e.target.files[0])openEditor(e.target.files[0]);e.target.value=""};
+$("quickGallery").onchange=e=>{if(e.target.files[0])openEditor(e.target.files[0]);e.target.value=""};
+$("gps").onclick=async()=>{try{const p=await getGPS();$("lat").value=p.lat.toFixed(7);$("lng").value=p.lng.toFixed(7);toast("GPS koordinatları götürüldü")}catch(e){toast(e.message)}};
+$("pickMap").onclick=()=>{close("editor");pickMode=true;setMode("map");toast("Xəritədə dəqiq nöqtəyə toxun")};
+$("startCamera").onclick=startCamera;
+$("startGPS").onclick=startSensors;
+$("resetView").onclick=()=>{if(gps){setMode("map");map?.setView([gps.lat,gps.lng],16)}else startSensors()};
+$("profile").onclick=()=>{ $("name").value=user.name;$("bio").value=user.bio;panel("profilePanel")};
+$("profileSave").onclick=()=>{user.name=$("name").value.trim();user.bio=$("bio").value.trim();try{localStorage.setItem(PROFILE,JSON.stringify(user));close("profilePanel");toast("Profil saxlanıldı")}catch{toast("Profil yadda saxlanmadı")}};
+$("searchGo").onclick=()=>{query=$("query").value.trim().toLowerCase();close("searchPanel");setMode("ar");render();if(!places.some(p=>(p.title+" "+p.desc+" "+p.category).toLowerCase().includes(query)))toast("Nəticə tapılmadı")};
+$("searchClear").onclick=()=>{$("query").value="";query="";close("searchPanel");render()};
+$("menuNew").onclick=()=>{close("menuPanel");openEditor()};
+$("menuProfile").onclick=()=>{close("menuPanel");$("profile").click()};
+$("menuSearch").onclick=()=>{close("menuPanel");panel("searchPanel")};
+$("menuMap").onclick=()=>{close("menuPanel");setMode("map")};
+$("export").onclick=()=>{
+ const data=places.map(p=>({id:p.id,title:p.title,desc:p.desc,category:p.category,lat:p.lat,lng:p.lng,mime:p.mime,created:p.created,mediaName:p.file?.name||""}));
+ const a=document.createElement("a"),u=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:"application/json"}));a.href=u;a.download="arworld-places.json";a.click();setTimeout(()=>URL.revokeObjectURL(u),2000);
 };
-$("add").onclick=()=>newPost();
-$("firstAdd").onclick=()=>newPost();
-$("search").onclick=()=>openPanel("searchPanel");
-$("settings").onclick=()=>openPanel("settingsPanel");
-$("menu").onclick=()=>openPanel("menuPanel");
-$("myProfile").onclick=()=>{
- $("ownerName").value=profile.name||"";$("ownerBio").value=profile.bio||"";
- openPanel("profilePanel");
-};
-$("saveProfile").onclick=()=>{
- profile.name=$("ownerName").value.trim();profile.bio=$("ownerBio").value.trim();
- if(saveProfileData()){closePanel("profilePanel");notify("Profil saxlanıldı.");}
-};
-$("runSearch").onclick=()=>{
- searchTerm=$("query").value.trim().toLowerCase();
- closePanel("searchPanel");setMode("ar");render();
- if(!posts.some(p=>(p.title+" "+p.category+" "+p.description).toLowerCase().includes(searchTerm)))notify("Uyğun elan tapılmadı.");
- else notify("Axtarış nəticələri göstərilir.");
-};
-$("query").onkeydown=e=>{if(e.key==="Enter")$("runSearch").click()};
-$("menuAdd").onclick=()=>{closePanel("menuPanel");newPost()};
-$("menuProfile").onclick=()=>{closePanel("menuPanel");$("myProfile").click()};
-$("menuSearch").onclick=()=>{closePanel("menuPanel");openPanel("searchPanel")};
-$("menuMap").onclick=()=>{closePanel("menuPanel");setMode("map")};
-$("centerGPS").onclick=async()=>{
- try{const p=await getGPS();notify("GPS: "+p.lat.toFixed(6)+", "+p.lng.toFixed(6));setMode("map");$("mapFrame").src="https://www.openstreetmap.org/export/embed.html?bbox="+(p.lng-.015)+"%2C"+(p.lat-.01)+"%2C"+(p.lng+.015)+"%2C"+(p.lat+.01)+"&layer=mapnik&marker="+p.lat+"%2C"+p.lng}
- catch(e){notify(e.message)}
-};
-$("requestStorage").onclick=async()=>{
- try{
-  if(navigator.storage?.persist){const ok=await navigator.storage.persist();notify(ok?"Davamlı yaddaş icazəsi verildi.":"Brauzer davamlı yaddaş icazəsi vermədi.")}
-  else notify("Bu brauzerdə davamlı yaddaş sorğusu dəstəklənmir.");
-  if(navigator.storage?.estimate){const e=await navigator.storage.estimate();console.log("ARWORLD storage",e)}
- }catch(e){notify("Yaddaş statusu yoxlanmadı.")}
-};
-$("export").onclick=async()=>{
- try{
-  const data=posts.map(p=>({id:p.id,title:p.title,description:p.description,category:p.category,lat:p.lat,lng:p.lng,mime:p.mime,owner:p.owner,created:p.created,likes:p.likes,comments:p.comments,mediaFile:p.file?.name||""}));
-  const blob=new Blob([JSON.stringify({profile,posts:data},null,2)],{type:"application/json"});
-  const url=URL.createObjectURL(blob),a=document.createElement("a");
-  a.href=url;a.download="arworld-export.json";a.click();setTimeout(()=>URL.revokeObjectURL(url),2000);
-  notify("Elan məlumatları ixrac edilir. Media faylları ayrıca saxlanılır.");
- }catch(e){notify("İxrac uğursuz oldu.")}
-};
-$("clearAll").onclick=async()=>{
- if(!confirm("Bütün elanlar və onların media faylları bu brauzerdən silinsin?"))return;
- try{
-  await tx("readwrite",s=>s.clear());revokeURLs();searchTerm="";
-  await reloadPosts();closePanel("settingsPanel");notify("Bütün elanlar silindi.");
- }catch(e){notify("Silmək mümkün olmadı.")}
-};
-async function start(){
- try{
-  db=await openDB();await reloadPosts();
-  if(navigator.storage?.persist)navigator.storage.persist().catch(()=>{});
-  try{
-   const p=await getGPS();
-   $("gpsText").textContent=p.lat.toFixed(4)+", "+p.lng.toFixed(4);
-  }catch{$("gpsText").textContent="GPS icazəsi verilməyib"}
- }catch(e){
-  $("empty").style.display="block";
-  notify("Verilənlər bazası açılmadı. Brauzerin normal rejimində GitHub Pages-i aç.");
- }
+$("removeAll").onclick=async()=>{if(!confirm("Bütün məkanları silmək istəyirsən?"))return;try{await request("readwrite",s=>s.clear());urls.forEach(URL.revokeObjectURL);urls.clear();await refresh();toast("Məkanlar silindi")}catch{toast("Silmək alınmadı")}};
+window.addEventListener("pagehide",()=>{urls.forEach(URL.revokeObjectURL);if(cameraStream)cameraStream.getTracks().forEach(t=>t.stop())});
+async function boot(){
+ try{db=await openDB();await refresh();if(navigator.storage?.persist)navigator.storage.persist().catch(()=>{})}
+ catch(e){toast("Yaddaş açılmadı: "+e.message)}
 }
-window.addEventListener("pagehide",()=>{revokeURLs()});
-start();
+boot();
 })();
 </script>
 </body>
