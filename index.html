@@ -1,933 +1,550 @@
-<!DOCTYPE html>  <html lang="az">  
-<head>  
-<meta charset="UTF-8">  
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">  
-<meta name="theme-color" content="#08111d">  
-<meta name="description" content="USTAMAP EarthView Pro — dünya üzrə xidmətlər, peşəkarlar və xəritədə elanlar">  
-<title>USTAMAP — EarthView Pro</title>  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">  
-<link rel="stylesheet" href="https://cesium.com/downloads/cesiumjs/releases/1.127/Build/Cesium/Widgets/widgets.css">  <style>  
-:root{--bg:#08111d;--panel:#101d2c;--line:#26374a;--txt:#f2f7ff;--muted:#92a5bb;--cyan:#45e0d0;--blue:#6c8cff;--gold:#ffca72;--danger:#ff7084}  
-*{box-sizing:border-box}  
-html{scroll-behavior:smooth}  
-body{margin:0;background:var(--bg);color:var(--txt);font:14px system-ui,-apple-system,Arial,sans-serif}  
-button,input,select,textarea{font:inherit}  
-button{cursor:pointer}  
-button:disabled{opacity:.5;cursor:wait}  
-a{color:var(--cyan)}  
-header{position:sticky;top:0;z-index:1000;background:#08111df2;backdrop-filter:blur(18px);border-bottom:1px solid var(--line);padding:12px 14px}  
-.top{display:flex;align-items:center;gap:10px;justify-content:space-between}  
-.brand{display:flex;align-items:center;gap:9px;font-size:19px;font-weight:900;letter-spacing:.5px}  
-.logo{width:37px;height:37px;border-radius:13px;background:linear-gradient(135deg,#4af0d1,#627dff);display:grid;place-items:center;color:#07111e;font-size:21px}  
-.brand span{color:var(--cyan)}  
-.status{font-size:10px;color:var(--cyan);border:1px solid #27685f;border-radius:20px;padding:6px 8px}  
-.searchrow{display:flex;gap:7px;margin-top:12px}  
-.searchrow input{min-width:0;flex:1}  
-input,select,textarea{width:100%;background:#0a1522;color:white;border:1px solid #304358;border-radius:11px;padding:11px;outline:none}  
-input:focus,select:focus,textarea:focus{border-color:var(--cyan)}  
-input[type=checkbox]{width:18px;height:18px;accent-color:var(--cyan);flex-shrink:0}  
-input[type=file]{font-size:12px}  
-.btn{border:1px solid #31475c;border-radius:11px;padding:10px 12px;background:#17283a;color:white}  
-.btn.primary{background:linear-gradient(120deg,#45e0d0,#73a4ff);border:0;color:#07131d;font-weight:800}  
-.btn.small{padding:7px 10px;font-size:12px}  
-.btn.active{border-color:var(--cyan);color:var(--cyan)}  
-.btn:active{transform:scale(.98)}  
-nav{display:flex;gap:7px;overflow:auto;margin-top:10px;padding-bottom:2px}  
-nav button{white-space:nowrap;flex-shrink:0}  
-main{max-width:1300px;margin:auto;padding:12px}  
-.sectionhead{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:8px 0}  
-h2{font-size:17px;margin:0}  
-.sub{color:var(--muted);font-size:12px;margin-top:4px;line-height:1.5}  
-.globeWrap,.mapWrap{border:1px solid var(--line);border-radius:17px;overflow:hidden;background:#07111b;position:relative}  
-#globe{height:340px;width:100%;background:#07111b}  
-.globeTools{position:absolute;left:10px;top:10px;z-index:20;display:flex;gap:6px;flex-wrap:wrap;max-width:95%}  
-.pill{background:#081522eF;border:1px solid #344a60;border-radius:10px;color:#eaf6ff;padding:8px 10px;font-size:12px;backdrop-filter:blur(8px)}  
-.legend{position:absolute;bottom:10px;left:10px;z-index:20;color:#b7c9dd;background:#081522d9;padding:8px 10px;border-radius:10px;font-size:11px;max-width:90%}  
-#map{height:410px;width:100%}  
-.mapModes{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}  
-.filters{display:flex;gap:7px;overflow:auto;padding:10px 0}  
-.filters .btn{white-space:nowrap;flex-shrink:0}  
-.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}  
-.card{border:1px solid var(--line);background:linear-gradient(155deg,#132235,#0c1724);border-radius:15px;overflow:hidden;min-width:0}  
-.card img{display:block;width:100%;height:130px;object-fit:cover;background:#1b2d40}  
-.cardbody{padding:10px}  
-.card h3{font-size:14px;margin:0 0 5px;overflow-wrap:anywhere}  
-.card p{font-size:12px;color:var(--muted);margin:5px 0;overflow-wrap:anywhere}  
-.price{font-weight:800;color:var(--gold)}  
-.chip{display:inline-block;font-size:10px;border:1px solid #344a60;padding:4px 7px;border-radius:20px;color:#c6d7e9;margin:3px 2px 3px 0}  
-.cardActions{display:flex;gap:6px;margin-top:9px;flex-wrap:wrap}  
-.cardActions button{flex:1;min-width:70px}  
-.bottomnav{position:sticky;bottom:0;z-index:800;display:flex;justify-content:space-around;background:#08111df5;border-top:1px solid var(--line);padding:9px 3px calc(9px + env(safe-area-inset-bottom));backdrop-filter:blur(18px)}  
-.bottomnav button{background:none;border:0;color:#a8bbcf;font-size:11px;display:grid;gap:4px;justify-items:center;min-width:0}  
-.bottomnav b{font-size:19px}  
-.bottomnav button:focus,.bottomnav button:hover{color:var(--cyan)}  
-.overlay{display:none;position:fixed;inset:0;z-index:3000;background:#020811df;align-items:flex-end;justify-content:center;padding:8px}  
-.overlay.show{display:flex}  
-.sheet{width:100%;max-width:620px;max-height:94dvh;overflow:auto;background:#101d2c;border:1px solid #30465c;border-radius:22px;padding:17px;box-shadow:0 25px 90px #0009}  
-.sheethead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px;position:sticky;top:-17px;padding:10px 0;background:#101d2c;z-index:2}  
-.sheethead h2{font-size:19px}  
-.close{width:36px;height:36px;flex-shrink:0;border-radius:50%;background:#203247;color:white;border:1px solid #3c5065;font-size:21px}  
-.formgrid{display:grid;gap:10px}  
-label{display:block;font-size:12px;color:#a9bed2;margin-bottom:5px}  
-.profiletop{display:flex;gap:12px;align-items:center}  
-.avatar{width:70px;height:70px;flex-shrink:0;border-radius:20px;object-fit:cover;background:#24384c;border:2px solid #49dfd0}  
-.profiletop h2{margin-bottom:5px}  
-.details{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0}  
-.detail{background:#0a1624;border:1px solid #263b50;border-radius:12px;padding:11px;min-width:0}  
-.detail small{display:block;color:var(--muted);margin-bottom:4px}  
-.detail strong{overflow-wrap:anywhere;font-size:12px}  
-#toast{position:fixed;z-index:5000;bottom:85px;left:50%;transform:translateX(-50%);background:#e7fff9;color:#09201e;padding:11px 16px;border-radius:12px;box-shadow:0 8px 35px #0008;display:none;max-width:92%;font-weight:700}  
-.empty{padding:24px;text-align:center;color:var(--muted);border:1px dashed #344a60;border-radius:14px;grid-column:1/-1}  
-.leaflet-popup-content-wrapper,.leaflet-popup-tip{background:#101d2c;color:#f4f8ff}  
-.leaflet-popup-content{margin:12px;min-width:180px}  
-.mapcall{min-width:180px}  
-.mapcall b{display:block;font-size:14px;margin-bottom:3px}  
-.mapcall small{color:#9db2c8}  
-.mapcall button{margin-top:9px;background:#45e0d0;color:#06151b;border:0;border-radius:8px;padding:7px 10px;font-weight:800}  
-.markerDot{width:28px;height:28px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:#45e0d0;border:2px solid white;box-shadow:0 0 0 5px #45e0d033,0 0 18px #45e0d0;display:grid;place-items:center}  
-.markerDot span{transform:rotate(45deg);font-size:14px}  
-.cesium-viewer-bottom,.cesium-viewer-toolbar,.cesium-viewer-animationContainer,.cesium-viewer-timelineContainer{display:none!important}  
-.cesium-viewer{font-family:inherit}  
-.checkboxrow{display:flex;gap:10px;align-items:flex-start;background:#0a1624;border:1px solid #304358;border-radius:12px;padding:12px;color:#c5d5e6;font-size:12px;line-height:1.5}  
-.checkboxrow input{margin-top:2px}  
-.masonry{columns:2;column-gap:10px}  
-.masonry .card{break-inside:avoid;margin-bottom:10px;display:inline-block;width:100%}  
-.masonry .card img{height:auto;min-height:100px;max-height:320px;object-fit:cover}  
-.masonry .card:nth-child(3n) img{max-height:210px}  
-.fullscreen{position:fixed;inset:0;z-index:2500;background:#08111d;display:none;flex-direction:column}  
-.fullscreen.show{display:flex}  
-.fullhead{padding:calc(10px + env(safe-area-inset-top)) 12px 10px;border-bottom:1px solid var(--line);background:#08111df7}  
-.fullheadtop{display:flex;align-items:center;justify-content:space-between;gap:8px}  
-.fullheadtop h2{font-size:18px}  
-.fullcontent{padding:10px;overflow:auto;flex:1;overscroll-behavior:contain}  
-.fullfilters{display:flex;gap:6px;overflow:auto;padding:10px 0}  
-.fullfilters button{flex-shrink:0}  
-.menuwrap{position:relative}  
-.menupop{display:none;position:absolute;right:0;top:40px;z-index:50;background:#152438;border:1px solid #3a4f67;border-radius:12px;padding:6px;min-width:190px;box-shadow:0 15px 35px #0009}  
-.menupop.open{display:block}  
-.menupop button{display:block;width:100%;text-align:left;background:none;border:0;color:#eaf3ff;padding:11px;border-radius:8px}  
-.menupop button:hover{background:#263a50}  
-.inlineSearch{display:flex;gap:7px}  
-.inlineSearch input{min-width:0}  
-@media(min-width:760px){  
- header{padding:14px 24px}.top{max-width:1250px;margin:auto}  
- main{padding:20px}.grid{grid-template-columns:repeat(3,minmax(0,1fr))}  
- #globe{height:500px}#map{height:500px}  
- .overlay{align-items:center}.sheet{border-radius:22px}  
- .masonry{columns:3}  
-}  
-@media(min-width:1050px){.masonry{columns:4}}  
-</style>  </head>  
-<body>  <header>  
- <div class="top">  
-  <div class="brand"><div class="logo">◎</div><div>USTA<span>MAP</span><div style="font-size:10px;color:#91a7bf;font-weight:500;letter-spacing:2px">EARTHVIEW PRO</div></div></div>  
-  <div class="status">● EarthView</div>  
- </div>  
- <div class="searchrow">  
-  <input id="search" placeholder="Peşə, xidmət, ölkə, şəhər, küçə və ya koordinat..." autocomplete="off">  
-  <button class="btn primary" id="searchBtn" onclick="searchPlace()">Axtar</button>  
- </div>  
- <nav>  
-  <button class="btn small" onclick="flyTo(40.4093,49.8671,50000,'Bakı, Azərbaycan')">🇦🇿 Bakı</button>  
-  <button class="btn small" onclick="flyTo(41.0082,28.9784,70000,'İstanbul, Türkiyə')">🇹🇷 İstanbul</button>  
-  <button class="btn small" onclick="flyTo(52.52,13.405,90000,'Berlin, Almaniya')">🇩🇪 Berlin</button>  
-  <button class="btn small" onclick="flyTo(51.5072,-0.1276,90000,'London, Böyük Britaniya')">🇬🇧 London</button>  
-  <button class="btn small" onclick="flyTo(40.7128,-74.006,130000,'New York, ABŞ')">🇺🇸 New York</button>  
-  <button class="btn small" onclick="openAdd()">＋ Elan yerləşdir</button>  
-  <button class="btn small" onclick="openExplore()">✦ Kəşf et</button>  
- </nav>  
-</header>  <main>  
- <div class="sectionhead">  
-  <div><h2>🌍 3D dünya qlobusu</h2><div class="sub">Peyk görünüşü, siyasi sərhədlər və koordinata sabit bağlanan elanlar</div></div>  
-  <button class="btn small" onclick="resetGlobe()">Qlobus ↻</button>  
- </div>  
- <div class="mapModes">  
-  <button class="btn small active" id="globeSatelliteBtn" onclick="setGlobeMode('satellite')">🛰️ Peyk</button>  
-  <button class="btn small" id="globePoliticalBtn" onclick="setGlobeMode('political')">🌐 Siyasi xəritə</button>  
- </div>  
- <div class="globeWrap">  
-  <div id="globe"></div>  
-  <div class="globeTools">  
-   <button class="pill" onclick="flyTo(40.4093,49.8671,50000,'Bakı, Azərbaycan')">📍 Azərbaycana keç</button>  
-   <button class="pill" onclick="openAdd()">＋ Seçilən yerə elan</button>  
-  </div>  
-  <div class="legend" id="globeHint">Elanlar coğrafi koordinatlara bağlıdır · Qlobusu döndərmək üçün sürüşdür</div>  
- </div>   <div class="sectionhead" style="margin-top:22px">  
-  <div><h2>🗺️ Ətraflı dünya xəritəsi</h2><div class="sub" id="locationLabel">Xəritədə istənilən yerə toxun və həmin yerə elan əlavə et</div></div>  
-  <button class="btn small" onclick="locateMe()">◎ Mənim yerim</button>  
- </div>  
- <div class="mapModes">  
-  <button class="btn small active" id="streetBtn" onclick="setMapMode('street')">🗺️ Küçə</button>  
-  <button class="btn small" id="satelliteBtn" onclick="setMapMode('satellite')">🛰️ Peyk</button>  
-  <button class="btn small" id="hybridBtn" onclick="setMapMode('hybrid')">🌐 Peyk + adlar</button>  
-  <button class="btn small" onclick="selectCurrentMapPoint()">＋ Bu məkana elan</button>  
- </div>  
- <div class="mapWrap"><div id="map"></div></div>  
- <div class="sectionhead" style="margin-top:22px">  
-  <div><h2>📌 Seçilmiş məkan</h2><div class="sub">Xəritədə seçdiyin və ya axtardığın yer</div></div>  
-  <button class="btn small primary" onclick="openAdd()">＋ Elan yarat</button>  
- </div>  
- <div class="card" style="padding:14px;margin-bottom:18px">  
-  <strong id="selectedPlace">Bakı, Azərbaycan</strong>  
-  <div class="sub" id="selectedCoords" style="margin-top:6px">40.4093, 49.8671</div>  
-  <div class="sub">Məkanın ünvanı xəritə xidmətindən əldə edilir. Bəzi kənd, küçə və bina ünvanları dəqiq tapılmaya bilər.</div>  
- </div>   <div class="sectionhead">  
-  <div><h2>✨ Elanlar</h2><div class="sub">Kateqoriya və sözə görə süzgəcdən keçir</div></div>  
-  <button class="btn small" onclick="openExplore()">Tam ekran ↗</button>  
- </div>  
- <div class="inlineSearch">  
-  <input id="listingSearch" placeholder="Elanlarda peşə, xidmət və ünvan axtar..." oninput="renderListings()">  
-  <button class="btn small" onclick="document.getElementById('listingSearch').value='';renderListings()">Təmizlə</button>  
- </div>  
- <div class="filters" id="filters"></div>  
- <div class="grid" id="listingGrid"></div>  
-</main>  <div class="bottomnav">  
- <button onclick="window.scrollTo({top:0,behavior:'smooth'})"><b>🌍</b>Dünya</button>  
- <button onclick="document.getElementById('map').scrollIntoView({behavior:'smooth',block:'center'})"><b>⌖</b>Xəritə</button>  
- <button onclick="openExplore()"><b>✦</b>Kəşf et</button>  
- <button onclick="openMyProfile()"><b>♙</b>Profil</button>  
- <button onclick="openAdd()"><b>＋</b>Elan ver</button>  
-</div>  <!-- Pinterest tipli kəşf pəncərəsi -->  <div class="fullscreen" id="exploreScreen">  
- <div class="fullhead">  
-  <div class="fullheadtop">  
-   <div><h2>✦ Kəşf et</h2><div class="sub">Xidmətlər və peşəkarlar</div></div>  
-   <button class="close" onclick="closeExplore()">×</button>  
-  </div>  
-  <div class="searchrow">  
-   <input id="exploreSearch" placeholder="Peşə, xidmət, şəhər, ölkə..." oninput="renderExplore()">  
-   <button class="btn primary" onclick="renderExplore()">Axtar</button>  
-  </div>  
-  <div class="fullfilters" id="exploreFilters"></div>  
-  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">  
-   <button class="btn small" id="nearbyBtn" onclick="toggleNearby()">◎ Yaxınlıqdakı elanlar</button>  
-   <select id="radiusSelect" onchange="renderExplore()" style="width:auto;padding:7px;font-size:12px">  
-    <option value="1">1 km</option><option value="5" selected>5 km</option><option value="10">10 km</option><option value="25">25 km</option><option value="100">100 km</option>  
-   </select>  
-   <span class="sub" id="nearbyStatus">Yaxınlıq axtarışı istəyə bağlıdır</span>  
-  </div>  
- </div>  
- <div class="fullcontent"><div class="masonry" id="exploreGrid"></div></div>  
-</div>  <!-- Elan yaratma -->  <div class="overlay" id="addOverlay" onclick="if(event.target===this)closeSheet('addOverlay')">  
- <div class="sheet">  
-  <div class="sheethead"><h2>＋ Yeni elan yarat</h2><button class="close" onclick="closeSheet('addOverlay')">×</button></div>  
-  <form class="formgrid" id="addForm">  
-   <div><label>Ad və ya şirkət / usta adı</label><input id="fName" required maxlength="70" placeholder="Məsələn: Usta Əli"></div>  
-   <div><label>Peşə / xidmət kateqoriyası</label><select id="fCat" required></select></div>  
-   <div><label>Elanın başlığı</label><input id="fTitle" required maxlength="100" placeholder="Məsələn: Mənzil təmiri və alçıpan"></div>  
-   <div><label>Ətraflı məlumat</label><textarea id="fDesc" rows="4" maxlength="1500" placeholder="Təcrübə, xidmətlər, iş vaxtı, xidmət ərazisi..."></textarea></div>  
-   <div><label>Telefon (istəyə bağlı)</label><input id="fPhone" type="tel" maxlength="35" placeholder="+994..."></div>  
-   <div><label>Qiymət / qiymət qeydi</label><input id="fPrice" maxlength="60" placeholder="Razılaşma ilə"></div>  
-   <div><label>Ölkə, şəhər, qəsəbə, küçə və ünvan</label><input id="fAddress" required maxlength="250" placeholder="Ünvanı yaz və ya xəritədə yer seç"></div>  
-   <button class="btn small" type="button" onclick="resolveFormAddress()">⌖ Ünvanı koordinatdan dəqiqləşdir</button>  
-   <div class="details">  
-    <div><label>Enlik (latitude)</label><input id="fLat" type="number" min="-90" max="90" step="any" value="40.4093" required></div>  
-    <div><label>Uzunluq (longitude)</label><input id="fLng" type="number" min="-180" max="180" step="any" value="49.8671" required></div>  
-   </div>  
-   <div><label>Şəkillər (qalereya və ya kamera)</label><input id="fPhoto" type="file" accept="image/*" multiple></div>  
-   <div class="sub">Şəkillər telefonda ölçüsü kiçildilərək saxlanır. İlk şəkil elan kartında görünəcək. Yaddaş limitləri cihazdan asılıdır.</div>  
-   <div id="photoPreview" class="sub"></div>  
-   <label class="checkboxrow"><input type="checkbox" id="legalAgree" required><span>Elanı yerləşdirməklə təsdiq edirəm ki, məlumatlarımın doğru olmasına, paylaşmağa hüququm olan şəkillərdən istifadə etməyə və elanımın qanunlara uyğunluğuna cavabdehəm. Qanunsuz, saxta, aldadıcı və başqasının hüquqlarını pozan məlumat paylaşmayacağam. Başa düşürəm ki, USTAMAP istifadəçilərin elanlarını təqdim edən platformadır və məlumatların doğruluğuna avtomatik zəmanət vermir. <a href="#" onclick="event.preventDefault();openPolicy()">Qaydalar və məxfilik</a></span></label>  
-   <button class="btn primary" id="submitListingBtn" type="submit">Elanı saxla və xəritədə göstər</button>  
-  </form>  
- </div>  
-</div>  <!-- Profil -->  <div class="overlay" id="profileOverlay" onclick="if(event.target===this)closeSheet('profileOverlay')">  
- <div class="sheet">  
-  <div class="sheethead"><h2>Elan profili</h2><button class="close" onclick="closeSheet('profileOverlay')">×</button></div>  
-  <div id="profileContent"></div>  
- </div>  
-</div>  <!-- Profilim / saxlanılanlar -->  <div class="overlay" id="myOverlay" onclick="if(event.target===this)closeSheet('myOverlay')">  
- <div class="sheet">  
-  <div class="sheethead"><h2>♙ Mənim bölməm</h2><button class="close" onclick="closeSheet('myOverlay')">×</button></div>  
-  <div class="filters">  
-   <button class="btn small active" onclick="showMyTab('mine',this)">Elanlarım</button>  
-   <button class="btn small" onclick="showMyTab('saved',this)">Seçilmişlər</button>  
-   <button class="btn small" onclick="showMyTab('liked',this)">Bəyəndiklərim</button>  
-   <button class="btn small" onclick="openPolicy()">Qaydalar</button>  
-  </div>  
-  <div id="myContent"></div>  
- </div>  
-</div>  <!-- Üç nöqtə menyusu -->  <div class="overlay" id="menuOverlay" onclick="if(event.target===this)closeSheet('menuOverlay')">  
- <div class="sheet">  
-  <div class="sheethead"><h2>⋯ Menyu</h2><button class="close" onclick="closeSheet('menuOverlay')">×</button></div>  
-  <button class="btn" style="width:100%;margin-bottom:8px" onclick="closeSheet('menuOverlay');openMyProfile()">♙ Profilim və elanlarım</button>  
-  <button class="btn" style="width:100%;margin-bottom:8px" onclick="closeSheet('menuOverlay');openPolicy()">🔒 Məxfilik siyasəti</button>  
-  <button class="btn" style="width:100%;margin-bottom:8px" onclick="closeSheet('menuOverlay');openPolicy()">⚖️ İstifadə qaydaları və elan məsuliyyəti</button>  
-  <button class="btn" style="width:100%;margin-bottom:8px" onclick="closeSheet('menuOverlay');openExplore()">✦ Kəşf et</button>  
-  <p class="sub">USTAMAP EarthView Pro. Elanlar hazırda bu cihazda saxlanılır.</p>  
- </div>  
-</div>  <!-- Qaydalar -->  <div class="overlay" id="policyOverlay" onclick="if(event.target===this)closeSheet('policyOverlay')">  
- <div class="sheet">  
-  <div class="sheethead"><h2>🔒 Məxfilik və istifadə qaydaları</h2><button class="close" onclick="closeSheet('policyOverlay')">×</button></div>  
-  <h3>1. Məlumatların saxlanması</h3>  
-  <p class="sub">Bu versiyada elanlar, şəkillər və seçilmişlər əsasən cihazın brauzer yaddaşında saxlanır. Brauzer məlumatları silindikdə elanlar itə bilər. Bu versiyada mərkəzi hesab sistemi və server sinxronizasiyası yoxdur.</p>  
-  <h3>2. İstifadəçinin məsuliyyəti</h3>  
-  <p class="sub">İstifadəçi elanın doğruluğuna, şəkillərin istifadəsinə hüququnun olmasına, əlaqə məlumatlarının paylaşılmasına və qanunlara uyğunluğa cavabdehdir. Saxta, təhqiredici, qanunsuz, aldadıcı və başqasının hüquqlarını pozan elanlar yerləşdirilməməlidir.</p>  
-  <h3>3. Platformanın rolu</h3>  
-  <p class="sub">USTAMAP elanları göstərmək üçün nəzərdə tutulan vasitədir. İstifadəçilərin kimliyini, peşə sənədlərini, xidmət keyfiyyətini və elan məlumatlarının doğruluğunu bu prototip yoxlamır. Bu izah platformanı qanunla nəzərdə tutulan bütün məsuliyyətdən avtomatik azad etmir. İctimai istifadədən əvvəl qaydalar və məxfilik mətni hüquqşünas tərəfindən yerli qanunlara uyğunlaşdırılmalıdır.</p>  
-  <h3>4. Məkan və GPS</h3>  
-  <p class="sub">Yaxınlıq funksiyası işə salınanda brauzer GPS icazəsi istəyə bilər. Məkan məlumatı ünvan tapmaq və məsafə hesablamaq üçün istifadə olunur. Bu versiyada ayrıca serverə GPS göndərilmir.</p>  
-  <button class="btn primary" style="width:100%" onclick="closeSheet('policyOverlay')">Başa düşdüm</button>  
- </div>  
-</div>  <div id="toast" role="status" aria-live="polite"></div>  <script src="https://cesium.com/downloads/cesiumjs/releases/1.127/Build/Cesium/Cesium.js"></script>  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>  <script>  
-'use strict';  
-  
-/* -------------------------------------------------------  
-   Məlumat və kateqoriyalar  
-------------------------------------------------------- */  
-const STORE='ustamap_earthview_listings_v1';  
-const SAVED_KEY='ustamap_saved_v1';  
-const LIKED_KEY='ustamap_liked_v1';  
-const fallbackPhoto='https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=480&auto=format&fit=crop';  
-const categories=[  
-'Tikinti','Ümumi təmir','Mənzil təmiri','Ev tikintisi','Beton işi','Armaturçu','Qəlibçi',  
-'Alçıpan','Suvaqçı','Rəngsaz','Divar kağızı','Plitə ustası','Parket ustası','Laminat döşəmə',  
-'Döşəmə işi','Dam örtüyü','Metal kirəmit','Qaynaqçı','Dəmirçi','Mebel ustası','Dülgər',  
-'Qapı-pəncərə','Şüşə ustası','Elektrik','Elektrik avadanlığı','Santexnik','Kombi ustası',  
-'Kondisioner','Havalandırma','Soyuducu təmiri','Texnika təmiri','Avtomobil ustası',  
-'Avtoelektrik','Avtoyuma','Şin təmiri','Motosiklet təmiri','Kompüter ustası','Telefon təmiri',  
-'İT xidməti','Proqramçı','Veb dizayn','Qrafik dizayn','Fotoqraf','Videograf','Tərcüməçi',  
-'İngilis dili müəllimi','Müəllim','Repetitor','Uşaq baxıcısı','Təmizlik','Bağban','Landşaft',  
-'Kənd təsərrüfatı','Heyvandarlıq','Daşıma','Yükdaşıma','Sürücü','Kuryer','Mühafizə',  
-'Bərbər','Saç ustası','Vizajist','Manikür','Dərzi','Ayaqqabı təmiri','Aşpaz','Catering',  
-'Marketinq','SMM','Mühasib','Hüquqi xidmət','Daşınmaz əmlak','İcarə','Satış','Digər xidmət'  
-];  
-const categoryIcons={  
-'Tikinti':'🧱','Ümumi təmir':'🛠️','Mənzil təmiri':'🏠','Ev tikintisi':'🏗️',  
-'Beton işi':'🧱','Armaturçu':'🔩','Qəlibçi':'🪚','Alçıpan':'🪜','Suvaqçı':'🛠️',  
-'Rəngsaz':'🎨','Divar kağızı':'🖼️','Plitə ustası':'◈','Parket ustası':'🪵',  
-'Laminat döşəmə':'🪵','Döşəmə işi':'🏠','Dam örtüyü':'🏡','Metal kirəmit':'🔩',  
-'Qaynaqçı':'⚒️','Dəmirçi':'⚒️','Dülgər':'🪚','Qapı-pəncərə':'🚪',  
-'Şüşə ustası':'▧','Elektrik':'⚡','Elektrik avadanlığı':'🔌','Santexnik':'🔧',  
-'Kombi ustası':'♨️','Kondisioner':'❄️','Havalandırma':'💨','Soyuducu təmiri':'🧊',  
-'Texnika təmiri':'🔧','Avtomobil ustası':'🚗','Avtoelektrik':'🔋','Avtoyuma':'🚿',  
-'Şin təmiri':'🛞','Motosiklet təmiri':'🏍️','Kompüter ustası':'💻','Telefon təmiri':'📱',  
-'İT xidməti':'🖥️','Proqramçı':'⌘','Veb dizayn':'🌐','Qrafik dizayn':'✏️',  
-'Fotoqraf':'📷','Videograf':'🎬','Tərcüməçi':'文','İngilis dili müəllimi':'📚',  
-'Müəllim':'🎓','Repetitor':'📖','Uşaq baxıcısı':'🧸','Təmizlik':'🧹',  
-'Bağban':'🌱','Landşaft':'🌳','Kənd təsərrüfatı':'🌾','Heyvandarlıq':'🐄',  
-'Daşıma':'🚚','Yükdaşıma':'📦','Sürücü':'🚘','Kuryer':'🛵','Mühafizə':'🛡️',  
-'Bərbər':'✂️','Saç ustası':'💇','Vizajist':'💄','Manikür':'💅','Dərzi':'🧵',  
-'Ayaqqabı təmiri':'👞','Aşpaz':'👨‍🍳','Catering':'🍽️','Marketinq':'📈',  
-'SMM':'📱','Mühasib':'🧾','Hüquqi xidmət':'⚖️','Daşınmaz əmlak':'🏢',  
-'İcarə':'🔑','Satış':'🛍️','Digər xidmət':'👤'  
-};  
-  
-let listings=[];  
-let activeFilter='Hamısı';  
-let selectedLocation={lat:40.4093,lng:49.8671,name:'Bakı, Azərbaycan'};  
-let globe,map,globeEntities=[],leafletMarkers=[],toastTimer;  
-let satelliteLayer,streetLayer,labelsLayer;  
-let globeSatelliteLayer,globePoliticalLayer;  
-let mapMode='street',globeMode='satellite';  
-let reverseRequestId=0;  
-let exploreCategory='Hamısı';  
-let nearbyEnabled=false;  
-let userPosition=null;  
-let savedIds=readSet(SAVED_KEY);  
-let likedIds=readSet(LIKED_KEY);  
-let selectedMyTab='mine';  
-let photoFiles=[];  
-  
-function $(id){return document.getElementById(id)}  
-function escapeHTML(v=''){  
- return String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));  
-}  
-function safePhoto(p){return p||fallbackPhoto}  
-function readSet(key){  
- try{return new Set(JSON.parse(localStorage.getItem(key)||'[]').map(String))}  
- catch(e){return new Set()}  
-}  
-function saveSet(key,set){  
- try{localStorage.setItem(key,JSON.stringify([...set]));return true}  
- catch(e){toast('Brauzer yaddaşında yer qalmayıb');return false}  
-}  
-function toast(msg){  
- const el=$('toast');el.textContent=msg;el.style.display='block';  
- clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.style.display='none',3000);  
-}  
-function closeSheet(id){$(id).classList.remove('show')}  
-function openPolicy(){$('policyOverlay').classList.add('show')}  
-function openMenu(){$('menuOverlay').classList.add('show')}  
-function iconFor(cat){return categoryIcons[cat]||'👤'}  
-function makeId(){return 'u'+Date.now().toString(36)+Math.random().toString(36).slice(2,8)}  
-function validCoords(lat,lng){  
- return Number.isFinite(+lat)&&Number.isFinite(+lng)&&Math.abs(+lat)<=90&&Math.abs(+lng)<=180;  
-}  
-function coordsText(lat,lng){return Number(lat).toFixed(6)+', '+Number(lng).toFixed(6)}  
-function escapeAttr(v=''){return escapeHTML(v)}  
-function openAdd(){  
- $('fLat').value=selectedLocation.lat;  
- $('fLng').value=selectedLocation.lng;  
- $('fAddress').value=selectedLocation.name||'';  
- $('legalAgree').checked=false;  
- $('addOverlay').classList.add('show');  
-}  
-function selectCurrentMapPoint(){openAdd()}  
-  
-/* -------------------------------------------------------  
-   Yaddaş və nümunə elanlar  
-------------------------------------------------------- */  
-function loadListings(){  
- try{  
-  const x=JSON.parse(localStorage.getItem(STORE)||'[]');  
-  listings=Array.isArray(x)?x:[];  
- }catch(e){listings=[]}  
- if(!listings.length){  
-  listings=[  
-   {id:'sample1',name:'Nümunə usta',cat:'Alçıpan',title:'Mənzil təmiri və alçıpan',desc:'Bu, xəritə və kartların işləməsini göstərmək üçün nümunə elandır. Real xidmət kimi təsdiqlənməyib.',phone:'',price:'Razılaşma ilə',address:'Bakı, Azərbaycan',lat:40.4093,lng:49.8671,photo:'',sample:true},  
-   {id:'sample2',name:'Nümunə elektrik xidməti',cat:'Elektrik',title:'Elektrik işləri',desc:'Nümunə elandır, real sifariş və ya təsdiqlənmiş usta deyil.',phone:'',price:'Razılaşma ilə',address:'İstanbul, Türkiyə',lat:41.0082,lng:28.9784,photo:'',sample:true},  
-   {id:'sample3',name:'Nümunə təmir xidməti',cat:'Rəngsaz',title:'Divar boyası və daxili təmir',desc:'Nümunə elandır, real sifariş və ya təsdiqlənmiş usta deyil.',phone:'',price:'Razılaşma ilə',address:'Berlin, Almaniya',lat:52.52,lng:13.405,photo:'',sample:true}  
-  ];  
- }  
-}  
-function saveListings(){  
- try{  
-  localStorage.setItem(STORE,JSON.stringify(listings.filter(x=>!x.sample)));  
-  return true;  
- }catch(e){  
-  toast('Yaddaş dolub. Daha az və ya kiçik şəkil əlavə et.');return false;  
- }  
-}  
-  
-/* -------------------------------------------------------  
-   Kateqoriya interfeysi  
-------------------------------------------------------- */  
-function buildCategories(){  
- const select=$('fCat');  
- select.innerHTML=categories.map(c=>`<option>${escapeHTML(c)}</option>`).join('');  
- const popular=['Hamısı','Tikinti','Mənzil təmiri','Alçıpan','Rəngsaz','Elektrik','Santexnik','Kombi ustası','Avtomobil ustası','Təmizlik','Bağban','Kompüter ustası','Digər xidmət'];  
- $('filters').innerHTML=popular.map(c=>`<button class="btn small ${c===activeFilter?'active':''}" onclick="setFilter('${escapeHTML(c)}',this)">${c==='Hamısı'?'✦ ':iconFor(c)+' '}${escapeHTML(c)}</button>`).join('');  
- renderExploreFilters();  
-}  
-function renderExploreFilters(){  
- const list=['Hamısı',...categories];  
- $('exploreFilters').innerHTML=list.map(c=>`<button class="btn small ${c===exploreCategory?'active':''}" onclick="setExploreCategory('${escapeHTML(c)}')">${c==='Hamısı'?'✦ ':iconFor(c)+' '}${escapeHTML(c)}</button>`).join('');  
-}  
-function setFilter(cat,el){  
- activeFilter=cat;  
- document.querySelectorAll('#filters button').forEach(b=>b.classList.toggle('active',b.textContent.trim().replace(/^[^\p{L}\p{N}]+/u,'').trim()===cat));  
- if(el)el.classList.add('active');  
- renderListings();  
-}  
-function setExploreCategory(cat){  
- exploreCategory=cat;  
- renderExploreFilters();  
- renderExplore();  
-}  
-  
-/* -------------------------------------------------------  
-   3D qlobus  
-------------------------------------------------------- */  
-function initGlobe(){  
- if(!window.Cesium){  
-  $('globe').innerHTML='<div style="padding:25px">3D qlobus kitabxanası yüklənmədi. İnternet bağlantısını yoxla.</div>';return;  
- }  
- try{  
-  globe=new Cesium.Viewer('globe',{  
-   imageryProvider:false,terrainProvider:new Cesium.EllipsoidTerrainProvider(),  
-   animation:false,timeline:false,baseLayerPicker:false,geocoder:false,  
-   homeButton:false,sceneModePicker:false,navigationHelpButton:false,  
-   fullscreenButton:false,infoBox:false,selectionIndicator:false,  
-   shouldAnimate:true  
-  });  
-  globeSatelliteLayer=globe.imageryLayers.addImageryProvider(new Cesium.UrlTemplateImageryProvider({  
-   url:'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',  
-   maximumLevel:19,credit:'Esri World Imagery'  
-  }));  
-  globePoliticalLayer=globe.imageryLayers.addImageryProvider(new Cesium.UrlTemplateImageryProvider({  
-   url:'https://services.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',  
-   maximumLevel:19,credit:'Esri World Street Map'  
-  }));  
-  globePoliticalLayer.show=false;  
-  globe.scene.globe.enableLighting=true;  
-  globe.scene.globe.showGroundAtmosphere=true;  
-  globe.scene.screenSpaceCameraController.minimumZoomDistance=150;  
-  globe.scene.screenSpaceCameraController.maximumZoomDistance=30000000;  
-  globe.camera.flyTo({destination:Cesium.Cartesian3.fromDegrees(49.8,35,19000000),duration:1.8});  
-  globe.screenSpaceEventHandler.setInputAction(async function(evt){  
-   const picked=globe.scene.pick(evt.position);  
-   if(picked&&picked.id&&picked.id.properties&&picked.id.properties.listingId){  
-    openProfile(picked.id.properties.listingId.getValue());return;  
-   }  
-   const ray=globe.camera.getPickRay(evt.position);  
-   const cart=ray?globe.scene.globe.pick(ray,globe.scene):null;  
-   if(!cart)return;  
-   const c=Cesium.Cartographic.fromCartesian(cart);  
-   const lat=Cesium.Math.toDegrees(c.latitude),lng=Cesium.Math.toDegrees(c.longitude);  
-   selectedLocation={lat,lng,name:coordsText(lat,lng)};  
-   updateSelectedUI();  
-   reverseGeocode(lat,lng,true);  
-  },Cesium.ScreenSpaceEventType.LEFT_CLICK);  
-  setGlobeMode('satellite');  
-  renderGlobeMarkers();  
- }catch(e){  
-  console.error(e);  
-  $('globe').innerHTML='<div style="padding:20px">Qlobusu yükləmək mümkün olmadı. Səhifəni internetlə yenilə.</div>';  
- }  
-}  
-function setGlobeMode(mode){  
- globeMode=mode;  
- if(globeSatelliteLayer)globeSatelliteLayer.show=mode==='satellite';  
- if(globePoliticalLayer)globePoliticalLayer.show=mode==='political';  
- $('globeSatelliteBtn').classList.toggle('active',mode==='satellite');  
- $('globePoliticalBtn').classList.toggle('active',mode==='political');  
- $('globeHint').textContent=mode==='satellite'?'Peyk görüntüsü · Elanlar koordinatlarına bağlıdır':'Siyasi/küçə xəritəsi · Elanlar koordinatlarına bağlıdır';  
-}  
-function renderGlobeMarkers(){  
- if(!globe||!window.Cesium)return;  
- globeEntities.forEach(e=>globe.entities.remove(e));globeEntities=[];  
- listings.forEach(l=>{  
-  if(!validCoords(l.lat,l.lng))return;  
-  const entity=globe.entities.add({  
-   position:Cesium.Cartesian3.fromDegrees(+l.lng,+l.lat,80),  
-   point:{pixelSize:l.sample?8:13,color:l.sample?Cesium.Color.ORANGE:Cesium.Color.fromCssColorString('#45e0d0'),  
-    outlineColor:Cesium.Color.WHITE,outlineWidth:2,disableDepthTestDistance:Number.POSITIVE_INFINITY},  
-   label:{text:iconFor(l.cat)+' '+l.name,font:'12px sans-serif',showBackground:true,  
-    backgroundColor:Cesium.Color.fromCssColorString('#081522').withAlpha(.85),  
-    fillColor:Cesium.Color.WHITE,outlineColor:Cesium.Color.BLACK,outlineWidth:2,  
-    style:Cesium.LabelStyle.FILL_AND_OUTLINE,pixelOffset:new Cesium.Cartesian2(0,-23),  
-    distanceDisplayCondition:new Cesium.DistanceDisplayCondition(0,4500000),  
-    disableDepthTestDistance:Number.POSITIVE_INFINITY},  
-   properties:{listingId:l.id}  
-  });  
-  globeEntities.push(entity);  
- });  
-}  
-function resetGlobe(){  
- if(globe)globe.camera.flyTo({destination:Cesium.Cartesian3.fromDegrees(49.8,35,19000000),duration:1.5});  
-}  
-  
-/* -------------------------------------------------------  
-   2D xəritə, peyk və küçə qatı  
-------------------------------------------------------- */  
-function initMap(){  
- if(!window.L){$('map').innerHTML='<div style="padding:20px">Xəritə kitabxanası yüklənmədi.</div>';return}  
- map=L.map('map',{zoomControl:true,worldCopyJump:true}).setView([40.4093,49.8671],5);  
- streetLayer=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{  
-  maxZoom:19,attribution:'© OpenStreetMap contributors'  
- });  
- satelliteLayer=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{  
-  maxZoom:19,attribution:'Tiles © Esri'  
- });  
- labelsLayer=L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',{  
-  maxZoom:19,attribution:'Esri place names and boundaries'  
- });  
- streetLayer.addTo(map);  
- L.control.layers({'Küçə xəritəsi':streetLayer,'Peyk görüntüsü':satelliteLayer,'Peyk + adlar':L.layerGroup([satelliteLayer,labelsLayer])},{},{collapsed:true}).addTo(map);  
- map.on('click',async e=>{  
-  selectedLocation={lat:e.latlng.lat,lng:e.latlng.lng,name:coordsText(e.latlng.lat,e.latlng.lng)};  
-  updateSelectedUI();  
-  reverseGeocode(e.latlng.lat,e.latlng.lng,true);  
- });  
- renderMapMarkers();  
-}  
-function setMapMode(mode){  
- if(!map)return;  
- mapMode=mode;  
- [streetLayer,satelliteLayer,labelsLayer].forEach(layer=>{if(layer&&map.hasLayer(layer))map.removeLayer(layer)});  
- if(mode==='street')streetLayer.addTo(map);  
- if(mode==='satellite')satelliteLayer.addTo(map);  
- if(mode==='hybrid'){satelliteLayer.addTo(map);labelsLayer.addTo(map)}  
- $('streetBtn').classList.toggle('active',mode==='street');  
- $('satelliteBtn').classList.toggle('active',mode==='satellite');  
- $('hybridBtn').classList.toggle('active',mode==='hybrid');  
-}  
-function renderMapMarkers(){  
- if(!map)return;  
- leafletMarkers.forEach(m=>map.removeLayer(m));leafletMarkers=[];  
- listings.forEach(l=>{  
-  if(!validCoords(l.lat,l.lng))return;  
-  const html=`<div class="mapcall"><b>${escapeHTML(iconFor(l.cat)+' '+l.name)}</b><small>${escapeHTML(l.cat)} · ${escapeHTML(l.address)}</small><br><small>${escapeHTML(coordsText(l.lat,l.lng))}</small><br><button onclick="openProfile('${escapeHTML(l.id)}')">Profilə bax ↗</button></div>`;  
-  const marker=L.marker([+l.lat,+l.lng],{icon:L.divIcon({  
-   className:'customMarker',html:`<div class="markerDot" style="${l.sample?'background:#ffca72;box-shadow:0 0 0 5px #ffca7233,0 0 18px #ffca72':''}"><span>${iconFor(l.cat)}</span></div>`,  
-   iconSize:[30,36],iconAnchor:[15,30]  
-  })}).addTo(map).bindPopup(html);  
-  marker.on('click',()=>{  
-   selectedLocation={lat:+l.lat,lng:+l.lng,name:l.address};  
-   updateSelectedUI();  
-  });  
-  leafletMarkers.push(marker);  
- });  
-}  
-  
-/* -------------------------------------------------------  
-   Seçilmiş məkan və ünvanın avtomatik tapılması  
-------------------------------------------------------- */  
-function updateSelectedUI(){  
- $('selectedPlace').textContent=selectedLocation.name||'Seçilmiş məkan';  
- $('selectedCoords').textContent=coordsText(selectedLocation.lat,selectedLocation.lng);  
- $('locationLabel').textContent=(selectedLocation.name||'Seçilmiş məkan')+' · '+coordsText(selectedLocation.lat,selectedLocation.lng);  
- if($('fLat'))$('fLat').value=selectedLocation.lat;  
- if($('fLng'))$('fLng').value=selectedLocation.lng;  
- if($('fAddress')&&$('addOverlay').classList.contains('show'))$('fAddress').value=selectedLocation.name||'';  
-}  
-async function reverseGeocode(lat,lng,showToast=false){  
- const request=++reverseRequestId;  
- const coords=coordsText(lat,lng);  
- selectedLocation={lat,lng,name:coords};  
- updateSelectedUI();  
- try{  
-  const url='https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat='+encodeURIComponent(lat)+'&lon='+encodeURIComponent(lng)+'&zoom=18&addressdetails=1';  
-  const res=await fetch(url,{headers:{'Accept-Language':'az,en'}});  
-  if(!res.ok)throw new Error('reverse');  
-  const data=await res.json();  
-  if(request!==reverseRequestId)return;  
-  const a=data.address||{};  
-  const parts=[  
-   a.house_number,a.road,a.pedestrian,a.footway,a.residential,  
-   a.neighbourhood,a.suburb,a.quarter,a.village,a.town,a.city,  
-   a.county,a.state,a.country  
-  ].filter((v,i,arr)=>v&&arr.indexOf(v)===i);  
-  const name=parts.join(', ')||data.display_name||coords;  
-  selectedLocation={lat,lng,name};  
-  updateSelectedUI();  
-  if($('addOverlay').classList.contains('show'))$('fAddress').value=name;  
-  if(showToast)showMapPointPopup(name,lat,lng);  
- }catch(e){  
-  if(request===reverseRequestId&&showToast)showMapPointPopup(coords,lat,lng);  
- }  
-}  
-function showMapPointPopup(name,lat,lng){  
- if(!map)return;  
- const html=`<div class="mapcall"><b>📍 ${escapeHTML(name)}</b><small>${escapeHTML(coordsText(lat,lng))}</small><br><button onclick="openAdd()">Bu məkana elan qoy</button></div>`;  
- L.popup({closeButton:true,autoClose:true}).setLatLng([lat,lng]).setContent(html).openOn(map);  
-}  
-async function resolveFormAddress(){  
- const lat=Number($('fLat').value),lng=Number($('fLng').value);  
- if(!validCoords(lat,lng)){toast('Koordinatları düzgün daxil et');return}  
- selectedLocation={lat,lng,name:coordsText(lat,lng)};  
- await reverseGeocode(lat,lng,false);  
- $('fAddress').value=selectedLocation.name;  
- toast('Ünvan yeniləndi');  
-}  
-function flyTo(lat,lng,zoom=50000,name='Seçilmiş məkan'){  
- lat=Number(lat);lng=Number(lng);  
- if(!validCoords(lat,lng)){toast('Koordinatlar düzgün deyil');return}  
- selectedLocation={lat,lng,name:name||coordsText(lat,lng)};  
- updateSelectedUI();  
- if(map)map.flyTo([lat,lng],Math.max(3,Math.min(19,Math.round(16-Math.log10(Math.max(zoom,1))))),{duration:1.1});  
- if(globe&&window.Cesium)globe.camera.flyTo({destination:Cesium.Cartesian3.fromDegrees(lng,lat,Math.max(2500,zoom)),duration:1.5});  
- reverseGeocode(lat,lng,false);  
-}  
-function parseCoordinates(q){  
- const m=q.trim().match(/^\s*(-?\d{1,2}(?:\.\d+)?)\s*[,;]\s*(-?\d{1,3}(?:\.\d+)?)\s*$/);  
- if(!m)return null;  
- const lat=Number(m[1]),lng=Number(m[2]);  
- return validCoords(lat,lng)?{lat,lng}:null;  
-}  
-async function searchPlace(){  
- const q=$('search').value.trim();  
- if(!q){toast('Peşə, şəhər, ölkə, ünvan və ya koordinat yaz');return}  
- const btn=$('searchBtn');btn.disabled=true;btn.textContent='Axtarılır…';  
- try{  
-  const coord=parseCoordinates(q);  
-  if(coord){  
-   flyTo(coord.lat,coord.lng,10000,coordsText(coord.lat,coord.lng));  
-   toast('Koordinata keçildi');  
-   return;  
-  }  
-  const url='https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=5&q='+encodeURIComponent(q);  
-  const r=await fetch(url,{headers:{'Accept-Language':'az,en'}});  
-  if(!r.ok)throw new Error('search');  
-  const data=await r.json();  
-  if(!data.length){toast('Məkan tapılmadı. Şəhər və ölkə adını da əlavə et.');return}  
-  const p=data[0],lat=+p.lat,lng=+p.lon;  
-  const name=p.display_name||q;  
-  flyTo(lat,lng,Math.max(4000,120000/Math.pow(1.4,Math.min(+p.place_rank||10,20))),name);  
-  $('fAddress').value=name;  
-  toast('Məkan tapıldı');  
- }catch(e){toast('Axtarış alınmadı. İnterneti yoxla və yenidən cəhd et.')}  
- finally{btn.disabled=false;btn.textContent='Axtar'}  
-}  
-$('search').addEventListener('keydown',e=>{if(e.key==='Enter')searchPlace()});  
-$('listingSearch').addEventListener('keydown',e=>{if(e.key==='Enter')renderListings()});  
-function locateMe(){  
- if(!navigator.geolocation){toast('Bu brauzerdə məkan icazəsi yoxdur');return}  
- navigator.geolocation.getCurrentPosition(p=>{  
-  userPosition={lat:p.coords.latitude,lng:p.coords.longitude};  
-  flyTo(userPosition.lat,userPosition.lng,12000,'Mənim yerim');  
-  if(nearbyEnabled)renderExplore();  
- },()=>toast('Məkan icazəsi verilmədi və ya GPS tapılmadı.'),{enableHighAccuracy:true,timeout:15000,maximumAge:30000});  
-}  
-  
-/* -------------------------------------------------------  
-   Elan kartları və Pinterest düzülüşü  
-------------------------------------------------------- */  
-function normalize(s){  
- return String(s||'').toLocaleLowerCase('az-AZ').normalize('NFD').replace(/[\u0300-\u036f]/g,'');  
-}  
-function listingMatches(l,query,cat){  
- const q=normalize(query.trim());  
- const catOK=cat==='Hamısı'||l.cat===cat;  
- if(!catOK)return false;  
- if(!q)return true;  
- return normalize([l.name,l.cat,l.title,l.desc,l.address,l.price].join(' ')).includes(q);  
-}  
-function cardHTML(l){  
- const photo=safePhoto(l.photo);  
- const saved=savedIds.has(String(l.id)),liked=likedIds.has(String(l.id));  
- return `<article class="card">  
-  <img loading="lazy" src="${escapeAttr(photo)}" alt="${escapeAttr(l.title)}" onerror="this.onerror=null;this.src='${fallbackPhoto}'">  
-  <div class="cardbody">  
-   <span class="chip">${escapeHTML(iconFor(l.cat)+' '+l.cat)}</span>  
-   ${l.sample?'<span class="chip">Nümunə</span>':''}  
-   <h3>${escapeHTML(l.title)}</h3>  
-   <p>👤 ${escapeHTML(l.name)}</p>  
-   <p>📍 ${escapeHTML(l.address)}</p>  
-   <p class="price">${escapeHTML(l.price||'Razılaşma ilə')}</p>  
-   <div class="cardActions">  
-    <button class="btn small" onclick="flyTo(${+l.lat},${+l.lng},15000,${JSON.stringify(l.address)})">Xəritə</button>  
-    <button class="btn small primary" onclick="openProfile(${JSON.stringify(String(l.id))})">Profil</button>  
-   </div>  
-   <div class="cardActions">  
-    <button class="btn small" onclick="toggleSaved(${JSON.stringify(String(l.id))})">${saved?'★ Seçilmiş':'☆ Seç'}</button>  
-    <button class="btn small" onclick="toggleLiked(${JSON.stringify(String(l.id))})">${liked?'♥ Bəyənildi':'♡ Bəyən'}</button>  
-    <button class="btn small" onclick="openListingMenu(${JSON.stringify(String(l.id))})">⋯</button>  
-   </div>  
-  </div>  
- </article>`;  
-}  
-function renderListings(){  
- const grid=$('listingGrid');  
- const q=$('listingSearch').value||'';  
- const items=listings.filter(l=>listingMatches(l,q,activeFilter));  
- if(!items.length){grid.innerHTML='<div class="empty">Uyğun elan tapılmadı. Axtarışı dəyiş və ya yeni elan əlavə et.</div>';return}  
- grid.innerHTML=items.map(cardHTML).join('');  
-}  
-function openExplore(){  
- $('exploreScreen').classList.add('show');  
- renderExplore();  
-}  
-function closeExplore(){$('exploreScreen').classList.remove('show')}  
-function renderExplore(){  
- if(!$('exploreGrid'))return;  
- const q=$('exploreSearch').value||'';  
- let items=listings.filter(l=>listingMatches(l,q,exploreCategory));  
- if(nearbyEnabled){  
-  if(!userPosition){  
-   $('nearbyStatus').textContent='GPS mövqeyi alınır…';  
-   items=[];  
-   if(navigator.geolocation){  
-    navigator.geolocation.getCurrentPosition(p=>{  
-     userPosition={lat:p.coords.latitude,lng:p.coords.longitude};  
-     $('nearbyStatus').textContent='Məsafəyə görə sıralanır';  
-     renderExplore();  
-    },()=>{$('nearbyStatus').textContent='GPS icazəsi verilmədi';toast('Yaxınlıq üçün GPS icazəsi lazımdır')},{enableHighAccuracy:true,timeout:15000});  
-   }else $('nearbyStatus').textContent='GPS dəstəklənmir';  
-  }else{  
-   const radius=Number($('radiusSelect').value)||5;  
-   items=items.filter(l=>!l.sample&&distanceKm(userPosition.lat,userPosition.lng,+l.lat,+l.lng)<=radius);  
-   items.sort((a,b)=>distanceKm(userPosition.lat,userPosition.lng,+a.lat,+a.lng)-distanceKm(userPosition.lat,userPosition.lng,+b.lat,+b.lng));  
-   $('nearbyStatus').textContent='Radius: '+radius+' km · '+items.length+' elan';  
-  }  
- }else $('nearbyStatus').textContent='Yaxınlıq axtarışı istəyə bağlıdır';  
- $('nearbyBtn').classList.toggle('active',nearbyEnabled);  
- if(!items.length){  
-  $('exploreGrid').innerHTML='<div class="empty">Bu axtarışa uyğun elan yoxdur. Kateqoriyanı dəyiş və ya öz elanını əlavə et.</div>';return;  
- }  
- $('exploreGrid').innerHTML=items.map(cardHTML).join('');  
-}  
-function toggleNearby(){  
- nearbyEnabled=!nearbyEnabled;  
- if(nearbyEnabled&&!userPosition){locateMe();return}  
- renderExplore();  
-}  
-function distanceKm(lat1,lon1,lat2,lon2){  
- const rad=x=>x*Math.PI/180;  
- const dLat=rad(lat2-lat1),dLon=rad(lon2-lon1);  
- const a=Math.sin(dLat/2)**2+Math.cos(rad(lat1))*Math.cos(rad(lat2))*Math.sin(dLon/2)**2;  
- return 6371*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));  
-}  
-  
-/* -------------------------------------------------------  
-   Bəyənilənlər, seçilmişlər və elan menyusu  
-------------------------------------------------------- */  
-function toggleSaved(id){  
- id=String(id);  
- if(savedIds.has(id))savedIds.delete(id);else savedIds.add(id);  
- saveSet(SAVED_KEY,savedIds);refreshAll();renderExplore();  
- toast(savedIds.has(id)?'Seçilmişlərə əlavə edildi':'Seçilmişlərdən çıxarıldı');  
-}  
-function toggleLiked(id){  
- id=String(id);  
- if(likedIds.has(id))likedIds.delete(id);else likedIds.add(id);  
- saveSet(LIKED_KEY,likedIds);refreshAll();renderExplore();  
- toast(likedIds.has(id)?'Bəyəndin':'Bəyənmə geri götürüldü');  
-}  
-function openListingMenu(id){  
- const l=listings.find(x=>String(x.id)===String(id));if(!l)return;  
- const html=`<div class="profiletop"><img class="avatar" src="${escapeAttr(safePhoto(l.photo))}" alt=""><div><h2>${escapeHTML(l.title)}</h2><div class="sub">${escapeHTML(l.address)}</div></div></div>  
- <div style="display:grid;gap:8px;margin-top:15px">  
- <button class="btn" onclick="toggleSaved(${JSON.stringify(String(id))});closeSheet('profileOverlay')">☆ Seçilmişlərə əlavə et / çıxar</button>  
- <button class="btn" onclick="toggleLiked(${JSON.stringify(String(id))});closeSheet('profileOverlay')">♡ Bəyən / bəyənməni geri götür</button>  
- <button class="btn" onclick="flyTo(${+l.lat},${+l.lng},12000,${JSON.stringify(l.address)});closeSheet('profileOverlay')">⌖ Xəritədə göstər</button>  
- <button class="btn" onclick="copyText(${JSON.stringify(l.address)})">Ünvanı köçür</button>  
- ${!l.sample?`<button class="btn" style="color:var(--danger)" onclick="deleteListing(${JSON.stringify(String(id))})">Elanı sil</button>`:''}  
- </div>`;  
- $('profileContent').innerHTML=html;  
- $('profileOverlay').classList.add('show');  
-}  
-  
-/* -------------------------------------------------------  
-   Profil və əlaqə  
-------------------------------------------------------- */  
-function openProfile(id){  
- const l=listings.find(x=>String(x.id)===String(id));if(!l)return;  
- const saved=savedIds.has(String(l.id)),liked=likedIds.has(String(l.id));  
- $('profileContent').innerHTML=`  
- <div class="profiletop">  
-  <img class="avatar" src="${escapeAttr(safePhoto(l.photo))}" onerror="this.onerror=null;this.src='${fallbackPhoto}'" alt="Profil">  
-  <div><h2>${escapeHTML(l.name)}</h2><span class="chip">${escapeHTML(iconFor(l.cat)+' '+l.cat)}</span><div class="sub">${escapeHTML(l.address)}</div></div>  
- </div>  
- <h2 style="margin-top:18px">${escapeHTML(l.title)}</h2>  
- <p style="line-height:1.7;color:#c0cfdf;white-space:pre-wrap">${escapeHTML(l.desc||'Əlavə məlumat qeyd edilməyib.')}</p>  
- <div class="details">  
-  <div class="detail"><small>Qiymət</small><strong>${escapeHTML(l.price||'Razılaşma ilə')}</strong></div>  
-  <div class="detail"><small>Peşə</small><strong>${escapeHTML(l.cat)}</strong></div>  
-  <div class="detail"><small>Ünvan</small><strong>${escapeHTML(l.address)}</strong></div>  
-  <div class="detail"><small>Koordinat</small><strong>${escapeHTML(coordsText(l.lat,l.lng))}</strong></div>  
- </div>  
- <div style="display:flex;gap:8px;flex-wrap:wrap">  
-  <button class="btn primary" onclick="flyTo(${+l.lat},${+l.lng},12000,${JSON.stringify(l.address)});closeSheet('profileOverlay')">🗺️ Xəritədə göstər</button>  
-  ${l.phone?`<a class="btn" style="text-decoration:none" href="tel:${escapeAttr(l.phone)}">📞 Zəng et</a>`:''}  
-  ${l.phone?`<button class="btn" onclick="copyText(${JSON.stringify(l.phone)})">Nömrəni köçür</button>`:''}  
-  <button class="btn" onclick="toggleSaved(${JSON.stringify(String(l.id))})">${saved?'★ Seçilmiş':'☆ Seç'}</button>  
-  <button class="btn" onclick="toggleLiked(${JSON.stringify(String(l.id))})">${liked?'♥ Bəyəndin':'♡ Bəyən'}</button>  
-  <button class="btn" onclick="openListingMenu(${JSON.stringify(String(l.id))})">⋯</button>  
-  ${!l.sample?`<button class="btn" onclick="deleteListing(${JSON.stringify(String(l.id))})">Elanı sil</button>`:''}  
- </div>  
- <p class="sub" style="margin-top:15px">Məlumatları elanı yerləşdirən şəxs daxil edib. Bu versiyada peşə və şəxsiyyət yoxlaması aparılmır.</p>`;  
- $('profileOverlay').classList.add('show');  
-}  
-async function copyText(s){  
- try{await navigator.clipboard.writeText(s);toast('Köçürüldü')}  
- catch(e){toast(String(s))}  
-}  
-function deleteListing(id){  
- const l=listings.find(x=>String(x.id)===String(id));  
- if(!l||l.sample)return;  
- if(!confirm('Bu elanı bu cihazdan silmək istəyirsən?'))return;  
- listings=listings.filter(x=>String(x.id)!==String(id));  
- saveListings();closeSheet('profileOverlay');refreshAll();toast('Elan bu cihazdan silindi');  
-}  
-  
-/* -------------------------------------------------------  
-   Profilim: mənim elanlarım / seçilmişlər / bəyənilənlər  
-------------------------------------------------------- */  
-function openMyProfile(){  
- $('myOverlay').classList.add('show');  
- showMyTab(selectedMyTab,null);  
-}  
-function showMyTab(tab,button){  
- selectedMyTab=tab;  
- document.querySelectorAll('#myOverlay .filters button').forEach(b=>b.classList.remove('active'));  
- if(button)button.classList.add('active');  
- let items=listings.filter(l=>{  
-  if(tab==='mine')return !l.sample;  
-  if(tab==='saved')return savedIds.has(String(l.id));  
-  if(tab==='liked')return likedIds.has(String(l.id));  
-  return false;  
- });  
- $('myContent').innerHTML=items.length?`<div class="grid">${items.map(cardHTML).join('')}</div>`:`<div class="empty">${tab==='mine'?'Hələ bu cihazda öz elanını yerləşdirməmisən.':tab==='saved'?'Seçilmiş elan yoxdur.':'Hələ bəyəndiyin elan yoxdur.'}</div>`;  
-}  
-  
-/* -------------------------------------------------------  
-   Şəkil yükləmə və sıxılma  
-------------------------------------------------------- */  
-$('fPhoto').addEventListener('change',e=>{  
- photoFiles=[...e.target.files].filter(f=>f.type.startsWith('image/')).slice(0,5);  
- $('photoPreview').textContent=photoFiles.length?photoFiles.length+' şəkil seçildi. Hər şəkil avtomatik sıxılacaq.':'Şəkil seçilməyib.';  
- if(e.target.files.length>5)toast('Bir elana maksimum 5 şəkil seçilir');  
-});  
-function resizeImage(file){  
- return new Promise((resolve,reject)=>{  
-  const reader=new FileReader();  
-  reader.onerror=()=>reject(new Error('file read'));  
-  reader.onload=()=>{  
-   const img=new Image();  
-   img.onerror=()=>reject(new Error('image decode'));  
-   img.onload=()=>{  
-    try{  
-     const canvas=document.createElement('canvas');  
-     const scale=Math.min(1,1000/Math.max(img.width,img.height));  
-     canvas.width=Math.max(1,Math.round(img.width*scale));  
-     canvas.height=Math.max(1,Math.round(img.height*scale));  
-     const ctx=canvas.getContext('2d');  
-     if(!ctx){reject(new Error('canvas'));return}  
-     ctx.drawImage(img,0,0,canvas.width,canvas.height);  
-     resolve(canvas.toDataURL('image/jpeg',.72));  
-    }catch(err){reject(err)}  
-   };  
-   img.src=reader.result;  
-  };  
-  reader.readAsDataURL(file);  
- });  
-}  
-  
-/* -------------------------------------------------------  
-   Elan göndərilməsi  
-------------------------------------------------------- */  
-$('addForm').addEventListener('submit',async e=>{  
- e.preventDefault();  
- if(!$('legalAgree').checked){toast('Elan qaydalarını qəbul etmək üçün xananı işarələ');return}  
- const name=$('fName').value.trim();  
- const title=$('fTitle').value.trim();  
- const address=$('fAddress').value.trim();  
- const lat=Number($('fLat').value),lng=Number($('fLng').value);  
- if(!name||!title||!address||!validCoords(lat,lng)){  
-  toast('Məlumatları, ünvanı və koordinatları yoxla');return;  
- }  
- const files=photoFiles.length?photoFiles:[...($('fPhoto').files||[])].filter(f=>f.type.startsWith('image/')).slice(0,5);  
- const btn=$('submitListingBtn');  
- btn.disabled=true;btn.textContent='Şəkillər hazırlanır…';  
- let photos=[];  
- try{  
-  for(const file of files)photos.push(await resizeImage(file));  
- }catch(err){  
-  btn.disabled=false;btn.textContent='Elanı saxla və xəritədə göstər';  
-  toast('Şəkil oxunmadı. Başqa şəkil seç və ya şəkilsiz davam et.');return;  
- }  
- const item={  
-  id:makeId(),name,cat:$('fCat').value,title,  
-  desc:$('fDesc').value.trim(),  
-  phone:$('fPhone').value.trim(),  
-  price:$('fPrice').value.trim()||'Razılaşma ilə',  
-  address,lat,lng,photo:photos[0]||'',photos,  
-  createdAt:new Date().toISOString(),sample:false  
- };  
- const previous=listings;  
- listings=[item,...listings.filter(x=>!x.sample)];  
- if(!saveListings()){  
-  listings=previous;  
-  btn.disabled=false;btn.textContent='Elanı saxla və xəritədə göstər';return;  
- }  
- closeSheet('addOverlay');  
- e.target.reset();photoFiles=[];$('photoPreview').textContent='';  
- btn.disabled=false;btn.textContent='Elanı saxla və xəritədə göstər';  
- selectedLocation={lat,lng,name:address};  
- refreshAll();flyTo(lat,lng,10000,address);  
- toast('Elan saxlandı və xəritələrdə göstərildi');  
-});  
-  
-/* -------------------------------------------------------  
-   Bütün görünüşləri yenilə  
-------------------------------------------------------- */  
-function refreshAll(){  
- renderListings();renderMapMarkers();renderGlobeMarkers();  
- if($('exploreScreen').classList.contains('show'))renderExplore();  
- if($('myOverlay').classList.contains('show'))showMyTab(selectedMyTab,null);  
-}  
-function init(){  
- buildCategories();  
- loadListings();  
- initGlobe();  
- initMap();  
- renderListings();  
- updateSelectedUI();  
- window.addEventListener('resize',()=>{  
-  if(map)map.invalidateSize();  
-  if(globe)globe.resize();  
- });  
-}  
-init();  
-</script>  </body>  
- </html>  Rela kod budur danışdqlarımızı buradan düzəlt cəm bütövbhalda ver mənı
+
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#06101e">
+<meta name="description" content="ARWORLD — real dünyanın üzərində virtual profillər, foto, video və məkanlar.">
+<title>ARWORLD — Spatial Social World</title>
+<link rel="preconnect" href="https://unpkg.com">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+:root{--bg:#040a14;--panel:#07182b;--cyan:#00d9ff;--blue:#087dff;--orange:#ff9a51;--text:#f1f8ff;--muted:#a1b6cd;--line:#17496c}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#020610;color:var(--text);font-family:Inter,system-ui,-apple-system,Arial,sans-serif}
+button,input,textarea,select{font:inherit}
+button{color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+#app{height:100dvh;position:relative;overflow:hidden;background:radial-gradient(ellipse at 50% 30%,#153d63,#061426 50%,#020610 100%)}
+#camera,#map{position:absolute;inset:0;width:100%;height:100%;border:0}
+#camera{object-fit:cover;background:#071426;display:none}
+#map{z-index:1;display:none}
+#cameraFallback{position:absolute;inset:0;overflow:hidden;background:radial-gradient(ellipse at 50% 20%,#24466b,#0a1a2e 48%,#020712);z-index:0}
+.sky{position:absolute;inset:0;background:linear-gradient(180deg,rgba(4,16,35,.1),rgba(4,10,21,.1) 44%,#071321 100%)}
+.city{position:absolute;inset:24% 0 24%;display:flex;align-items:flex-end;justify-content:center;gap:3px;opacity:.8;perspective:450px}
+.tower{position:relative;width:13%;height:58%;border:1px solid #337aa4;background:linear-gradient(90deg,#061321,#17456a 45%,#071526);clip-path:polygon(30% 0,70% 0,100% 100%,0 100%);box-shadow:0 0 20px #0068a8}
+.tower:nth-child(2){height:83%;width:16%;background:linear-gradient(90deg,#07182c,#17658c,#0b2039)}
+.tower:nth-child(3){height:70%;width:12%}
+.tower:after{content:"";position:absolute;inset:5% 12%;background:repeating-linear-gradient(0deg,transparent 0 9px,#ffb86755 10px 12px),repeating-linear-gradient(90deg,transparent 0 12px,#79dfff35 13px 15px)}
+.ground{position:absolute;bottom:0;width:100%;height:36%;background:linear-gradient(0deg,#07121c,#11283a 45%,transparent);clip-path:polygon(0 22%,100% 0,100% 100%,0 100%)}
+.gridground{position:absolute;bottom:-7%;left:-25%;width:150%;height:43%;transform:perspective(200px) rotateX(28deg);background-image:linear-gradient(#20bdf333 1px,transparent 1px),linear-gradient(90deg,#20bdf333 1px,transparent 1px);background-size:42px 32px;mask-image:linear-gradient(transparent,#000)}
+.topbar{position:absolute;z-index:15;top:calc(env(safe-area-inset-top) + 10px);left:14px;right:14px;display:flex;align-items:center;gap:9px}
+.glass{background:linear-gradient(135deg,#061c30dc,#06101fe8);border:1px solid #1b6a9b;border-radius:18px;box-shadow:0 0 18px #007fc533,inset 0 0 15px #0089d41a;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+.iconbtn{height:43px;min-width:43px;border-radius:14px;border:1px solid #28648b;background:#07172be8;display:grid;place-items:center;font-size:20px}
+.brand{display:flex;align-items:center;gap:8px;min-width:0;flex:1}
+.logo{width:32px;height:32px;flex-shrink:0;border-radius:11px;display:grid;place-items:center;color:#fff;font-weight:900;background:linear-gradient(135deg,#00cfff,#1759ff);box-shadow:0 0 16px #00bfff88}
+.brandname{font-size:13px;font-weight:900;letter-spacing:1.8px}
+.brandtag{font-size:9px;color:#83b7d8;margin-top:2px}
+.switch{position:absolute;z-index:16;top:calc(env(safe-area-inset-top) + 64px);left:50%;transform:translateX(-50%);display:flex;padding:4px;border:1px solid #17638e;border-radius:24px;background:#061629e8;backdrop-filter:blur(14px)}
+.switch button{min-width:88px;border:0;background:transparent;border-radius:20px;padding:10px 14px;color:#b8d1e5;font-size:12px;font-weight:700}
+.switch button.active{background:linear-gradient(110deg,#087cff,#00caff);color:white;box-shadow:0 0 16px #00bfff6b}
+.status{position:absolute;z-index:12;top:calc(env(safe-area-inset-top) + 121px);left:16px;right:16px;display:flex;justify-content:space-between;align-items:center;pointer-events:none}
+.pill{padding:7px 10px;border:1px solid #1e5777;border-radius:20px;background:#041321b8;backdrop-filter:blur(10px);font-size:10px;color:#c5e8ff}
+.pill b{color:var(--cyan)}
+#cameraHint{display:none;position:absolute;z-index:11;top:calc(env(safe-area-inset-top) + 156px);left:50%;transform:translateX(-50%);white-space:nowrap}
+#world{position:absolute;z-index:5;inset:0;pointer-events:none;overflow:hidden}
+.floating{position:absolute;pointer-events:auto;width:min(70%,290px);border-radius:17px;padding:12px;background:linear-gradient(145deg,#06213beF,#061326ed 70%);border:1px solid #24caff;box-shadow:0 0 7px #00bfff99,0 0 27px #007bff40,inset 0 0 18px #00bfff0e;backdrop-filter:blur(17px);animation:appear .5s ease both}
+@keyframes appear{from{opacity:0;transform:translateY(12px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+.floating:after{content:"";position:absolute;left:50%;top:100%;height:28px;border-left:2px solid #00d9ff;filter:drop-shadow(0 0 5px #00d9ff)}
+.anchor{position:absolute;top:calc(100% + 25px);left:calc(50% - 6px);width:13px;height:13px;border-radius:50%;border:2px solid #fff;background:#00cfff;box-shadow:0 0 0 5px #00cfff42,0 0 20px #00cfff}
+.floating.primary{left:50%;top:37%;transform:translateX(-50%);width:min(72%,300px)}
+.floating.left{left:3%;top:40%;width:35%;max-width:180px;padding:8px}
+.floating.right{right:3%;top:57%;width:34%;max-width:175px;padding:8px}
+.floating.low{left:53%;top:67%;width:38%;max-width:190px;padding:8px}
+.floating.primary:after{height:48px}
+.floating.left:after,.floating.right:after,.floating.low:after{height:22px}
+.cardhead{display:flex;align-items:center;gap:9px;min-width:0}
+.avatar{width:43px;height:43px;flex-shrink:0;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,#087dff,#00e1df);border:2px solid #4ee8ff;color:white;font-size:18px;font-weight:800;overflow:hidden}
+.avatar img{width:100%;height:100%;object-fit:cover}
+.person{min-width:0;flex:1}
+.person strong{font-size:12px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.person small{display:block;font-size:10px;color:#9fc8e5;margin-top:4px}
+.verify{color:#32dfff}
+.follow{font-size:10px;font-weight:800;border:1px solid #00cfff;border-radius:16px;padding:6px 8px;background:#003455;white-space:nowrap}
+.locationline{font-size:10px;color:#b8d9ef;margin-top:8px;line-height:1.6;overflow-wrap:anywhere}
+.gallery{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;margin-top:10px}
+.thumb{height:49px;border:1px solid #2a8ab0;border-radius:7px;overflow:hidden;background:linear-gradient(140deg,#173f5e,#081629);display:grid;place-items:center;color:#72dfff;font-size:17px;position:relative}
+.thumb img{width:100%;height:100%;object-fit:cover}
+.media{width:100%;height:95px;object-fit:cover;border:1px solid #237ca3;border-radius:9px;margin-top:8px;background:#071b2e;display:block}
+video.media{background:#000}
+.caption{font-size:11px;line-height:1.5;color:#d9edfc;margin-top:7px;overflow-wrap:anywhere}
+.caption small{color:#9bbbd2}
+.actions{display:flex;align-items:center;justify-content:space-between;gap:4px;margin-top:8px;padding-top:7px;border-top:1px solid #17405d}
+.action{border:0;background:transparent;padding:3px 1px;color:#bcd5e9;font-size:10px;white-space:nowrap}
+.action.liked{color:#ff7baf}
+.mini .avatar{width:28px;height:28px;font-size:12px}
+.mini .person strong{font-size:10px}
+.mini .person small,.mini .locationline{font-size:8px}
+.mini .media{height:49px;margin-top:6px}
+.mini .caption{font-size:9px}
+.mini .follow,.mini .actions{display:none}
+.mini .gallery{grid-template-columns:repeat(2,minmax(0,1fr))}
+.mini .thumb{height:33px}
+.mini .cardhead{gap:5px}
+.ring{position:absolute;z-index:4;left:50%;top:77%;width:100px;height:26px;border:2px solid #00d9ff;border-radius:50%;transform:translateX(-50%);box-shadow:0 0 17px #00cfff70;pointer-events:none}
+.compass{position:absolute;z-index:12;left:17px;bottom:154px;width:76px;height:76px;border:1px solid #2589b6;border-radius:50%;display:grid;place-items:center;background:#06182cba;box-shadow:0 0 15px #008fff25}
+.compass:before{content:"N";position:absolute;top:5px;color:#9edfff;font-size:10px}
+.needle{color:#00dfff;font-size:32px;text-shadow:0 0 14px #00dfff;transform:rotate(0deg)}
+.distance{position:absolute;z-index:12;left:50%;bottom:164px;transform:translateX(-50%);padding:10px 15px;border:1px solid #2179a5;border-radius:24px;background:#041426dd;font-size:11px;white-space:nowrap}
+.gps{position:absolute;z-index:12;right:14px;bottom:165px;padding:9px 10px;border:1px solid #087f72;border-radius:20px;background:#041c20df;font-size:10px;color:#7effc5}
+.gps strong{display:block;color:#b6ffe1;margin-bottom:3px}
+.bottom{position:absolute;z-index:20;bottom:0;left:0;right:0;padding:14px 14px calc(env(safe-area-inset-bottom) + 15px);background:linear-gradient(0deg,#020814 12%,#061528ed 75%,#06152800);border-radius:28px 28px 0 0}
+.bottomnav{display:grid;grid-template-columns:repeat(5,1fr);align-items:center;gap:5px}
+.tool{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:7px;border:0;background:transparent;color:#9ec9e8;font-size:10px;min-width:0}
+.tool .circle{width:48px;height:48px;border-radius:50%;border:1px solid #235b80;background:linear-gradient(145deg,#0c2b48,#071426);display:grid;place-items:center;font-size:22px;box-shadow:0 0 13px #007bff18}
+.tool.main .circle{width:65px;height:65px;border:3px solid #00cfff;outline:4px solid #00cfff27;color:#00e2ff;font-size:28px;box-shadow:0 0 20px #00bfff66}
+.tool:active .circle{transform:scale(.94)}
+.bottomnote{text-align:center;color:#577b99;font-size:9px;margin-top:12px}
+.overlay{position:absolute;z-index:40;inset:0;display:none;align-items:flex-end;justify-content:center;background:#0009;backdrop-filter:blur(5px)}
+.overlay.show{display:flex}
+.sheet{width:100%;max-height:87%;overflow:auto;background:linear-gradient(160deg,#0a2036,#030b16 75%);border:1px solid #1e648d;border-radius:24px 24px 0 0;padding:20px 17px calc(env(safe-area-inset-bottom) + 22px);box-shadow:0 -8px 40px #007dff20}
+.sheettop{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.sheettop h2{font-size:17px;margin:0}
+.close{width:34px;height:34px;border-radius:50%;border:1px solid #28648b;background:#0a2036;font-size:20px}
+.field{display:block;width:100%;margin:8px 0 12px;border:1px solid #1b557a;border-radius:12px;padding:12px;background:#041221;color:#effaff;outline:none}
+textarea.field{min-height:85px;resize:vertical}
+label{font-size:11px;color:#9cc6e4}
+.btn{border:1px solid #1688b7;border-radius:12px;padding:12px 15px;background:linear-gradient(100deg,#0755b7,#007fa7);font-weight:750;font-size:12px}
+.btn.secondary{background:#0a1a2c;border-color:#23445e}
+.btn.danger{background:#38121d;border-color:#9b3652}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.row .btn{flex:1}
+.note{font-size:11px;line-height:1.6;color:#93b1ca}
+.filepick{display:block;padding:13px;border:1px dashed #2884ae;border-radius:12px;text-align:center;background:#06182a;margin:10px 0}
+#toast{position:absolute;z-index:80;top:calc(env(safe-area-inset-top) + 116px);left:50%;transform:translate(-50%,-10px);opacity:0;pointer-events:none;padding:11px 15px;border-radius:20px;background:#092b41;border:1px solid #00bfe7;box-shadow:0 0 20px #00bfff35;font-size:12px;max-width:90%;text-align:center;transition:.25s}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+#list{display:grid;gap:9px}
+.listitem{display:flex;align-items:center;gap:10px;padding:10px;border:1px solid #17435e;border-radius:12px;background:#071629}
+.listitem .avatar{width:36px;height:36px}
+.listitem .person{flex:1}
+.listitem button{font-size:11px}
+#map .leaflet-control-attribution{font-size:8px}
+#map .leaflet-popup-content-wrapper,#map .leaflet-popup-tip{background:#07182b;color:#e8f7ff}
+#map .leaflet-popup-content{font-size:12px}
+@media(max-height:690px){.floating.primary{top:34%}.floating.left{top:38%}.floating.right{top:55%}.floating.low{top:65%}.floating.primary .media{height:68px}.floating.primary .gallery{margin-top:6px}.floating.primary .thumb{height:35px}.compass{bottom:119px;width:59px;height:59px}.distance,.gps{bottom:126px}.bottom{padding-top:8px}.tool .circle{width:40px;height:40px}.tool.main .circle{width:52px;height:52px}}
+@media(min-width:700px){#app{max-width:520px;margin:auto;border-left:1px solid #183d57;border-right:1px solid #183d57}.topbar{left:20px;right:20px}.floating.primary{width:300px}.floating.left{width:170px}.floating.right{width:170px}}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="cameraFallback">
+    <div class="sky"></div>
+    <div class="city"><div class="tower"></div><div class="tower"></div><div class="tower"></div></div>
+    <div class="ground"></div><div class="gridground"></div>
+  </div>
+  <video id="camera" autoplay playsinline muted></video>
+  <div id="map"></div>
+
+  <header class="topbar">
+    <button class="iconbtn" id="menuBtn" aria-label="Menyu">☰</button>
+    <div class="brand">
+      <div class="logo">A</div>
+      <div><div class="brandname">ARWORLD</div><div class="brandtag">SPATIAL SOCIAL WORLD</div></div>
+    </div>
+    <button class="iconbtn" id="searchBtn" aria-label="Axtar">⌕</button>
+    <button class="iconbtn" id="settingsBtn" aria-label="Parametrlər">⚙</button>
+  </header>
+
+  <nav class="switch">
+    <button id="arTab" class="active">✧ AR</button>
+    <button id="mapTab">⌖ Xəritə</button>
+  </nav>
+
+  <div class="status">
+    <div class="pill"><b>●</b> CANLI MƏKAN</div>
+    <div class="pill" id="coords">GPS gözlənilir…</div>
+  </div>
+  <div class="pill" id="cameraHint">Kameranı ətrafa yönəlt</div>
+
+  <div id="world">
+    <div class="floating primary" data-card="main">
+      <div class="cardhead">
+        <div class="avatar" id="mainAvatar">K</div>
+        <div class="person"><strong id="mainName">Kamran <span class="verify">✦</span></strong><small id="mainRole">Səyahətçi · Fotoqraf</small></div>
+        <button class="follow" id="followBtn">+ İzl ə</button>
+      </div>
+      <div class="locationline" id="mainLocation">⌖ Bakı, Azərbaycan<br>◎ Koordinatlar yüklənir…</div>
+      <div class="gallery" id="gallery">
+        <div class="thumb">🌆</div><div class="thumb">🏞</div><div class="thumb">🌄</div><div class="thumb">🌉</div>
+      </div>
+      <div id="mediaBox">
+        <img class="media" id="mainMedia" alt="Məkan şəkli" src="https://images.unsplash.com/photo-1611348586804-61bf6c080437?auto=format&fit=crop&w=800&q=80">
+      </div>
+      <div class="caption"><span id="mainCaption">Bakı həmişə gözəldir… 🌇</span><br><small id="mainDescription">Yeni yerlər, yeni insanlar, yeni hekayələr.</small></div>
+      <div class="actions">
+        <button class="action" id="likeBtn">♡ <span id="likes">248</span></button>
+        <button class="action" id="commentBtn">◯ <span id="commentCount">32</span></button>
+        <button class="action" id="shareBtn">↗ Paylaş</button>
+        <button class="action" id="moreBtn">•••</button>
+      </div>
+      <div class="anchor"></div>
+    </div>
+
+    <div class="floating left mini">
+      <div class="cardhead"><div class="avatar">M</div><div class="person"><strong>Milli Kitabxana</strong><small>Tarix · Mədəniyyət</small></div></div>
+      <div class="locationline">⌖ Yaxınlıqdakı məkan</div>
+      <img class="media" alt="Şəhər memarlığı" src="https://images.unsplash.com/photo-1511818966892-d7d671e672a2?auto=format&fit=crop&w=350&q=75" loading="lazy">
+      <div class="caption">Mədəniyyət və tarix</div><div class="anchor"></div>
+    </div>
+
+    <div class="floating right mini">
+      <div class="cardhead"><div class="avatar">F</div><div class="person"><strong>Flame Towers</strong><small>Məşhur yer</small></div></div>
+      <div class="locationline">⌖ Bakı</div>
+      <img class="media" alt="Şəhər mənzərəsi" src="https://images.unsplash.com/photo-1519608487953-e999c86e7455?auto=format&fit=crop&w=350&q=75" loading="lazy">
+      <div class="caption">Şəhərin mənzərəsi</div><div class="anchor"></div>
+    </div>
+
+    <div class="floating low mini">
+      <div class="cardhead"><div class="avatar">A</div><div class="person"><strong>Aysel</strong><small>Səyahətçi</small></div></div>
+      <div class="locationline">⌖ İstifadəçi paylaşımı</div>
+      <img class="media" alt="Dəniz sahili" src="https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=350&q=75" loading="lazy">
+      <div class="caption">Dəniz havası 💙</div><div class="anchor"></div>
+    </div>
+  </div>
+
+  <div class="ring"></div>
+  <div class="compass"><div class="needle" id="needle">➤</div></div>
+  <div class="distance" id="distance">➤ <span id="distanceValue">Məkan rejimi</span>　◎</div>
+  <div class="gps"><strong>◉ GPS</strong><span id="accuracy">Dəqiqlik gözlənilir</span></div>
+
+  <footer class="bottom">
+    <div class="bottomnav">
+      <button class="tool" id="cameraBtn"><span class="circle">▣</span><span>Foto</span></button>
+      <button class="tool" id="videoBtn"><span class="circle">▰</span><span>Video</span></button>
+      <button class="tool main" id="addBtn"><span class="circle">＋</span><span>Yerləşdir</span></button>
+      <button class="tool" id="galleryBtn"><span class="circle">▧</span><span>Qalereya</span></button>
+      <button class="tool" id="profileBtn"><span class="circle">♙</span><span>Profil</span></button>
+    </div>
+    <div class="bottomnote">ARWORLD · REAL DÜNYA, VİRTUAL HEKAYƏLƏR</div>
+  </footer>
+
+  <div id="toast" role="status"></div>
+
+  <div class="overlay" id="editor">
+    <section class="sheet">
+      <div class="sheettop"><h2>✧ Dünyaya əlavə et</h2><button class="close" data-close="editor">×</button></div>
+      <label>Başlıq / profil adı</label><input class="field" id="newTitle" maxlength="70" placeholder="Məsələn, mənim səyahətim">
+      <label>Kateqoriya</label>
+      <select class="field" id="newType"><option>Şəxsi profil</option><option>Fotoşəkil</option><option>Video</option><option>Turizm məkanı</option><option>Biznes</option><option>Usta və xidmət</option><option>Məlumat / məqalə</option><option>Tədbir</option></select>
+      <label>Açıqlama</label><textarea class="field" id="newText" maxlength="1500" placeholder="Bu məkan haqqında məlumat yaz…"></textarea>
+      <label>Şəkil və ya video əlavə et</label><input class="field" id="newFile" type="file" accept="image/*,video/*">
+      <label>Enlik (latitude)</label><input class="field" id="newLat" inputmode="decimal" placeholder="GPS koordinatı">
+      <label>Uzunluq (longitude)</label><input class="field" id="newLng" inputmode="decimal" placeholder="GPS koordinatı">
+      <div class="row"><button class="btn secondary" id="useGPS">◎ Mənim yerim</button><button class="btn secondary" id="pickMap">⌖ Xəritədən seç</button></div>
+      <p class="note">Məzmun bu prototipdə brauzer yaddaşında saxlanılır. Fayl ölçüsü böyükdürsə, yaddaş məhdudiyyəti ola bilər. Paylaşım digər cihazlara avtomatik getmir.</p>
+      <button class="btn" style="width:100%" id="publishBtn">✦ Məzmunu yerləşdir</button>
+    </section>
+  </div>
+
+  <div class="overlay" id="searchPanel">
+    <section class="sheet">
+      <div class="sheettop"><h2>⌕ Dünya üzrə axtarış</h2><button class="close" data-close="searchPanel">×</button></div>
+      <input class="field" id="searchInput" placeholder="Profil, məkan, başlıq axtar…">
+      <button class="btn" id="doSearch" style="width:100%">Axtar</button>
+      <div id="searchResults" style="margin-top:12px"></div>
+    </section>
+  </div>
+
+  <div class="overlay" id="commentsPanel">
+    <section class="sheet">
+      <div class="sheettop"><h2>Şərhlər</h2><button class="close" data-close="commentsPanel">×</button></div>
+      <div id="commentsList" class="note">Hələ şərh yoxdur.</div>
+      <textarea class="field" id="commentInput" maxlength="500" placeholder="Fikrini yaz…"></textarea>
+      <button class="btn" style="width:100%" id="sendComment">Şərhi göndər</button>
+    </section>
+  </div>
+
+  <div class="overlay" id="profilePanel">
+    <section class="sheet">
+      <div class="sheettop"><h2>♙ Profilim</h2><button class="close" data-close="profilePanel">×</button></div>
+      <label>Adın</label><input class="field" id="profileName" maxlength="50" placeholder="Ad və ya istifadəçi adı">
+      <label>Haqqında</label><textarea class="field" id="profileBio" maxlength="300" placeholder="Özün haqqında qısa məlumat"></textarea>
+      <label>Profil şəkli</label><input class="field" id="profilePhoto" type="file" accept="image/*">
+      <button class="btn" style="width:100%" id="saveProfile">Profili yadda saxla</button>
+      <p class="note">Profil hazırda bu cihazda saxlanılır. İctimai hesab və sinxronizasiya üçün server lazımdır.</p>
+    </section>
+  </div>
+
+  <div class="overlay" id="settingsPanel">
+    <section class="sheet">
+      <div class="sheettop"><h2>⚙ Parametrlər</h2><button class="close" data-close="settingsPanel">×</button></div>
+      <button class="btn secondary" style="width:100%;margin-bottom:9px" id="startAR">◎ Kameranı aç / AR görünüşü</button>
+      <button class="btn secondary" style="width:100%;margin-bottom:9px" id="centerMap">⌖ Məkanımı xəritədə göstər</button>
+      <button class="btn secondary" style="width:100%;margin-bottom:9px" id="exportData">⇩ Məlumatlarımı ixrac et</button>
+      <button class="btn danger" style="width:100%" id="clearData">Bu cihazdakı məzmunu sil</button>
+      <p class="note">GPS və kamera üçün icazə lazımdır. GitHub Pages HTTPS istifadə etdiyi üçün brauzer icazələri ilə işləyə bilər.</p>
+    </section>
+  </div>
+
+  <div class="overlay" id="menuPanel">
+    <section class="sheet">
+      <div class="sheettop"><h2>ARWORLD</h2><button class="close" data-close="menuPanel">×</button></div>
+      <div class="row">
+        <button class="btn secondary" data-open="profilePanel">♙ Profil</button>
+        <button class="btn secondary" data-open="searchPanel">⌕ Axtarış</button>
+        <button class="btn secondary" data-open="settingsPanel">⚙ Parametrlər</button>
+        <button class="btn secondary" data-open="editor">＋ Əlavə et</button>
+      </div>
+      <p class="note">Real dünyada virtual məkanlar, profillər, fotolar, videolar və hekayələr.</p>
+    </section>
+  </div>
+
+  <input id="quickFile" type="file" accept="image/*" hidden>
+  <input id="quickVideo" type="file" accept="video/*" hidden>
+  <input id="quickGallery" type="file" accept="image/*,video/*" hidden>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+(function(){
+"use strict";
+const $=id=>document.getElementById(id);
+const DB="arworld_demo_v1";
+const PROFILE="arworld_profile_v1";
+let userPos=null,map=null,mapMarker=null,stream=null,activeMode="ar",selectedFile=null;
+let currentLikes=248,liked=false,following=false,comments=[],watchHeading=0;
+let entries=[];
+const fallbackPos={lat:40.4093,lng:49.8671};
+const escapeHTML=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function toast(s){const el=$("toast");el.textContent=s;el.classList.add("show");clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove("show"),2600)}
+function openPanel(id){$(id).classList.add("show")}
+function closePanel(id){$(id).classList.remove("show")}
+document.querySelectorAll("[data-close]").forEach(b=>b.addEventListener("click",()=>closePanel(b.dataset.close)));
+document.querySelectorAll("[data-open]").forEach(b=>b.addEventListener("click",()=>{closePanel("menuPanel");openPanel(b.dataset.open)}));
+document.querySelectorAll(".overlay").forEach(el=>el.addEventListener("click",e=>{if(e.target===el)el.classList.remove("show")}));
+function readJSON(key,def){try{return JSON.parse(localStorage.getItem(key))??def}catch{return def}}
+function saveEntries(){try{localStorage.setItem(DB,JSON.stringify(entries))}catch(e){toast("Yaddaş dolub. Daha kiçik media faylı seç.");throw e}}
+function profile(){return readJSON(PROFILE,{name:"Kamran",bio:"Səyahətçi · Fotoqraf",photo:""})}
+function setProfile(p){localStorage.setItem(PROFILE,JSON.stringify(p))}
+function getPosition(){return userPos||fallbackPos}
+function setCoords(p){
+ userPos={lat:p.lat,lng:p.lng,accuracy:p.accuracy||null};
+ $("coords").textContent=p.lat.toFixed(5)+", "+p.lng.toFixed(5);
+ $("accuracy").textContent=p.accuracy? "± "+Math.round(p.accuracy)+" m":"Koordinat alındı";
+ $("distanceValue").textContent="Məkan qeydə alındı";
+}
+function locate(showToast=true){
+ if(!navigator.geolocation){toast("Bu brauzer GPS dəstəkləmir.");return}
+ toast("GPS məkanı müəyyən edir…");
+ navigator.geolocation.getCurrentPosition(pos=>{
+  setCoords({lat:pos.coords.latitude,lng:pos.coords.longitude,accuracy:pos.coords.accuracy});
+  if(map)centerMap();
+  if(showToast)toast("Məkan müəyyən edildi.");
+ },err=>{
+  toast(err.code===1?"Məkan icazəsi verilmədi.":"GPS tapılmadı. Açıq havada yenidən yoxla.");
+ },{enableHighAccuracy:true,timeout:12000,maximumAge:10000});
+}
+function watchGPS(){
+ if(!navigator.geolocation)return;
+ navigator.geolocation.watchPosition(p=>{
+  setCoords({lat:p.coords.latitude,lng:p.coords.longitude,accuracy:p.coords.accuracy});
+ },()=>{}, {enableHighAccuracy:true,maximumAge:5000,timeout:15000});
+}
+function initMap(){
+ if(map||!window.L){if(!window.L)toast("Xəritə kitabxanası yüklənmədi. İnterneti yoxla.");return}
+ const p=getPosition();
+ map=L.map("map",{zoomControl:false}).setView([p.lat,p.lng],14);
+ L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:'&copy; OpenStreetMap contributors'}).addTo(map);
+ L.control.zoom({position:"bottomright"}).addTo(map);
+ mapMarker=L.marker([p.lat,p.lng]).addTo(map).bindPopup("Mənim məkanım");
+ map.on("click",e=>{
+  $("newLat").value=e.latlng.lat.toFixed(7);
+  $("newLng").value=e.latlng.lng.toFixed(7);
+  toast("Koordinatlar seçildi.");
+  if($("editor").classList.contains("show")){setMode("ar");}
+ });
+ renderMapEntries();
+}
+function renderMapEntries(){
+ if(!map)return;
+ entries.forEach(e=>{
+  if(!Number.isFinite(+e.lat)||!Number.isFinite(+e.lng))return;
+  if(e._marker)e._marker.remove();
+  const marker=L.marker([+e.lat,+e.lng]).addTo(map);
+  marker.bindPopup("<b>"+escapeHTML(e.title)+"</b><br>"+escapeHTML(e.type)+"<br>"+escapeHTML(e.text.slice(0,140)));
+  e._marker=marker;
+ });
+}
+function setMode(mode){
+ activeMode=mode;
+ const isMap=mode==="map";
+ $("map").style.display=isMap?"block":"none";
+ $("world").style.display=isMap?"none":"block";
+ $("cameraFallback").style.display=isMap?"none":(stream?"none":"block");
+ $("camera").style.display=isMap?"none":(stream?"block":"none");
+ $("arTab").classList.toggle("active",!isMap);
+ $("mapTab").classList.toggle("active",isMap);
+ $("cameraHint").style.display=(!isMap&&stream)?"block":"none";
+ if(isMap){initMap();setTimeout(()=>map&&map.invalidateSize(),100)}
+}
+$("arTab").onclick=()=>setMode("ar");
+$("mapTab").onclick=()=>setMode("map");
+$("menuBtn").onclick=()=>openPanel("menuPanel");
+$("searchBtn").onclick=()=>openPanel("searchPanel");
+$("settingsBtn").onclick=()=>openPanel("settingsPanel");
+$("profileBtn").onclick=()=>{
+ const p=profile();$("profileName").value=p.name||"";$("profileBio").value=p.bio||"";
+ openPanel("profilePanel")
+};
+$("addBtn").onclick=()=>openPanel("editor");
+$("useGPS").onclick=()=>{
+ if(userPos){$("newLat").value=userPos.lat;$("newLng").value=userPos.lng;toast("Cari koordinatlar əlavə edildi")}
+ else locate(false);
+};
+$("pickMap").onclick=()=>{closePanel("editor");setMode("map");toast("Xəritəyə toxunaraq koordinat seç.")};
+$("centerMap").onclick=()=>{closePanel("settingsPanel");setMode("map");locate(false);setTimeout(()=>centerMap(),500)};
+function centerMap(){if(!map)return;const p=getPosition();map.setView([p.lat,p.lng],16);if(mapMarker)mapMarker.setLatLng([p.lat,p.lng])}
+async function startCamera(){
+ if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){toast("Kamera üçün HTTPS və uyğun brauzer lazımdır.");return}
+ try{
+  stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"}},audio:false});
+  $("camera").srcObject=stream;
+  $("camera").style.display="block";$("cameraFallback").style.display="none";
+  $("cameraHint").style.display="block";closePanel("settingsPanel");
+  setMode("ar");toast("Kamera açıldı. Virtual kartlar ekranda görünür.");
+ }catch(e){toast(e.name==="NotAllowedError"?"Kamera icazəsi verilmədi.":"Kamera açıla bilmədi: "+e.message)}
+}
+function stopCamera(){
+ if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}
+ $("camera").srcObject=null;$("camera").style.display="none";$("cameraHint").style.display="none";$("cameraFallback").style.display="block";
+}
+$("startAR").onclick=startCamera;
+$("cameraBtn").onclick=()=>{$("quickFile").click()};
+$("videoBtn").onclick=()=>{$("quickVideo").click()};
+$("galleryBtn").onclick=()=>{$("quickGallery").click()};
+function prepareFile(file){
+ if(!file)return;
+ if(!file.type.startsWith("image/")&&!file.type.startsWith("video/")){toast("Yalnız şəkil və video faylı seç.");return}
+ if(file.size>12*1024*1024){toast("Demo üçün fayl maksimum 12 MB ola bilər.");return}
+ selectedFile=file;
+ $("newFile").value="";
+ $("newTitle").value=$("newTitle").value||file.name.replace(/\.[^.]+$/,"");
+ $("newType").value=file.type.startsWith("video/")?"Video":"Fotoşəkil";
+ openPanel("editor");
+}
+$("quickFile").onchange=e=>prepareFile(e.target.files[0]);
+$("quickVideo").onchange=e=>prepareFile(e.target.files[0]);
+$("quickGallery").onchange=e=>prepareFile(e.target.files[0]);
+$("newFile").onchange=e=>{selectedFile=e.target.files[0]||null};
+function fileToData(file){
+ return new Promise((resolve,reject)=>{
+  if(!file)return resolve("");
+  const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=()=>reject(Error("Fayl oxunmadı"));r.readAsDataURL(file)
+ });
+}
+$("publishBtn").onclick=async()=>{
+ const title=$("newTitle").value.trim(),text=$("newText").value.trim();
+ if(!title){toast("Başlıq daxil et.");return}
+ let lat=parseFloat($("newLat").value),lng=parseFloat($("newLng").value);
+ if(!Number.isFinite(lat)||lat < -90||lat>90||!Number.isFinite(lng)||lng < -180||lng>180){
+  const p=getPosition();lat=p.lat;lng=p.lng;
+ }
+ let media="";
+ try{media=await fileToData(selectedFile)}catch{toast("Faylı oxumaq mümkün olmadı.");return}
+ const entry={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),title,type:$("newType").value,text,lat,lng,media,mime:selectedFile?.type||"",created:Date.now(),likes:0};
+ entries.unshift(entry);
+ try{saveEntries()}catch{entries.shift();return}
+ closePanel("editor");selectedFile=null;
+ $("newTitle").value="";$("newText").value="";$("newFile").value="";
+ $("newLat").value="";$("newLng").value="";
+ renderEntries();renderMapEntries();toast("Məzmun bu cihazda yerləşdirildi.");
+};
+function renderEntries(){
+ document.querySelectorAll(".user-entry").forEach(el=>el.remove());
+ const world=$("world");
+ entries.slice(0,12).forEach((e,i)=>{
+  const card=document.createElement("div");
+  card.className="floating user-entry";
+  card.style.left=(8+(i%3)*29)+"%";
+  card.style.top=(16+Math.floor(i/3)*15)+"%";
+  card.style.width="min(58%,245px)";
+  card.style.transform="translateX(-4%)";
+  let media="";
+  if(e.media&&e.mime.startsWith("image/"))media='<img class="media" alt="" src="'+e.media+'">';
+  else if(e.media&&e.mime.startsWith("video/"))media='<video class="media" controls playsinline preload="metadata" src="'+e.media+'"></video>';
+  else media='<div class="media" style="display:grid;place-items:center;color:#4bdcff">✧ ARWORLD</div>';
+  card.innerHTML='<div class="cardhead"><div class="avatar">✧</div><div class="person"><strong>'+escapeHTML(e.title)+'</strong><small>'+escapeHTML(e.type)+'</small></div><button class="iconbtn remove-entry" style="min-width:30px;height:30px">×</button></div><div class="locationline">⌖ '+Number(e.lat).toFixed(4)+', '+Number(e.lng).toFixed(4)+'</div>'+media+'<div class="caption">'+escapeHTML(e.text)+'</div><div class="actions"><button class="action entry-like">♡ '+e.likes+'</button><button class="action entry-share">↗ Paylaş</button><button class="action entry-map">⌖ Xəritə</button></div><div class="anchor"></div>';
+  card.querySelector(".remove-entry").onclick=()=>{
+   if(!confirm("Bu məzmunu bu cihazdan silmək istəyirsən?"))return;
+   entries=entries.filter(x=>x.id!==e.id);saveEntries();renderEntries();renderMapEntries();toast("Məzmun silindi.");
+  };
+  card.querySelector(".entry-like").onclick=()=>{
+   e.likes++;saveEntries();renderEntries();renderMapEntries();
+  };
+  card.querySelector(".entry-share").onclick=()=>shareText(e.title+"\n"+e.text+"\nKoordinat: "+e.lat+", "+e.lng);
+  card.querySelector(".entry-map").onclick=()=>{setMode("map");if(map)map.setView([e.lat,e.lng],17)};
+  world.appendChild(card);
+ });
+ if(map)renderMapEntries();
+}
+$("likeBtn").onclick=()=>{
+ liked=!liked;currentLikes+=liked?1:-1;
+ $("likes").textContent=currentLikes;$("likeBtn").classList.toggle("liked",liked);
+ $("likeBtn").textContent=(liked?"♥ ":"♡ ")+currentLikes;
+};
+$("followBtn").onclick=()=>{following=!following;$("followBtn").textContent=following?"✓ İzlənir":"+ İzl ə";toast(following?"İzləməyə əlavə edildi":"İzləmədən çıxarıldı")};
+$("commentBtn").onclick=()=>{renderComments();openPanel("commentsPanel")};
+function renderComments(){
+ $("commentsList").innerHTML=comments.length?comments.map(c=>'<div style="padding:8px 0;border-bottom:1px solid #17334b"><b>'+escapeHTML(c.name)+'</b><div>'+escapeHTML(c.text)+'</div></div>').join(""):'<div class="note">Hələ şərh yoxdur. İlk şərhi sən yaz.</div>';
+ $("commentCount").textContent=32+comments.length;
+}
+$("sendComment").onclick=()=>{
+ const text=$("commentInput").value.trim();if(!text){toast("Şərh yaz.");return}
+ comments.push({name:profile().name||"İstifadəçi",text});
+ $("commentInput").value="";renderComments();toast("Şərh bu sessiyada əlavə edildi.");
+};
+async function shareText(text){
+ try{
+  if(navigator.share)await navigator.share({title:"ARWORLD",text});
+  else if(navigator.clipboard){await navigator.clipboard.writeText(text);toast("Mətn köçürüldü.")}
+  else toast(text);
+ }catch(e){if(e.name!=="AbortError")toast("Paylaşmaq mümkün olmadı.")}
+}
+$("shareBtn").onclick=()=>shareText("ARWORLD — Bakı həmişə gözəldir! "+location.href);
+$("moreBtn").onclick=()=>openPanel("settingsPanel");
+$("saveProfile").onclick=async()=>{
+ const p=profile();p.name=$("profileName").value.trim()||"İstifadəçi";p.bio=$("profileBio").value.trim();
+ const f=$("profilePhoto").files[0];
+ if(f){if(f.size>2*1024*1024){toast("Profil şəkli 2 MB-dan kiçik olmalıdır.");return}try{p.photo=await fileToData(f)}catch{}}
+ try{setProfile(p)}catch{toast("Profil yadda saxlanmadı: yaddaş doludur.");return}
+ $("mainName").textContent=p.name;
+ $("mainRole").textContent=p.bio||"ARWORLD istifadəçisi";
+ if(p.photo)$("mainAvatar").innerHTML='<img alt="" src="'+p.photo+'">';
+ closePanel("profilePanel");toast("Profil bu cihazda yadda saxlanıldı.");
+};
+function doSearch(){
+ const q=$("searchInput").value.trim().toLowerCase();
+ const found=entries.filter(e=>(e.title+" "+e.type+" "+e.text).toLowerCase().includes(q));
+ $("searchResults").innerHTML=found.length?'<div id="list">'+found.map(e=>'<div class="listitem"><div class="avatar">✧</div><div class="person"><strong>'+escapeHTML(e.title)+'</strong><small>'+escapeHTML(e.type)+'</small></div><button class="btn secondary" data-goto="'+e.id+'">Bax</button></div>').join("")+'</div>':'<p class="note">'+(q?"Uyğun nəticə tapılmadı.":"Başlıq, məkan və ya mətn daxil et.")+'</p>';
+ $("searchResults").querySelectorAll("[data-goto]").forEach(b=>b.onclick=()=>{
+  const e=entries.find(x=>x.id===b.dataset.goto);if(!e)return;
+  closePanel("searchPanel");setMode("map");if(map)map.setView([e.lat,e.lng],17);
+ });
+}
+$("doSearch").onclick=doSearch;
+$("searchInput").addEventListener("keydown",e=>{if(e.key==="Enter")doSearch()});
+$("exportData").onclick=()=>{
+ const blob=new Blob([JSON.stringify({profile:profile(),entries:entries.map(e=>({...e,_marker:undefined}))},null,2)],{type:"application/json"});
+ const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="arworld-data.json";a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);toast("Məlumat ixracı başladı.");
+};
+$("clearData").onclick=()=>{
+ if(!confirm("ARWORLD məlumatlarını bu cihazdan silmək istəyirsən?"))return;
+ entries=[];localStorage.removeItem(DB);localStorage.removeItem(PROFILE);renderEntries();closePanel("settingsPanel");toast("Bu cihazdakı məlumatlar silindi.");
+};
+window.addEventListener("deviceorientation",e=>{
+ if(e.alpha==null)return;
+ watchHeading=e.alpha;$("needle").style.transform="rotate("+(-watchHeading)+"deg)";
+});
+window.addEventListener("beforeunload",()=>{if(stream)stream.getTracks().forEach(t=>t.stop())});
+entries=readJSON(DB,[]);
+renderEntries();
+const p=profile();
+$("mainName").textContent=p.name||"İstifadəçi";
+$("mainRole").textContent=p.bio||"ARWORLD istifadəçisi";
+if(p.photo)$("mainAvatar").innerHTML='<img alt="" src="'+p.photo+'">';
+locate(false);watchGPS();
+})();
+</script>
+</body>
+</html>
