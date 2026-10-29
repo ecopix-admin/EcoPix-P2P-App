@@ -4,646 +4,365 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#071329">
-<meta name="description" content="GlassWave — 3D şüşə effektli kalkulyator">
-<title>GlassWave 3D Kalkulyator</title>
-
+<meta name="theme-color" content="#06142c">
+<title>GlassWave — 3D Water Calculator</title>
 <style>
-:root {
-  --blue: #54caff;
-  --purple: #b66bff;
-  --orange: #ffb04a;
-  --bg: #061124;
-  --glass: rgba(130,190,255,.10);
-  --line: rgba(200,235,255,.42);
-  --text: #f6fbff;
+:root{
+  --blue:#72d9ff;
+  --glass:rgba(110,190,255,.13);
+  --edge:rgba(201,239,255,.72);
+  --orange:#ffad45;
+  --purple:#c17aff;
+  --white:#f5fbff;
 }
-
-* {
-  box-sizing: border-box;
-  -webkit-tap-highlight-color: transparent;
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--white)}
+body{
+  min-height:100dvh;
+  background:#030b1c;
+  overflow-x:hidden;
 }
+button{font:inherit;color:inherit;border:0;cursor:pointer;touch-action:manipulation}
+button:focus-visible{outline:2px solid #80dcff;outline-offset:3px}
 
-html {
-  min-height: 100%;
-  background: var(--bg);
-}
-
-body {
-  margin: 0;
-  min-height: 100dvh;
-  overflow-x: hidden;
-  color: var(--text);
-  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+.scene{
+  position:fixed;inset:0;z-index:-3;
   background:
-    radial-gradient(ellipse at 8% 22%, #173e65 0, transparent 37%),
-    radial-gradient(ellipse at 92% 48%, #24164e 0, transparent 42%),
-    radial-gradient(ellipse at 50% 100%, #12345b 0, transparent 45%),
-    linear-gradient(155deg, #07172c, #040918 65%, #10122d);
+    linear-gradient(180deg,rgba(3,12,31,.20),rgba(3,9,27,.38) 48%,#03091b 100%),
+    url("https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=1200&q=85") center/cover;
+  transform:scale(1.04);
 }
-
-button {
-  color: inherit;
-  font: inherit;
-  border: 0;
-  cursor: pointer;
-  touch-action: manipulation;
-}
-
-.app {
-  position: relative;
-  isolation: isolate;
-  display: flex;
-  flex-direction: column;
-  width: min(100%, 520px);
-  min-height: 100dvh;
-  margin: auto;
-  padding:
-    max(16px, env(safe-area-inset-top))
-    17px
-    max(12px, env(safe-area-inset-bottom));
-  overflow: hidden;
-}
-
-/* Arxa fondun işıq hissəcikləri */
-.ambient {
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  overflow: hidden;
-}
-
-.orb {
-  position: absolute;
-  width: 180px;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  filter: blur(48px);
-  opacity: .23;
-  animation: floatOrb 9s ease-in-out infinite alternate;
-}
-
-.orb.one {
-  background: #00bfff;
-  top: 8%;
-  left: -80px;
-}
-
-.orb.two {
-  background: #9d38ff;
-  right: -90px;
-  top: 43%;
-  animation-delay: -4s;
-}
-
-.orb.three {
-  background: #ff7b42;
-  bottom: -100px;
-  left: 25%;
-  animation-delay: -2s;
-}
-
-@keyframes floatOrb {
-  to { transform: translate(25px, -35px) scale(1.16); }
-}
-
-/* Başlıq */
-.topbar {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 9px 2px 20px;
-}
-
-.brand-icon {
-  width: 47px;
-  height: 47px;
-  flex-shrink: 0;
-  display: grid;
-  place-items: center;
-  border-radius: 16px;
-  background: linear-gradient(145deg,
-    rgba(97,221,255,.4),
-    rgba(136,81,255,.3));
-  border: 1px solid rgba(190,230,255,.45);
-  box-shadow: 0 0 25px #368dff35, inset 0 1px 2px #fff7;
-  font-size: 23px;
-}
-
-.brand-name {
-  font-size: 19px;
-  font-weight: 750;
-  letter-spacing: .3px;
-}
-
-.brand-sub {
-  color: #a8c8ee;
-  font-size: 12px;
-  margin-top: 3px;
-}
-
-.top-actions {
-  display: flex;
-  gap: 8px;
-  margin-left: auto;
-}
-
-.icon-button {
-  width: 42px;
-  height: 42px;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  background: linear-gradient(145deg, #ffffff15, #ffffff04);
-  border: 1px solid #b7dfff35;
-  box-shadow: inset 0 1px 2px #fff2;
-  font-size: 20px;
-}
-
-/* Şüşə nəticə paneli */
-.display {
-  position: relative;
-  min-height: 190px;
-  padding: 23px 22px 19px;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  overflow: hidden;
-  border-radius: 34px;
-  border: 1px solid var(--line);
+.scene::before{
+  content:"";position:absolute;inset:0;
   background:
-    linear-gradient(135deg, #ffffff16, #4b9eff08 45%, #9b64ff15),
-    rgba(6,20,44,.53);
-  backdrop-filter: blur(23px);
-  -webkit-backdrop-filter: blur(23px);
-  box-shadow:
-    0 0 0 3px #70baff0b,
-    0 12px 32px #0005,
-    0 0 25px #178bff22,
-    inset 0 2px 3px #ffffff45,
-    inset 0 -3px 10px #4aa8ff13;
+    radial-gradient(ellipse at 12% 15%,#43bfff55,transparent 32%),
+    radial-gradient(ellipse at 90% 28%,#8a48ff48,transparent 35%),
+    radial-gradient(ellipse at 50% 75%,#006dff35,transparent 50%);
+}
+.bubbles{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none}
+.bubble{
+  position:absolute;border:1px solid #b8eaff9c;border-radius:50%;
+  background:radial-gradient(circle at 28% 20%,#ffffff5c,transparent 22%,#35aaff12 62%,#b87aff20);
+  box-shadow:inset 2px 2px 8px #fff5,0 0 16px #54bfff3c;
+  animation:float 9s ease-in-out infinite alternate;
+}
+.b1{width:62px;height:62px;top:19%;left:-23px}
+.b2{width:35px;height:35px;top:46%;right:3%;animation-delay:-4s}
+.b3{width:48px;height:48px;bottom:17%;left:2%;animation-delay:-2s}
+.b4{width:25px;height:25px;top:12%;right:12%;animation-delay:-5s}
+@keyframes float{to{transform:translate3d(12px,-22px,0) scale(1.08)}}
+
+.app{
+  position:relative;isolation:isolate;
+  width:min(100%,520px);min-height:100dvh;
+  margin:auto;padding:
+    max(20px,env(safe-area-inset-top))
+    18px
+    max(12px,env(safe-area-inset-bottom));
+  display:flex;flex-direction:column;
+}
+.top{
+  display:flex;align-items:center;gap:12px;
+  padding:8px 2px 23px;
+}
+.logo{
+  width:52px;height:52px;flex-shrink:0;display:grid;place-items:center;
+  border-radius:19px;font-size:26px;
+  background:linear-gradient(140deg,#9aeaff55,#6a68ff55);
+  border:1px solid #c6efffa0;
+  box-shadow:inset 0 2px 4px #fff8,0 0 22px #4abaff4c;
+  backdrop-filter:blur(14px);
+}
+.brand{font-size:21px;font-weight:800;letter-spacing:.2px}
+.tagline{font-size:12px;color:#b8d9ff;margin-top:3px}
+.topright{display:flex;gap:9px;margin-left:auto}
+.circle-icon{
+  width:43px;height:43px;border-radius:50%;
+  background:linear-gradient(145deg,#ffffff23,#ffffff06);
+  border:1px solid #d2edff65;
+  box-shadow:inset 0 2px 3px #fff4,0 4px 12px #0005;
+  font-size:20px;backdrop-filter:blur(12px);
 }
 
-.display::before {
-  content: "";
-  position: absolute;
-  top: -90px;
-  left: -30%;
-  width: 160%;
-  height: 130px;
-  transform: rotate(-8deg);
-  background: linear-gradient(90deg, transparent, #ffffff13, transparent);
-  pointer-events: none;
-}
-
-.display-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 10px;
-  min-height: 24px;
-  color: #a9d6ff;
-  font-size: 14px;
-}
-
-.mode {
-  color: #bcd8fa;
-  font-size: 12px;
-  letter-spacing: 1px;
-}
-
-.expression {
-  min-height: 30px;
-  margin-top: 15px;
-  text-align: right;
-  color: #a5d1ff;
-  font-size: clamp(18px, 5vw, 25px);
-  overflow-wrap: anywhere;
-}
-
-.result {
-  margin-top: 2px;
-  text-align: right;
-  font-size: clamp(43px, 12vw, 66px);
-  line-height: 1.15;
-  font-weight: 400;
-  letter-spacing: -2px;
-  overflow-wrap: anywhere;
-  text-shadow: 0 0 20px #39a9ff75;
-}
-
-.display-bottom {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 13px;
-  color: #8eb9e8;
-  font-size: 12px;
-}
-
-.memory-button {
-  padding: 5px 10px;
-  border-radius: 20px;
-  background: #ffffff0c;
-  border: 1px solid #ffffff15;
-}
-
-/* Klaviatura */
-.keypad {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: clamp(9px, 2.7vw, 14px);
-  margin-top: 23px;
-}
-
-.key {
-  position: relative;
-  isolation: isolate;
-  display: grid;
-  place-items: center;
-  min-width: 0;
-  aspect-ratio: 1 / .91;
-  overflow: hidden;
-  border-radius: 24px;
-  border: 1px solid rgba(174,220,255,.52);
+/* Şəffaf, qalın şüşə ekran */
+.screen{
+  min-height:205px;position:relative;overflow:hidden;
+  border-radius:39px;padding:23px 23px 18px;
   background:
-    linear-gradient(145deg, #ffffff19, #ffffff03 45%, #5ca8ff0c),
-    rgba(15,39,78,.63);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+    linear-gradient(135deg,#ffffff23 0%,#b5e6ff06 28%,#1a4c8a32 70%,#8d61ff24),
+    rgba(7,20,47,.60);
+  border:2px solid #c5eaff79;
   box-shadow:
-    0 7px 12px #0004,
-    0 0 12px #2d9dff19,
-    inset 0 2px 2px #ffffff50,
-    inset 0 -4px 6px #4c98ff19;
-  font-size: clamp(23px, 7vw, 33px);
-  font-weight: 450;
-  transition:
-    transform .14s ease,
-    border-color .2s ease,
-    box-shadow .2s ease;
+    0 0 0 4px #83cfff13,
+    0 13px 32px #0007,
+    0 0 27px #36aaff30,
+    inset 0 3px 5px #ffffff62,
+    inset 0 -4px 15px #58baff24;
+  backdrop-filter:blur(19px);
+  -webkit-backdrop-filter:blur(19px);
+}
+.screen:before{
+  content:"";position:absolute;left:-15%;top:8px;width:130%;height:52px;
+  background:linear-gradient(170deg,#ffffff22,transparent 75%);
+  transform:rotate(-5deg);pointer-events:none;
+}
+.screen:after{
+  content:"";position:absolute;left:8%;right:8%;top:0;height:2px;
+  background:linear-gradient(90deg,transparent,#fff,transparent);
+  opacity:.7;
+}
+.screen-head,.screen-foot{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  color:#c5e5ff;font-size:13px;position:relative;
+}
+.screen-head{letter-spacing:1px}
+.mode{font-size:11px;color:#a5c8f1}
+.expression{
+  position:relative;text-align:right;margin-top:23px;
+  min-height:29px;color:#8ed4ff;font-size:clamp(19px,5vw,27px);
+  overflow-wrap:anywhere;
+}
+.result{
+  position:relative;text-align:right;
+  font-size:clamp(48px,13vw,72px);font-weight:350;
+  line-height:1.14;letter-spacing:-2px;overflow-wrap:anywhere;
+  text-shadow:0 0 15px #45aaffaa,0 0 32px #278cff5c;
+}
+.screen-foot{margin-top:13px;color:#a9cef9;font-size:12px}
+.small-btn{
+  padding:7px 11px;border-radius:20px;
+  border:1px solid #b8ddff30;background:#ffffff0d;
+  font-size:11px;color:#d6eaff;
 }
 
-.key::before {
-  content: "";
-  position: absolute;
-  inset: 2px;
-  z-index: -1;
-  border-radius: inherit;
-  background: linear-gradient(140deg, #ffffff12, transparent 45%, #69baff0a);
-  pointer-events: none;
+/* Şüşə kürə düymələr */
+.pad{
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:clamp(8px,2.5vw,14px);margin-top:25px;
 }
-
-.key::after {
-  content: "";
-  position: absolute;
-  inset: -20%;
-  z-index: -1;
-  border-radius: 50%;
-  opacity: 0;
-  background: radial-gradient(circle, #91e9ff48 0%, #5b8bff1c 35%, transparent 70%);
-  transform: scale(.1);
-  pointer-events: none;
-}
-
-/* Hər toxunuşda 0,5 saniyəlik su dalğası */
-.key.ripple-active::after {
-  animation: waterRipple .5s ease-out;
-}
-
-@keyframes waterRipple {
-  0% {
-    opacity: .95;
-    transform: scale(.1);
-  }
-  55% {
-    opacity: .55;
-  }
-  100% {
-    opacity: 0;
-    transform: scale(1.7);
-  }
-}
-
-.key:active {
-  transform: scale(.94);
-  box-shadow:
-    0 2px 5px #0005,
-    0 0 22px #49baff4a,
-    inset 0 2px 10px #8edbff28;
-}
-
-.key.utility {
-  color: #d9eaff;
-  background: linear-gradient(145deg, #7c8eff30, #213d7a45);
-}
-
-.key.clear {
-  color: #e4d3ff;
-  border-color: #bd7aff88;
-  background: linear-gradient(145deg, #b35cff35, #472b7950);
-  box-shadow: 0 0 18px #b34fff1c, inset 0 2px 3px #fff4;
-}
-
-.key.operator {
-  color: #ffe5bc;
-  border-color: #ffbc6c99;
+.key{
+  --x:50%;--y:50%;
+  position:relative;isolation:isolate;overflow:hidden;
+  min-width:0;aspect-ratio:1/1;
+  display:grid;place-items:center;
+  border-radius:50%;
+  border:1.5px solid #c2e9ff9a;
   background:
-    linear-gradient(145deg, #ffc47735, #ff7b291b),
-    rgba(67,39,30,.6);
+    radial-gradient(ellipse at 28% 17%,#ffffff26,transparent 32%),
+    radial-gradient(ellipse at 72% 88%,#1e7bdb32,transparent 46%),
+    linear-gradient(145deg,#bfeaff20,#1e3c705c 48%,#06142a7d);
   box-shadow:
-    0 0 15px #ff9c351d,
-    inset 0 2px 3px #fff5,
-    inset 0 -3px 6px #ffad3a1a;
+    inset 0 3px 4px #ffffff8a,
+    inset 0 -7px 10px #0b214e9c,
+    inset 3px 0 5px #9ad9ff29,
+    0 5px 7px #0007,
+    0 0 12px #4ab8ff25;
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  font-size:clamp(24px,7vw,34px);font-weight:450;
+  transition:transform .12s,filter .15s;
 }
-
-.key.equals {
-  color: #fff;
-  border-color: #d0a0ff;
-  background: linear-gradient(145deg, #c56dff, #7546e9 60%, #4632b8);
-  box-shadow:
-    0 0 24px #a35aff70,
-    inset 0 2px 3px #ffffff8a,
-    inset 0 -4px 8px #29107a55;
+.key:before{
+  content:"";position:absolute;inset:5px;border-radius:50%;
+  border:1px solid #ffffff24;
+  background:linear-gradient(150deg,#ffffff0c,transparent 55%);
+  box-shadow:inset 0 1px 2px #fff2;
+  z-index:-1;pointer-events:none;
 }
-
-.key.zero {
-  grid-column: span 2;
-  aspect-ratio: auto;
-}
-
-.key.decimal {
-  font-size: 34px;
-}
-
-/* Reklam banneri */
-.ad-banner {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 11px;
-  min-height: 112px;
-  margin-top: 23px;
-  padding: 14px 12px;
-  overflow: hidden;
-  border-radius: 24px;
-  border: 1px solid #8eafff65;
+.key:active{transform:scale(.93);filter:brightness(1.35)}
+.key.utility{
   background:
-    radial-gradient(ellipse at 80% 30%, #704aff32, transparent 48%),
-    linear-gradient(125deg, #122f5cdd, #161339ee);
-  box-shadow:
-    0 8px 25px #0004,
-    0 0 20px #6b55ff13,
-    inset 0 1px 2px #fff3;
+    radial-gradient(ellipse at 27% 15%,#ffffff34,transparent 34%),
+    linear-gradient(145deg,#686bca66,#1d3568b8 60%,#101934);
+  color:#f2e7ff;
+  border-color:#b5c8ffb0;
+}
+.key.clear{
+  background:
+    radial-gradient(ellipse at 25% 15%,#fff7,transparent 35%),
+    linear-gradient(145deg,#c66aff80,#532e9cbf 60%,#261d5a);
+  border-color:#e0b0ff;
+  box-shadow:inset 0 3px 5px #fff9,0 0 20px #b45aff39,0 5px 8px #0007;
+}
+.key.operator{
+  color:#fff0d4;
+  border-color:#ffd49a;
+  background:
+    radial-gradient(ellipse at 28% 15%,#ffffff44,transparent 35%),
+    linear-gradient(145deg,#ffce8560,#a74e277a 60%,#40202a);
+  box-shadow:inset 0 3px 5px #fff7,0 0 18px #ffab4c3c,0 5px 8px #0007;
+}
+.key.equals{
+  background:
+    radial-gradient(ellipse at 25% 12%,#ffffff75,transparent 34%),
+    linear-gradient(145deg,#ffd17d,#ff9e35 48%,#ef651e);
+  color:#fff;
+  border-color:#ffe2ac;
+  box-shadow:inset 0 3px 5px #fff9,0 0 24px #ff9d3e70,0 5px 8px #0007;
+}
+.key.zero{grid-column:span 2;aspect-ratio:2/1;border-radius:100px}
+.key.zero:before{border-radius:100px}
+.key.decimal{font-size:35px}
+
+/* Damcının toxunduğu nöqtədən yayılan su dalğaları */
+.ripple{
+  position:absolute;z-index:4;pointer-events:none;
+  left:var(--x);top:var(--y);
+  width:12px;height:12px;border-radius:50%;
+  transform:translate(-50%,-50%) scale(.1);
+  border:2px solid #e4fbff;
+  background:radial-gradient(circle,#ffffffa0 0%,#8ceaff50 28%,transparent 72%);
+  box-shadow:0 0 8px #80e7ffb0,inset 0 0 7px #fff9;
+  animation:rippleWave .5s cubic-bezier(.12,.65,.28,1) forwards;
+}
+.ripple.r2{animation-delay:.055s;border-color:#83e3ff;width:20px;height:20px}
+.ripple.r3{animation-delay:.11s;border-color:#c3aaff;width:28px;height:28px}
+@keyframes rippleWave{
+  0%{opacity:.95;transform:translate(-50%,-50%) scale(.12)}
+  45%{opacity:.72}
+  100%{opacity:0;transform:translate(-50%,-50%) scale(5.8)}
+}
+.key.ripple-active{
+  animation:waterPress .5s ease-out;
+}
+@keyframes waterPress{
+  0%,100%{filter:brightness(1)}
+  18%{filter:brightness(1.48)}
+  45%{filter:brightness(1.16)}
 }
 
-.ad-banner::before {
-  content: "";
-  position: absolute;
-  width: 150px;
-  height: 150px;
-  right: -50px;
-  top: -70px;
-  border: 1px solid #65cfff36;
-  border-radius: 50%;
-  box-shadow: 0 0 25px #7d65ff21;
-  pointer-events: none;
+/* Aşağıdakı reklam paneli */
+.ad{
+  position:relative;display:flex;align-items:center;gap:10px;
+  min-height:118px;margin-top:24px;padding:15px 12px;
+  overflow:hidden;border-radius:26px;
+  border:1.5px solid #c1dfff91;
+  background:
+    radial-gradient(ellipse at 80% 45%,#704eff43,transparent 48%),
+    linear-gradient(130deg,#18385fdc,#0c1432ed);
+  box-shadow:inset 0 2px 4px #fff4,0 7px 24px #0006,0 0 22px #639dff1e;
+  backdrop-filter:blur(17px);
 }
-
-.ad-icon {
-  position: relative;
-  flex: 0 0 48px;
-  height: 48px;
-  display: grid;
-  place-items: center;
-  border-radius: 15px;
-  font-size: 23px;
-  background: linear-gradient(145deg, #55d9ff, #6856ff);
-  box-shadow: 0 0 18px #4c88ff38;
+.ad:before{
+  content:"";position:absolute;width:135px;height:135px;
+  right:-55px;top:-65px;border:1px solid #a3cfff50;border-radius:50%;
+  box-shadow:0 0 0 12px #8c7bff0a,0 0 0 25px #83caff0a;
 }
-
-.ad-content {
-  position: relative;
-  min-width: 0;
-  flex: 1;
+.ad-close{
+  position:absolute;right:7px;top:5px;z-index:3;
+  width:24px;height:24px;border-radius:50%;
+  background:#ffffff19;font-size:17px;color:#d6eaff;
 }
-
-.ad-label {
-  color: #9dbce5;
-  font-size: 10px;
-  letter-spacing: 1.2px;
-  text-transform: uppercase;
+.ad-logo{
+  width:48px;height:48px;flex-shrink:0;display:grid;place-items:center;
+  border-radius:15px;background:linear-gradient(145deg,#54f1dd,#247aff);
+  font-size:24px;font-weight:800;box-shadow:0 0 18px #4cbfff4c;
 }
-
-.ad-title {
-  margin-top: 4px;
-  font-size: 14px;
-  font-weight: 750;
-  line-height: 1.3;
+.ad-copy{flex:1;min-width:0;position:relative}
+.ad-label{font-size:10px;color:#a9c9f3;letter-spacing:1px}
+.ad-title{font-size:13px;line-height:1.3;font-weight:750;margin-top:4px}
+.ad-desc{font-size:10px;color:#c0d3ef;line-height:1.4;margin-top:5px}
+.ad-action{
+  position:relative;flex-shrink:0;
+  padding:10px 11px;border-radius:25px;
+  color:#191b36;background:linear-gradient(135deg,#ffe5a1,#ffad48);
+  font-size:11px;font-weight:800;
 }
+.footer{margin-top:auto;text-align:center;padding-top:16px;color:#b0c9ec8c;font-size:10px;letter-spacing:2px}
+.home{width:105px;height:4px;background:#d3e8ffbb;border-radius:10px;margin:13px auto 0}
 
-.ad-description {
-  margin-top: 5px;
-  color: #b9cbe9;
-  font-size: 10px;
-  line-height: 1.4;
+/* Tarixçə və ayarlar */
+.overlay{
+  display:none;position:fixed;inset:0;z-index:10;
+  align-items:flex-end;justify-content:center;padding:14px;
+  background:#020817c9;backdrop-filter:blur(10px);
 }
-
-.ad-action {
-  position: relative;
-  flex-shrink: 0;
-  padding: 10px 12px;
-  border-radius: 20px;
-  color: #14172b;
-  background: linear-gradient(135deg, #ffd77c, #ffad3f);
-  font-size: 11px;
-  font-weight: 800;
-  box-shadow: 0 0 14px #ffb84228;
+.overlay.open{display:flex}
+.sheet{
+  width:min(100%,470px);max-height:75dvh;overflow:auto;padding:22px;
+  border-radius:27px;border:1px solid #a7d8ff80;
+  background:linear-gradient(145deg,#193454f7,#0a1027f9);
+  box-shadow:0 0 30px #3a9dff30;
 }
-
-.ad-close {
-  position: absolute;
-  top: 5px;
-  right: 7px;
-  z-index: 2;
-  width: 23px;
-  height: 23px;
-  border-radius: 50%;
-  color: #b9c9ed;
-  background: #ffffff0b;
-  font-size: 16px;
+.sheet-head{display:flex;justify-content:space-between;align-items:center;font-weight:750;font-size:19px;margin-bottom:17px}
+.close{
+  width:36px;height:36px;border-radius:50%;
+  background:#ffffff16;font-size:20px;
 }
-
-.footer {
-  margin-top: auto;
-  padding-top: 15px;
-  text-align: center;
-  color: #6785ad;
-  font-size: 10px;
-  letter-spacing: 2px;
+.hist{
+  padding:13px;margin-bottom:8px;border-radius:14px;
+  border:1px solid #ffffff17;background:#ffffff0b;
 }
-
-.home-indicator {
-  width: 105px;
-  height: 4px;
-  border-radius: 20px;
-  margin: 13px auto 0;
-  background: #b9d8ff9c;
+.hist small{display:block;color:#a8cefa;margin-bottom:5px}
+.setting{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:14px 0;border-bottom:1px solid #ffffff19;font-size:14px;
 }
-
-/* Tarix və parametrlər pəncərələri */
-.overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 10;
-  display: none;
-  align-items: flex-end;
-  justify-content: center;
-  padding: 15px;
-  background: #020713a8;
-  backdrop-filter: blur(9px);
+.setting input{width:20px;height:20px;accent-color:#6bcaff}
+.toast{
+  position:fixed;z-index:20;bottom:24px;left:50%;
+  transform:translate(-50%,15px);opacity:0;
+  max-width:90%;padding:11px 17px;border-radius:22px;
+  border:1px solid #bce8ff66;background:#102443f5;
+  box-shadow:0 0 20px #4abaff30;font-size:13px;
+  pointer-events:none;transition:.2s;
 }
+.toast.show{opacity:1;transform:translate(-50%,0)}
 
-.overlay.open {
-  display: flex;
+@media(min-width:430px){
+  .app{padding-left:24px;padding-right:24px}
+  .key{font-size:33px}
 }
-
-.sheet {
-  width: min(100%, 480px);
-  max-height: 75dvh;
-  overflow: auto;
-  padding: 22px;
-  border-radius: 28px;
-  border: 1px solid #9dcfff55;
-  background: linear-gradient(145deg, #152c4af5, #0a1028f7);
-  box-shadow: 0 0 35px #389dff20;
+@media(max-height:760px){
+  .top{padding-bottom:13px}
+  .screen{min-height:155px;padding:16px 19px}
+  .expression{margin-top:12px}
+  .result{font-size:48px}
+  .pad{margin-top:15px;gap:8px}
+  .key{aspect-ratio:1/.82}
+  .key.zero{aspect-ratio:2/.82}
+  .ad{margin-top:14px;min-height:90px}
 }
-
-.sheet-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 19px;
-  font-weight: 700;
-  margin-bottom: 18px;
-}
-
-.sheet-close {
-  width: 35px;
-  height: 35px;
-  border-radius: 50%;
-  background: #ffffff12;
-  font-size: 20px;
-}
-
-.history-item {
-  padding: 12px;
-  margin-bottom: 9px;
-  border-radius: 14px;
-  background: #ffffff09;
-  border: 1px solid #ffffff12;
-}
-
-.history-item small {
-  display: block;
-  color: #a3c9f4;
-  margin-bottom: 5px;
-}
-
-.setting-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 13px 0;
-  border-bottom: 1px solid #ffffff15;
-  color: #dceaff;
-  font-size: 14px;
-}
-
-.setting-row input {
-  accent-color: #67bfff;
-  width: 20px;
-  height: 20px;
-}
-
-.toast {
-  position: fixed;
-  z-index: 20;
-  bottom: 25px;
-  left: 50%;
-  max-width: 90%;
-  transform: translate(-50%, 20px);
-  opacity: 0;
-  padding: 11px 17px;
-  border: 1px solid #b5dbff55;
-  border-radius: 20px;
-  background: #102342ee;
-  box-shadow: 0 0 20px #39a9ff25;
-  color: white;
-  font-size: 13px;
-  pointer-events: none;
-  transition: .2s;
-}
-
-.toast.show {
-  opacity: 1;
-  transform: translate(-50%, 0);
-}
-
-@media (min-width: 430px) {
-  .app { padding-left: 23px; padding-right: 23px; }
-  .display { min-height: 205px; }
-  .key { border-radius: 27px; }
-  .keypad { gap: 14px; }
-}
-
-@media (max-height: 760px) {
-  .topbar { padding-bottom: 12px; }
-  .display { min-height: 145px; padding: 15px 18px; }
-  .result { font-size: 46px; }
-  .keypad { margin-top: 15px; gap: 8px; }
-  .key { aspect-ratio: 1 / .78; border-radius: 20px; }
-  .ad-banner { margin-top: 14px; min-height: 92px; }
+@media(prefers-reduced-motion:reduce){
+  .bubble{animation:none}
+  .key.ripple-active{animation:none}
 }
 </style>
 </head>
-
 <body>
-<div class="ambient" aria-hidden="true">
-  <div class="orb one"></div>
-  <div class="orb two"></div>
-  <div class="orb three"></div>
+<div class="scene"></div>
+<div class="bubbles" aria-hidden="true">
+  <i class="bubble b1"></i><i class="bubble b2"></i>
+  <i class="bubble b3"></i><i class="bubble b4"></i>
 </div>
 
 <main class="app">
-  <header class="topbar">
-    <div class="brand-icon">◈</div>
+  <header class="top">
+    <div class="logo">◈</div>
     <div>
-      <div class="brand-name">GlassWave</div>
-      <div class="brand-sub">Hesabla. Hiss et. Kəşf et.</div>
+      <div class="brand">GlassWave</div>
+      <div class="tagline">Hesabla. Hiss et. Kəşf et.</div>
     </div>
-    <div class="top-actions">
-      <button class="icon-button" id="historyBtn" aria-label="Hesablama tarixçəsi">◷</button>
-      <button class="icon-button" id="settingsBtn" aria-label="Parametrlər">⚙</button>
+    <div class="topright">
+      <button class="circle-icon" id="historyBtn" aria-label="Tarixçə">◷</button>
+      <button class="circle-icon" id="settingsBtn" aria-label="Parametrlər">⚙</button>
     </div>
   </header>
 
-  <section class="display" aria-label="Hesablama ekranı">
-    <div class="display-top">
+  <section class="screen">
+    <div class="screen-head">
       <span class="mode">3D GLASS · STANDART</span>
       <span id="status">Hazırdır</span>
     </div>
-    <div class="expression" id="expression" aria-live="polite">&nbsp;</div>
+    <div class="expression" id="expression">&nbsp;</div>
     <div class="result" id="result" aria-live="polite">0</div>
-    <div class="display-bottom">
-      <button class="memory-button" id="copyBtn">▣ Nəticəni köçür</button>
+    <div class="screen-foot">
+      <button class="small-btn" id="copyBtn">▣ Nəticəni köçür</button>
       <span>◉ GlassWave</span>
     </div>
   </section>
 
-  <section class="keypad" id="keypad" aria-label="Kalkulyator düymələri">
+  <section class="pad" id="pad" aria-label="Kalkulyator">
     <button class="key clear" data-action="clear">AC</button>
     <button class="key utility" data-action="sign">+/−</button>
     <button class="key utility" data-action="percent">%</button>
@@ -665,24 +384,24 @@ button {
     <button class="key operator" data-op="+" aria-label="Toplama">+</button>
 
     <button class="key zero" data-num="0">0</button>
-    <button class="key decimal" data-action="decimal">.</button>
+    <button class="key decimal" data-action="decimal">,</button>
     <button class="key equals" data-action="equals">=</button>
   </section>
 
-  <section class="ad-banner" id="adBanner" aria-label="Reklam sahəsi">
-    <button class="ad-close" id="closeAd" aria-label="Reklamı bağla">×</button>
-    <div class="ad-icon">✦</div>
-    <div class="ad-content">
-      <div class="ad-label">Reklam sahəsi</div>
-      <div class="ad-title">Daha çox imkan, daha ağıllı seçim!</div>
-      <div class="ad-description">Brendinizin reklamı burada göstərilə bilər.</div>
+  <section class="ad" id="ad">
+    <button class="ad-close" id="closeAd" aria-label="Reklamı gizlə">×</button>
+    <div class="ad-logo">N</div>
+    <div class="ad-copy">
+      <div class="ad-label">REKLAM · PARTNYORLUQ</div>
+      <div class="ad-title" id="adTitle">Brendinizi burada tanıdın!</div>
+      <div class="ad-desc" id="adDesc">Məhsul və xidmətlər üçün reklam sahəsi.</div>
     </div>
-    <button class="ad-action" id="adAction">Ətraflı ↗</button>
+    <button class="ad-action" id="adAction">Bax ↗</button>
   </section>
 
   <footer class="footer">
-    GLASSWAVE · 3D CALCULATOR
-    <div class="home-indicator"></div>
+    GLASSWAVE · WATER TOUCH
+    <div class="home"></div>
   </footer>
 </main>
 
@@ -690,10 +409,10 @@ button {
   <section class="sheet">
     <div class="sheet-head">
       <span>Hesablama tarixçəsi</span>
-      <button class="sheet-close" data-close="historyOverlay">×</button>
+      <button class="close" data-close="historyOverlay">×</button>
     </div>
     <div id="historyList"></div>
-    <button class="memory-button" id="clearHistory">Tarixçəni təmizlə</button>
+    <button class="small-btn" id="clearHistory">Tarixçəni təmizlə</button>
   </section>
 </div>
 
@@ -701,408 +420,216 @@ button {
   <section class="sheet">
     <div class="sheet-head">
       <span>Parametrlər</span>
-      <button class="sheet-close" data-close="settingsOverlay">×</button>
+      <button class="close" data-close="settingsOverlay">×</button>
     </div>
-    <div class="setting-row">
-      <span>Düymə dalğası effekti</span>
-      <input type="checkbox" id="rippleToggle" checked>
-    </div>
-    <div class="setting-row">
-      <span>Toxunuş vibrasiyası</span>
-      <input type="checkbox" id="vibrationToggle">
-    </div>
-    <div class="setting-row">
-      <span>Reklam bannerini göstər</span>
-      <input type="checkbox" id="adToggle" checked>
-    </div>
-    <p style="color:#91acd0;font-size:12px;line-height:1.6">
-      GlassWave 3D — mobil cihazlar üçün hazırlanmış kalkulyator.
-      Parametrlər bu cihazda yadda saxlanılır.
+    <div class="setting">Su dalğası animasiyası <input id="rippleToggle" type="checkbox" checked></div>
+    <div class="setting">Vibrasiya <input id="vibrationToggle" type="checkbox"></div>
+    <div class="setting">Reklam sahəsi <input id="adToggle" type="checkbox" checked></div>
+    <p style="color:#a8c7e8;font-size:12px;line-height:1.6">
+      GlassWave — telefon üçün şüşə effektli kalkulyator.
+      Reklam banneri hazırda dizayn nümunəsidir.
     </p>
   </section>
 </div>
-
 <div class="toast" id="toast" role="status"></div>
 
 <script>
 (() => {
   "use strict";
-
   const $ = id => document.getElementById(id);
-
   const resultEl = $("result");
   const expressionEl = $("expression");
   const statusEl = $("status");
-  const keypad = $("keypad");
-  const toastEl = $("toast");
-
-  let current = "0";
-  let stored = null;
-  let operator = null;
-  let waitingForOperand = false;
-  let justCalculated = false;
-  let expressionText = "";
-  let history = [];
-  let toastTimer;
+  let current = "0", stored = null, operator = null;
+  let waiting = false, calculated = false, expression = "";
+  let history = [], toastTimer;
 
   const symbols = {"+":"+", "-":"−", "*":"×", "/":"÷"};
 
-  function formatNumber(value) {
-    if (!Number.isFinite(value)) return "Xəta";
-    if (Object.is(value, -0)) value = 0;
-
-    if (Math.abs(value) >= 1e12 || (Math.abs(value) > 0 && Math.abs(value) < 1e-7)) {
-      return value.toExponential(6).replace(/\.?0+e/, "e");
-    }
-
-    return Number(value.toPrecision(11)).toLocaleString("en-US", {
-      maximumFractionDigits: 8,
-      useGrouping: true
+  function fmt(n) {
+    if (!Number.isFinite(n)) return "Xəta";
+    if (Object.is(n,-0)) n = 0;
+    if (Math.abs(n) >= 1e12 || (n !== 0 && Math.abs(n) < 1e-7))
+      return n.toExponential(6).replace(/\.?0+e/,"e");
+    return Number(n.toPrecision(11)).toLocaleString("en-US", {
+      maximumFractionDigits:8,useGrouping:true
     });
   }
-
   function render() {
-    resultEl.textContent = formatNumber(Number(current));
-    expressionEl.textContent = expressionText || "\u00a0";
+    resultEl.textContent = fmt(Number(current));
+    expressionEl.textContent = expression || "\u00a0";
   }
-
-  function toast(message) {
-    toastEl.textContent = message;
-    toastEl.classList.add("show");
+  function notify(message) {
+    $("toast").textContent = message;
+    $("toast").classList.add("show");
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => toastEl.classList.remove("show"), 1800);
+    toastTimer = setTimeout(()=>$("toast").classList.remove("show"),1800);
   }
-
-  function calculate(a, b, op) {
-    if (op === "+") return a + b;
-    if (op === "-") return a - b;
-    if (op === "*") return a * b;
-    if (op === "/") return b === 0 ? NaN : a / b;
+  function reset() {
+    current="0";stored=null;operator=null;waiting=false;
+    calculated=false;expression="";statusEl.textContent="Hazırdır";render();
+  }
+  function inputNumber(n) {
+    if(calculated && !operator) {
+      current=n;expression="";calculated=false;
+    } else if(waiting) {
+      current=n;waiting=false;
+    } else if(current==="0") {
+      current=n;
+    } else if(current.replace("-","").replace(".","").length<15) {
+      current+=n;
+    }
+    statusEl.textContent="Daxil edilir";render();
+  }
+  function decimal() {
+    if(calculated && !operator) {
+      current="0.";expression="";calculated=false;
+    } else if(waiting) {
+      current="0.";waiting=false;
+    } else if(!current.includes(".")) current+=".";
+    render();
+  }
+  function calc(a,b,op) {
+    if(op==="+")return a+b;
+    if(op==="-")return a-b;
+    if(op==="*")return a*b;
+    if(op==="/")return b===0?NaN:a/b;
     return b;
   }
-
-  function reset() {
-    current = "0";
-    stored = null;
-    operator = null;
-    waitingForOperand = false;
-    justCalculated = false;
-    expressionText = "";
-    statusEl.textContent = "Hazırdır";
-    render();
+  function choose(op) {
+    const n=Number(current);
+    if(!Number.isFinite(n)){notify("Düzgün rəqəm daxil et.");return;}
+    if(operator && !waiting) {
+      const v=calc(stored,n,operator);
+      if(!Number.isFinite(v)){notify("Sıfıra bölmək mümkün deyil.");return;}
+      current=String(v);stored=v;
+    } else stored=n;
+    operator=op;waiting=true;calculated=false;
+    expression=fmt(stored)+" "+symbols[op];
+    statusEl.textContent="Əməliyyat seçildi";render();
   }
-
-  function inputNumber(number) {
-    if (justCalculated && !operator) {
-      current = number;
-      expressionText = "";
-      justCalculated = false;
-      statusEl.textContent = "Yeni hesablama";
-      render();
-      return;
-    }
-
-    if (waitingForOperand) {
-      current = number;
-      waitingForOperand = false;
-    } else if (current === "0") {
-      current = number;
-    } else if (current.replace("-", "").replace(".", "").length < 14) {
-      current += number;
-    }
-
-    render();
-  }
-
-  function inputDecimal() {
-    if (justCalculated && !operator) {
-      current = "0.";
-      expressionText = "";
-      justCalculated = false;
-      render();
-      return;
-    }
-
-    if (waitingForOperand) {
-      current = "0.";
-      waitingForOperand = false;
-    } else if (!current.includes(".")) {
-      current += ".";
-    }
-
-    render();
-  }
-
-  function chooseOperator(nextOperator) {
-    const inputValue = Number(current);
-
-    if (!Number.isFinite(inputValue)) {
-      toast("Əvvəlcə düzgün rəqəm daxil et.");
-      return;
-    }
-
-    if (operator && !waitingForOperand) {
-      const result = calculate(stored, inputValue, operator);
-
-      if (!Number.isFinite(result)) {
-        toast("Sıfıra bölmək mümkün deyil.");
-        reset();
-        return;
-      }
-
-      current = String(result);
-      stored = result;
-    } else {
-      stored = inputValue;
-    }
-
-    operator = nextOperator;
-    waitingForOperand = true;
-    justCalculated = false;
-    expressionText = formatNumber(stored) + " " + symbols[operator];
-    statusEl.textContent = "Əməliyyat seçildi";
-    render();
-  }
-
   function equals() {
-    if (!operator || stored === null || waitingForOperand) return;
-
-    const a = stored;
-    const b = Number(current);
-    const op = operator;
-    const result = calculate(a, b, op);
-
-    if (!Number.isFinite(result)) {
-      toast("Bu əməliyyatın nəticəsi hesablana bilmir.");
-      return;
-    }
-
-    const record = {
-      expression: formatNumber(a) + " " + symbols[op] + " " + formatNumber(b),
-      result: result
-    };
-
-    history.unshift(record);
-    history = history.slice(0, 30);
-    saveHistory();
-
-    expressionText = record.expression + " =";
-    current = String(result);
-    stored = null;
-    operator = null;
-    waitingForOperand = true;
-    justCalculated = true;
-    statusEl.textContent = "Hesablandı";
-    render();
+    if(!operator || stored===null || waiting)return;
+    const a=stored,b=Number(current),op=operator,v=calc(a,b,op);
+    if(!Number.isFinite(v)){notify("Bu nəticəni hesablamaq mümkün deyil.");return;}
+    const item={expression:fmt(a)+" "+symbols[op]+" "+fmt(b),result:v};
+    history.unshift(item);history=history.slice(0,50);saveHistory();
+    expression=item.expression+" =";
+    current=String(v);stored=null;operator=null;waiting=true;calculated=true;
+    statusEl.textContent="Hesablandı";render();
   }
-
-  function changeSign() {
-    if (current === "0") return;
-    current = String(-Number(current));
-    render();
-  }
-
   function percent() {
-    const n = Number(current);
-
-    if (operator && stored !== null) {
-      current = String(stored * n / 100);
-    } else {
-      current = String(n / 100);
-    }
-
-    waitingForOperand = false;
+    const n=Number(current);
+    current=String(operator && stored!==null ? stored*n/100 : n/100);
+    waiting=false;render();
+  }
+  function sign() {
+    if(Number(current)!==0)current=String(-Number(current));
     render();
   }
-
   function saveHistory() {
-    try {
-      localStorage.setItem("glasswave-history", JSON.stringify(history));
-    } catch (_) {}
+    try{localStorage.setItem("glasswave-history",JSON.stringify(history));}catch(e){}
   }
-
   function loadHistory() {
     try {
-      history = JSON.parse(localStorage.getItem("glasswave-history") || "[]");
-      if (!Array.isArray(history)) history = [];
-    } catch (_) {
-      history = [];
-    }
+      const v=JSON.parse(localStorage.getItem("glasswave-history")||"[]");
+      history=Array.isArray(v)?v:[];
+    } catch(e){history=[];}
   }
 
-  function showHistory() {
-    const list = $("historyList");
-
-    if (!history.length) {
-      list.innerHTML = '<p style="color:#a3c3e8">Hələ hesablama yoxdur.</p>';
-    } else {
-      list.replaceChildren();
-
-      history.forEach(item => {
-        const row = document.createElement("div");
-        row.className = "history-item";
-
-        const expression = document.createElement("small");
-        expression.textContent = item.expression;
-
-        const value = document.createElement("div");
-        value.textContent = formatNumber(item.result);
-        value.style.fontSize = "22px";
-
-        row.append(expression, value);
-        row.addEventListener("click", () => {
-          current = String(item.result);
-          stored = null;
-          operator = null;
-          waitingForOperand = false;
-          justCalculated = true;
-          expressionText = item.expression + " =";
-          render();
-          $("historyOverlay").classList.remove("open");
-        });
-
-        list.appendChild(row);
-      });
-    }
-
-    $("historyOverlay").classList.add("open");
-  }
-
-  function performAction(action) {
-    switch (action) {
-      case "clear":
-        reset();
-        break;
-      case "sign":
-        changeSign();
-        break;
-      case "percent":
-        percent();
-        break;
-      case "decimal":
-        inputDecimal();
-        break;
-      case "equals":
-        equals();
-        break;
-    }
-  }
-
-  // Suya düşən damcı kimi təkrar işləyən toxunuş effekti
-  function waterRipple(button, event) {
-    if (!$("rippleToggle").checked) return;
-
-    // Əvvəlki animasiyanı sıfırla ki, hər toxunuşda yenidən başlasın.
+  // Hər toxunuşda üç ayrı, yarım saniyəlik su dalğası
+  function ripple(button,event) {
+    if(!$("rippleToggle").checked)return;
+    button.querySelectorAll(".ripple").forEach(el=>el.remove());
     button.classList.remove("ripple-active");
+    const rect=button.getBoundingClientRect();
+    const x=Math.max(0,Math.min(100,((event.clientX-rect.left)/rect.width)*100));
+    const y=Math.max(0,Math.min(100,((event.clientY-rect.top)/rect.height)*100));
+    button.style.setProperty("--x",x+"%");
+    button.style.setProperty("--y",y+"%");
     void button.offsetWidth;
     button.classList.add("ripple-active");
-
-    setTimeout(() => {
-      button.classList.remove("ripple-active");
-    }, 510);
-
-    if (event && event.clientX && event.clientY) {
-      const rect = button.getBoundingClientRect();
-      const x = ((event.clientX - rect.left) / rect.width) * 100;
-      const y = ((event.clientY - rect.top) / rect.height) * 100;
-
-      button.style.setProperty("--touch-x", x + "%");
-      button.style.setProperty("--touch-y", y + "%");
+    for(let i=0;i<3;i++){
+      const ring=document.createElement("span");
+      ring.className="ripple"+(i===1?" r2":i===2?" r3":"");
+      ring.style.animationDelay=(i*.055)+"s";
+      button.appendChild(ring);
+      ring.addEventListener("animationend",()=>ring.remove(),{once:true});
     }
-
-    if ($("vibrationToggle").checked && navigator.vibrate) {
-      navigator.vibrate(12);
-    }
+    setTimeout(()=>button.classList.remove("ripple-active"),520);
+    if($("vibrationToggle").checked && navigator.vibrate)navigator.vibrate(12);
   }
 
-  keypad.addEventListener("click", event => {
-    const button = event.target.closest("button");
-    if (!button) return;
-
-    waterRipple(button, event);
-
-    if (button.dataset.num !== undefined) {
-      inputNumber(button.dataset.num);
-    } else if (button.dataset.op) {
-      chooseOperator(button.dataset.op);
-    } else if (button.dataset.action) {
-      performAction(button.dataset.action);
+  $("pad").addEventListener("click",e=>{
+    const b=e.target.closest("button.key");if(!b)return;
+    ripple(b,e);
+    if(b.dataset.num!==undefined)inputNumber(b.dataset.num);
+    else if(b.dataset.op)choose(b.dataset.op);
+    else switch(b.dataset.action){
+      case "clear":reset();break;
+      case "sign":sign();break;
+      case "percent":percent();break;
+      case "decimal":decimal();break;
+      case "equals":equals();break;
     }
   });
 
-  // Klaviatura ilə də hesablamaq mümkündür.
-  document.addEventListener("keydown", event => {
-    if (event.key >= "0" && event.key <= "9") {
-      inputNumber(event.key);
-    } else if (event.key === ".") {
-      inputDecimal();
-    } else if (["+", "-", "*", "/"].includes(event.key)) {
-      chooseOperator(event.key);
-    } else if (event.key === "Enter" || event.key === "=") {
-      equals();
-    } else if (event.key === "Escape") {
-      reset();
-    } else if (event.key === "%") {
-      percent();
-    } else if (event.key === "Backspace") {
-      if (!waitingForOperand) {
-        current = current.length > 1
-          ? current.slice(0, -1)
-          : "0";
-        render();
-      }
+  document.addEventListener("keydown",e=>{
+    if(e.target.matches("input"))return;
+    if(/^[0-9]$/.test(e.key))inputNumber(e.key);
+    else if(e.key===".")decimal();
+    else if(["+","-","*","/"].includes(e.key))choose(e.key);
+    else if(e.key==="Enter"||e.key==="=")equals();
+    else if(e.key==="Escape")reset();
+    else if(e.key==="%")percent();
+    else if(e.key==="Backspace"&&!waiting){
+      current=current.length>1?current.slice(0,-1):"0";render();
     }
   });
 
-  $("historyBtn").addEventListener("click", showHistory);
-
-  $("settingsBtn").addEventListener("click", () => {
-    $("settingsOverlay").classList.add("open");
-  });
-
-  document.querySelectorAll("[data-close]").forEach(button => {
-    button.addEventListener("click", () => {
-      $(button.dataset.close).classList.remove("open");
+  function showHistory() {
+    const list=$("historyList");list.replaceChildren();
+    if(!history.length){
+      const p=document.createElement("p");
+      p.textContent="Hələ hesablama yoxdur.";p.style.color="#a8c7e8";
+      list.appendChild(p);
+    } else history.forEach(item=>{
+      const row=document.createElement("div");row.className="hist";
+      const small=document.createElement("small");small.textContent=item.expression;
+      const value=document.createElement("div");value.textContent=fmt(item.result);
+      value.style.fontSize="22px";row.append(small,value);
+      row.addEventListener("click",()=>{
+        current=String(item.result);stored=null;operator=null;waiting=false;
+        calculated=true;expression=item.expression+" =";render();
+        $("historyOverlay").classList.remove("open");
+      });
+      list.appendChild(row);
     });
+    $("historyOverlay").classList.add("open");
+  }
+  $("historyBtn").addEventListener("click",showHistory);
+  $("settingsBtn").addEventListener("click",()=>$("settingsOverlay").classList.add("open"));
+  document.querySelectorAll("[data-close]").forEach(b=>b.addEventListener("click",()=>
+    $(b.dataset.close).classList.remove("open")));
+  document.querySelectorAll(".overlay").forEach(o=>o.addEventListener("click",e=>{
+    if(e.target===o)o.classList.remove("open");
+  }));
+  $("clearHistory").addEventListener("click",()=>{
+    history=[];saveHistory();showHistory();notify("Tarixçə təmizləndi.");
   });
-
-  document.querySelectorAll(".overlay").forEach(overlay => {
-    overlay.addEventListener("click", event => {
-      if (event.target === overlay) overlay.classList.remove("open");
-    });
+  $("copyBtn").addEventListener("click",async()=>{
+    try{
+      await navigator.clipboard.writeText(fmt(Number(current)));
+      notify("Nəticə köçürüldü.");
+    }catch(e){notify("Köçürmə mümkün olmadı.");}
   });
-
-  $("clearHistory").addEventListener("click", () => {
-    history = [];
-    saveHistory();
-    showHistory();
-    toast("Tarixçə təmizləndi.");
+  $("closeAd").addEventListener("click",()=>{
+    $("ad").hidden=true;$("adToggle").checked=false;
   });
+  $("adToggle").addEventListener("change",e=>$("ad").hidden=!e.target.checked);
+  $("adAction").addEventListener("click",()=>notify("Reklamçı linki hələ əlavə edilməyib."));
 
-  $("copyBtn").addEventListener("click", async () => {
-    try {
-      await navigator.clipboard.writeText(formatNumber(Number(current)));
-      toast("Nəticə köçürüldü.");
-    } catch (_) {
-      toast("Köçürmə mümkün olmadı. Nəticəni əl ilə seç.");
-    }
-  });
-
-  $("closeAd").addEventListener("click", () => {
-    $("adBanner").hidden = true;
-    $("adToggle").checked = false;
-  });
-
-  $("adToggle").addEventListener("change", event => {
-    $("adBanner").hidden = !event.target.checked;
-  });
-
-  $("adAction").addEventListener("click", () => {
-    toast("Bu, reklam banneri nümunəsidir. Real keçid əlavə edilməyib.");
-  });
-
-  loadHistory();
-  render();
+  loadHistory();render();
 })();
 </script>
 </body>
