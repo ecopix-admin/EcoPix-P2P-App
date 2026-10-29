@@ -3,132 +3,1107 @@
 <html lang="az">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#07111f">
-<title>NETBRIDGE Test</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#071329">
+<meta name="description" content="GlassWave — 3D şüşə effektli kalkulyator">
+<title>GlassWave 3D Kalkulyator</title>
+
 <style>
-*{box-sizing:border-box}
-body{margin:0;background:#07111f;color:#edf5ff;font-family:Arial,sans-serif;padding:18px}
-main{max-width:520px;margin:auto}
-h1{font-size:27px;margin-bottom:6px}
-.sub{color:#9fb2ca;font-size:14px;line-height:1.6}
-.panel{background:#101f32;border:1px solid #263b53;border-radius:16px;padding:16px;margin-top:16px}
-.status{font-size:14px;color:#9fb2ca}
-button{width:100%;border:0;border-radius:12px;padding:15px;margin-top:12px;font-weight:bold;font-size:16px;background:#49d9b0;color:#062018}
-.item{padding:13px 0;border-bottom:1px solid #293b50}
-.item:last-child{border:0}
-.name{font-weight:bold}
-.detail{font-size:13px;color:#9fb2ca;margin-top:5px;overflow-wrap:anywhere}
-.tag{float:right;font-size:12px}
-.good{color:#49d9b0}.bad{color:#ff8585}.wait{color:#ffd477}
-.small{font-size:12px;color:#91a4bc;line-height:1.6}
+:root {
+  --blue: #54caff;
+  --purple: #b66bff;
+  --orange: #ffb04a;
+  --bg: #061124;
+  --glass: rgba(130,190,255,.10);
+  --line: rgba(200,235,255,.42);
+  --text: #f6fbff;
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  min-height: 100%;
+  background: var(--bg);
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  background:
+    radial-gradient(ellipse at 8% 22%, #173e65 0, transparent 37%),
+    radial-gradient(ellipse at 92% 48%, #24164e 0, transparent 42%),
+    radial-gradient(ellipse at 50% 100%, #12345b 0, transparent 45%),
+    linear-gradient(155deg, #07172c, #040918 65%, #10122d);
+}
+
+button {
+  color: inherit;
+  font: inherit;
+  border: 0;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.app {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  width: min(100%, 520px);
+  min-height: 100dvh;
+  margin: auto;
+  padding:
+    max(16px, env(safe-area-inset-top))
+    17px
+    max(12px, env(safe-area-inset-bottom));
+  overflow: hidden;
+}
+
+/* Arxa fondun işıq hissəcikləri */
+.ambient {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.orb {
+  position: absolute;
+  width: 180px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  filter: blur(48px);
+  opacity: .23;
+  animation: floatOrb 9s ease-in-out infinite alternate;
+}
+
+.orb.one {
+  background: #00bfff;
+  top: 8%;
+  left: -80px;
+}
+
+.orb.two {
+  background: #9d38ff;
+  right: -90px;
+  top: 43%;
+  animation-delay: -4s;
+}
+
+.orb.three {
+  background: #ff7b42;
+  bottom: -100px;
+  left: 25%;
+  animation-delay: -2s;
+}
+
+@keyframes floatOrb {
+  to { transform: translate(25px, -35px) scale(1.16); }
+}
+
+/* Başlıq */
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 2px 20px;
+}
+
+.brand-icon {
+  width: 47px;
+  height: 47px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 16px;
+  background: linear-gradient(145deg,
+    rgba(97,221,255,.4),
+    rgba(136,81,255,.3));
+  border: 1px solid rgba(190,230,255,.45);
+  box-shadow: 0 0 25px #368dff35, inset 0 1px 2px #fff7;
+  font-size: 23px;
+}
+
+.brand-name {
+  font-size: 19px;
+  font-weight: 750;
+  letter-spacing: .3px;
+}
+
+.brand-sub {
+  color: #a8c8ee;
+  font-size: 12px;
+  margin-top: 3px;
+}
+
+.top-actions {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.icon-button {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: linear-gradient(145deg, #ffffff15, #ffffff04);
+  border: 1px solid #b7dfff35;
+  box-shadow: inset 0 1px 2px #fff2;
+  font-size: 20px;
+}
+
+/* Şüşə nəticə paneli */
+.display {
+  position: relative;
+  min-height: 190px;
+  padding: 23px 22px 19px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  overflow: hidden;
+  border-radius: 34px;
+  border: 1px solid var(--line);
+  background:
+    linear-gradient(135deg, #ffffff16, #4b9eff08 45%, #9b64ff15),
+    rgba(6,20,44,.53);
+  backdrop-filter: blur(23px);
+  -webkit-backdrop-filter: blur(23px);
+  box-shadow:
+    0 0 0 3px #70baff0b,
+    0 12px 32px #0005,
+    0 0 25px #178bff22,
+    inset 0 2px 3px #ffffff45,
+    inset 0 -3px 10px #4aa8ff13;
+}
+
+.display::before {
+  content: "";
+  position: absolute;
+  top: -90px;
+  left: -30%;
+  width: 160%;
+  height: 130px;
+  transform: rotate(-8deg);
+  background: linear-gradient(90deg, transparent, #ffffff13, transparent);
+  pointer-events: none;
+}
+
+.display-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  min-height: 24px;
+  color: #a9d6ff;
+  font-size: 14px;
+}
+
+.mode {
+  color: #bcd8fa;
+  font-size: 12px;
+  letter-spacing: 1px;
+}
+
+.expression {
+  min-height: 30px;
+  margin-top: 15px;
+  text-align: right;
+  color: #a5d1ff;
+  font-size: clamp(18px, 5vw, 25px);
+  overflow-wrap: anywhere;
+}
+
+.result {
+  margin-top: 2px;
+  text-align: right;
+  font-size: clamp(43px, 12vw, 66px);
+  line-height: 1.15;
+  font-weight: 400;
+  letter-spacing: -2px;
+  overflow-wrap: anywhere;
+  text-shadow: 0 0 20px #39a9ff75;
+}
+
+.display-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 13px;
+  color: #8eb9e8;
+  font-size: 12px;
+}
+
+.memory-button {
+  padding: 5px 10px;
+  border-radius: 20px;
+  background: #ffffff0c;
+  border: 1px solid #ffffff15;
+}
+
+/* Klaviatura */
+.keypad {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(9px, 2.7vw, 14px);
+  margin-top: 23px;
+}
+
+.key {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  aspect-ratio: 1 / .91;
+  overflow: hidden;
+  border-radius: 24px;
+  border: 1px solid rgba(174,220,255,.52);
+  background:
+    linear-gradient(145deg, #ffffff19, #ffffff03 45%, #5ca8ff0c),
+    rgba(15,39,78,.63);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow:
+    0 7px 12px #0004,
+    0 0 12px #2d9dff19,
+    inset 0 2px 2px #ffffff50,
+    inset 0 -4px 6px #4c98ff19;
+  font-size: clamp(23px, 7vw, 33px);
+  font-weight: 450;
+  transition:
+    transform .14s ease,
+    border-color .2s ease,
+    box-shadow .2s ease;
+}
+
+.key::before {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  z-index: -1;
+  border-radius: inherit;
+  background: linear-gradient(140deg, #ffffff12, transparent 45%, #69baff0a);
+  pointer-events: none;
+}
+
+.key::after {
+  content: "";
+  position: absolute;
+  inset: -20%;
+  z-index: -1;
+  border-radius: 50%;
+  opacity: 0;
+  background: radial-gradient(circle, #91e9ff48 0%, #5b8bff1c 35%, transparent 70%);
+  transform: scale(.1);
+  pointer-events: none;
+}
+
+/* Hər toxunuşda 0,5 saniyəlik su dalğası */
+.key.ripple-active::after {
+  animation: waterRipple .5s ease-out;
+}
+
+@keyframes waterRipple {
+  0% {
+    opacity: .95;
+    transform: scale(.1);
+  }
+  55% {
+    opacity: .55;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.7);
+  }
+}
+
+.key:active {
+  transform: scale(.94);
+  box-shadow:
+    0 2px 5px #0005,
+    0 0 22px #49baff4a,
+    inset 0 2px 10px #8edbff28;
+}
+
+.key.utility {
+  color: #d9eaff;
+  background: linear-gradient(145deg, #7c8eff30, #213d7a45);
+}
+
+.key.clear {
+  color: #e4d3ff;
+  border-color: #bd7aff88;
+  background: linear-gradient(145deg, #b35cff35, #472b7950);
+  box-shadow: 0 0 18px #b34fff1c, inset 0 2px 3px #fff4;
+}
+
+.key.operator {
+  color: #ffe5bc;
+  border-color: #ffbc6c99;
+  background:
+    linear-gradient(145deg, #ffc47735, #ff7b291b),
+    rgba(67,39,30,.6);
+  box-shadow:
+    0 0 15px #ff9c351d,
+    inset 0 2px 3px #fff5,
+    inset 0 -3px 6px #ffad3a1a;
+}
+
+.key.equals {
+  color: #fff;
+  border-color: #d0a0ff;
+  background: linear-gradient(145deg, #c56dff, #7546e9 60%, #4632b8);
+  box-shadow:
+    0 0 24px #a35aff70,
+    inset 0 2px 3px #ffffff8a,
+    inset 0 -4px 8px #29107a55;
+}
+
+.key.zero {
+  grid-column: span 2;
+  aspect-ratio: auto;
+}
+
+.key.decimal {
+  font-size: 34px;
+}
+
+/* Reklam banneri */
+.ad-banner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-height: 112px;
+  margin-top: 23px;
+  padding: 14px 12px;
+  overflow: hidden;
+  border-radius: 24px;
+  border: 1px solid #8eafff65;
+  background:
+    radial-gradient(ellipse at 80% 30%, #704aff32, transparent 48%),
+    linear-gradient(125deg, #122f5cdd, #161339ee);
+  box-shadow:
+    0 8px 25px #0004,
+    0 0 20px #6b55ff13,
+    inset 0 1px 2px #fff3;
+}
+
+.ad-banner::before {
+  content: "";
+  position: absolute;
+  width: 150px;
+  height: 150px;
+  right: -50px;
+  top: -70px;
+  border: 1px solid #65cfff36;
+  border-radius: 50%;
+  box-shadow: 0 0 25px #7d65ff21;
+  pointer-events: none;
+}
+
+.ad-icon {
+  position: relative;
+  flex: 0 0 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border-radius: 15px;
+  font-size: 23px;
+  background: linear-gradient(145deg, #55d9ff, #6856ff);
+  box-shadow: 0 0 18px #4c88ff38;
+}
+
+.ad-content {
+  position: relative;
+  min-width: 0;
+  flex: 1;
+}
+
+.ad-label {
+  color: #9dbce5;
+  font-size: 10px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+}
+
+.ad-title {
+  margin-top: 4px;
+  font-size: 14px;
+  font-weight: 750;
+  line-height: 1.3;
+}
+
+.ad-description {
+  margin-top: 5px;
+  color: #b9cbe9;
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.ad-action {
+  position: relative;
+  flex-shrink: 0;
+  padding: 10px 12px;
+  border-radius: 20px;
+  color: #14172b;
+  background: linear-gradient(135deg, #ffd77c, #ffad3f);
+  font-size: 11px;
+  font-weight: 800;
+  box-shadow: 0 0 14px #ffb84228;
+}
+
+.ad-close {
+  position: absolute;
+  top: 5px;
+  right: 7px;
+  z-index: 2;
+  width: 23px;
+  height: 23px;
+  border-radius: 50%;
+  color: #b9c9ed;
+  background: #ffffff0b;
+  font-size: 16px;
+}
+
+.footer {
+  margin-top: auto;
+  padding-top: 15px;
+  text-align: center;
+  color: #6785ad;
+  font-size: 10px;
+  letter-spacing: 2px;
+}
+
+.home-indicator {
+  width: 105px;
+  height: 4px;
+  border-radius: 20px;
+  margin: 13px auto 0;
+  background: #b9d8ff9c;
+}
+
+/* Tarix və parametrlər pəncərələri */
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: none;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 15px;
+  background: #020713a8;
+  backdrop-filter: blur(9px);
+}
+
+.overlay.open {
+  display: flex;
+}
+
+.sheet {
+  width: min(100%, 480px);
+  max-height: 75dvh;
+  overflow: auto;
+  padding: 22px;
+  border-radius: 28px;
+  border: 1px solid #9dcfff55;
+  background: linear-gradient(145deg, #152c4af5, #0a1028f7);
+  box-shadow: 0 0 35px #389dff20;
+}
+
+.sheet-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 19px;
+  font-weight: 700;
+  margin-bottom: 18px;
+}
+
+.sheet-close {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  background: #ffffff12;
+  font-size: 20px;
+}
+
+.history-item {
+  padding: 12px;
+  margin-bottom: 9px;
+  border-radius: 14px;
+  background: #ffffff09;
+  border: 1px solid #ffffff12;
+}
+
+.history-item small {
+  display: block;
+  color: #a3c9f4;
+  margin-bottom: 5px;
+}
+
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 13px 0;
+  border-bottom: 1px solid #ffffff15;
+  color: #dceaff;
+  font-size: 14px;
+}
+
+.setting-row input {
+  accent-color: #67bfff;
+  width: 20px;
+  height: 20px;
+}
+
+.toast {
+  position: fixed;
+  z-index: 20;
+  bottom: 25px;
+  left: 50%;
+  max-width: 90%;
+  transform: translate(-50%, 20px);
+  opacity: 0;
+  padding: 11px 17px;
+  border: 1px solid #b5dbff55;
+  border-radius: 20px;
+  background: #102342ee;
+  box-shadow: 0 0 20px #39a9ff25;
+  color: white;
+  font-size: 13px;
+  pointer-events: none;
+  transition: .2s;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+@media (min-width: 430px) {
+  .app { padding-left: 23px; padding-right: 23px; }
+  .display { min-height: 205px; }
+  .key { border-radius: 27px; }
+  .keypad { gap: 14px; }
+}
+
+@media (max-height: 760px) {
+  .topbar { padding-bottom: 12px; }
+  .display { min-height: 145px; padding: 15px 18px; }
+  .result { font-size: 46px; }
+  .keypad { margin-top: 15px; gap: 8px; }
+  .key { aspect-ratio: 1 / .78; border-radius: 20px; }
+  .ad-banner { margin-top: 14px; min-height: 92px; }
+}
 </style>
 </head>
+
 <body>
-<main>
-<h1>NETBRIDGE</h1>
-<div class="sub">Azercell bağlantısının ilkin sınağı</div>
-
-<div class="panel">
-  <b>Sınaqdan əvvəl</b>
-  <p class="sub">Wi-Fi-ni söndür. Azercell SIM-in mobil datasını aç. İnternet paketinin bitmiş olduğuna əmin ol.</p>
-  <div id="overall" class="status">Sınağa hazırdır.</div>
-  <button id="start">BAĞLANTILARI YO XLA</button>
+<div class="ambient" aria-hidden="true">
+  <div class="orb one"></div>
+  <div class="orb two"></div>
+  <div class="orb three"></div>
 </div>
 
-<div class="panel">
-  <b>Sınaq nəticələri</b>
-  <div id="results">
-    <div class="item"><span class="name">Azercell saytı</span><span class="tag wait">Gözləyir</span></div>
-    <div class="item"><span class="name">Google</span><span class="tag wait">Gözləyir</span></div>
-    <div class="item"><span class="name">Cloudflare</span><span class="tag wait">Gözləyir</span></div>
-    <div class="item"><span class="name">Wikipedia</span><span class="tag wait">Gözləyir</span></div>
-  </div>
-</div>
+<main class="app">
+  <header class="topbar">
+    <div class="brand-icon">◈</div>
+    <div>
+      <div class="brand-name">GlassWave</div>
+      <div class="brand-sub">Hesabla. Hiss et. Kəşf et.</div>
+    </div>
+    <div class="top-actions">
+      <button class="icon-button" id="historyBtn" aria-label="Hesablama tarixçəsi">◷</button>
+      <button class="icon-button" id="settingsBtn" aria-label="Parametrlər">⚙</button>
+    </div>
+  </header>
 
-<div class="panel">
-  <b>Bu nəticə nə deməkdir?</b>
-  <p class="small">
-  • AÇILDI — həmin ünvandan kiçik fayl yükləndi.<br>
-  • AÇILMADI — ünvan bloklanmış, əlçatmaz və ya sınaq sorğusu uğursuz olmuş ola bilər.<br><br>
-  Bu test operator tətbiqinin daxili bağlantısını yoxlamır və internet tunelinin işləyəcəyini sübut etmir. Nəticə yalnız ilkin göstəricidir.
-  </p>
-  <button id="share" style="background:#263b53;color:white">NƏTİCƏNİ PAYLAŞ</button>
-</div>
+  <section class="display" aria-label="Hesablama ekranı">
+    <div class="display-top">
+      <span class="mode">3D GLASS · STANDART</span>
+      <span id="status">Hazırdır</span>
+    </div>
+    <div class="expression" id="expression" aria-live="polite">&nbsp;</div>
+    <div class="result" id="result" aria-live="polite">0</div>
+    <div class="display-bottom">
+      <button class="memory-button" id="copyBtn">▣ Nəticəni köçür</button>
+      <span>◉ GlassWave</span>
+    </div>
+  </section>
+
+  <section class="keypad" id="keypad" aria-label="Kalkulyator düymələri">
+    <button class="key clear" data-action="clear">AC</button>
+    <button class="key utility" data-action="sign">+/−</button>
+    <button class="key utility" data-action="percent">%</button>
+    <button class="key operator" data-op="/" aria-label="Bölmə">÷</button>
+
+    <button class="key" data-num="7">7</button>
+    <button class="key" data-num="8">8</button>
+    <button class="key" data-num="9">9</button>
+    <button class="key operator" data-op="*" aria-label="Vurma">×</button>
+
+    <button class="key" data-num="4">4</button>
+    <button class="key" data-num="5">5</button>
+    <button class="key" data-num="6">6</button>
+    <button class="key operator" data-op="-" aria-label="Çıxma">−</button>
+
+    <button class="key" data-num="1">1</button>
+    <button class="key" data-num="2">2</button>
+    <button class="key" data-num="3">3</button>
+    <button class="key operator" data-op="+" aria-label="Toplama">+</button>
+
+    <button class="key zero" data-num="0">0</button>
+    <button class="key decimal" data-action="decimal">.</button>
+    <button class="key equals" data-action="equals">=</button>
+  </section>
+
+  <section class="ad-banner" id="adBanner" aria-label="Reklam sahəsi">
+    <button class="ad-close" id="closeAd" aria-label="Reklamı bağla">×</button>
+    <div class="ad-icon">✦</div>
+    <div class="ad-content">
+      <div class="ad-label">Reklam sahəsi</div>
+      <div class="ad-title">Daha çox imkan, daha ağıllı seçim!</div>
+      <div class="ad-description">Brendinizin reklamı burada göstərilə bilər.</div>
+    </div>
+    <button class="ad-action" id="adAction">Ətraflı ↗</button>
+  </section>
+
+  <footer class="footer">
+    GLASSWAVE · 3D CALCULATOR
+    <div class="home-indicator"></div>
+  </footer>
 </main>
+
+<div class="overlay" id="historyOverlay">
+  <section class="sheet">
+    <div class="sheet-head">
+      <span>Hesablama tarixçəsi</span>
+      <button class="sheet-close" data-close="historyOverlay">×</button>
+    </div>
+    <div id="historyList"></div>
+    <button class="memory-button" id="clearHistory">Tarixçəni təmizlə</button>
+  </section>
+</div>
+
+<div class="overlay" id="settingsOverlay">
+  <section class="sheet">
+    <div class="sheet-head">
+      <span>Parametrlər</span>
+      <button class="sheet-close" data-close="settingsOverlay">×</button>
+    </div>
+    <div class="setting-row">
+      <span>Düymə dalğası effekti</span>
+      <input type="checkbox" id="rippleToggle" checked>
+    </div>
+    <div class="setting-row">
+      <span>Toxunuş vibrasiyası</span>
+      <input type="checkbox" id="vibrationToggle">
+    </div>
+    <div class="setting-row">
+      <span>Reklam bannerini göstər</span>
+      <input type="checkbox" id="adToggle" checked>
+    </div>
+    <p style="color:#91acd0;font-size:12px;line-height:1.6">
+      GlassWave 3D — mobil cihazlar üçün hazırlanmış kalkulyator.
+      Parametrlər bu cihazda yadda saxlanılır.
+    </p>
+  </section>
+</div>
+
+<div class="toast" id="toast" role="status"></div>
+
 <script>
-const tests=[
- {name:"Azercell saytı",url:"https://www.azercell.com/favicon.ico"},
- {name:"Google",url:"https://www.google.com/favicon.ico"},
- {name:"Cloudflare",url:"https://www.cloudflare.com/favicon.ico"},
- {name:"Wikipedia",url:"https://www.wikipedia.org/favicon.ico"}
-];
-let report=[];
-function check(t){
- return new Promise(resolve=>{
-  const img=new Image();
-  let done=false;
-  const timer=setTimeout(()=>finish(false,"Vaxt bitdi"),8000);
-  function finish(ok,msg){
-   if(done)return;
-   done=true;clearTimeout(timer);
-   img.onload=null;img.onerror=null;
-   resolve({name:t.name,ok,msg});
+(() => {
+  "use strict";
+
+  const $ = id => document.getElementById(id);
+
+  const resultEl = $("result");
+  const expressionEl = $("expression");
+  const statusEl = $("status");
+  const keypad = $("keypad");
+  const toastEl = $("toast");
+
+  let current = "0";
+  let stored = null;
+  let operator = null;
+  let waitingForOperand = false;
+  let justCalculated = false;
+  let expressionText = "";
+  let history = [];
+  let toastTimer;
+
+  const symbols = {"+":"+", "-":"−", "*":"×", "/":"÷"};
+
+  function formatNumber(value) {
+    if (!Number.isFinite(value)) return "Xəta";
+    if (Object.is(value, -0)) value = 0;
+
+    if (Math.abs(value) >= 1e12 || (Math.abs(value) > 0 && Math.abs(value) < 1e-7)) {
+      return value.toExponential(6).replace(/\.?0+e/, "e");
+    }
+
+    return Number(value.toPrecision(11)).toLocaleString("en-US", {
+      maximumFractionDigits: 8,
+      useGrouping: true
+    });
   }
-  img.onload=()=>finish(true,"Fayl yükləndi");
-  img.onerror=()=>finish(false,"Yüklənmədi");
-  img.src=t.url+(t.url.includes("?")?"&":"?")+"test="+Date.now()+Math.random();
- });
-}
-function render(r){
- const el=document.createElement("div");
- el.className="item";
- const name=document.createElement("span");
- name.className="name";name.textContent=r.name;
- const tag=document.createElement("span");
- tag.className="tag "+(r.ok?"good":"bad");
- tag.textContent=r.ok?"AÇILDI":"AÇILMADI";
- const detail=document.createElement("div");
- detail.className="detail";detail.textContent=r.msg;
- el.append(name,tag,detail);
- return el;
-}
-document.getElementById("start").addEventListener("click",async()=>{
- const btn=document.getElementById("start");
- const results=document.getElementById("results");
- const overall=document.getElementById("overall");
- btn.disabled=true;btn.textContent="YOXLANIR...";
- overall.textContent="Ünvanlar yoxlanılır. Bir az gözlə.";
- results.replaceChildren();
- report=[];
- for(const t of tests){
-  const placeholder=document.createElement("div");
-  placeholder.className="item";
-  placeholder.textContent=t.name+" — yoxlanılır...";
-  results.appendChild(placeholder);
-  const r=await check(t);
-  report.push(r);
-  placeholder.replaceWith(render(r));
- }
- const passed=report.filter(x=>x.ok).length;
- overall.textContent="Nəticə: "+passed+"/"+tests.length+
- " ünvan yükləndi. Bu, tunelin işləyəcəyinə zəmanət vermir.";
- btn.disabled=false;btn.textContent="YENİDƏN YO XLA";
-});
-document.getElementById("share").addEventListener("click",async()=>{
- const text="NETBRIDGE sınağı\n"+
- (report.length?report.map(r=>r.name+": "+(r.ok?"AÇILDI":"AÇILMADI")+" ("+r.msg+")").join("\n"):
- "Hələ sınaq aparılmayıb.");
- if(navigator.share){
-  try{await navigator.share({title:"NETBRIDGE nəticəsi",text});return}catch(e){}
- }
- if(navigator.clipboard&&location.protocol!=="file:"){
-  try{await navigator.clipboard.writeText(text);alert("Nəticə köçürüldü.");return}catch(e){}
- }
- const w=window.open("","_blank");
- if(w){w.document.write("<pre>"+text.replace(/&/g,"&amp;").replace(/</g,"&lt;")+"</pre>")}
- else{prompt("Nəticəni köçür:",text)}
-});
+
+  function render() {
+    resultEl.textContent = formatNumber(Number(current));
+    expressionEl.textContent = expressionText || "\u00a0";
+  }
+
+  function toast(message) {
+    toastEl.textContent = message;
+    toastEl.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toastEl.classList.remove("show"), 1800);
+  }
+
+  function calculate(a, b, op) {
+    if (op === "+") return a + b;
+    if (op === "-") return a - b;
+    if (op === "*") return a * b;
+    if (op === "/") return b === 0 ? NaN : a / b;
+    return b;
+  }
+
+  function reset() {
+    current = "0";
+    stored = null;
+    operator = null;
+    waitingForOperand = false;
+    justCalculated = false;
+    expressionText = "";
+    statusEl.textContent = "Hazırdır";
+    render();
+  }
+
+  function inputNumber(number) {
+    if (justCalculated && !operator) {
+      current = number;
+      expressionText = "";
+      justCalculated = false;
+      statusEl.textContent = "Yeni hesablama";
+      render();
+      return;
+    }
+
+    if (waitingForOperand) {
+      current = number;
+      waitingForOperand = false;
+    } else if (current === "0") {
+      current = number;
+    } else if (current.replace("-", "").replace(".", "").length < 14) {
+      current += number;
+    }
+
+    render();
+  }
+
+  function inputDecimal() {
+    if (justCalculated && !operator) {
+      current = "0.";
+      expressionText = "";
+      justCalculated = false;
+      render();
+      return;
+    }
+
+    if (waitingForOperand) {
+      current = "0.";
+      waitingForOperand = false;
+    } else if (!current.includes(".")) {
+      current += ".";
+    }
+
+    render();
+  }
+
+  function chooseOperator(nextOperator) {
+    const inputValue = Number(current);
+
+    if (!Number.isFinite(inputValue)) {
+      toast("Əvvəlcə düzgün rəqəm daxil et.");
+      return;
+    }
+
+    if (operator && !waitingForOperand) {
+      const result = calculate(stored, inputValue, operator);
+
+      if (!Number.isFinite(result)) {
+        toast("Sıfıra bölmək mümkün deyil.");
+        reset();
+        return;
+      }
+
+      current = String(result);
+      stored = result;
+    } else {
+      stored = inputValue;
+    }
+
+    operator = nextOperator;
+    waitingForOperand = true;
+    justCalculated = false;
+    expressionText = formatNumber(stored) + " " + symbols[operator];
+    statusEl.textContent = "Əməliyyat seçildi";
+    render();
+  }
+
+  function equals() {
+    if (!operator || stored === null || waitingForOperand) return;
+
+    const a = stored;
+    const b = Number(current);
+    const op = operator;
+    const result = calculate(a, b, op);
+
+    if (!Number.isFinite(result)) {
+      toast("Bu əməliyyatın nəticəsi hesablana bilmir.");
+      return;
+    }
+
+    const record = {
+      expression: formatNumber(a) + " " + symbols[op] + " " + formatNumber(b),
+      result: result
+    };
+
+    history.unshift(record);
+    history = history.slice(0, 30);
+    saveHistory();
+
+    expressionText = record.expression + " =";
+    current = String(result);
+    stored = null;
+    operator = null;
+    waitingForOperand = true;
+    justCalculated = true;
+    statusEl.textContent = "Hesablandı";
+    render();
+  }
+
+  function changeSign() {
+    if (current === "0") return;
+    current = String(-Number(current));
+    render();
+  }
+
+  function percent() {
+    const n = Number(current);
+
+    if (operator && stored !== null) {
+      current = String(stored * n / 100);
+    } else {
+      current = String(n / 100);
+    }
+
+    waitingForOperand = false;
+    render();
+  }
+
+  function saveHistory() {
+    try {
+      localStorage.setItem("glasswave-history", JSON.stringify(history));
+    } catch (_) {}
+  }
+
+  function loadHistory() {
+    try {
+      history = JSON.parse(localStorage.getItem("glasswave-history") || "[]");
+      if (!Array.isArray(history)) history = [];
+    } catch (_) {
+      history = [];
+    }
+  }
+
+  function showHistory() {
+    const list = $("historyList");
+
+    if (!history.length) {
+      list.innerHTML = '<p style="color:#a3c3e8">Hələ hesablama yoxdur.</p>';
+    } else {
+      list.replaceChildren();
+
+      history.forEach(item => {
+        const row = document.createElement("div");
+        row.className = "history-item";
+
+        const expression = document.createElement("small");
+        expression.textContent = item.expression;
+
+        const value = document.createElement("div");
+        value.textContent = formatNumber(item.result);
+        value.style.fontSize = "22px";
+
+        row.append(expression, value);
+        row.addEventListener("click", () => {
+          current = String(item.result);
+          stored = null;
+          operator = null;
+          waitingForOperand = false;
+          justCalculated = true;
+          expressionText = item.expression + " =";
+          render();
+          $("historyOverlay").classList.remove("open");
+        });
+
+        list.appendChild(row);
+      });
+    }
+
+    $("historyOverlay").classList.add("open");
+  }
+
+  function performAction(action) {
+    switch (action) {
+      case "clear":
+        reset();
+        break;
+      case "sign":
+        changeSign();
+        break;
+      case "percent":
+        percent();
+        break;
+      case "decimal":
+        inputDecimal();
+        break;
+      case "equals":
+        equals();
+        break;
+    }
+  }
+
+  // Suya düşən damcı kimi təkrar işləyən toxunuş effekti
+  function waterRipple(button, event) {
+    if (!$("rippleToggle").checked) return;
+
+    // Əvvəlki animasiyanı sıfırla ki, hər toxunuşda yenidən başlasın.
+    button.classList.remove("ripple-active");
+    void button.offsetWidth;
+    button.classList.add("ripple-active");
+
+    setTimeout(() => {
+      button.classList.remove("ripple-active");
+    }, 510);
+
+    if (event && event.clientX && event.clientY) {
+      const rect = button.getBoundingClientRect();
+      const x = ((event.clientX - rect.left) / rect.width) * 100;
+      const y = ((event.clientY - rect.top) / rect.height) * 100;
+
+      button.style.setProperty("--touch-x", x + "%");
+      button.style.setProperty("--touch-y", y + "%");
+    }
+
+    if ($("vibrationToggle").checked && navigator.vibrate) {
+      navigator.vibrate(12);
+    }
+  }
+
+  keypad.addEventListener("click", event => {
+    const button = event.target.closest("button");
+    if (!button) return;
+
+    waterRipple(button, event);
+
+    if (button.dataset.num !== undefined) {
+      inputNumber(button.dataset.num);
+    } else if (button.dataset.op) {
+      chooseOperator(button.dataset.op);
+    } else if (button.dataset.action) {
+      performAction(button.dataset.action);
+    }
+  });
+
+  // Klaviatura ilə də hesablamaq mümkündür.
+  document.addEventListener("keydown", event => {
+    if (event.key >= "0" && event.key <= "9") {
+      inputNumber(event.key);
+    } else if (event.key === ".") {
+      inputDecimal();
+    } else if (["+", "-", "*", "/"].includes(event.key)) {
+      chooseOperator(event.key);
+    } else if (event.key === "Enter" || event.key === "=") {
+      equals();
+    } else if (event.key === "Escape") {
+      reset();
+    } else if (event.key === "%") {
+      percent();
+    } else if (event.key === "Backspace") {
+      if (!waitingForOperand) {
+        current = current.length > 1
+          ? current.slice(0, -1)
+          : "0";
+        render();
+      }
+    }
+  });
+
+  $("historyBtn").addEventListener("click", showHistory);
+
+  $("settingsBtn").addEventListener("click", () => {
+    $("settingsOverlay").classList.add("open");
+  });
+
+  document.querySelectorAll("[data-close]").forEach(button => {
+    button.addEventListener("click", () => {
+      $(button.dataset.close).classList.remove("open");
+    });
+  });
+
+  document.querySelectorAll(".overlay").forEach(overlay => {
+    overlay.addEventListener("click", event => {
+      if (event.target === overlay) overlay.classList.remove("open");
+    });
+  });
+
+  $("clearHistory").addEventListener("click", () => {
+    history = [];
+    saveHistory();
+    showHistory();
+    toast("Tarixçə təmizləndi.");
+  });
+
+  $("copyBtn").addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(formatNumber(Number(current)));
+      toast("Nəticə köçürüldü.");
+    } catch (_) {
+      toast("Köçürmə mümkün olmadı. Nəticəni əl ilə seç.");
+    }
+  });
+
+  $("closeAd").addEventListener("click", () => {
+    $("adBanner").hidden = true;
+    $("adToggle").checked = false;
+  });
+
+  $("adToggle").addEventListener("change", event => {
+    $("adBanner").hidden = !event.target.checked;
+  });
+
+  $("adAction").addEventListener("click", () => {
+    toast("Bu, reklam banneri nümunəsidir. Real keçid əlavə edilməyib.");
+  });
+
+  loadHistory();
+  render();
+})();
 </script>
 </body>
 </html>
